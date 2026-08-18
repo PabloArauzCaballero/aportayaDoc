@@ -3,7 +3,7 @@
 -- APPEND-ONLY: sin UPDATE ni DELETE (ver sql/40_reglas)
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS movimiento_custodia (
+CREATE TABLE IF NOT EXISTS nucleo_financiero.movimiento_custodia (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   cuenta_custodia_id                 UUID NOT NULL,
   movimiento_bancario_id             UUID,
@@ -21,13 +21,13 @@ CREATE TABLE IF NOT EXISTS movimiento_custodia (
   CONSTRAINT ck_movimiento_custodia_monto CHECK (monto > 0)
 );
 
-COMMENT ON TABLE movimiento_custodia IS 'Módulo 10 — Billetera, Custodia y Dinero Electrónico. [append-only] El saldo no se guarda: se deriva, y todos los días cuadra contra el banco';
-COMMENT ON COLUMN movimiento_custodia.id IS 'PK';
-COMMENT ON COLUMN movimiento_custodia.cuenta_custodia_id IS 'FK, IDX';
-COMMENT ON COLUMN movimiento_custodia.movimiento_bancario_id IS 'FK, NULL, UQ, M3';
-COMMENT ON COLUMN movimiento_custodia.fecha_valor IS 'IDX';
-COMMENT ON COLUMN movimiento_custodia.tipo IS 'CK';
-COMMENT ON COLUMN movimiento_custodia.sentido IS 'CK';
-COMMENT ON COLUMN movimiento_custodia.monto IS 'CK: > 0';
-COMMENT ON COLUMN movimiento_custodia.referencia_bancaria IS 'UQ';
-COMMENT ON COLUMN movimiento_custodia.conciliado IS 'IDX';
+COMMENT ON TABLE nucleo_financiero.movimiento_custodia IS 'Módulo 10 — Billetera, Custodia y Dinero Electrónico. [append-only] El saldo no se guarda: se deriva, y todos los días cuadra contra el banco';
+COMMENT ON COLUMN nucleo_financiero.movimiento_custodia.id IS 'PK';
+COMMENT ON COLUMN nucleo_financiero.movimiento_custodia.cuenta_custodia_id IS 'FK, IDX';
+COMMENT ON COLUMN nucleo_financiero.movimiento_custodia.movimiento_bancario_id IS 'FK, NULL, UQ, M3';
+COMMENT ON COLUMN nucleo_financiero.movimiento_custodia.fecha_valor IS 'IDX';
+COMMENT ON COLUMN nucleo_financiero.movimiento_custodia.tipo IS 'CK';
+COMMENT ON COLUMN nucleo_financiero.movimiento_custodia.sentido IS 'CK';
+COMMENT ON COLUMN nucleo_financiero.movimiento_custodia.monto IS 'CK: > 0';
+COMMENT ON COLUMN nucleo_financiero.movimiento_custodia.referencia_bancaria IS 'UQ';
+COMMENT ON COLUMN nucleo_financiero.movimiento_custodia.conciliado IS 'IDX';

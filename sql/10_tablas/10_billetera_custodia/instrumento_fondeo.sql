@@ -2,7 +2,7 @@
 -- clase de dominio: InstrumentoFondeo
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS instrumento_fondeo (
+CREATE TABLE IF NOT EXISTS nucleo_financiero.instrumento_fondeo (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   usuario_id                         UUID NOT NULL,
   tipo                               VARCHAR(20) NOT NULL,
@@ -24,13 +24,13 @@ CREATE TABLE IF NOT EXISTS instrumento_fondeo (
   CONSTRAINT ck_instrumento_fondeo_estado_verificacion CHECK (estado_verificacion IN ('PENDIENTE', 'RECHAZADO', 'VENCIDO', 'VERIFICADO'))
 );
 
-COMMENT ON TABLE instrumento_fondeo IS 'Módulo 10 — Billetera, Custodia y Dinero Electrónico. El saldo no se guarda: se deriva, y todos los días cuadra contra el banco';
-COMMENT ON COLUMN instrumento_fondeo.id IS 'PK';
-COMMENT ON COLUMN instrumento_fondeo.usuario_id IS 'FK, IDX';
-COMMENT ON COLUMN instrumento_fondeo.tipo IS 'CK';
-COMMENT ON COLUMN instrumento_fondeo.token_proveedor IS 'NULL';
-COMMENT ON COLUMN instrumento_fondeo.hash_identificador IS 'UQ+usuario_id';
-COMMENT ON COLUMN instrumento_fondeo.estado_verificacion IS 'CK';
-COMMENT ON COLUMN instrumento_fondeo.metodo_verificacion IS 'NULL';
-COMMENT ON COLUMN instrumento_fondeo.verificado_en IS 'NULL';
-COMMENT ON COLUMN instrumento_fondeo.bloqueado_hasta IS 'NULL';
+COMMENT ON TABLE nucleo_financiero.instrumento_fondeo IS 'Módulo 10 — Billetera, Custodia y Dinero Electrónico. El saldo no se guarda: se deriva, y todos los días cuadra contra el banco';
+COMMENT ON COLUMN nucleo_financiero.instrumento_fondeo.id IS 'PK';
+COMMENT ON COLUMN nucleo_financiero.instrumento_fondeo.usuario_id IS 'FK, IDX';
+COMMENT ON COLUMN nucleo_financiero.instrumento_fondeo.tipo IS 'CK';
+COMMENT ON COLUMN nucleo_financiero.instrumento_fondeo.token_proveedor IS 'NULL';
+COMMENT ON COLUMN nucleo_financiero.instrumento_fondeo.hash_identificador IS 'UQ+usuario_id';
+COMMENT ON COLUMN nucleo_financiero.instrumento_fondeo.estado_verificacion IS 'CK';
+COMMENT ON COLUMN nucleo_financiero.instrumento_fondeo.metodo_verificacion IS 'NULL';
+COMMENT ON COLUMN nucleo_financiero.instrumento_fondeo.verificado_en IS 'NULL';
+COMMENT ON COLUMN nucleo_financiero.instrumento_fondeo.bloqueado_hasta IS 'NULL';

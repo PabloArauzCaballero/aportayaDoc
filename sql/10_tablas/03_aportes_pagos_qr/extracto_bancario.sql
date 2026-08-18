@@ -2,7 +2,7 @@
 -- clase de dominio: ExtractoBancario
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS extracto_bancario (
+CREATE TABLE IF NOT EXISTS aportes.extracto_bancario (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   proveedor_id                       UUID NOT NULL,
   cuenta                             VARCHAR(40) NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS extracto_bancario (
   CONSTRAINT pk_extracto_bancario PRIMARY KEY (id)
 );
 
-COMMENT ON TABLE extracto_bancario IS 'Módulo 03 — Aportes, Pagos QR y Conciliación. Que "pagué" signifique "el banco lo confirmó"';
-COMMENT ON COLUMN extracto_bancario.id IS 'PK';
-COMMENT ON COLUMN extracto_bancario.proveedor_id IS 'FK';
-COMMENT ON COLUMN extracto_bancario.importado_por IS 'FK';
+COMMENT ON TABLE aportes.extracto_bancario IS 'Módulo 03 — Aportes, Pagos QR y Conciliación. Que "pagué" signifique "el banco lo confirmó"';
+COMMENT ON COLUMN aportes.extracto_bancario.id IS 'PK';
+COMMENT ON COLUMN aportes.extracto_bancario.proveedor_id IS 'FK';
+COMMENT ON COLUMN aportes.extracto_bancario.importado_por IS 'FK';

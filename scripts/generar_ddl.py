@@ -6,7 +6,7 @@ Genera el esquema SQL completo a partir de los diagramas PlantUML.
 
 Salida (todo generado, nada escrito a mano):
 
-    sql/00_base/…                extensiones, esquema y roles
+    sql/00_base/…                extensiones, roles, esquemas por servicio y permisos
     sql/10_tablas/<modulo>/<tabla>.sql    un archivo por tabla
     sql/20_claves/<modulo>.sql            claves foráneas del módulo
     sql/30_indices/<modulo>.sql           índices y únicos del módulo
@@ -14,7 +14,7 @@ Salida (todo generado, nada escrito a mano):
 
 Las claves foráneas van en una pasada aparte porque el modelo tiene referencias
 circulares entre módulos: primero existen todas las tablas, después las
-relaciones. Ese orden es además el que necesita la introspección de MikroORM.
+relaciones. Ese orden es ademas el que necesita la introspeccion de jOOQ.
 
 Los enumerados de cada columna `<<CK>>` se derivan de los diagramas de clases
 (bloques `enum` y anotaciones `<<A | B | C>>`). Si alguna columna queda sin
@@ -31,10 +31,36 @@ from collections import defaultdict
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
 from modelo import (MODULOS, FOCO, APPEND_ONLY, PARTICIONADAS,  # noqa: E402
+                    ESQUEMA, ESQUEMA_CATALOGO, CATALOGO, CATALOGO_ESCRITOR,
+                    LIBRO_CONTABLE,
+                    ESQUEMA_COMUN, COMPARTIDAS_ESCRITURA,
+                    INFRA_MENSAJERIA, INFRA_ORQUESTADOR, ESQUEMAS_ORQUESTADORES,
+                    esquemas_de_servicio, tablas_infra_de,
+                    esquema_de, rol_de,
                     cargar, resolver_fk, clase_de, a_camel)
 
 OUT = pathlib.Path("sql")
 MAX_IDENT = 63
+
+# Tabla -> esquema. Se llena en generar(), antes de escribir nada, y lo usa todo
+# el que emita SQL: una tabla sin esquema conocido es un error del generador, no
+# algo que se resuelva con search_path.
+TABLA_ESQUEMA = {}
+
+# search_path para la sesion que APLICA el esquema y siembra: ve todos los
+# esquemas. Los roles de servicio tienen el suyo, mucho mas estrecho (02_esquemas).
+SEARCH_PATH_SQL = ("SET search_path TO "
+                   + ", ".join(sorted(set(ESQUEMA.values()))
+                               + [ESQUEMA_CATALOGO, ESQUEMA_COMUN])
+                   + ", public;")
+
+
+def q(tabla):
+    """Nombre calificado: esquema.tabla. Falla ruidosamente si no esta mapeada."""
+    esq = TABLA_ESQUEMA.get(tabla)
+    if esq is None:
+        raise KeyError(f"tabla sin esquema asignado: {tabla}")
+    return f"{esq}.{tabla}"
 
 # --- columnas derivadas: expresión real de la columna generada ------------
 GENERADAS = {
@@ -368,10 +394,17 @@ def defecto(col, tipo):
 
 def generar():
     mods, registro, _ = cargar()
+
+    # El esquema de cada tabla se resuelve UNA vez, antes de emitir nada.
+    TABLA_ESQUEMA.clear()
+    for k, d in mods.items():
+        for alias in d["orden"]:
+            tabla = d["entidades"][alias]["tabla"]
+            TABLA_ESQUEMA[tabla] = esquema_de(tabla, k)
     # Solo se borra lo que este script genera: 50_verificacion/prueba_humo.sql
     # está escrito a mano y no debe perderse.
-    for sub in ("00_base", "10_tablas", "20_claves", "30_indices", "35_append_only",
-                "60_semillas", "61_prueba"):
+    for sub in ("00_base", "10_tablas", "15_infra", "20_claves", "30_indices",
+                "35_append_only", "60_semillas", "61_prueba"):
         if (OUT / sub).exists():
             shutil.rmtree(OUT / sub)
 
@@ -477,22 +510,22 @@ def generar():
 
             cierre = f") PARTITION BY RANGE ({particion});" if particion else ");"
             sql = ["\n".join(enc), "",
-                   f"CREATE TABLE IF NOT EXISTS {tabla} (", cuerpo, cierre, ""]
+                   f"CREATE TABLE IF NOT EXISTS {q(tabla)} (", cuerpo, cierre, ""]
 
             if particion:
                 # Una partición por mes del año en curso y del siguiente, más la
                 # de desborde: sin ella, un INSERT fuera de rango falla. El
                 # mantenimiento posterior lo hace CU-58 con la misma plantilla.
                 sql += [
-                    f"CREATE TABLE IF NOT EXISTS {tabla}_desborde",
-                    f"  PARTITION OF {tabla} DEFAULT;", ""]
+                    f"CREATE TABLE IF NOT EXISTS {q(tabla)}_desborde",
+                    f"  PARTITION OF {q(tabla)} DEFAULT;", ""]
                 sql += [
                     "DO $$",
                     "DECLARE d DATE := date_trunc('year', current_date)::date;",
                     "BEGIN",
                     "  FOR i IN 0..23 LOOP",
                     "    EXECUTE format(",
-                    f"      'CREATE TABLE IF NOT EXISTS {tabla}_%s PARTITION OF {tabla} "
+                    f"      'CREATE TABLE IF NOT EXISTS {q(tabla)}_%s PARTITION OF {q(tabla)} "
                     "FOR VALUES FROM (%L) TO (%L)',",
                     "      to_char(d + (i || ' month')::interval, 'YYYYMM'),",
                     "      d + (i || ' month')::interval,",
@@ -501,10 +534,10 @@ def generar():
                     "END $$;", ""]
             desc = FOCO[k].replace("'", "''")
             marca = " [append-only]" if tabla in APPEND_ONLY else ""
-            sql.append(f"COMMENT ON TABLE {tabla} IS "
+            sql.append(f"COMMENT ON TABLE {q(tabla)} IS "
                        f"'Módulo {k} — {MODULOS[k][0]}.{marca} {desc}';")
             for n, anot in comentarios:
-                sql.append(f"COMMENT ON COLUMN {tabla}.{n} IS '{anot}';")
+                sql.append(f"COMMENT ON COLUMN {q(tabla)}.{n} IS '{anot}';")
             sql.append("")
 
             (dir_tablas / f"{tabla}.sql").write_text("\n".join(sql), encoding="utf-8")
@@ -516,9 +549,9 @@ def generar():
              "-- referencias circulares entre módulos.", ""]
         for tabla, col, destino, nulo in sorted(set(fks_mod)):
             accion = "ON DELETE SET NULL" if nulo else "ON DELETE RESTRICT"
-            L.append(f"ALTER TABLE {tabla}")
+            L.append(f"ALTER TABLE {q(tabla)}")
             L.append(f"  ADD CONSTRAINT {ident('fk', tabla, col)}")
-            L.append(f"  FOREIGN KEY ({col}) REFERENCES {destino} (id) "
+            L.append(f"  FOREIGN KEY ({col}) REFERENCES {q(destino)} (id) "
                      f"{accion} ON UPDATE CASCADE;")
             L.append("")
         total_fks += len(set(fks_mod))
@@ -547,16 +580,19 @@ def generar():
             lista = ", ".join(cols)
             if tipo == "UQ":
                 L.append(f"CREATE UNIQUE INDEX IF NOT EXISTS {ident('uq', tabla, *cols)}")
-                L.append(f"  ON {tabla} ({lista});")
+                L.append(f"  ON {q(tabla)} ({lista});")
             else:
                 L.append(f"CREATE INDEX IF NOT EXISTS {ident('ix', tabla, *cols)}")
-                L.append(f"  ON {tabla} ({lista});")
+                L.append(f"  ON {q(tabla)} ({lista});")
             L.append("")
         total_indices += len(vistos)
         (OUT / "30_indices").mkdir(parents=True, exist_ok=True)
         (OUT / "30_indices" / f"{carpeta}.sql").write_text("\n".join(L), encoding="utf-8")
 
     escribir_base()
+    escribir_esquemas()
+    escribir_infra_mensajeria()
+    escribir_permisos_finales()
     escribir_append_only()
     escribir_orquestador(mods)
 
@@ -615,6 +651,248 @@ END $$;
 """, encoding="utf-8")
 
 
+def escribir_esquemas():
+    """Un esquema y un rol por servicio (ADR-017).
+
+    La frontera entre servicios NO es una convencion de nombres: es el GRANT.
+    Un servicio no puede leer las tablas de otro porque no tiene permiso, y
+    ademas jOOQ no le genero las clases. El aislamiento no depende de que nadie
+    escriba el JOIN: depende de que el JOIN falle.
+    """
+    esquemas = sorted(set(ESQUEMA.values())) + [ESQUEMA_CATALOGO, ESQUEMA_COMUN]
+
+    L = ["-- Esquemas y roles de servicio — un esquema y un rol por servicio.",
+         "-- Generado por scripts/generar_ddl.py — no editar a mano.",
+         "--",
+         "-- ADR-017: se parte el DESPLIEGUE, no el modelo. Las claves foraneas",
+         "-- entre esquemas se conservan porque todo vive en el mismo cluster.",
+         ""]
+
+    L.append("-- 1) Esquemas")
+    for e in esquemas:
+        L.append(f"CREATE SCHEMA IF NOT EXISTS {e};")
+    L.append("")
+
+    L.append("-- 2) Un rol por servicio, sin login por defecto (lo da el despliegue)")
+    L.append("DO $$")
+    L.append("BEGIN")
+    for e in sorted(set(ESQUEMA.values())):
+        r = rol_de(e)
+        L.append(f"  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = '{r}') THEN")
+        L.append(f"    CREATE ROLE {r} NOLOGIN;")
+        L.append("  END IF;")
+    L.append("END $$;")
+    L.append("")
+
+    L.append("-- 3) Cada rol ve SU esquema y el catalogo. Nada mas.")
+    L.append("--    Un SELECT cruzado entre servicios devuelve permiso denegado,")
+    L.append("--    y hay una prueba por par que lo comprueba (barrido 15).")
+    for e in sorted(set(ESQUEMA.values())):
+        r = rol_de(e)
+        L += [f"GRANT USAGE ON SCHEMA {e} TO {r};",
+              f"ALTER DEFAULT PRIVILEGES IN SCHEMA {e}",
+              f"  GRANT SELECT, INSERT, UPDATE ON TABLES TO {r};",
+              f"GRANT USAGE ON SCHEMA {ESQUEMA_CATALOGO} TO {r};",
+              f"ALTER DEFAULT PRIVILEGES IN SCHEMA {ESQUEMA_CATALOGO}",
+              f"  GRANT SELECT ON TABLES TO {r};",
+              f"-- outbox y bitacoras: INSERTA, y nada mas. No lee el rastro ajeno.",
+              f"GRANT USAGE ON SCHEMA {ESQUEMA_COMUN} TO {r};",
+              f"ALTER DEFAULT PRIVILEGES IN SCHEMA {ESQUEMA_COMUN}",
+              f"  GRANT INSERT ON TABLES TO {r};", ""]
+
+    L.append("-- 4) search_path por rol: cada servicio ve SU esquema y el catalogo.")
+    L.append("--    Refuerza el GRANT: una consulta a una tabla ajena no solo es")
+    L.append("--    denegada, es que el nombre ni siquiera resuelve.")
+    for e in sorted(set(ESQUEMA.values())):
+        L.append(f"ALTER ROLE {rol_de(e)} SET search_path TO {e}, {ESQUEMA_CATALOGO}, {ESQUEMA_COMUN};")
+    L.append("")
+    L.append("--    La migracion y la auditoria ven todo: aplican el esquema y")
+    L.append("--    reportan sobre el sistema entero.")
+    todos = ", ".join(esquemas)
+    L.append(f"ALTER ROLE rol_migracion SET search_path TO {todos}, public;")
+    L.append(f"ALTER ROLE rol_auditor   SET search_path TO {todos}, public;")
+    L.append("")
+
+    L.append("-- 5) Migracion y auditoria")
+    L.append("--    rol_migracion crea; rol_auditor lee todo pero NO escribe nada.")
+    for e in esquemas:
+        L.append(f"GRANT ALL ON SCHEMA {e} TO rol_migracion;")
+    for e in esquemas:
+        L += [f"GRANT USAGE ON SCHEMA {e} TO rol_auditor;",
+              f"ALTER DEFAULT PRIVILEGES IN SCHEMA {e} GRANT SELECT ON TABLES TO rol_auditor;"]
+    L.append("")
+
+    L.append("-- 6) El catalogo solo lo escribe la migracion, al sembrar.")
+    L.append(f"ALTER DEFAULT PRIVILEGES IN SCHEMA {ESQUEMA_CATALOGO}")
+    L.append("  GRANT INSERT, UPDATE ON TABLES TO rol_migracion;")
+    L.append("")
+
+    (OUT / "00_base" / "02_esquemas.sql").write_text("\n".join(L), encoding="utf-8")
+
+
+def escribir_permisos_finales():
+    """GRANT sobre las tablas YA creadas.
+
+    ALTER DEFAULT PRIVILEGES solo alcanza a lo que se cree despues, asi que hace
+    falta un pase explicito al final. Se aplica tras las tablas, y es el que hace
+    cumplir el invariante 11.
+    """
+    esquemas = sorted(set(ESQUEMA.values())) + [ESQUEMA_CATALOGO, ESQUEMA_COMUN]
+    L = ["-- Permisos sobre las tablas ya creadas (invariante 11).",
+         "-- Generado por scripts/generar_ddl.py — no editar a mano.",
+         "--",
+         "-- Se aplica DESPUES de crear las tablas: ALTER DEFAULT PRIVILEGES solo",
+         "-- cubre lo que se cree a partir de entonces.",
+         ""]
+    for e in sorted(set(ESQUEMA.values())):
+        r = rol_de(e)
+        L += [f"GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA {e} TO {r};",
+              f"GRANT SELECT ON ALL TABLES IN SCHEMA {ESQUEMA_CATALOGO} TO {r};",
+              f"GRANT INSERT ON ALL TABLES IN SCHEMA {ESQUEMA_COMUN} TO {r};"]
+    L.append("")
+    for e in esquemas:
+        L.append(f"GRANT SELECT ON ALL TABLES IN SCHEMA {e} TO rol_auditor;")
+    L.append("")
+    L.append("-- Append-only: ni el rol dueño puede editar. La base rechaza; el")
+    L.append("-- analisis estatico solo adelanta el fallo (invariante 5).")
+    for tabla in sorted(APPEND_ONLY):
+        if tabla not in TABLA_ESQUEMA:
+            continue
+        e = TABLA_ESQUEMA[tabla]
+        if e == ESQUEMA_COMUN:
+            # el outbox y las bitacoras no tienen un unico dueño: se revoca a todos
+            for otro in sorted(set(ESQUEMA.values())):
+                L.append(f"REVOKE UPDATE, DELETE ON {e}.{tabla} FROM {rol_de(otro)};")
+        else:
+            L.append(f"REVOKE UPDATE, DELETE ON {e}.{tabla} FROM {rol_de(e)};")
+    L.append("")
+    L.append("-- ADR-029 · catalogo: lo lee todo el mundo (SELECT ya otorgado), pero")
+    L.append("--   la escritura en caliente la tiene solo el servicio dueño del ciclo")
+    L.append("--   administrativo. El resto de svc_* no puede cambiar un parametro.")
+    for tabla, dueño in sorted(CATALOGO_ESCRITOR.items()):
+        L.append(f"GRANT INSERT, UPDATE ON {ESQUEMA_CATALOGO}.{tabla} TO {rol_de(dueño)};")
+    L.append("")
+    L.append("-- ADR-027 · outbox por esquema: el svc_* dueño publica su propio")
+    L.append("--   outbox, pero el payload es inmutable. UPDATE SOLO sobre las")
+    L.append("--   columnas de estado; evento_consumido no se edita nunca.")
+    cols_estado = ", ".join(INFRA_MENSAJERIA["evento_dominio"])
+    for e in esquemas_de_servicio():
+        r = rol_de(e)
+        L += [f"REVOKE UPDATE ON {e}.evento_dominio FROM {r};",
+              f"GRANT UPDATE ({cols_estado}) ON {e}.evento_dominio TO {r};",
+              f"REVOKE UPDATE ON {e}.evento_consumido FROM {r};"]
+    L.append("")
+    L.append("-- rol_auditor no escribe en ningun lado, nunca.")
+    for e in esquemas:
+        L.append(f"REVOKE INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {e} FROM rol_auditor;")
+    L.append("")
+    (OUT / "00_base" / "03_permisos.sql").write_text("\n".join(L), encoding="utf-8")
+
+
+def _ddl_infra(esquema, tabla):
+    """DDL de una tabla de infraestructura de mensajeria en un esquema (ADR-027).
+
+    No viven en ningun .puml: son plantilla, iguales en todo servicio. El cuerpo
+    es literal a proposito — no hay decision de modelado que parsear.
+    """
+    q = f"{esquema}.{tabla}"
+    if tabla == "evento_dominio":
+        return [
+            f"-- Outbox del servicio: se escribe en la MISMA transaccion del caso",
+            f"-- de uso; el relevo lo publica (UPDATE de estado, ADR-027/018).",
+            f"CREATE TABLE IF NOT EXISTS {q} (",
+            "  id             UUID        PRIMARY KEY DEFAULT gen_random_uuid(),",
+            "  tipo           VARCHAR(60) NOT NULL,",
+            "  version        VARCHAR(10) NOT NULL DEFAULT '1',",
+            "  agregado       VARCHAR(40) NOT NULL,",
+            "  agregado_id    UUID        NOT NULL,",
+            "  payload        JSONB       NOT NULL,",
+            "  metadatos      JSONB       NOT NULL DEFAULT '{}'::jsonb,",
+            "  correlation_id UUID        NOT NULL,",
+            "  causation_id   UUID,",
+            "  ocurrido_en    TIMESTAMPTZ NOT NULL DEFAULT now(),",
+            "  publicado_en   TIMESTAMPTZ,",
+            "  estado         VARCHAR(15) NOT NULL DEFAULT 'PENDIENTE'",
+            f"    CONSTRAINT {ident('ck', esquema, 'evtdom', 'estado')}",
+            "    CHECK (estado IN ('PENDIENTE', 'PUBLICADO', 'FALLIDO')),",
+            "  intentos       SMALLINT    NOT NULL DEFAULT 0",
+            ");",
+            f"-- Indice parcial de despacho: el relevo solo mira lo PENDIENTE.",
+            f"CREATE INDEX IF NOT EXISTS {ident('ix', esquema, 'evtdom', 'despacho')}",
+            f"  ON {q} (ocurrido_en) WHERE estado = 'PENDIENTE';",
+            f"COMMENT ON TABLE {q} IS 'Outbox transaccional del servicio (ADR-027).';",
+            "",
+        ]
+    if tabla == "evento_consumido":
+        return [
+            f"-- Idempotencia de consumo: (id_evento, consumidor). Append-only de facto.",
+            f"CREATE TABLE IF NOT EXISTS {q} (",
+            "  id_evento    UUID        NOT NULL,",
+            "  consumidor   VARCHAR(60) NOT NULL,",
+            "  consumido_en TIMESTAMPTZ NOT NULL DEFAULT now(),",
+            f"  CONSTRAINT {ident('pk', esquema, 'evtcons')} PRIMARY KEY (id_evento, consumidor)",
+            ");",
+            f"COMMENT ON TABLE {q} IS 'Marca de evento ya consumido, por consumidor (ADR-027).';",
+            "",
+        ]
+    if tabla == "estado_saga":
+        return [
+            f"-- Estado de saga orquestada: se persiste el paso en la MISMA",
+            f"-- transaccion que el efecto local; un @Scheduled barre las atascadas (ADR-028).",
+            f"CREATE TABLE IF NOT EXISTS {q} (",
+            "  id             UUID        PRIMARY KEY DEFAULT gen_random_uuid(),",
+            "  tipo_saga      VARCHAR(60) NOT NULL,",
+            "  clave_negocio  VARCHAR(120) NOT NULL,",
+            "  paso           SMALLINT    NOT NULL DEFAULT 0,",
+            "  estado         VARCHAR(15) NOT NULL DEFAULT 'INICIADA'",
+            f"    CONSTRAINT {ident('ck', esquema, 'saga', 'estado')}",
+            "    CHECK (estado IN ('INICIADA','EN_CURSO','COMPLETADA','COMPENSANDO','COMPENSADA','FALLIDA')),",
+            "  datos          JSONB       NOT NULL DEFAULT '{}'::jsonb,",
+            "  creado_en      TIMESTAMPTZ NOT NULL DEFAULT now(),",
+            "  actualizado_en TIMESTAMPTZ NOT NULL DEFAULT now(),",
+            f"  CONSTRAINT {ident('uq', esquema, 'saga', 'clave')} UNIQUE (tipo_saga, clave_negocio)",
+            ");",
+            f"CREATE INDEX IF NOT EXISTS {ident('ix', esquema, 'saga', 'pendiente')}",
+            f"  ON {q} (actualizado_en) WHERE estado IN ('INICIADA','EN_CURSO','COMPENSANDO');",
+            f"COMMENT ON TABLE {q} IS 'Estado de saga orquestada por este servicio (ADR-028).';",
+            "",
+        ]
+    if tabla == "shedlock":
+        return [
+            f"-- ShedLock: un solo relevo/planificador activo entre replicas (ADR-018).",
+            f"CREATE TABLE IF NOT EXISTS {q} (",
+            "  name       VARCHAR(64)  PRIMARY KEY,",
+            "  lock_until TIMESTAMPTZ  NOT NULL,",
+            "  locked_at  TIMESTAMPTZ  NOT NULL,",
+            "  locked_by  VARCHAR(255) NOT NULL",
+            ");",
+            f"COMMENT ON TABLE {q} IS 'Bloqueo de trabajos programados entre replicas (ADR-018).';",
+            "",
+        ]
+    raise KeyError(f"tabla de infraestructura desconocida: {tabla}")
+
+
+def escribir_infra_mensajeria():
+    """ADR-027 · las cuatro tablas de infraestructura, por esquema de servicio.
+
+    Plantilla, no entidad: no estan en ningun .puml. El outbox baja a cada
+    esquema para que el relevo (SELECT ... FOR UPDATE SKIP LOCKED + UPDATE de
+    estado) lo pueda correr el propio svc_*, imposible cuando vivia en `comun`.
+    Los GRANT afinados (UPDATE solo de columnas de estado) van en 03_permisos.
+    """
+    d = OUT / "15_infra"
+    d.mkdir(parents=True, exist_ok=True)
+    L = ["-- ADR-027 · infraestructura de mensajeria por esquema de servicio.",
+         "-- Generado por scripts/generar_ddl.py — no editar a mano.",
+         "-- estado_saga solo en los esquemas que orquestan una saga (ADR-028).",
+         ""]
+    for e in esquemas_de_servicio():
+        L.append(f"-- ── {e} ──")
+        for tabla in tablas_infra_de(e):
+            L += _ddl_infra(e, tabla)
+    (d / "mensajeria.sql").write_text("\n".join(L), encoding="utf-8")
+
+
 def escribir_append_only():
     """R-AUD-01 · un disparador por cada tabla append-only, sin excepciones."""
     d = OUT / "35_append_only"
@@ -630,9 +908,9 @@ def escribir_append_only():
          "END $$ LANGUAGE plpgsql;",
          ""]
     for tabla in sorted(APPEND_ONLY):
-        L += [f"DROP TRIGGER IF EXISTS {ident('tg', tabla, 'append_only')} ON {tabla};",
+        L += [f"DROP TRIGGER IF EXISTS {ident('tg', tabla, 'append_only')} ON {q(tabla)};",
               f"CREATE TRIGGER {ident('tg', tabla, 'append_only')}",
-              f"  BEFORE UPDATE OR DELETE ON {tabla}",
+              f"  BEFORE UPDATE OR DELETE ON {q(tabla)}",
               "  FOR EACH ROW EXECUTE FUNCTION fn_aud_bloquear_mutacion();",
               ""]
     (d / "append_only.sql").write_text("\n".join(L), encoding="utf-8")
@@ -646,9 +924,18 @@ def escribir_orquestador(mods):
          "\\set ON_ERROR_STOP on",
          "BEGIN;",
          "",
+         "-- El DDL califica cada tabla con su esquema. El search_path existe para",
+         "-- el SQL escrito a mano que viene despues (restricciones, semillas,",
+         "-- prueba de humo), que referencia las tablas por nombre simple.",
+         "-- Los 307 nombres de tabla son unicos, asi que resuelve sin ambiguedad.",
+         SEARCH_PATH_SQL,
+         "",
          "-- 1) Base",
          "\\ir 00_base/00_extensiones.sql",
          "\\ir 00_base/01_roles.sql",
+         "-- Un esquema y un rol por servicio (ADR-017): la frontera entre",
+         "-- servicios es el GRANT, no una convención de nombres.",
+         "\\ir 00_base/02_esquemas.sql",
          "",
          "-- 2) Tablas (una por archivo, agrupadas por módulo)"]
     for k, d in sorted(mods.items()):
@@ -656,6 +943,8 @@ def escribir_orquestador(mods):
         L.append(f"--    módulo {k} — {MODULOS[k][0]}")
         for alias in d["orden"]:
             L.append(f"\\ir 10_tablas/{carpeta}/{d['entidades'][alias]['tabla']}.sql")
+    L += ["", "-- 2b) Infraestructura de mensajería por esquema (ADR-027)",
+          "\\ir 15_infra/mensajeria.sql"]
     L += ["", "-- 3) Claves foráneas (después de todas las tablas)"]
     for k in sorted(mods):
         L.append(f"\\ir 20_claves/{k}_{MODULOS[k][1].split('_', 1)[1]}.sql")
@@ -665,7 +954,11 @@ def escribir_orquestador(mods):
     L += ["", "-- 5) Sellado de las tablas append-only",
           "\\ir 35_append_only/append_only.sql",
           "", "-- 6) Reglas de negocio y cumplimiento (catálogo de restricciones)",
-          "\\ir 40_reglas/restricciones.sql", "", "COMMIT;", "",
+          "\\ir 40_reglas/restricciones.sql",
+          "", "-- 7) Permisos sobre las tablas ya creadas (invariante 11).",
+          "--    Va al final: ALTER DEFAULT PRIVILEGES solo cubre lo que se cree",
+          "--    despues, y acá las tablas ya existen.",
+          "\\ir 00_base/03_permisos.sql", "", "COMMIT;", "",
           "-- Verificación posterior (no forma parte de la aplicación):",
           "--   psql -f sql/50_verificacion/verificaciones.sql",
           "--   psql -f sql/50_verificacion/prueba_humo.sql", ""]

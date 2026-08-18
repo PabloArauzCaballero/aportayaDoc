@@ -2,7 +2,7 @@
 -- clase de dominio: VerificacionPublica
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS verificacion_publica (
+CREATE TABLE IF NOT EXISTS transparencia.verificacion_publica (
   codigo                             VARCHAR(40) NOT NULL,
   tipo_documento                     VARCHAR(30) NOT NULL,
   referencia_id                      UUID NOT NULL,
@@ -17,11 +17,11 @@ CREATE TABLE IF NOT EXISTS verificacion_publica (
   CONSTRAINT ck_verificacion_publica_resultado CHECK (resultado IN ('COINCIDE', 'NO_COINCIDE', 'SIN_DATOS'))
 );
 
-COMMENT ON TABLE verificacion_publica IS 'Módulo 06 — Transparencia y Reputación. Que nadie tenga que "creerle" al organizador';
-COMMENT ON COLUMN verificacion_publica.codigo IS 'PK';
-COMMENT ON COLUMN verificacion_publica.tipo_documento IS 'CK';
-COMMENT ON COLUMN verificacion_publica.referencia_id IS 'IDX';
-COMMENT ON COLUMN verificacion_publica.hash_recomputado IS 'NULL';
-COMMENT ON COLUMN verificacion_publica.resultado IS 'CK, NULL';
-COMMENT ON COLUMN verificacion_publica.verificado_en IS 'NULL';
-COMMENT ON COLUMN verificacion_publica.ultima_consulta_en IS 'NULL';
+COMMENT ON TABLE transparencia.verificacion_publica IS 'Módulo 06 — Transparencia y Reputación. Que nadie tenga que "creerle" al organizador';
+COMMENT ON COLUMN transparencia.verificacion_publica.codigo IS 'PK';
+COMMENT ON COLUMN transparencia.verificacion_publica.tipo_documento IS 'CK';
+COMMENT ON COLUMN transparencia.verificacion_publica.referencia_id IS 'IDX';
+COMMENT ON COLUMN transparencia.verificacion_publica.hash_recomputado IS 'NULL';
+COMMENT ON COLUMN transparencia.verificacion_publica.resultado IS 'CK, NULL';
+COMMENT ON COLUMN transparencia.verificacion_publica.verificado_en IS 'NULL';
+COMMENT ON COLUMN transparencia.verificacion_publica.ultima_consulta_en IS 'NULL';

@@ -2,7 +2,7 @@
 -- clase de dominio: OrdenDesembolso
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS orden_desembolso (
+CREATE TABLE IF NOT EXISTS entregas.orden_desembolso (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   entrega_id                         UUID NOT NULL,
   proveedor_id                       UUID NOT NULL,
@@ -19,11 +19,11 @@ CREATE TABLE IF NOT EXISTS orden_desembolso (
   CONSTRAINT ck_orden_desembolso_estado CHECK (estado IN ('ACREDITADA', 'CANCELADA', 'CREADA', 'DEVUELTA_POR_BANCO', 'ENVIADA_A_PROVEEDOR', 'EN_PROCESO', 'RECHAZADA'))
 );
 
-COMMENT ON TABLE orden_desembolso IS 'Módulo 04 — Entregas de Fondo. Que la bolsa llegue completa, a la persona correcta, una sola vez';
-COMMENT ON COLUMN orden_desembolso.id IS 'PK';
-COMMENT ON COLUMN orden_desembolso.entrega_id IS 'FK, IDX';
-COMMENT ON COLUMN orden_desembolso.proveedor_id IS 'FK, M3';
-COMMENT ON COLUMN orden_desembolso.cuenta_destino_id IS 'FK';
-COMMENT ON COLUMN orden_desembolso.estado IS 'CK, IDX';
-COMMENT ON COLUMN orden_desembolso.referencia_proveedor IS 'UQ, NULL';
-COMMENT ON COLUMN orden_desembolso.acreditada_en IS 'NULL';
+COMMENT ON TABLE entregas.orden_desembolso IS 'Módulo 04 — Entregas de Fondo. Que la bolsa llegue completa, a la persona correcta, una sola vez';
+COMMENT ON COLUMN entregas.orden_desembolso.id IS 'PK';
+COMMENT ON COLUMN entregas.orden_desembolso.entrega_id IS 'FK, IDX';
+COMMENT ON COLUMN entregas.orden_desembolso.proveedor_id IS 'FK, M3';
+COMMENT ON COLUMN entregas.orden_desembolso.cuenta_destino_id IS 'FK';
+COMMENT ON COLUMN entregas.orden_desembolso.estado IS 'CK, IDX';
+COMMENT ON COLUMN entregas.orden_desembolso.referencia_proveedor IS 'UQ, NULL';
+COMMENT ON COLUMN entregas.orden_desembolso.acreditada_en IS 'NULL';

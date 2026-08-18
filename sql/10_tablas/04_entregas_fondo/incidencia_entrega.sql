@@ -2,7 +2,7 @@
 -- clase de dominio: IncidenciaEntrega
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS incidencia_entrega (
+CREATE TABLE IF NOT EXISTS entregas.incidencia_entrega (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   entrega_id                         UUID NOT NULL,
   tipo                               VARCHAR(35) NOT NULL,
@@ -23,14 +23,14 @@ CREATE TABLE IF NOT EXISTS incidencia_entrega (
   CONSTRAINT ck_incidencia_entrega_estado CHECK (estado IN ('ABIERTA', 'CERRADA', 'EN_GESTION', 'ESCALADA', 'RESUELTA'))
 );
 
-COMMENT ON TABLE incidencia_entrega IS 'Módulo 04 — Entregas de Fondo. Que la bolsa llegue completa, a la persona correcta, una sola vez';
-COMMENT ON COLUMN incidencia_entrega.id IS 'PK';
-COMMENT ON COLUMN incidencia_entrega.entrega_id IS 'FK, IDX';
-COMMENT ON COLUMN incidencia_entrega.tipo IS 'CK';
-COMMENT ON COLUMN incidencia_entrega.severidad IS 'CK';
-COMMENT ON COLUMN incidencia_entrega.reportada_por IS 'FK';
-COMMENT ON COLUMN incidencia_entrega.asignada_a IS 'FK, NULL';
-COMMENT ON COLUMN incidencia_entrega.estado IS 'CK, IDX';
-COMMENT ON COLUMN incidencia_entrega.fecha_limite_sla IS 'IDX';
-COMMENT ON COLUMN incidencia_entrega.resolucion IS 'NULL';
-COMMENT ON COLUMN incidencia_entrega.resuelta_en IS 'NULL';
+COMMENT ON TABLE entregas.incidencia_entrega IS 'Módulo 04 — Entregas de Fondo. Que la bolsa llegue completa, a la persona correcta, una sola vez';
+COMMENT ON COLUMN entregas.incidencia_entrega.id IS 'PK';
+COMMENT ON COLUMN entregas.incidencia_entrega.entrega_id IS 'FK, IDX';
+COMMENT ON COLUMN entregas.incidencia_entrega.tipo IS 'CK';
+COMMENT ON COLUMN entregas.incidencia_entrega.severidad IS 'CK';
+COMMENT ON COLUMN entregas.incidencia_entrega.reportada_por IS 'FK';
+COMMENT ON COLUMN entregas.incidencia_entrega.asignada_a IS 'FK, NULL';
+COMMENT ON COLUMN entregas.incidencia_entrega.estado IS 'CK, IDX';
+COMMENT ON COLUMN entregas.incidencia_entrega.fecha_limite_sla IS 'IDX';
+COMMENT ON COLUMN entregas.incidencia_entrega.resolucion IS 'NULL';
+COMMENT ON COLUMN entregas.incidencia_entrega.resuelta_en IS 'NULL';

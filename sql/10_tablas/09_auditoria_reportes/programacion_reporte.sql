@@ -2,7 +2,7 @@
 -- clase de dominio: ProgramacionReporte
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS programacion_reporte (
+CREATE TABLE IF NOT EXISTS auditoria.programacion_reporte (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   definicion_id                      UUID NOT NULL,
   expresion_cron                     VARCHAR(40) NOT NULL,
@@ -18,10 +18,10 @@ CREATE TABLE IF NOT EXISTS programacion_reporte (
   CONSTRAINT ck_programacion_reporte_formato CHECK (formato IN ('CSV', 'JSON', 'PDF', 'XLSX'))
 );
 
-COMMENT ON TABLE programacion_reporte IS 'Módulo 09 — Auditoría, Reportes y Cumplimiento. Poder demostrar todo lo anterior ante un reclamo o un regulador';
-COMMENT ON COLUMN programacion_reporte.id IS 'PK';
-COMMENT ON COLUMN programacion_reporte.definicion_id IS 'FK, IDX';
-COMMENT ON COLUMN programacion_reporte.canal_entrega IS 'CK';
-COMMENT ON COLUMN programacion_reporte.formato IS 'CK';
-COMMENT ON COLUMN programacion_reporte.ultima_ejecucion_en IS 'NULL';
-COMMENT ON COLUMN programacion_reporte.proxima_ejecucion_en IS 'IDX';
+COMMENT ON TABLE auditoria.programacion_reporte IS 'Módulo 09 — Auditoría, Reportes y Cumplimiento. Poder demostrar todo lo anterior ante un reclamo o un regulador';
+COMMENT ON COLUMN auditoria.programacion_reporte.id IS 'PK';
+COMMENT ON COLUMN auditoria.programacion_reporte.definicion_id IS 'FK, IDX';
+COMMENT ON COLUMN auditoria.programacion_reporte.canal_entrega IS 'CK';
+COMMENT ON COLUMN auditoria.programacion_reporte.formato IS 'CK';
+COMMENT ON COLUMN auditoria.programacion_reporte.ultima_ejecucion_en IS 'NULL';
+COMMENT ON COLUMN auditoria.programacion_reporte.proxima_ejecucion_en IS 'IDX';

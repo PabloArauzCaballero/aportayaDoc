@@ -2,7 +2,7 @@
 -- clase de dominio: ConceptoTarifa
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS concepto_tarifa (
+CREATE TABLE IF NOT EXISTS tarifas.concepto_tarifa (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   tarifario_id                       UUID NOT NULL,
   hecho_generador_id                 UUID NOT NULL,
@@ -33,20 +33,20 @@ CREATE TABLE IF NOT EXISTS concepto_tarifa (
   CONSTRAINT ck_concepto_tarifa_momento_cobro CHECK (momento_cobro IN ('AL_CIERRE_DE_CICLO', 'AL_DEVENGAR', 'AL_LIQUIDAR_ENTREGA', 'DIFERIDO_MENSUAL'))
 );
 
-COMMENT ON TABLE concepto_tarifa IS 'Módulo 11 — Tarifas, Comisiones, Impuestos y Facturación. La política de cobro es dato, no código: se cambia con un seeder';
-COMMENT ON COLUMN concepto_tarifa.id IS 'PK';
-COMMENT ON COLUMN concepto_tarifa.tarifario_id IS 'FK, IDX';
-COMMENT ON COLUMN concepto_tarifa.hecho_generador_id IS 'FK, IDX';
-COMMENT ON COLUMN concepto_tarifa.politica_redondeo_id IS 'FK, NULL';
-COMMENT ON COLUMN concepto_tarifa.cuenta_ingreso_id IS 'FK, NULL, M3';
-COMMENT ON COLUMN concepto_tarifa.codigo IS 'UQ+tarifario_id';
-COMMENT ON COLUMN concepto_tarifa.metodo_calculo IS 'CK';
-COMMENT ON COLUMN concepto_tarifa.base_calculo IS 'CK';
-COMMENT ON COLUMN concepto_tarifa.valor_porcentual IS 'NULL';
-COMMENT ON COLUMN concepto_tarifa.valor_fijo IS 'NULL';
-COMMENT ON COLUMN concepto_tarifa.monto_minimo IS 'NULL';
-COMMENT ON COLUMN concepto_tarifa.monto_maximo IS 'NULL';
-COMMENT ON COLUMN concepto_tarifa.sujeto_obligado IS 'CK';
-COMMENT ON COLUMN concepto_tarifa.forma_cobro IS 'CK';
-COMMENT ON COLUMN concepto_tarifa.momento_cobro IS 'CK';
-COMMENT ON COLUMN concepto_tarifa.activo IS 'IDX';
+COMMENT ON TABLE tarifas.concepto_tarifa IS 'Módulo 11 — Tarifas, Comisiones, Impuestos y Facturación. La política de cobro es dato, no código: se cambia con un seeder';
+COMMENT ON COLUMN tarifas.concepto_tarifa.id IS 'PK';
+COMMENT ON COLUMN tarifas.concepto_tarifa.tarifario_id IS 'FK, IDX';
+COMMENT ON COLUMN tarifas.concepto_tarifa.hecho_generador_id IS 'FK, IDX';
+COMMENT ON COLUMN tarifas.concepto_tarifa.politica_redondeo_id IS 'FK, NULL';
+COMMENT ON COLUMN tarifas.concepto_tarifa.cuenta_ingreso_id IS 'FK, NULL, M3';
+COMMENT ON COLUMN tarifas.concepto_tarifa.codigo IS 'UQ+tarifario_id';
+COMMENT ON COLUMN tarifas.concepto_tarifa.metodo_calculo IS 'CK';
+COMMENT ON COLUMN tarifas.concepto_tarifa.base_calculo IS 'CK';
+COMMENT ON COLUMN tarifas.concepto_tarifa.valor_porcentual IS 'NULL';
+COMMENT ON COLUMN tarifas.concepto_tarifa.valor_fijo IS 'NULL';
+COMMENT ON COLUMN tarifas.concepto_tarifa.monto_minimo IS 'NULL';
+COMMENT ON COLUMN tarifas.concepto_tarifa.monto_maximo IS 'NULL';
+COMMENT ON COLUMN tarifas.concepto_tarifa.sujeto_obligado IS 'CK';
+COMMENT ON COLUMN tarifas.concepto_tarifa.forma_cobro IS 'CK';
+COMMENT ON COLUMN tarifas.concepto_tarifa.momento_cobro IS 'CK';
+COMMENT ON COLUMN tarifas.concepto_tarifa.activo IS 'IDX';

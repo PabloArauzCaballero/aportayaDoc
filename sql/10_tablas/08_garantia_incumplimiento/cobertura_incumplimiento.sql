@@ -2,7 +2,7 @@
 -- clase de dominio: CoberturaIncumplimiento
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS cobertura_incumplimiento (
+CREATE TABLE IF NOT EXISTS garantia.cobertura_incumplimiento (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   fondo_id                           UUID NOT NULL,
   registro_id                        UUID NOT NULL,
@@ -23,15 +23,15 @@ CREATE TABLE IF NOT EXISTS cobertura_incumplimiento (
   CONSTRAINT ck_cobertura_incumplimiento_estado CHECK (estado IN ('APLICADA', 'APROBADA', 'EN_RECUPERACION', 'INCOBRABLE', 'RECHAZADA', 'RECUPERADA_PARCIAL', 'RECUPERADA_TOTAL', 'REVERSADA', 'SOLICITADA'))
 );
 
-COMMENT ON TABLE cobertura_incumplimiento IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. El grupo no se detiene, pero la deuda no se perdona sola';
-COMMENT ON COLUMN cobertura_incumplimiento.id IS 'PK';
-COMMENT ON COLUMN cobertura_incumplimiento.fondo_id IS 'FK, IDX';
-COMMENT ON COLUMN cobertura_incumplimiento.registro_id IS 'FK, UQ';
-COMMENT ON COLUMN cobertura_incumplimiento.obligacion_id IS 'FK, UQ, M3';
-COMMENT ON COLUMN cobertura_incumplimiento.periodo_id IS 'FK, M2';
-COMMENT ON COLUMN cobertura_incumplimiento.movimiento_fondo_id IS 'FK, NULL';
-COMMENT ON COLUMN cobertura_incumplimiento.asiento_contable_id IS 'FK, NULL, M3';
-COMMENT ON COLUMN cobertura_incumplimiento.aprobada_por IS 'FK, NULL';
-COMMENT ON COLUMN cobertura_incumplimiento.estado IS 'CK, IDX';
-COMMENT ON COLUMN cobertura_incumplimiento.motivo_rechazo IS 'NULL';
-COMMENT ON COLUMN cobertura_incumplimiento.aplicada_en IS 'NULL';
+COMMENT ON TABLE garantia.cobertura_incumplimiento IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. El grupo no se detiene, pero la deuda no se perdona sola';
+COMMENT ON COLUMN garantia.cobertura_incumplimiento.id IS 'PK';
+COMMENT ON COLUMN garantia.cobertura_incumplimiento.fondo_id IS 'FK, IDX';
+COMMENT ON COLUMN garantia.cobertura_incumplimiento.registro_id IS 'FK, UQ';
+COMMENT ON COLUMN garantia.cobertura_incumplimiento.obligacion_id IS 'FK, UQ, M3';
+COMMENT ON COLUMN garantia.cobertura_incumplimiento.periodo_id IS 'FK, M2';
+COMMENT ON COLUMN garantia.cobertura_incumplimiento.movimiento_fondo_id IS 'FK, NULL';
+COMMENT ON COLUMN garantia.cobertura_incumplimiento.asiento_contable_id IS 'FK, NULL, M3';
+COMMENT ON COLUMN garantia.cobertura_incumplimiento.aprobada_por IS 'FK, NULL';
+COMMENT ON COLUMN garantia.cobertura_incumplimiento.estado IS 'CK, IDX';
+COMMENT ON COLUMN garantia.cobertura_incumplimiento.motivo_rechazo IS 'NULL';
+COMMENT ON COLUMN garantia.cobertura_incumplimiento.aplicada_en IS 'NULL';

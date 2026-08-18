@@ -3,7 +3,7 @@
 -- APPEND-ONLY: sin UPDATE ni DELETE (ver sql/40_reglas)
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS asiento_contable (
+CREATE TABLE IF NOT EXISTS nucleo_financiero.asiento_contable (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   numero                             BIGSERIAL NOT NULL,
   fecha                              TIMESTAMPTZ NOT NULL,
@@ -20,14 +20,14 @@ CREATE TABLE IF NOT EXISTS asiento_contable (
   CONSTRAINT ck_asiento_contable_estado CHECK (estado IN ('BORRADOR', 'CONFIRMADO', 'REVERSADO'))
 );
 
-COMMENT ON TABLE asiento_contable IS 'Módulo 03 — Aportes, Pagos QR y Conciliación. [append-only] Que "pagué" signifique "el banco lo confirmó"';
-COMMENT ON COLUMN asiento_contable.id IS 'PK';
-COMMENT ON COLUMN asiento_contable.numero IS 'UQ';
-COMMENT ON COLUMN asiento_contable.fecha IS 'IDX';
-COMMENT ON COLUMN asiento_contable.origen_tipo IS 'CK';
-COMMENT ON COLUMN asiento_contable.origen_id IS 'IDX, polimorfica';
-COMMENT ON COLUMN asiento_contable.grupo_id IS 'FK, NULL, IDX';
-COMMENT ON COLUMN asiento_contable.periodo_contable_id IS 'FK, NULL, IDX, M13';
-COMMENT ON COLUMN asiento_contable.estado IS 'CK';
-COMMENT ON COLUMN asiento_contable.asiento_reversa_id IS 'FK, NULL';
-COMMENT ON COLUMN asiento_contable.registrado_por IS 'FK, NULL';
+COMMENT ON TABLE nucleo_financiero.asiento_contable IS 'Módulo 03 — Aportes, Pagos QR y Conciliación. [append-only] Que "pagué" signifique "el banco lo confirmó"';
+COMMENT ON COLUMN nucleo_financiero.asiento_contable.id IS 'PK';
+COMMENT ON COLUMN nucleo_financiero.asiento_contable.numero IS 'UQ';
+COMMENT ON COLUMN nucleo_financiero.asiento_contable.fecha IS 'IDX';
+COMMENT ON COLUMN nucleo_financiero.asiento_contable.origen_tipo IS 'CK';
+COMMENT ON COLUMN nucleo_financiero.asiento_contable.origen_id IS 'IDX, polimorfica';
+COMMENT ON COLUMN nucleo_financiero.asiento_contable.grupo_id IS 'FK, NULL, IDX';
+COMMENT ON COLUMN nucleo_financiero.asiento_contable.periodo_contable_id IS 'FK, NULL, IDX, M13';
+COMMENT ON COLUMN nucleo_financiero.asiento_contable.estado IS 'CK';
+COMMENT ON COLUMN nucleo_financiero.asiento_contable.asiento_reversa_id IS 'FK, NULL';
+COMMENT ON COLUMN nucleo_financiero.asiento_contable.registrado_por IS 'FK, NULL';

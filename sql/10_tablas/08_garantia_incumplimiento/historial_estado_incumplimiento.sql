@@ -3,7 +3,7 @@
 -- APPEND-ONLY: sin UPDATE ni DELETE (ver sql/40_reglas)
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS historial_estado_incumplimiento (
+CREATE TABLE IF NOT EXISTS garantia.historial_estado_incumplimiento (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   registro_id                        UUID NOT NULL,
   estado_anterior                    VARCHAR(30),
@@ -16,10 +16,10 @@ CREATE TABLE IF NOT EXISTS historial_estado_incumplimiento (
   CONSTRAINT pk_historial_estado_incumplimiento PRIMARY KEY (id)
 );
 
-COMMENT ON TABLE historial_estado_incumplimiento IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. [append-only] El grupo no se detiene, pero la deuda no se perdona sola';
-COMMENT ON COLUMN historial_estado_incumplimiento.id IS 'PK';
-COMMENT ON COLUMN historial_estado_incumplimiento.registro_id IS 'FK, IDX';
-COMMENT ON COLUMN historial_estado_incumplimiento.estado_anterior IS 'NULL';
-COMMENT ON COLUMN historial_estado_incumplimiento.monto_asociado IS 'NULL';
-COMMENT ON COLUMN historial_estado_incumplimiento.ejecutado_por IS 'FK, NULL';
-COMMENT ON COLUMN historial_estado_incumplimiento.fecha_hora IS 'IDX';
+COMMENT ON TABLE garantia.historial_estado_incumplimiento IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. [append-only] El grupo no se detiene, pero la deuda no se perdona sola';
+COMMENT ON COLUMN garantia.historial_estado_incumplimiento.id IS 'PK';
+COMMENT ON COLUMN garantia.historial_estado_incumplimiento.registro_id IS 'FK, IDX';
+COMMENT ON COLUMN garantia.historial_estado_incumplimiento.estado_anterior IS 'NULL';
+COMMENT ON COLUMN garantia.historial_estado_incumplimiento.monto_asociado IS 'NULL';
+COMMENT ON COLUMN garantia.historial_estado_incumplimiento.ejecutado_por IS 'FK, NULL';
+COMMENT ON COLUMN garantia.historial_estado_incumplimiento.fecha_hora IS 'IDX';

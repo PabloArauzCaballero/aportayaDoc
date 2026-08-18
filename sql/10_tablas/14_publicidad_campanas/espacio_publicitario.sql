@@ -2,7 +2,7 @@
 -- clase de dominio: EspacioPublicitario
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS espacio_publicitario (
+CREATE TABLE IF NOT EXISTS publicidad.espacio_publicitario (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   codigo                             VARCHAR(30) NOT NULL,
   nombre                             VARCHAR(80) NOT NULL,
@@ -14,8 +14,8 @@ CREATE TABLE IF NOT EXISTS espacio_publicitario (
   CONSTRAINT ck_espacio_publicitario_capacidad_maxima_simultanea CHECK (capacidad_maxima_simultanea > 0)
 );
 
-COMMENT ON TABLE espacio_publicitario IS 'Módulo 14 — Publicidad y Campañas. Que un partner se anuncie dentro de la app sin inventar un segundo cobro';
-COMMENT ON COLUMN espacio_publicitario.id IS 'PK';
-COMMENT ON COLUMN espacio_publicitario.codigo IS 'UQ';
-COMMENT ON COLUMN espacio_publicitario.tipo IS 'CK';
-COMMENT ON COLUMN espacio_publicitario.capacidad_maxima_simultanea IS 'CK: > 0';
+COMMENT ON TABLE publicidad.espacio_publicitario IS 'Módulo 14 — Publicidad y Campañas. Que un partner se anuncie dentro de la app sin inventar un segundo cobro';
+COMMENT ON COLUMN publicidad.espacio_publicitario.id IS 'PK';
+COMMENT ON COLUMN publicidad.espacio_publicitario.codigo IS 'UQ';
+COMMENT ON COLUMN publicidad.espacio_publicitario.tipo IS 'CK';
+COMMENT ON COLUMN publicidad.espacio_publicitario.capacidad_maxima_simultanea IS 'CK: > 0';

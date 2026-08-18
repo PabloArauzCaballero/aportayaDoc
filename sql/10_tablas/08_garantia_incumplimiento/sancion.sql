@@ -2,7 +2,7 @@
 -- clase de dominio: Sancion
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS sancion (
+CREATE TABLE IF NOT EXISTS garantia.sancion (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   registro_id                        UUID NOT NULL,
   usuario_id                         UUID NOT NULL,
@@ -24,18 +24,18 @@ CREATE TABLE IF NOT EXISTS sancion (
   CONSTRAINT ck_sancion_estado CHECK (estado IN ('CUMPLIDA', 'EN_APELACION', 'EN_DESCARGO', 'FIRME', 'NOTIFICADA', 'PRESCRITA', 'PROPUESTA', 'REVOCADA'))
 );
 
-COMMENT ON TABLE sancion IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. El grupo no se detiene, pero la deuda no se perdona sola';
-COMMENT ON COLUMN sancion.id IS 'PK';
-COMMENT ON COLUMN sancion.registro_id IS 'FK, IDX';
-COMMENT ON COLUMN sancion.usuario_id IS 'FK, IDX';
-COMMENT ON COLUMN sancion.participante_id IS 'FK, NULL';
-COMMENT ON COLUMN sancion.matriz_id IS 'FK, NULL';
-COMMENT ON COLUMN sancion.acuerdo_grupo_id IS 'FK, NULL, M2';
-COMMENT ON COLUMN sancion.aplicada_por IS 'FK, NULL';
-COMMENT ON COLUMN sancion.tipo IS 'CK, IDX';
-COMMENT ON COLUMN sancion.monto_recargo IS 'NULL';
-COMMENT ON COLUMN sancion.impacto_reputacion IS 'NULL';
-COMMENT ON COLUMN sancion.vigente_hasta IS 'NULL';
-COMMENT ON COLUMN sancion.estado IS 'CK, IDX';
-COMMENT ON COLUMN sancion.notificada_en IS 'NULL';
-COMMENT ON COLUMN sancion.firme_en IS 'NULL';
+COMMENT ON TABLE garantia.sancion IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. El grupo no se detiene, pero la deuda no se perdona sola';
+COMMENT ON COLUMN garantia.sancion.id IS 'PK';
+COMMENT ON COLUMN garantia.sancion.registro_id IS 'FK, IDX';
+COMMENT ON COLUMN garantia.sancion.usuario_id IS 'FK, IDX';
+COMMENT ON COLUMN garantia.sancion.participante_id IS 'FK, NULL';
+COMMENT ON COLUMN garantia.sancion.matriz_id IS 'FK, NULL';
+COMMENT ON COLUMN garantia.sancion.acuerdo_grupo_id IS 'FK, NULL, M2';
+COMMENT ON COLUMN garantia.sancion.aplicada_por IS 'FK, NULL';
+COMMENT ON COLUMN garantia.sancion.tipo IS 'CK, IDX';
+COMMENT ON COLUMN garantia.sancion.monto_recargo IS 'NULL';
+COMMENT ON COLUMN garantia.sancion.impacto_reputacion IS 'NULL';
+COMMENT ON COLUMN garantia.sancion.vigente_hasta IS 'NULL';
+COMMENT ON COLUMN garantia.sancion.estado IS 'CK, IDX';
+COMMENT ON COLUMN garantia.sancion.notificada_en IS 'NULL';
+COMMENT ON COLUMN garantia.sancion.firme_en IS 'NULL';

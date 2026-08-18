@@ -5,9 +5,18 @@
 \set ON_ERROR_STOP on
 BEGIN;
 
+-- El DDL califica cada tabla con su esquema. El search_path existe para
+-- el SQL escrito a mano que viene despues (restricciones, semillas,
+-- prueba de humo), que referencia las tablas por nombre simple.
+-- Los 307 nombres de tabla son unicos, asi que resuelve sin ambiguedad.
+SET search_path TO aportes, auditoria, cumplimiento, entregas, erp, garantia, grupos, identidad, notificaciones, nucleo_financiero, organizador, publicidad, tarifas, transparencia, catalogo, comun, public;
+
 -- 1) Base
 \ir 00_base/00_extensiones.sql
 \ir 00_base/01_roles.sql
+-- Un esquema y un rol por servicio (ADR-017): la frontera entre
+-- servicios es el GRANT, no una convención de nombres.
+\ir 00_base/02_esquemas.sql
 
 -- 2) Tablas (una por archivo, agrupadas por módulo)
 --    módulo 01 — Identidad, Usuarios y Seguridad
@@ -176,7 +185,6 @@ BEGIN;
 \ir 10_tablas/08_garantia_incumplimiento/liquidacion_participante.sql
 --    módulo 09 — Auditoría, Reportes y Cumplimiento
 \ir 10_tablas/09_auditoria_reportes/bitacora_evento.sql
-\ir 10_tablas/09_auditoria_reportes/evento_dominio.sql
 \ir 10_tablas/09_auditoria_reportes/registro_acceso_datos.sql
 \ir 10_tablas/09_auditoria_reportes/politica_retencion.sql
 \ir 10_tablas/09_auditoria_reportes/definicion_reporte.sql
@@ -332,6 +340,9 @@ BEGIN;
 \ir 10_tablas/14_publicidad_campanas/conversion_anuncio.sql
 \ir 10_tablas/14_publicidad_campanas/factura_publicidad.sql
 
+-- 2b) Infraestructura de mensajería por esquema (ADR-027)
+\ir 15_infra/mensajeria.sql
+
 -- 3) Claves foráneas (después de todas las tablas)
 \ir 20_claves/01_identidad_usuarios.sql
 \ir 20_claves/02_grupos_turnos.sql
@@ -369,6 +380,11 @@ BEGIN;
 
 -- 6) Reglas de negocio y cumplimiento (catálogo de restricciones)
 \ir 40_reglas/restricciones.sql
+
+-- 7) Permisos sobre las tablas ya creadas (invariante 11).
+--    Va al final: ALTER DEFAULT PRIVILEGES solo cubre lo que se cree
+--    despues, y acá las tablas ya existen.
+\ir 00_base/03_permisos.sql
 
 COMMIT;
 

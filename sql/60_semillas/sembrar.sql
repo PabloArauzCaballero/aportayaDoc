@@ -25,5 +25,6 @@ BEGIN;
 \ir 18-sanciones-y-cobranza.sql
 \ir 19-reportes-y-retencion.sql
 \ir 20-control-interno-y-continuidad.sql
+\ir 21-contabilidad-y-publicidad.sql
 
 COMMIT;

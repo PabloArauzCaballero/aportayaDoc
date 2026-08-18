@@ -2,7 +2,7 @@
 -- clase de dominio: PoliticaInterna
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS politica_interna (
+CREATE TABLE IF NOT EXISTS cumplimiento.politica_interna (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   acta_comite_id                     UUID,
   responsable_id                     UUID,
@@ -22,12 +22,12 @@ CREATE TABLE IF NOT EXISTS politica_interna (
   CONSTRAINT ck_politica_interna_estado CHECK (estado IN ('BORRADOR', 'DEROGADA', 'EN_APROBACION', 'SUSTITUIDA', 'VIGENTE'))
 );
 
-COMMENT ON TABLE politica_interna IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
-COMMENT ON COLUMN politica_interna.id IS 'PK';
-COMMENT ON COLUMN politica_interna.acta_comite_id IS 'FK, NULL';
-COMMENT ON COLUMN politica_interna.responsable_id IS 'FK, NULL';
-COMMENT ON COLUMN politica_interna.codigo IS 'UQ+version';
-COMMENT ON COLUMN politica_interna.tipo IS 'CK';
-COMMENT ON COLUMN politica_interna.materia IS 'CK, IDX';
-COMMENT ON COLUMN politica_interna.estado IS 'CK, IDX';
-COMMENT ON COLUMN politica_interna.proxima_revision IS 'IDX';
+COMMENT ON TABLE cumplimiento.politica_interna IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
+COMMENT ON COLUMN cumplimiento.politica_interna.id IS 'PK';
+COMMENT ON COLUMN cumplimiento.politica_interna.acta_comite_id IS 'FK, NULL';
+COMMENT ON COLUMN cumplimiento.politica_interna.responsable_id IS 'FK, NULL';
+COMMENT ON COLUMN cumplimiento.politica_interna.codigo IS 'UQ+version';
+COMMENT ON COLUMN cumplimiento.politica_interna.tipo IS 'CK';
+COMMENT ON COLUMN cumplimiento.politica_interna.materia IS 'CK, IDX';
+COMMENT ON COLUMN cumplimiento.politica_interna.estado IS 'CK, IDX';
+COMMENT ON COLUMN cumplimiento.politica_interna.proxima_revision IS 'IDX';

@@ -2,7 +2,7 @@
 -- clase de dominio: PoliticaSancion
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS politica_sancion (
+CREATE TABLE IF NOT EXISTS garantia.politica_sancion (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   grupo_id                           UUID,
   version                            VARCHAR(20) NOT NULL,
@@ -14,6 +14,6 @@ CREATE TABLE IF NOT EXISTS politica_sancion (
   CONSTRAINT pk_politica_sancion PRIMARY KEY (id)
 );
 
-COMMENT ON TABLE politica_sancion IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. El grupo no se detiene, pero la deuda no se perdona sola';
-COMMENT ON COLUMN politica_sancion.id IS 'PK';
-COMMENT ON COLUMN politica_sancion.grupo_id IS 'FK, NULL';
+COMMENT ON TABLE garantia.politica_sancion IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. El grupo no se detiene, pero la deuda no se perdona sola';
+COMMENT ON COLUMN garantia.politica_sancion.id IS 'PK';
+COMMENT ON COLUMN garantia.politica_sancion.grupo_id IS 'FK, NULL';

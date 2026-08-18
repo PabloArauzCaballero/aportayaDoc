@@ -30,7 +30,7 @@ local y en QA, y no deben tocar producción jamás.
 
 | Archivo | Carga | Estado |
 | --- | --- | --- |
-| `01-plan-de-cuentas.json` | 19 cuentas contables | listo |
+| `01-plan-de-cuentas.json` | 48 cuentas contables, 30 de movimiento | listo |
 | `02-politicas.json` | billetera, redondeo, mora y cobertura | revisar con riesgos |
 | `03-limites-operativos.json` | 40 límites por nivel de debida diligencia | ⚠ **PROVISIONAL** |
 | `04-tarifario.json` | hechos generadores, tarifario v1, conceptos, tramos, segmentos y asignaciones | decisión comercial |
@@ -39,7 +39,7 @@ local y en QA, y no deben tocar producción jamás.
 | `07-reportes-regulatorios.json` | calendario de 10 reportes obligatorios | ⚠ confirmar plazos |
 | `08-gobierno-y-licencia.json` | licencia, comités, puntos de reclamo, matriz de riesgo, tipologías | listo |
 | `09-reglas-operativas.json` | 8 reglas de entrega y 5 antifraude | revisar con riesgos |
-| `10-roles-y-permisos.json` | 12 roles, 16 permisos y la matriz que los une | listo |
+| `10-roles-y-permisos.json` | 15 roles, 29 permisos y la matriz que los une | listo |
 | `11-contratos-de-adhesion.json` | 4 contratos en borrador | redactar y registrar ante ASFI |
 | `12-calendario-habil.json` | 33 feriados nacionales de 2026 a 2028 | listo — ampliar cada año |
 | `13-politicas-de-token.json` | 13 políticas de token, una por propósito | listo |
@@ -50,6 +50,7 @@ local y en QA, y no deben tocar producción jamás.
 | `18-sanciones-y-cobranza.json` | política de sanción, 23 filas de matriz y 6 etapas de cobranza | revisar con riesgos y legal |
 | `19-reportes-y-retencion.json` | 10 definiciones de reporte, 5 programaciones, 19 políticas de retención, 11 reglas de cumplimiento, 20 umbrales, 5 listas | ⚠ **PROVISIONAL** |
 | `20-control-interno-y-continuidad.json` | 12 políticas internas, 16 controles, 12 activos, 5 planes de continuidad, 6 documentos publicados | ⚠ **PROVISIONAL** |
+| `21-contabilidad-y-publicidad.json` | 5 centros de costo, 3 categorías de activo fijo y 4 espacios publicitarios | revisar con contabilidad |
 
 Cada archivo lleva su propio campo `estado`, `advertencia` o `revisar_con`: los
 valores marcados **PROVISIONAL** no deben usarse en producción sin confirmación
@@ -66,7 +67,15 @@ legal, y cada fila tiene su columna `base_normativa` esperando la cita exacta.
 > El archivo de licencia trae, en `al_otorgarse_la_licencia`, el `UPDATE` que
 > corresponde el día que ASFI resuelva.
 
-Dos catálogos tienen una desviación anotada, y conviene conocerla antes de usarlos:
+Tres catálogos tienen una desviación anotada, y conviene conocerla antes de usarlos:
+
+- **Activo fijo y custodia** (`21` con `01`): las tres categorías de activo fijo
+  imputan a `1.3.x`, su depreciación acumulada a `1.3.5x` —regularizadoras del
+  activo: van bajo `ACTIVO` con naturaleza `ACREEDORA` a propósito— y el gasto a
+  `5.3.01`. Ninguna puede apuntar a `1.1.01`: esa es la cuenta de custodia que
+  respalda el dinero electrónico de los clientes, y meterle el activo propio de
+  la plataforma rompe el ratio de cobertura. La base no lo impide —las tres son
+  cuentas de movimiento y pasan `R-CTB-02`—, así que la garantía es esta semilla.
 
 - **Feriados departamentales** (`12`): `dia_no_habil` no tiene columna de
   departamento, así que solo se siembran los nacionales. Sembrar los
@@ -94,6 +103,14 @@ Dos catálogos tienen una desviación anotada, y conviene conocerla antes de usa
 | `12-retiro-y-controles.json` | cuentas bancarias verificadas, desembolso devuelto por el banco con su incidencia, retiro retenido, evaluación antifraude y bloqueo por orden de autoridad |
 | `13-cumplimiento-uif.json` | origen de fondos, revisión periódica de KYC, desvío de perfil, alerta escalada a caso, falso positivo de lista y reporte regulatorio con acuse |
 | `14-identidad-y-sesiones.json` | direcciones, perfil financiero, consentimientos, segundo factor, sesiones, intentos fallidos, reputación calculada y restricción por incumplimiento |
+
+> [!warning] El set no cubre todavía los módulos 13 y 14
+> Contabilidad ERP y publicidad entraron al modelo después de que se armara este
+> conjunto: de sus 32 tablas, las 29 que no son catálogo —ejercicio y período contable, terceros,
+> facturas de proveedor, activos fijos, anunciantes, campañas y piezas— siguen
+> sin un solo dato de prueba. Las comprobaciones `R-CTB-*` y `R-PUB-*` pasan en
+> la prueba de humo porque el propio humo se siembra sus filas, no porque el set
+> las ejercite. Los catálogos mínimos de los dos módulos (archivo `21`) sí están.
 
 ### La historia que cuenta el set
 
@@ -203,13 +220,13 @@ Sobre PostgreSQL 16 y base recién creada, aplicando esquema → mínimos → m�
 otra vez → prueba → prueba de humo:
 
 ```
-minimos  → sql/60_semillas: 20 archivos, 555 filas
+minimos  → sql/60_semillas: 21 archivos, 626 filas
 prueba   → sql/61_prueba:   14 archivos, 572 filas
-prueba de humo: 100 OK, 0 FALLA
-tablas con datos: 170 de 275
+prueba de humo: 151 OK, 0 FALLA
+tablas con datos: 173 de 382
 suma de saldo_total de todas las cuentas de billetera: 0,00
 transacciones de billetera con débitos ≠ créditos: 0
-asientos contables con debe ≠ haber: 0
+asientos contables con debe ≠ haber: 0 (25 asientos, 53 movimientos)
 custodia: libro 9.900,00 · banco 9.900,00 · ratio de cobertura 1,000000
 ```
 
@@ -219,7 +236,7 @@ hay un bloque sin `conflicto` o con una clave natural que no existe.
 ## Usarlos desde la aplicación
 
 El mismo JSON sirve para sembrar desde código sin transformarlo: cada bloque es una
-tabla y cada fila un objeto, insertable con Kysely tal cual. Hay que resolver los
+tabla y cada fila un objeto, insertable con jOOQ tal cual. Hay que resolver los
 `$ref` contra la tabla correspondiente antes de insertar y respetar el orden del
 `manifiesto.json`, que es el orden en que las claves foráneas resuelven.
 

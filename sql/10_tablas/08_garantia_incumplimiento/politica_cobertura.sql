@@ -2,7 +2,7 @@
 -- clase de dominio: PoliticaCobertura
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS politica_cobertura (
+CREATE TABLE IF NOT EXISTS garantia.politica_cobertura (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   grupo_id                           UUID,
   porcentaje_constitucion            NUMERIC(5,2) NOT NULL,
@@ -19,6 +19,6 @@ CREATE TABLE IF NOT EXISTS politica_cobertura (
   CONSTRAINT pk_politica_cobertura PRIMARY KEY (id)
 );
 
-COMMENT ON TABLE politica_cobertura IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. El grupo no se detiene, pero la deuda no se perdona sola';
-COMMENT ON COLUMN politica_cobertura.id IS 'PK';
-COMMENT ON COLUMN politica_cobertura.grupo_id IS 'FK, NULL';
+COMMENT ON TABLE garantia.politica_cobertura IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. El grupo no se detiene, pero la deuda no se perdona sola';
+COMMENT ON COLUMN garantia.politica_cobertura.id IS 'PK';
+COMMENT ON COLUMN garantia.politica_cobertura.grupo_id IS 'FK, NULL';

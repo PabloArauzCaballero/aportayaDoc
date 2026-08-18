@@ -2,7 +2,7 @@
 -- clase de dominio: IncidenteOperativo
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS incidente_operativo (
+CREATE TABLE IF NOT EXISTS auditoria.incidente_operativo (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   codigo                             VARCHAR(20) NOT NULL,
   titulo                             VARCHAR(160) NOT NULL,
@@ -21,11 +21,11 @@ CREATE TABLE IF NOT EXISTS incidente_operativo (
   CONSTRAINT ck_incidente_operativo_estado CHECK (estado IN ('DETECTADO', 'MITIGADO', 'POST_MORTEM', 'RESUELTO'))
 );
 
-COMMENT ON TABLE incidente_operativo IS 'Módulo 09 — Auditoría, Reportes y Cumplimiento. Poder demostrar todo lo anterior ante un reclamo o un regulador';
-COMMENT ON COLUMN incidente_operativo.id IS 'PK';
-COMMENT ON COLUMN incidente_operativo.codigo IS 'UQ';
-COMMENT ON COLUMN incidente_operativo.severidad IS 'CK';
-COMMENT ON COLUMN incidente_operativo.estado IS 'CK';
-COMMENT ON COLUMN incidente_operativo.resuelto_en IS 'NULL';
-COMMENT ON COLUMN incidente_operativo.causa_raiz IS 'NULL';
-COMMENT ON COLUMN incidente_operativo.acciones_correctivas IS 'NULL';
+COMMENT ON TABLE auditoria.incidente_operativo IS 'Módulo 09 — Auditoría, Reportes y Cumplimiento. Poder demostrar todo lo anterior ante un reclamo o un regulador';
+COMMENT ON COLUMN auditoria.incidente_operativo.id IS 'PK';
+COMMENT ON COLUMN auditoria.incidente_operativo.codigo IS 'UQ';
+COMMENT ON COLUMN auditoria.incidente_operativo.severidad IS 'CK';
+COMMENT ON COLUMN auditoria.incidente_operativo.estado IS 'CK';
+COMMENT ON COLUMN auditoria.incidente_operativo.resuelto_en IS 'NULL';
+COMMENT ON COLUMN auditoria.incidente_operativo.causa_raiz IS 'NULL';
+COMMENT ON COLUMN auditoria.incidente_operativo.acciones_correctivas IS 'NULL';

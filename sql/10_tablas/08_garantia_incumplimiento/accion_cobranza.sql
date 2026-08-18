@@ -2,7 +2,7 @@
 -- clase de dominio: AccionCobranza
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS accion_cobranza (
+CREATE TABLE IF NOT EXISTS garantia.accion_cobranza (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   gestion_id                         UUID NOT NULL,
   notificacion_id                    UUID,
@@ -20,13 +20,13 @@ CREATE TABLE IF NOT EXISTS accion_cobranza (
   CONSTRAINT ck_accion_cobranza_resultado CHECK (resultado IN ('CONTACTADO_SE_COMPROMETE', 'CONTACTADO_SE_NIEGA', 'DISPUTA_LA_DEUDA', 'PAGO_INMEDIATO', 'SIN_RESPUESTA', 'SOLICITA_PLAN', 'TELEFONO_ERRONEO'))
 );
 
-COMMENT ON TABLE accion_cobranza IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. El grupo no se detiene, pero la deuda no se perdona sola';
-COMMENT ON COLUMN accion_cobranza.id IS 'PK';
-COMMENT ON COLUMN accion_cobranza.gestion_id IS 'FK, IDX';
-COMMENT ON COLUMN accion_cobranza.notificacion_id IS 'FK, NULL, M5';
-COMMENT ON COLUMN accion_cobranza.etapa IS 'CK';
-COMMENT ON COLUMN accion_cobranza.tipo IS 'CK';
-COMMENT ON COLUMN accion_cobranza.resultado IS 'CK';
-COMMENT ON COLUMN accion_cobranza.nota_gestor IS 'NULL';
-COMMENT ON COLUMN accion_cobranza.ejecutada_por IS 'FK, NULL';
-COMMENT ON COLUMN accion_cobranza.ejecutada_en IS 'IDX';
+COMMENT ON TABLE garantia.accion_cobranza IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. El grupo no se detiene, pero la deuda no se perdona sola';
+COMMENT ON COLUMN garantia.accion_cobranza.id IS 'PK';
+COMMENT ON COLUMN garantia.accion_cobranza.gestion_id IS 'FK, IDX';
+COMMENT ON COLUMN garantia.accion_cobranza.notificacion_id IS 'FK, NULL, M5';
+COMMENT ON COLUMN garantia.accion_cobranza.etapa IS 'CK';
+COMMENT ON COLUMN garantia.accion_cobranza.tipo IS 'CK';
+COMMENT ON COLUMN garantia.accion_cobranza.resultado IS 'CK';
+COMMENT ON COLUMN garantia.accion_cobranza.nota_gestor IS 'NULL';
+COMMENT ON COLUMN garantia.accion_cobranza.ejecutada_por IS 'FK, NULL';
+COMMENT ON COLUMN garantia.accion_cobranza.ejecutada_en IS 'IDX';

@@ -84,22 +84,41 @@ def bloque_sql(b):
     if not filas:
         return ""
     columnas = list(dict.fromkeys(c for f in filas for c in f))
+    conflicto = b.get("conflicto", [])
+
+    def cola():
+        if conflicto == "ninguno":
+            return ";"
+        if conflicto:
+            return f"\nON CONFLICT ({', '.join(conflicto)}) DO NOTHING;"
+        return "\nON CONFLICT DO NOTHING;"
+
+    # Una jerarquía dentro de la misma tabla (cuenta_contable.cuenta_padre_id)
+    # no se puede sembrar con un único INSERT multi-fila: los subselects de
+    # $ref se evalúan contra el estado previo a la sentencia, así que ninguna
+    # fila ve a las anteriores y el padre queda en NULL sin que nada falle.
+    # En ese caso se emite una sentencia por fila, respetando el orden del
+    # archivo (los padres van primero).
+    autorreferente = any(
+        isinstance(v, dict) and v.get("$ref") == tabla
+        for f in filas for v in f.values())
+
     L = []
     if b.get("comentario"):
         L.append(f"-- {b['comentario']}")
-    L.append(f"INSERT INTO {tabla} ({', '.join(columnas)}) VALUES")
-    valores = []
-    for f in filas:
-        valores.append("  (" + ", ".join(lit(f.get(c)) for c in columnas) + ")")
-    L.append(",\n".join(valores))
-    conflicto = b.get("conflicto", [])
-    if conflicto == "ninguno":
-        L[-1] += ";"
-    elif conflicto:
-        L.append(f"ON CONFLICT ({', '.join(conflicto)}) DO NOTHING;")
+    if autorreferente:
+        L.append(f"-- Jerarquía en la propia tabla: una sentencia por fila para"
+                 f" que cada\n-- hija vea a su madre ya insertada.")
+        for f in filas:
+            L.append(f"INSERT INTO {tabla} ({', '.join(columnas)}) VALUES\n  ("
+                     + ", ".join(lit(f.get(c)) for c in columnas) + ")" + cola())
+        sql = "\n".join(L) + "\n"
     else:
-        L.append("ON CONFLICT DO NOTHING;")
-    sql = "\n".join(L) + "\n"
+        L.append(f"INSERT INTO {tabla} ({', '.join(columnas)}) VALUES")
+        L.append(",\n".join(
+            "  (" + ", ".join(lit(f.get(c)) for c in columnas) + ")" for f in filas))
+        L[-1] += cola()
+        sql = "\n".join(L) + "\n"
 
     # Tablas sin clave natural: se cargan solo si están vacías, para que
     # volver a sembrar no duplique.

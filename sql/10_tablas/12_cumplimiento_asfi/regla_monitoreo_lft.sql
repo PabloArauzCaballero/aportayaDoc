@@ -2,7 +2,7 @@
 -- clase de dominio: ReglaMonitoreoLft
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS regla_monitoreo_lft (
+CREATE TABLE IF NOT EXISTS cumplimiento.regla_monitoreo_lft (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   codigo                             VARCHAR(40) NOT NULL,
   tipologia                          VARCHAR(80) NOT NULL,
@@ -22,12 +22,12 @@ CREATE TABLE IF NOT EXISTS regla_monitoreo_lft (
   CONSTRAINT ck_regla_monitoreo_lft_accion_automatica CHECK (accion_automatica IN ('BLOQUEAR_CUENTA', 'RETENER_OPERACION', 'SOLO_ALERTAR'))
 );
 
-COMMENT ON TABLE regla_monitoreo_lft IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
-COMMENT ON COLUMN regla_monitoreo_lft.id IS 'PK';
-COMMENT ON COLUMN regla_monitoreo_lft.codigo IS 'UQ';
-COMMENT ON COLUMN regla_monitoreo_lft.umbral_monto IS 'NULL';
-COMMENT ON COLUMN regla_monitoreo_lft.umbral_cantidad IS 'NULL';
-COMMENT ON COLUMN regla_monitoreo_lft.severidad IS 'CK';
-COMMENT ON COLUMN regla_monitoreo_lft.accion_automatica IS 'CK';
-COMMENT ON COLUMN regla_monitoreo_lft.activa IS 'IDX';
-COMMENT ON COLUMN regla_monitoreo_lft.aprobada_por IS 'FK, NULL';
+COMMENT ON TABLE cumplimiento.regla_monitoreo_lft IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
+COMMENT ON COLUMN cumplimiento.regla_monitoreo_lft.id IS 'PK';
+COMMENT ON COLUMN cumplimiento.regla_monitoreo_lft.codigo IS 'UQ';
+COMMENT ON COLUMN cumplimiento.regla_monitoreo_lft.umbral_monto IS 'NULL';
+COMMENT ON COLUMN cumplimiento.regla_monitoreo_lft.umbral_cantidad IS 'NULL';
+COMMENT ON COLUMN cumplimiento.regla_monitoreo_lft.severidad IS 'CK';
+COMMENT ON COLUMN cumplimiento.regla_monitoreo_lft.accion_automatica IS 'CK';
+COMMENT ON COLUMN cumplimiento.regla_monitoreo_lft.activa IS 'IDX';
+COMMENT ON COLUMN cumplimiento.regla_monitoreo_lft.aprobada_por IS 'FK, NULL';

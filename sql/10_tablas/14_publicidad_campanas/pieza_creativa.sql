@@ -2,7 +2,7 @@
 -- clase de dominio: PiezaCreativa
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS pieza_creativa (
+CREATE TABLE IF NOT EXISTS publicidad.pieza_creativa (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   anunciante_id                      UUID NOT NULL,
   titulo                             VARCHAR(120) NOT NULL,
@@ -16,9 +16,9 @@ CREATE TABLE IF NOT EXISTS pieza_creativa (
   CONSTRAINT ck_pieza_creativa_estado_moderacion CHECK (estado_moderacion IN ('APROBADA', 'PENDIENTE', 'RECHAZADA'))
 );
 
-COMMENT ON TABLE pieza_creativa IS 'Módulo 14 — Publicidad y Campañas. Que un partner se anuncie dentro de la app sin inventar un segundo cobro';
-COMMENT ON COLUMN pieza_creativa.id IS 'PK';
-COMMENT ON COLUMN pieza_creativa.anunciante_id IS 'FK, IDX';
-COMMENT ON COLUMN pieza_creativa.texto IS 'NULL';
-COMMENT ON COLUMN pieza_creativa.tipo_recurso IS 'CK';
-COMMENT ON COLUMN pieza_creativa.estado_moderacion IS 'CK, IDX';
+COMMENT ON TABLE publicidad.pieza_creativa IS 'Módulo 14 — Publicidad y Campañas. Que un partner se anuncie dentro de la app sin inventar un segundo cobro';
+COMMENT ON COLUMN publicidad.pieza_creativa.id IS 'PK';
+COMMENT ON COLUMN publicidad.pieza_creativa.anunciante_id IS 'FK, IDX';
+COMMENT ON COLUMN publicidad.pieza_creativa.texto IS 'NULL';
+COMMENT ON COLUMN publicidad.pieza_creativa.tipo_recurso IS 'CK';
+COMMENT ON COLUMN publicidad.pieza_creativa.estado_moderacion IS 'CK, IDX';

@@ -2,7 +2,7 @@
 -- clase de dominio: LicenciaRegulatoria
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS licencia_regulatoria (
+CREATE TABLE IF NOT EXISTS catalogo.licencia_regulatoria (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   organismo                          VARCHAR(10) NOT NULL,
   tipo                               VARCHAR(30) NOT NULL,
@@ -24,16 +24,16 @@ CREATE TABLE IF NOT EXISTS licencia_regulatoria (
   CONSTRAINT ck_licencia_regulatoria_estado CHECK (estado IN ('CONDICIONADA', 'EN_TRAMITE', 'OTORGADA', 'REVOCADA', 'SUSPENDIDA'))
 );
 
-COMMENT ON TABLE licencia_regulatoria IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
-COMMENT ON COLUMN licencia_regulatoria.id IS 'PK';
-COMMENT ON COLUMN licencia_regulatoria.organismo IS 'CK, IDX';
-COMMENT ON COLUMN licencia_regulatoria.tipo IS 'CK';
-COMMENT ON COLUMN licencia_regulatoria.categoria_actividad IS 'CK';
-COMMENT ON COLUMN licencia_regulatoria.numero_resolucion IS 'UQ, NULL';
-COMMENT ON COLUMN licencia_regulatoria.estado IS 'CK, IDX';
-COMMENT ON COLUMN licencia_regulatoria.fecha_otorgamiento IS 'NULL';
-COMMENT ON COLUMN licencia_regulatoria.vigente_hasta IS 'NULL';
-COMMENT ON COLUMN licencia_regulatoria.garantia_seriedad IS 'NULL';
-COMMENT ON COLUMN licencia_regulatoria.documento_url IS 'NULL';
-COMMENT ON COLUMN licencia_regulatoria.hash_documento IS 'NULL';
-COMMENT ON COLUMN licencia_regulatoria.responsable_id IS 'FK, NULL';
+COMMENT ON TABLE catalogo.licencia_regulatoria IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
+COMMENT ON COLUMN catalogo.licencia_regulatoria.id IS 'PK';
+COMMENT ON COLUMN catalogo.licencia_regulatoria.organismo IS 'CK, IDX';
+COMMENT ON COLUMN catalogo.licencia_regulatoria.tipo IS 'CK';
+COMMENT ON COLUMN catalogo.licencia_regulatoria.categoria_actividad IS 'CK';
+COMMENT ON COLUMN catalogo.licencia_regulatoria.numero_resolucion IS 'UQ, NULL';
+COMMENT ON COLUMN catalogo.licencia_regulatoria.estado IS 'CK, IDX';
+COMMENT ON COLUMN catalogo.licencia_regulatoria.fecha_otorgamiento IS 'NULL';
+COMMENT ON COLUMN catalogo.licencia_regulatoria.vigente_hasta IS 'NULL';
+COMMENT ON COLUMN catalogo.licencia_regulatoria.garantia_seriedad IS 'NULL';
+COMMENT ON COLUMN catalogo.licencia_regulatoria.documento_url IS 'NULL';
+COMMENT ON COLUMN catalogo.licencia_regulatoria.hash_documento IS 'NULL';
+COMMENT ON COLUMN catalogo.licencia_regulatoria.responsable_id IS 'FK, NULL';

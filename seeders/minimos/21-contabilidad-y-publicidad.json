@@ -1,0 +1,144 @@
+{
+  "descripcion": "Catálogos mínimos de contabilidad ERP (M13) y publicidad (M14): categorías de activo fijo con sus cuentas contables, centros de costo y el inventario de espacios publicitarios de la app.",
+  "entorno": "minimo",
+  "estado": "revisar con contabilidad — las vidas útiles deben confirmarse contra el anexo de depreciación del DS 24051 (equipo de computación y muebles y enseres están ahí; software no figura y los 36 meses son criterio propio). La imputación contable ya sigue el plan de cuentas 1.3.x. Los espacios publicitarios y sus capacidades son decisión de producto, no normativa.",
+  "nota": "Ninguna categoría de activo fijo apunta a la cuenta de custodia (1.1.01): esa cuenta solo respalda dinero electrónico de clientes y el activo propio de la plataforma no puede tocarla sin romper el ratio de cobertura.",
+  "bloques": [
+    {
+      "tabla": "centro_costo",
+      "conflicto": [
+        "codigo"
+      ],
+      "filas": [
+        {
+          "codigo": "CC-PLATAFORMA",
+          "nombre": "Plataforma y tecnología",
+          "tipo": "AREA",
+          "activo": true
+        },
+        {
+          "codigo": "CC-OPERACIONES",
+          "nombre": "Operaciones y soporte",
+          "tipo": "AREA",
+          "activo": true
+        },
+        {
+          "codigo": "CC-CUMPLIMIENTO",
+          "nombre": "Cumplimiento y riesgos",
+          "tipo": "AREA",
+          "activo": true
+        },
+        {
+          "codigo": "CC-COMERCIAL",
+          "nombre": "Comercial y publicidad",
+          "tipo": "AREA",
+          "activo": true
+        },
+        {
+          "codigo": "CC-PASANAKU",
+          "nombre": "Producto pasanaku",
+          "tipo": "PRODUCTO",
+          "activo": true
+        }
+      ]
+    },
+    {
+      "tabla": "categoria_activo_fijo",
+      "conflicto": [
+        "codigo"
+      ],
+      "filas": [
+        {
+          "codigo": "CAT-EQUIPO-COMPUTO",
+          "nombre": "Equipo de computación",
+          "vida_util_meses": 48,
+          "metodo_depreciacion": "LINEA_RECTA",
+          "cuenta_activo_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "1.3.01"
+          },
+          "cuenta_depreciacion_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "1.3.51"
+          },
+          "cuenta_gasto_depreciacion_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "5.3.01"
+          }
+        },
+        {
+          "codigo": "CAT-MOBILIARIO",
+          "nombre": "Muebles y enseres",
+          "vida_util_meses": 120,
+          "metodo_depreciacion": "LINEA_RECTA",
+          "cuenta_activo_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "1.3.02"
+          },
+          "cuenta_depreciacion_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "1.3.52"
+          },
+          "cuenta_gasto_depreciacion_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "5.3.01"
+          }
+        },
+        {
+          "codigo": "CAT-SOFTWARE",
+          "nombre": "Licencias y software",
+          "vida_util_meses": 36,
+          "metodo_depreciacion": "LINEA_RECTA",
+          "cuenta_activo_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "1.3.03"
+          },
+          "cuenta_depreciacion_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "1.3.53"
+          },
+          "cuenta_gasto_depreciacion_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "5.3.01"
+          }
+        }
+      ]
+    },
+    {
+      "tabla": "espacio_publicitario",
+      "conflicto": [
+        "codigo"
+      ],
+      "filas": [
+        {
+          "codigo": "ESP-BANNER-INICIO",
+          "nombre": "Banner de la pantalla de inicio",
+          "tipo": "BANNER_INICIO",
+          "capacidad_maxima_simultanea": 3,
+          "activo": true
+        },
+        {
+          "codigo": "ESP-GRUPOS-DESTACADO",
+          "nombre": "Grupo destacado en el listado de pasanakus",
+          "tipo": "LISTADO_GRUPOS_DESTACADO",
+          "capacidad_maxima_simultanea": 5,
+          "activo": true
+        },
+        {
+          "codigo": "ESP-PUSH-PATROCINADO",
+          "nombre": "Notificación patrocinada",
+          "tipo": "PUSH_PATROCINADO",
+          "capacidad_maxima_simultanea": 1,
+          "activo": true
+        },
+        {
+          "codigo": "ESP-BANNER-BILLETERA",
+          "nombre": "Banner de la pantalla de billetera",
+          "tipo": "BANNER_BILLETERA",
+          "capacidad_maxima_simultanea": 2,
+          "activo": true
+        }
+      ]
+    }
+  ]
+}

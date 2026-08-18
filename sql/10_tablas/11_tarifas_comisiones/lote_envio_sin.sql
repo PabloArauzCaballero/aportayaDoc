@@ -2,7 +2,7 @@
 -- clase de dominio: LoteEnvioSin
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS lote_envio_sin (
+CREATE TABLE IF NOT EXISTS tarifas.lote_envio_sin (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   tipo_envio                         VARCHAR(25) NOT NULL,
   cantidad_documentos                INTEGER DEFAULT 0 NOT NULL,
@@ -16,10 +16,10 @@ CREATE TABLE IF NOT EXISTS lote_envio_sin (
   CONSTRAINT ck_lote_envio_sin_estado CHECK (estado IN ('ACEPTADO', 'ENVIADO', 'PARCIAL', 'PENDIENTE', 'RECHAZADO'))
 );
 
-COMMENT ON TABLE lote_envio_sin IS 'Módulo 11 — Tarifas, Comisiones, Impuestos y Facturación. La política de cobro es dato, no código: se cambia con un seeder';
-COMMENT ON COLUMN lote_envio_sin.id IS 'PK';
-COMMENT ON COLUMN lote_envio_sin.tipo_envio IS 'CK';
-COMMENT ON COLUMN lote_envio_sin.fecha_envio IS 'IDX';
-COMMENT ON COLUMN lote_envio_sin.codigo_recepcion IS 'UQ, NULL';
-COMMENT ON COLUMN lote_envio_sin.estado IS 'CK, IDX';
-COMMENT ON COLUMN lote_envio_sin.respuesta IS 'NULL';
+COMMENT ON TABLE tarifas.lote_envio_sin IS 'Módulo 11 — Tarifas, Comisiones, Impuestos y Facturación. La política de cobro es dato, no código: se cambia con un seeder';
+COMMENT ON COLUMN tarifas.lote_envio_sin.id IS 'PK';
+COMMENT ON COLUMN tarifas.lote_envio_sin.tipo_envio IS 'CK';
+COMMENT ON COLUMN tarifas.lote_envio_sin.fecha_envio IS 'IDX';
+COMMENT ON COLUMN tarifas.lote_envio_sin.codigo_recepcion IS 'UQ, NULL';
+COMMENT ON COLUMN tarifas.lote_envio_sin.estado IS 'CK, IDX';
+COMMENT ON COLUMN tarifas.lote_envio_sin.respuesta IS 'NULL';

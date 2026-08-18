@@ -2,7 +2,7 @@
 -- clase de dominio: ObservacionRegulatoria
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS observacion_regulatoria (
+CREATE TABLE IF NOT EXISTS cumplimiento.observacion_regulatoria (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   envio_regulatorio_id               UUID,
   responsable_id                     UUID,
@@ -22,15 +22,15 @@ CREATE TABLE IF NOT EXISTS observacion_regulatoria (
   CONSTRAINT ck_observacion_regulatoria_estado CHECK (estado IN ('EN_RESPUESTA', 'FIRME', 'RECIBIDA', 'RESPONDIDA', 'SUBSANADA'))
 );
 
-COMMENT ON TABLE observacion_regulatoria IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
-COMMENT ON COLUMN observacion_regulatoria.id IS 'PK';
-COMMENT ON COLUMN observacion_regulatoria.envio_regulatorio_id IS 'FK, NULL';
-COMMENT ON COLUMN observacion_regulatoria.responsable_id IS 'FK, NULL';
-COMMENT ON COLUMN observacion_regulatoria.organismo IS 'CK';
-COMMENT ON COLUMN observacion_regulatoria.tipo IS 'CK, IDX';
-COMMENT ON COLUMN observacion_regulatoria.numero_documento IS 'UQ';
-COMMENT ON COLUMN observacion_regulatoria.monto_multa IS 'NULL';
-COMMENT ON COLUMN observacion_regulatoria.plazo_respuesta IS 'IDX';
-COMMENT ON COLUMN observacion_regulatoria.estado IS 'CK, IDX';
-COMMENT ON COLUMN observacion_regulatoria.respuesta IS 'NULL';
-COMMENT ON COLUMN observacion_regulatoria.respondida_en IS 'NULL';
+COMMENT ON TABLE cumplimiento.observacion_regulatoria IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
+COMMENT ON COLUMN cumplimiento.observacion_regulatoria.id IS 'PK';
+COMMENT ON COLUMN cumplimiento.observacion_regulatoria.envio_regulatorio_id IS 'FK, NULL';
+COMMENT ON COLUMN cumplimiento.observacion_regulatoria.responsable_id IS 'FK, NULL';
+COMMENT ON COLUMN cumplimiento.observacion_regulatoria.organismo IS 'CK';
+COMMENT ON COLUMN cumplimiento.observacion_regulatoria.tipo IS 'CK, IDX';
+COMMENT ON COLUMN cumplimiento.observacion_regulatoria.numero_documento IS 'UQ';
+COMMENT ON COLUMN cumplimiento.observacion_regulatoria.monto_multa IS 'NULL';
+COMMENT ON COLUMN cumplimiento.observacion_regulatoria.plazo_respuesta IS 'IDX';
+COMMENT ON COLUMN cumplimiento.observacion_regulatoria.estado IS 'CK, IDX';
+COMMENT ON COLUMN cumplimiento.observacion_regulatoria.respuesta IS 'NULL';
+COMMENT ON COLUMN cumplimiento.observacion_regulatoria.respondida_en IS 'NULL';

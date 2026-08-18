@@ -2,7 +2,7 @@
 -- clase de dominio: ProveedorPago
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS proveedor_pago (
+CREATE TABLE IF NOT EXISTS aportes.proveedor_pago (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   codigo                             VARCHAR(30) NOT NULL,
   nombre                             VARCHAR(80) NOT NULL,
@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS proveedor_pago (
   CONSTRAINT ck_proveedor_pago_tipo CHECK (tipo IN ('BANCO', 'BILLETERA', 'PASARELA'))
 );
 
-COMMENT ON TABLE proveedor_pago IS 'Módulo 03 — Aportes, Pagos QR y Conciliación. Que "pagué" signifique "el banco lo confirmó"';
-COMMENT ON COLUMN proveedor_pago.id IS 'PK';
-COMMENT ON COLUMN proveedor_pago.codigo IS 'UQ';
-COMMENT ON COLUMN proveedor_pago.tipo IS 'CK';
+COMMENT ON TABLE aportes.proveedor_pago IS 'Módulo 03 — Aportes, Pagos QR y Conciliación. Que "pagué" signifique "el banco lo confirmó"';
+COMMENT ON COLUMN aportes.proveedor_pago.id IS 'PK';
+COMMENT ON COLUMN aportes.proveedor_pago.codigo IS 'UQ';
+COMMENT ON COLUMN aportes.proveedor_pago.tipo IS 'CK';

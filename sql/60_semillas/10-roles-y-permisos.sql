@@ -1,4 +1,4 @@
--- Roles y permisos base del control de accesos (M1).
+-- Roles y permisos base del control de accesos (M1), con los de contabilidad ERP (M13) y publicidad (M14).
 -- GENERADO desde seeders/minimos/10-roles-y-permisos.json — no editar a mano.
 
 INSERT INTO rol (codigo, nombre, ambito, es_sistema) VALUES
@@ -13,7 +13,10 @@ INSERT INTO rol (codigo, nombre, ambito, es_sistema) VALUES
   ('TESORERIA', 'Tesorería y conciliación', 'GLOBAL', TRUE),
   ('CONTABILIDAD', 'Contabilidad', 'GLOBAL', TRUE),
   ('ORGANIZADOR', 'Organizador de grupo', 'GRUPO', TRUE),
-  ('PARTICIPANTE', 'Participante de grupo', 'GRUPO', TRUE)
+  ('PARTICIPANTE', 'Participante de grupo', 'GRUPO', TRUE),
+  ('OPERADOR_PUBLICIDAD', 'Operador de publicidad', 'GLOBAL', TRUE),
+  ('MODERADOR_CONTENIDO', 'Moderador de contenido publicitario', 'GLOBAL', TRUE),
+  ('ANUNCIANTE', 'Anunciante', 'GLOBAL', TRUE)
 ON CONFLICT (codigo) DO NOTHING;
 
 -- `requiere_mfa` marca los permisos que exigen segundo factor en el momento de usarlos, no solo al iniciar sesión: todo lo que mueve dinero, publica precios, edita catálogos o lee datos de terceros.
@@ -33,7 +36,20 @@ INSERT INTO permiso (codigo, descripcion, recurso, accion, requiere_mfa) VALUES
   ('TARIFARIO_PUBLICAR', 'Publicar un tarifario nuevo', 'tarifario', 'PUBLICAR', TRUE),
   ('CATALOGO_EDITAR', 'Editar catálogos regulatorios', 'catalogo', 'ESCRIBIR', TRUE),
   ('AUDITORIA_LEER', 'Consultar la bitácora y los registros de acceso', 'bitacora_evento', 'LEER', FALSE),
-  ('DATOS_SENSIBLES_LEER', 'Consultar documentos y cuentas de clientes', 'documento_identidad', 'LEER', TRUE)
+  ('DATOS_SENSIBLES_LEER', 'Consultar documentos y cuentas de clientes', 'documento_identidad', 'LEER', TRUE),
+  ('CONTABILIDAD_ERP_CERRAR', 'Cerrar un período o ejercicio contable', 'periodo_contable', 'CERRAR', TRUE),
+  ('CONTABILIDAD_ERP_PRESUPUESTO', 'Crear y aprobar presupuestos por centro de costo', 'presupuesto', 'GESTIONAR', FALSE),
+  ('CONTABILIDAD_ERP_COMPRAS', 'Dar de alta terceros comerciales y aprobar órdenes de compra', 'orden_compra', 'GESTIONAR', FALSE),
+  ('CONTABILIDAD_ERP_CUENTAS_POR_PAGAR', 'Registrar y aprobar facturas de proveedor', 'factura_proveedor', 'APROBAR', TRUE),
+  ('CONTABILIDAD_ERP_PAGAR', 'Autorizar el pago de una factura de proveedor', 'pago_a_proveedor', 'AUTORIZAR', TRUE),
+  ('CONTABILIDAD_ERP_COBRAR', 'Registrar cobros de cuentas por cobrar', 'cuenta_por_cobrar', 'GESTIONAR', TRUE),
+  ('CONTABILIDAD_ERP_ACTIVOS_FIJOS', 'Dar de alta y de baja activos fijos', 'activo_fijo', 'GESTIONAR', FALSE),
+  ('CONTABILIDAD_ERP_REPORTES', 'Generar y consultar estados financieros', 'estado_financiero_generado', 'LEER', FALSE),
+  ('PUBLICIDAD_ANUNCIANTES', 'Dar de alta y verificar anunciantes y socios comerciales', 'anunciante', 'GESTIONAR', FALSE),
+  ('PUBLICIDAD_CAMPANA_GESTIONAR', 'Crear y editar campañas propias', 'campana_publicitaria', 'GESTIONAR', FALSE),
+  ('PUBLICIDAD_APROBAR_CAMPANA', 'Aprobar o rechazar una campaña publicitaria', 'campana_publicitaria', 'APROBAR', FALSE),
+  ('PUBLICIDAD_MODERAR', 'Aprobar o rechazar piezas creativas', 'pieza_creativa', 'MODERAR', FALSE),
+  ('PUBLICIDAD_LIQUIDAR', 'Liquidar y facturar el gasto publicitario', 'factura_publicidad', 'GESTIONAR', TRUE)
 ON CONFLICT (codigo) DO NOTHING;
 
 -- Sin esta matriz los roles no otorgan nada y el guard de denegar por omisión rechaza todo. Dos separaciones de funciones están cableadas acá y no se negocian: quien AUTORIZA una entrega o un reverso no puede EJECUTARLO, y quien edita catálogos no toca dinero ni datos sensibles (control CI-04).
@@ -72,5 +88,19 @@ INSERT INTO rol_permiso (rol_id, permiso_id) VALUES
   ((SELECT id FROM rol WHERE codigo = 'ORGANIZADOR'), (SELECT id FROM permiso WHERE codigo = 'BILLETERA_VER')),
   ((SELECT id FROM rol WHERE codigo = 'ORGANIZADOR'), (SELECT id FROM permiso WHERE codigo = 'BILLETERA_OPERAR')),
   ((SELECT id FROM rol WHERE codigo = 'PARTICIPANTE'), (SELECT id FROM permiso WHERE codigo = 'BILLETERA_VER')),
-  ((SELECT id FROM rol WHERE codigo = 'PARTICIPANTE'), (SELECT id FROM permiso WHERE codigo = 'BILLETERA_OPERAR'))
+  ((SELECT id FROM rol WHERE codigo = 'PARTICIPANTE'), (SELECT id FROM permiso WHERE codigo = 'BILLETERA_OPERAR')),
+  ((SELECT id FROM rol WHERE codigo = 'CONTABILIDAD'), (SELECT id FROM permiso WHERE codigo = 'CONTABILIDAD_ERP_CERRAR')),
+  ((SELECT id FROM rol WHERE codigo = 'CONTABILIDAD'), (SELECT id FROM permiso WHERE codigo = 'CONTABILIDAD_ERP_PRESUPUESTO')),
+  ((SELECT id FROM rol WHERE codigo = 'CONTABILIDAD'), (SELECT id FROM permiso WHERE codigo = 'CONTABILIDAD_ERP_COMPRAS')),
+  ((SELECT id FROM rol WHERE codigo = 'CONTABILIDAD'), (SELECT id FROM permiso WHERE codigo = 'CONTABILIDAD_ERP_CUENTAS_POR_PAGAR')),
+  ((SELECT id FROM rol WHERE codigo = 'CONTABILIDAD'), (SELECT id FROM permiso WHERE codigo = 'CONTABILIDAD_ERP_ACTIVOS_FIJOS')),
+  ((SELECT id FROM rol WHERE codigo = 'CONTABILIDAD'), (SELECT id FROM permiso WHERE codigo = 'CONTABILIDAD_ERP_REPORTES')),
+  ((SELECT id FROM rol WHERE codigo = 'TESORERIA'), (SELECT id FROM permiso WHERE codigo = 'CONTABILIDAD_ERP_PAGAR')),
+  ((SELECT id FROM rol WHERE codigo = 'TESORERIA'), (SELECT id FROM permiso WHERE codigo = 'CONTABILIDAD_ERP_COBRAR')),
+  ((SELECT id FROM rol WHERE codigo = 'AUDITOR_INTERNO'), (SELECT id FROM permiso WHERE codigo = 'CONTABILIDAD_ERP_REPORTES')),
+  ((SELECT id FROM rol WHERE codigo = 'OPERADOR_PUBLICIDAD'), (SELECT id FROM permiso WHERE codigo = 'PUBLICIDAD_ANUNCIANTES')),
+  ((SELECT id FROM rol WHERE codigo = 'OPERADOR_PUBLICIDAD'), (SELECT id FROM permiso WHERE codigo = 'PUBLICIDAD_APROBAR_CAMPANA')),
+  ((SELECT id FROM rol WHERE codigo = 'OPERADOR_PUBLICIDAD'), (SELECT id FROM permiso WHERE codigo = 'PUBLICIDAD_LIQUIDAR')),
+  ((SELECT id FROM rol WHERE codigo = 'MODERADOR_CONTENIDO'), (SELECT id FROM permiso WHERE codigo = 'PUBLICIDAD_MODERAR')),
+  ((SELECT id FROM rol WHERE codigo = 'ANUNCIANTE'), (SELECT id FROM permiso WHERE codigo = 'PUBLICIDAD_CAMPANA_GESTIONAR'))
 ON CONFLICT (rol_id, permiso_id) DO NOTHING;

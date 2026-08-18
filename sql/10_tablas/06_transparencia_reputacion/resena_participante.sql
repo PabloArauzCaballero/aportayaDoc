@@ -2,7 +2,7 @@
 -- clase de dominio: ResenaParticipante
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS resena_participante (
+CREATE TABLE IF NOT EXISTS transparencia.resena_participante (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   grupo_id                           UUID NOT NULL,
   autor_participante_id              UUID NOT NULL,
@@ -19,13 +19,13 @@ CREATE TABLE IF NOT EXISTS resena_participante (
   CONSTRAINT ck_resena_participante_estado_moderacion CHECK (estado_moderacion IN ('OCULTA', 'PENDIENTE', 'PUBLICADA', 'RECHAZADA'))
 );
 
-COMMENT ON TABLE resena_participante IS 'Módulo 06 — Transparencia y Reputación. Que nadie tenga que "creerle" al organizador';
-COMMENT ON COLUMN resena_participante.id IS 'PK';
-COMMENT ON COLUMN resena_participante.grupo_id IS 'FK, IDX';
-COMMENT ON COLUMN resena_participante.autor_participante_id IS 'FK';
-COMMENT ON COLUMN resena_participante.evaluado_usuario_id IS 'FK, IDX';
-COMMENT ON COLUMN resena_participante.calificacion IS 'CK: 1..5';
-COMMENT ON COLUMN resena_participante.comentario IS 'NULL';
-COMMENT ON COLUMN resena_participante.dimension IS 'CK';
-COMMENT ON COLUMN resena_participante.estado_moderacion IS 'CK';
-COMMENT ON COLUMN resena_participante.moderada_por IS 'FK, NULL';
+COMMENT ON TABLE transparencia.resena_participante IS 'Módulo 06 — Transparencia y Reputación. Que nadie tenga que "creerle" al organizador';
+COMMENT ON COLUMN transparencia.resena_participante.id IS 'PK';
+COMMENT ON COLUMN transparencia.resena_participante.grupo_id IS 'FK, IDX';
+COMMENT ON COLUMN transparencia.resena_participante.autor_participante_id IS 'FK';
+COMMENT ON COLUMN transparencia.resena_participante.evaluado_usuario_id IS 'FK, IDX';
+COMMENT ON COLUMN transparencia.resena_participante.calificacion IS 'CK: 1..5';
+COMMENT ON COLUMN transparencia.resena_participante.comentario IS 'NULL';
+COMMENT ON COLUMN transparencia.resena_participante.dimension IS 'CK';
+COMMENT ON COLUMN transparencia.resena_participante.estado_moderacion IS 'CK';
+COMMENT ON COLUMN transparencia.resena_participante.moderada_por IS 'FK, NULL';

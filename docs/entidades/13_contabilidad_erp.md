@@ -210,7 +210,7 @@ auditoría es exactamente el que se generó ese día — mismo patrón que
 
 ## Ver también
 
-- Skills: `contabilidad-partida-doble`, `dinero-decimal`, `datos-kysely`,
+- Skills: `contabilidad-partida-doble`, `dinero-decimal`, `datos-jooq`,
   `boveda-modelo`.
 - [[cuenta_contable]] · [[asiento_contable]] · [[movimiento_contable]] (M3)
 - [[07_organizador_automatizacion|Módulo 07]] — por qué el organizador nunca

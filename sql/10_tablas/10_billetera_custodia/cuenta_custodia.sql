@@ -2,7 +2,7 @@
 -- clase de dominio: CuentaCustodia
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS cuenta_custodia (
+CREATE TABLE IF NOT EXISTS nucleo_financiero.cuenta_custodia (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   tipo                               VARCHAR(25) NOT NULL,
   entidad_financiera                 VARCHAR(60) NOT NULL,
@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS cuenta_custodia (
   CONSTRAINT ck_cuenta_custodia_estado CHECK (estado IN ('ACTIVA', 'BLOQUEADA', 'CERRADA', 'INACTIVA'))
 );
 
-COMMENT ON TABLE cuenta_custodia IS 'Módulo 10 — Billetera, Custodia y Dinero Electrónico. El saldo no se guarda: se deriva, y todos los días cuadra contra el banco';
-COMMENT ON COLUMN cuenta_custodia.id IS 'PK';
-COMMENT ON COLUMN cuenta_custodia.tipo IS 'CK';
-COMMENT ON COLUMN cuenta_custodia.estado IS 'CK';
+COMMENT ON TABLE nucleo_financiero.cuenta_custodia IS 'Módulo 10 — Billetera, Custodia y Dinero Electrónico. El saldo no se guarda: se deriva, y todos los días cuadra contra el banco';
+COMMENT ON COLUMN nucleo_financiero.cuenta_custodia.id IS 'PK';
+COMMENT ON COLUMN nucleo_financiero.cuenta_custodia.tipo IS 'CK';
+COMMENT ON COLUMN nucleo_financiero.cuenta_custodia.estado IS 'CK';

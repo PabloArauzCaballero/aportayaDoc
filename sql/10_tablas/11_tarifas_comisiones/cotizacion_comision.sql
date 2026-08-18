@@ -2,7 +2,7 @@
 -- clase de dominio: CotizacionComision
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS cotizacion_comision (
+CREATE TABLE IF NOT EXISTS tarifas.cotizacion_comision (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   concepto_tarifa_id                 UUID NOT NULL,
   tarifario_id                       UUID NOT NULL,
@@ -22,11 +22,11 @@ CREATE TABLE IF NOT EXISTS cotizacion_comision (
   CONSTRAINT ck_cotizacion_comision_referencia_tipo CHECK (referencia_tipo IN ('ENTREGA_FONDO', 'ORDEN_RECARGA', 'ORDEN_RETIRO', 'PAGO', 'PERIODO', 'TRANSACCION_BILLETERA'))
 );
 
-COMMENT ON TABLE cotizacion_comision IS 'Módulo 11 — Tarifas, Comisiones, Impuestos y Facturación. La política de cobro es dato, no código: se cambia con un seeder';
-COMMENT ON COLUMN cotizacion_comision.id IS 'PK';
-COMMENT ON COLUMN cotizacion_comision.concepto_tarifa_id IS 'FK, IDX';
-COMMENT ON COLUMN cotizacion_comision.tarifario_id IS 'FK';
-COMMENT ON COLUMN cotizacion_comision.referencia_tipo IS 'CK';
-COMMENT ON COLUMN cotizacion_comision.referencia_id IS 'IDX, polimorfica';
-COMMENT ON COLUMN cotizacion_comision.mostrada_al_usuario_en IS 'NULL';
-COMMENT ON COLUMN cotizacion_comision.aceptada_en IS 'NULL';
+COMMENT ON TABLE tarifas.cotizacion_comision IS 'Módulo 11 — Tarifas, Comisiones, Impuestos y Facturación. La política de cobro es dato, no código: se cambia con un seeder';
+COMMENT ON COLUMN tarifas.cotizacion_comision.id IS 'PK';
+COMMENT ON COLUMN tarifas.cotizacion_comision.concepto_tarifa_id IS 'FK, IDX';
+COMMENT ON COLUMN tarifas.cotizacion_comision.tarifario_id IS 'FK';
+COMMENT ON COLUMN tarifas.cotizacion_comision.referencia_tipo IS 'CK';
+COMMENT ON COLUMN tarifas.cotizacion_comision.referencia_id IS 'IDX, polimorfica';
+COMMENT ON COLUMN tarifas.cotizacion_comision.mostrada_al_usuario_en IS 'NULL';
+COMMENT ON COLUMN tarifas.cotizacion_comision.aceptada_en IS 'NULL';

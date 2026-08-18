@@ -2,7 +2,7 @@
 -- clase de dominio: EjecucionAval
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS ejecucion_aval (
+CREATE TABLE IF NOT EXISTS garantia.ejecucion_aval (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   aval_id                            UUID NOT NULL,
   registro_id                        UUID NOT NULL,
@@ -17,10 +17,10 @@ CREATE TABLE IF NOT EXISTS ejecucion_aval (
   CONSTRAINT ck_ejecucion_aval_estado CHECK (estado IN ('ACEPTADA', 'EN_DISPUTA', 'NOTIFICADA', 'PAGADA', 'RECHAZADA'))
 );
 
-COMMENT ON TABLE ejecucion_aval IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. El grupo no se detiene, pero la deuda no se perdona sola';
-COMMENT ON COLUMN ejecucion_aval.id IS 'PK';
-COMMENT ON COLUMN ejecucion_aval.aval_id IS 'FK, IDX';
-COMMENT ON COLUMN ejecucion_aval.registro_id IS 'FK, IDX';
-COMMENT ON COLUMN ejecucion_aval.deuda_id IS 'FK';
-COMMENT ON COLUMN ejecucion_aval.pago_id IS 'FK, NULL, M3';
-COMMENT ON COLUMN ejecucion_aval.estado IS 'CK';
+COMMENT ON TABLE garantia.ejecucion_aval IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. El grupo no se detiene, pero la deuda no se perdona sola';
+COMMENT ON COLUMN garantia.ejecucion_aval.id IS 'PK';
+COMMENT ON COLUMN garantia.ejecucion_aval.aval_id IS 'FK, IDX';
+COMMENT ON COLUMN garantia.ejecucion_aval.registro_id IS 'FK, IDX';
+COMMENT ON COLUMN garantia.ejecucion_aval.deuda_id IS 'FK';
+COMMENT ON COLUMN garantia.ejecucion_aval.pago_id IS 'FK, NULL, M3';
+COMMENT ON COLUMN garantia.ejecucion_aval.estado IS 'CK';

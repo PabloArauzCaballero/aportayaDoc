@@ -2,7 +2,7 @@
 -- clase de dominio: Pago
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS pago (
+CREATE TABLE IF NOT EXISTS aportes.pago (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   obligacion_id                      UUID NOT NULL,
   intento_pago_id                    UUID,
@@ -28,18 +28,18 @@ CREATE TABLE IF NOT EXISTS pago (
   CONSTRAINT ck_pago_estado CHECK (estado IN ('ACREDITADO', 'ANULADO', 'EN_DISPUTA', 'EN_PROCESO', 'INICIADO', 'RECHAZADO', 'REVERSADO'))
 );
 
-COMMENT ON TABLE pago IS 'Módulo 03 — Aportes, Pagos QR y Conciliación. Que "pagué" signifique "el banco lo confirmó"';
-COMMENT ON COLUMN pago.id IS 'PK';
-COMMENT ON COLUMN pago.obligacion_id IS 'FK, IDX';
-COMMENT ON COLUMN pago.intento_pago_id IS 'FK, NULL, UQ';
-COMMENT ON COLUMN pago.proveedor_id IS 'FK, NULL, IDX';
-COMMENT ON COLUMN pago.monto IS 'CK: > 0';
-COMMENT ON COLUMN pago.canal IS 'CK';
-COMMENT ON COLUMN pago.estado IS 'CK, IDX';
-COMMENT ON COLUMN pago.fecha_hora_pago IS 'IDX';
-COMMENT ON COLUMN pago.fecha_hora_acreditacion IS 'NULL';
-COMMENT ON COLUMN pago.referencia_proveedor IS 'UQ+proveedor_id';
-COMMENT ON COLUMN pago.pagador_nombre IS 'NULL';
-COMMENT ON COLUMN pago.pagador_documento IS 'NULL';
-COMMENT ON COLUMN pago.cuenta_origen_enmascarada IS 'NULL';
-COMMENT ON COLUMN pago.registrado_por IS 'FK, NULL';
+COMMENT ON TABLE aportes.pago IS 'Módulo 03 — Aportes, Pagos QR y Conciliación. Que "pagué" signifique "el banco lo confirmó"';
+COMMENT ON COLUMN aportes.pago.id IS 'PK';
+COMMENT ON COLUMN aportes.pago.obligacion_id IS 'FK, IDX';
+COMMENT ON COLUMN aportes.pago.intento_pago_id IS 'FK, NULL, UQ';
+COMMENT ON COLUMN aportes.pago.proveedor_id IS 'FK, NULL, IDX';
+COMMENT ON COLUMN aportes.pago.monto IS 'CK: > 0';
+COMMENT ON COLUMN aportes.pago.canal IS 'CK';
+COMMENT ON COLUMN aportes.pago.estado IS 'CK, IDX';
+COMMENT ON COLUMN aportes.pago.fecha_hora_pago IS 'IDX';
+COMMENT ON COLUMN aportes.pago.fecha_hora_acreditacion IS 'NULL';
+COMMENT ON COLUMN aportes.pago.referencia_proveedor IS 'UQ+proveedor_id';
+COMMENT ON COLUMN aportes.pago.pagador_nombre IS 'NULL';
+COMMENT ON COLUMN aportes.pago.pagador_documento IS 'NULL';
+COMMENT ON COLUMN aportes.pago.cuenta_origen_enmascarada IS 'NULL';
+COMMENT ON COLUMN aportes.pago.registrado_por IS 'FK, NULL';

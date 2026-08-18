@@ -2,7 +2,7 @@
 -- clase de dominio: ConjuntoAnuncios
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS conjunto_anuncios (
+CREATE TABLE IF NOT EXISTS publicidad.conjunto_anuncios (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   campana_publicitaria_id            UUID NOT NULL,
   segmento_audiencia_id              UUID NOT NULL,
@@ -20,12 +20,12 @@ CREATE TABLE IF NOT EXISTS conjunto_anuncios (
   CONSTRAINT ck_conjunto_anuncios_estado CHECK (estado IN ('ACTIVO', 'AGOTADO', 'FINALIZADO', 'PAUSADO'))
 );
 
-COMMENT ON TABLE conjunto_anuncios IS 'Módulo 14 — Publicidad y Campañas. Que un partner se anuncie dentro de la app sin inventar un segundo cobro';
-COMMENT ON COLUMN conjunto_anuncios.id IS 'PK';
-COMMENT ON COLUMN conjunto_anuncios.campana_publicitaria_id IS 'FK, IDX';
-COMMENT ON COLUMN conjunto_anuncios.segmento_audiencia_id IS 'FK, IDX';
-COMMENT ON COLUMN conjunto_anuncios.espacio_publicitario_id IS 'FK, IDX';
-COMMENT ON COLUMN conjunto_anuncios.presupuesto_diario IS 'CK: > 0';
-COMMENT ON COLUMN conjunto_anuncios.puja_maxima IS 'CK: > 0';
-COMMENT ON COLUMN conjunto_anuncios.modelo_puja IS 'CK';
-COMMENT ON COLUMN conjunto_anuncios.estado IS 'CK, IDX';
+COMMENT ON TABLE publicidad.conjunto_anuncios IS 'Módulo 14 — Publicidad y Campañas. Que un partner se anuncie dentro de la app sin inventar un segundo cobro';
+COMMENT ON COLUMN publicidad.conjunto_anuncios.id IS 'PK';
+COMMENT ON COLUMN publicidad.conjunto_anuncios.campana_publicitaria_id IS 'FK, IDX';
+COMMENT ON COLUMN publicidad.conjunto_anuncios.segmento_audiencia_id IS 'FK, IDX';
+COMMENT ON COLUMN publicidad.conjunto_anuncios.espacio_publicitario_id IS 'FK, IDX';
+COMMENT ON COLUMN publicidad.conjunto_anuncios.presupuesto_diario IS 'CK: > 0';
+COMMENT ON COLUMN publicidad.conjunto_anuncios.puja_maxima IS 'CK: > 0';
+COMMENT ON COLUMN publicidad.conjunto_anuncios.modelo_puja IS 'CK';
+COMMENT ON COLUMN publicidad.conjunto_anuncios.estado IS 'CK, IDX';

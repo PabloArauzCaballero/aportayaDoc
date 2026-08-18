@@ -8,152 +8,147 @@ BEGIN
         TG_TABLE_NAME;
 END $$ LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS tg_abono_recuperacion_append_only ON abono_recuperacion;
+DROP TRIGGER IF EXISTS tg_abono_recuperacion_append_only ON garantia.abono_recuperacion;
 CREATE TRIGGER tg_abono_recuperacion_append_only
-  BEFORE UPDATE OR DELETE ON abono_recuperacion
+  BEFORE UPDATE OR DELETE ON garantia.abono_recuperacion
   FOR EACH ROW EXECUTE FUNCTION fn_aud_bloquear_mutacion();
 
-DROP TRIGGER IF EXISTS tg_acta_comite_append_only ON acta_comite;
+DROP TRIGGER IF EXISTS tg_acta_comite_append_only ON cumplimiento.acta_comite;
 CREATE TRIGGER tg_acta_comite_append_only
-  BEFORE UPDATE OR DELETE ON acta_comite
+  BEFORE UPDATE OR DELETE ON cumplimiento.acta_comite
   FOR EACH ROW EXECUTE FUNCTION fn_aud_bloquear_mutacion();
 
-DROP TRIGGER IF EXISTS tg_asiento_contable_append_only ON asiento_contable;
+DROP TRIGGER IF EXISTS tg_asiento_contable_append_only ON nucleo_financiero.asiento_contable;
 CREATE TRIGGER tg_asiento_contable_append_only
-  BEFORE UPDATE OR DELETE ON asiento_contable
+  BEFORE UPDATE OR DELETE ON nucleo_financiero.asiento_contable
   FOR EACH ROW EXECUTE FUNCTION fn_aud_bloquear_mutacion();
 
-DROP TRIGGER IF EXISTS tg_bitacora_evento_append_only ON bitacora_evento;
+DROP TRIGGER IF EXISTS tg_bitacora_evento_append_only ON comun.bitacora_evento;
 CREATE TRIGGER tg_bitacora_evento_append_only
-  BEFORE UPDATE OR DELETE ON bitacora_evento
+  BEFORE UPDATE OR DELETE ON comun.bitacora_evento
   FOR EACH ROW EXECUTE FUNCTION fn_aud_bloquear_mutacion();
 
-DROP TRIGGER IF EXISTS tg_cierre_periodo_contable_append_only ON cierre_periodo_contable;
+DROP TRIGGER IF EXISTS tg_cierre_periodo_contable_append_only ON erp.cierre_periodo_contable;
 CREATE TRIGGER tg_cierre_periodo_contable_append_only
-  BEFORE UPDATE OR DELETE ON cierre_periodo_contable
+  BEFORE UPDATE OR DELETE ON erp.cierre_periodo_contable
   FOR EACH ROW EXECUTE FUNCTION fn_aud_bloquear_mutacion();
 
-DROP TRIGGER IF EXISTS tg_clic_anuncio_append_only ON clic_anuncio;
+DROP TRIGGER IF EXISTS tg_clic_anuncio_append_only ON publicidad.clic_anuncio;
 CREATE TRIGGER tg_clic_anuncio_append_only
-  BEFORE UPDATE OR DELETE ON clic_anuncio
+  BEFORE UPDATE OR DELETE ON publicidad.clic_anuncio
   FOR EACH ROW EXECUTE FUNCTION fn_aud_bloquear_mutacion();
 
-DROP TRIGGER IF EXISTS tg_cobro_cuenta_por_cobrar_append_only ON cobro_cuenta_por_cobrar;
+DROP TRIGGER IF EXISTS tg_cobro_cuenta_por_cobrar_append_only ON erp.cobro_cuenta_por_cobrar;
 CREATE TRIGGER tg_cobro_cuenta_por_cobrar_append_only
-  BEFORE UPDATE OR DELETE ON cobro_cuenta_por_cobrar
+  BEFORE UPDATE OR DELETE ON erp.cobro_cuenta_por_cobrar
   FOR EACH ROW EXECUTE FUNCTION fn_aud_bloquear_mutacion();
 
-DROP TRIGGER IF EXISTS tg_conversion_anuncio_append_only ON conversion_anuncio;
+DROP TRIGGER IF EXISTS tg_conversion_anuncio_append_only ON publicidad.conversion_anuncio;
 CREATE TRIGGER tg_conversion_anuncio_append_only
-  BEFORE UPDATE OR DELETE ON conversion_anuncio
+  BEFORE UPDATE OR DELETE ON publicidad.conversion_anuncio
   FOR EACH ROW EXECUTE FUNCTION fn_aud_bloquear_mutacion();
 
-DROP TRIGGER IF EXISTS tg_cuenta_por_cobrar_append_only ON cuenta_por_cobrar;
+DROP TRIGGER IF EXISTS tg_cuenta_por_cobrar_append_only ON erp.cuenta_por_cobrar;
 CREATE TRIGGER tg_cuenta_por_cobrar_append_only
-  BEFORE UPDATE OR DELETE ON cuenta_por_cobrar
+  BEFORE UPDATE OR DELETE ON erp.cuenta_por_cobrar
   FOR EACH ROW EXECUTE FUNCTION fn_aud_bloquear_mutacion();
 
-DROP TRIGGER IF EXISTS tg_depreciacion_activo_append_only ON depreciacion_activo;
+DROP TRIGGER IF EXISTS tg_depreciacion_activo_append_only ON erp.depreciacion_activo;
 CREATE TRIGGER tg_depreciacion_activo_append_only
-  BEFORE UPDATE OR DELETE ON depreciacion_activo
+  BEFORE UPDATE OR DELETE ON erp.depreciacion_activo
   FOR EACH ROW EXECUTE FUNCTION fn_aud_bloquear_mutacion();
 
-DROP TRIGGER IF EXISTS tg_devengo_comision_append_only ON devengo_comision;
+DROP TRIGGER IF EXISTS tg_devengo_comision_append_only ON tarifas.devengo_comision;
 CREATE TRIGGER tg_devengo_comision_append_only
-  BEFORE UPDATE OR DELETE ON devengo_comision
+  BEFORE UPDATE OR DELETE ON tarifas.devengo_comision
   FOR EACH ROW EXECUTE FUNCTION fn_aud_bloquear_mutacion();
 
-DROP TRIGGER IF EXISTS tg_estado_financiero_generado_append_only ON estado_financiero_generado;
+DROP TRIGGER IF EXISTS tg_estado_financiero_generado_append_only ON erp.estado_financiero_generado;
 CREATE TRIGGER tg_estado_financiero_generado_append_only
-  BEFORE UPDATE OR DELETE ON estado_financiero_generado
+  BEFORE UPDATE OR DELETE ON erp.estado_financiero_generado
   FOR EACH ROW EXECUTE FUNCTION fn_aud_bloquear_mutacion();
 
-DROP TRIGGER IF EXISTS tg_evento_dominio_append_only ON evento_dominio;
-CREATE TRIGGER tg_evento_dominio_append_only
-  BEFORE UPDATE OR DELETE ON evento_dominio
-  FOR EACH ROW EXECUTE FUNCTION fn_aud_bloquear_mutacion();
-
-DROP TRIGGER IF EXISTS tg_evento_reputacion_append_only ON evento_reputacion;
+DROP TRIGGER IF EXISTS tg_evento_reputacion_append_only ON transparencia.evento_reputacion;
 CREATE TRIGGER tg_evento_reputacion_append_only
-  BEFORE UPDATE OR DELETE ON evento_reputacion
+  BEFORE UPDATE OR DELETE ON transparencia.evento_reputacion
   FOR EACH ROW EXECUTE FUNCTION fn_aud_bloquear_mutacion();
 
-DROP TRIGGER IF EXISTS tg_evento_riesgo_operativo_append_only ON evento_riesgo_operativo;
+DROP TRIGGER IF EXISTS tg_evento_riesgo_operativo_append_only ON cumplimiento.evento_riesgo_operativo;
 CREATE TRIGGER tg_evento_riesgo_operativo_append_only
-  BEFORE UPDATE OR DELETE ON evento_riesgo_operativo
+  BEFORE UPDATE OR DELETE ON cumplimiento.evento_riesgo_operativo
   FOR EACH ROW EXECUTE FUNCTION fn_aud_bloquear_mutacion();
 
-DROP TRIGGER IF EXISTS tg_factura_proveedor_append_only ON factura_proveedor;
+DROP TRIGGER IF EXISTS tg_factura_proveedor_append_only ON erp.factura_proveedor;
 CREATE TRIGGER tg_factura_proveedor_append_only
-  BEFORE UPDATE OR DELETE ON factura_proveedor
+  BEFORE UPDATE OR DELETE ON erp.factura_proveedor
   FOR EACH ROW EXECUTE FUNCTION fn_aud_bloquear_mutacion();
 
-DROP TRIGGER IF EXISTS tg_factura_publicidad_append_only ON factura_publicidad;
+DROP TRIGGER IF EXISTS tg_factura_publicidad_append_only ON publicidad.factura_publicidad;
 CREATE TRIGGER tg_factura_publicidad_append_only
-  BEFORE UPDATE OR DELETE ON factura_publicidad
+  BEFORE UPDATE OR DELETE ON publicidad.factura_publicidad
   FOR EACH ROW EXECUTE FUNCTION fn_aud_bloquear_mutacion();
 
-DROP TRIGGER IF EXISTS tg_historial_estado_incumplimiento_append_only ON historial_estado_incumplimiento;
+DROP TRIGGER IF EXISTS tg_historial_estado_incumplimiento_append_only ON garantia.historial_estado_incumplimiento;
 CREATE TRIGGER tg_historial_estado_incumplimiento_append_only
-  BEFORE UPDATE OR DELETE ON historial_estado_incumplimiento
+  BEFORE UPDATE OR DELETE ON garantia.historial_estado_incumplimiento
   FOR EACH ROW EXECUTE FUNCTION fn_aud_bloquear_mutacion();
 
-DROP TRIGGER IF EXISTS tg_impresion_anuncio_append_only ON impresion_anuncio;
+DROP TRIGGER IF EXISTS tg_impresion_anuncio_append_only ON publicidad.impresion_anuncio;
 CREATE TRIGGER tg_impresion_anuncio_append_only
-  BEFORE UPDATE OR DELETE ON impresion_anuncio
+  BEFORE UPDATE OR DELETE ON publicidad.impresion_anuncio
   FOR EACH ROW EXECUTE FUNCTION fn_aud_bloquear_mutacion();
 
-DROP TRIGGER IF EXISTS tg_movimiento_billetera_append_only ON movimiento_billetera;
+DROP TRIGGER IF EXISTS tg_movimiento_billetera_append_only ON nucleo_financiero.movimiento_billetera;
 CREATE TRIGGER tg_movimiento_billetera_append_only
-  BEFORE UPDATE OR DELETE ON movimiento_billetera
+  BEFORE UPDATE OR DELETE ON nucleo_financiero.movimiento_billetera
   FOR EACH ROW EXECUTE FUNCTION fn_aud_bloquear_mutacion();
 
-DROP TRIGGER IF EXISTS tg_movimiento_contable_append_only ON movimiento_contable;
+DROP TRIGGER IF EXISTS tg_movimiento_contable_append_only ON nucleo_financiero.movimiento_contable;
 CREATE TRIGGER tg_movimiento_contable_append_only
-  BEFORE UPDATE OR DELETE ON movimiento_contable
+  BEFORE UPDATE OR DELETE ON nucleo_financiero.movimiento_contable
   FOR EACH ROW EXECUTE FUNCTION fn_aud_bloquear_mutacion();
 
-DROP TRIGGER IF EXISTS tg_movimiento_custodia_append_only ON movimiento_custodia;
+DROP TRIGGER IF EXISTS tg_movimiento_custodia_append_only ON nucleo_financiero.movimiento_custodia;
 CREATE TRIGGER tg_movimiento_custodia_append_only
-  BEFORE UPDATE OR DELETE ON movimiento_custodia
+  BEFORE UPDATE OR DELETE ON nucleo_financiero.movimiento_custodia
   FOR EACH ROW EXECUTE FUNCTION fn_aud_bloquear_mutacion();
 
-DROP TRIGGER IF EXISTS tg_movimiento_fondo_append_only ON movimiento_fondo;
+DROP TRIGGER IF EXISTS tg_movimiento_fondo_append_only ON garantia.movimiento_fondo;
 CREATE TRIGGER tg_movimiento_fondo_append_only
-  BEFORE UPDATE OR DELETE ON movimiento_fondo
+  BEFORE UPDATE OR DELETE ON garantia.movimiento_fondo
   FOR EACH ROW EXECUTE FUNCTION fn_aud_bloquear_mutacion();
 
-DROP TRIGGER IF EXISTS tg_pago_a_proveedor_append_only ON pago_a_proveedor;
+DROP TRIGGER IF EXISTS tg_pago_a_proveedor_append_only ON erp.pago_a_proveedor;
 CREATE TRIGGER tg_pago_a_proveedor_append_only
-  BEFORE UPDATE OR DELETE ON pago_a_proveedor
+  BEFORE UPDATE OR DELETE ON erp.pago_a_proveedor
   FOR EACH ROW EXECUTE FUNCTION fn_aud_bloquear_mutacion();
 
-DROP TRIGGER IF EXISTS tg_registro_acceso_datos_append_only ON registro_acceso_datos;
+DROP TRIGGER IF EXISTS tg_registro_acceso_datos_append_only ON comun.registro_acceso_datos;
 CREATE TRIGGER tg_registro_acceso_datos_append_only
-  BEFORE UPDATE OR DELETE ON registro_acceso_datos
+  BEFORE UPDATE OR DELETE ON comun.registro_acceso_datos
   FOR EACH ROW EXECUTE FUNCTION fn_aud_bloquear_mutacion();
 
-DROP TRIGGER IF EXISTS tg_registro_incumplimiento_append_only ON registro_incumplimiento;
+DROP TRIGGER IF EXISTS tg_registro_incumplimiento_append_only ON garantia.registro_incumplimiento;
 CREATE TRIGGER tg_registro_incumplimiento_append_only
-  BEFORE UPDATE OR DELETE ON registro_incumplimiento
+  BEFORE UPDATE OR DELETE ON garantia.registro_incumplimiento
   FOR EACH ROW EXECUTE FUNCTION fn_aud_bloquear_mutacion();
 
-DROP TRIGGER IF EXISTS tg_registro_operacion_relevante_append_only ON registro_operacion_relevante;
+DROP TRIGGER IF EXISTS tg_registro_operacion_relevante_append_only ON cumplimiento.registro_operacion_relevante;
 CREATE TRIGGER tg_registro_operacion_relevante_append_only
-  BEFORE UPDATE OR DELETE ON registro_operacion_relevante
+  BEFORE UPDATE OR DELETE ON cumplimiento.registro_operacion_relevante
   FOR EACH ROW EXECUTE FUNCTION fn_aud_bloquear_mutacion();
 
-DROP TRIGGER IF EXISTS tg_registro_sellado_append_only ON registro_sellado;
+DROP TRIGGER IF EXISTS tg_registro_sellado_append_only ON transparencia.registro_sellado;
 CREATE TRIGGER tg_registro_sellado_append_only
-  BEFORE UPDATE OR DELETE ON registro_sellado
+  BEFORE UPDATE OR DELETE ON transparencia.registro_sellado
   FOR EACH ROW EXECUTE FUNCTION fn_aud_bloquear_mutacion();
 
-DROP TRIGGER IF EXISTS tg_saldo_diario_billetera_append_only ON saldo_diario_billetera;
+DROP TRIGGER IF EXISTS tg_saldo_diario_billetera_append_only ON nucleo_financiero.saldo_diario_billetera;
 CREATE TRIGGER tg_saldo_diario_billetera_append_only
-  BEFORE UPDATE OR DELETE ON saldo_diario_billetera
+  BEFORE UPDATE OR DELETE ON nucleo_financiero.saldo_diario_billetera
   FOR EACH ROW EXECUTE FUNCTION fn_aud_bloquear_mutacion();
 
-DROP TRIGGER IF EXISTS tg_transaccion_billetera_append_only ON transaccion_billetera;
+DROP TRIGGER IF EXISTS tg_transaccion_billetera_append_only ON nucleo_financiero.transaccion_billetera;
 CREATE TRIGGER tg_transaccion_billetera_append_only
-  BEFORE UPDATE OR DELETE ON transaccion_billetera
+  BEFORE UPDATE OR DELETE ON nucleo_financiero.transaccion_billetera
   FOR EACH ROW EXECUTE FUNCTION fn_aud_bloquear_mutacion();

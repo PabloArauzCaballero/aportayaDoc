@@ -43,7 +43,7 @@ MODULOS = {
 }
 
 APPEND_ONLY = {
-    "evento_reputacion", "registro_sellado", "bitacora_evento", "evento_dominio",
+    "evento_reputacion", "registro_sellado", "bitacora_evento",
     "registro_acceso_datos", "movimiento_fondo", "abono_recuperacion",
     "historial_estado_incumplimiento", "registro_incumplimiento",
     "asiento_contable", "movimiento_contable",

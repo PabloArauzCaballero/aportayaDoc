@@ -2,7 +2,7 @@
 -- clase de dominio: FondoGarantia
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS fondo_garantia (
+CREATE TABLE IF NOT EXISTS garantia.fondo_garantia (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   ambito                             VARCHAR(20) NOT NULL,
   grupo_id                           UUID,
@@ -23,11 +23,11 @@ CREATE TABLE IF NOT EXISTS fondo_garantia (
   CONSTRAINT ck_fondo_garantia_estado CHECK (estado IN ('ACTIVO', 'AGOTADO', 'CERRADO', 'EN_LIQUIDACION'))
 );
 
-COMMENT ON TABLE fondo_garantia IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. El grupo no se detiene, pero la deuda no se perdona sola';
-COMMENT ON COLUMN fondo_garantia.id IS 'PK';
-COMMENT ON COLUMN fondo_garantia.ambito IS 'CK';
-COMMENT ON COLUMN fondo_garantia.grupo_id IS 'FK, NULL, UQ parcial';
-COMMENT ON COLUMN fondo_garantia.politica_cobertura_id IS 'FK';
-COMMENT ON COLUMN fondo_garantia.cuenta_contable_id IS 'FK, M3';
-COMMENT ON COLUMN fondo_garantia.saldo_disponible IS 'CK: >= 0';
-COMMENT ON COLUMN fondo_garantia.estado IS 'CK';
+COMMENT ON TABLE garantia.fondo_garantia IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. El grupo no se detiene, pero la deuda no se perdona sola';
+COMMENT ON COLUMN garantia.fondo_garantia.id IS 'PK';
+COMMENT ON COLUMN garantia.fondo_garantia.ambito IS 'CK';
+COMMENT ON COLUMN garantia.fondo_garantia.grupo_id IS 'FK, NULL, UQ parcial';
+COMMENT ON COLUMN garantia.fondo_garantia.politica_cobertura_id IS 'FK';
+COMMENT ON COLUMN garantia.fondo_garantia.cuenta_contable_id IS 'FK, M3';
+COMMENT ON COLUMN garantia.fondo_garantia.saldo_disponible IS 'CK: >= 0';
+COMMENT ON COLUMN garantia.fondo_garantia.estado IS 'CK';

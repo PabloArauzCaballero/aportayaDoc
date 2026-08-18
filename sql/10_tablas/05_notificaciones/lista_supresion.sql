@@ -2,7 +2,7 @@
 -- clase de dominio: ListaSupresion
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS lista_supresion (
+CREATE TABLE IF NOT EXISTS notificaciones.lista_supresion (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   identificador                      VARCHAR(150) NOT NULL,
   canal                              VARCHAR(15) NOT NULL,
@@ -17,10 +17,10 @@ CREATE TABLE IF NOT EXISTS lista_supresion (
   CONSTRAINT ck_lista_supresion_categoria CHECK (categoria IN ('COBRANZA', 'COMERCIAL', 'REGULATORIA', 'SEGURIDAD', 'SOPORTE', 'TODAS', 'TRANSACCIONAL'))
 );
 
-COMMENT ON TABLE lista_supresion IS 'Módulo 05 — Notificaciones y Comunicaciones. WhatsApp como canal real de cobro, sin spam ni doble aviso';
-COMMENT ON COLUMN lista_supresion.id IS 'PK';
-COMMENT ON COLUMN lista_supresion.identificador IS 'UQ+canal';
-COMMENT ON COLUMN lista_supresion.canal IS 'CK';
-COMMENT ON COLUMN lista_supresion.motivo IS 'CK';
-COMMENT ON COLUMN lista_supresion.categoria IS 'CK, IDX';
-COMMENT ON COLUMN lista_supresion.activa IS 'IDX';
+COMMENT ON TABLE notificaciones.lista_supresion IS 'Módulo 05 — Notificaciones y Comunicaciones. WhatsApp como canal real de cobro, sin spam ni doble aviso';
+COMMENT ON COLUMN notificaciones.lista_supresion.id IS 'PK';
+COMMENT ON COLUMN notificaciones.lista_supresion.identificador IS 'UQ+canal';
+COMMENT ON COLUMN notificaciones.lista_supresion.canal IS 'CK';
+COMMENT ON COLUMN notificaciones.lista_supresion.motivo IS 'CK';
+COMMENT ON COLUMN notificaciones.lista_supresion.categoria IS 'CK, IDX';
+COMMENT ON COLUMN notificaciones.lista_supresion.activa IS 'IDX';

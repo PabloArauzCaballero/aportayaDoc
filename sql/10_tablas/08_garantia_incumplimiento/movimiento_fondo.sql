@@ -3,7 +3,7 @@
 -- APPEND-ONLY: sin UPDATE ni DELETE (ver sql/40_reglas)
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS movimiento_fondo (
+CREATE TABLE IF NOT EXISTS garantia.movimiento_fondo (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   fondo_id                           UUID NOT NULL,
   asiento_contable_id                UUID,
@@ -19,11 +19,11 @@ CREATE TABLE IF NOT EXISTS movimiento_fondo (
   CONSTRAINT ck_movimiento_fondo_tipo CHECK (tipo IN ('AJUSTE_CONTABLE', 'APORTE_PERIODICO', 'CASTIGO_INCOBRABLE', 'COBERTURA_APLICADA', 'CONSTITUCION', 'DEVOLUCION_A_PARTICIPANTES', 'EJECUCION_AVAL', 'RECUPERACION_ACREDITADA', 'RENDIMIENTO'))
 );
 
-COMMENT ON TABLE movimiento_fondo IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. [append-only] El grupo no se detiene, pero la deuda no se perdona sola';
-COMMENT ON COLUMN movimiento_fondo.id IS 'PK';
-COMMENT ON COLUMN movimiento_fondo.fondo_id IS 'FK, IDX';
-COMMENT ON COLUMN movimiento_fondo.asiento_contable_id IS 'FK, NULL, M3';
-COMMENT ON COLUMN movimiento_fondo.tipo IS 'CK, IDX';
-COMMENT ON COLUMN movimiento_fondo.referencia_id IS 'IDX';
-COMMENT ON COLUMN movimiento_fondo.fecha IS 'IDX';
-COMMENT ON COLUMN movimiento_fondo.registrado_por IS 'FK, NULL';
+COMMENT ON TABLE garantia.movimiento_fondo IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. [append-only] El grupo no se detiene, pero la deuda no se perdona sola';
+COMMENT ON COLUMN garantia.movimiento_fondo.id IS 'PK';
+COMMENT ON COLUMN garantia.movimiento_fondo.fondo_id IS 'FK, IDX';
+COMMENT ON COLUMN garantia.movimiento_fondo.asiento_contable_id IS 'FK, NULL, M3';
+COMMENT ON COLUMN garantia.movimiento_fondo.tipo IS 'CK, IDX';
+COMMENT ON COLUMN garantia.movimiento_fondo.referencia_id IS 'IDX';
+COMMENT ON COLUMN garantia.movimiento_fondo.fecha IS 'IDX';
+COMMENT ON COLUMN garantia.movimiento_fondo.registrado_por IS 'FK, NULL';

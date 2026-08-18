@@ -2,7 +2,7 @@
 -- clase de dominio: ReporteOperacionSospechosa
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS reporte_operacion_sospechosa (
+CREATE TABLE IF NOT EXISTS auditoria.reporte_operacion_sospechosa (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   usuario_id                         UUID NOT NULL,
   aprobado_por                       UUID,
@@ -17,10 +17,10 @@ CREATE TABLE IF NOT EXISTS reporte_operacion_sospechosa (
   CONSTRAINT ck_reporte_operacion_sospechosa_estado CHECK (estado IN ('APROBADO', 'ARCHIVADO', 'BORRADOR', 'ENVIADO'))
 );
 
-COMMENT ON TABLE reporte_operacion_sospechosa IS 'Módulo 09 — Auditoría, Reportes y Cumplimiento. Poder demostrar todo lo anterior ante un reclamo o un regulador';
-COMMENT ON COLUMN reporte_operacion_sospechosa.id IS 'PK';
-COMMENT ON COLUMN reporte_operacion_sospechosa.usuario_id IS 'FK, IDX';
-COMMENT ON COLUMN reporte_operacion_sospechosa.aprobado_por IS 'FK, NULL';
-COMMENT ON COLUMN reporte_operacion_sospechosa.estado IS 'CK';
-COMMENT ON COLUMN reporte_operacion_sospechosa.numero_radicado IS 'UQ, NULL';
-COMMENT ON COLUMN reporte_operacion_sospechosa.enviado_en IS 'NULL';
+COMMENT ON TABLE auditoria.reporte_operacion_sospechosa IS 'Módulo 09 — Auditoría, Reportes y Cumplimiento. Poder demostrar todo lo anterior ante un reclamo o un regulador';
+COMMENT ON COLUMN auditoria.reporte_operacion_sospechosa.id IS 'PK';
+COMMENT ON COLUMN auditoria.reporte_operacion_sospechosa.usuario_id IS 'FK, IDX';
+COMMENT ON COLUMN auditoria.reporte_operacion_sospechosa.aprobado_por IS 'FK, NULL';
+COMMENT ON COLUMN auditoria.reporte_operacion_sospechosa.estado IS 'CK';
+COMMENT ON COLUMN auditoria.reporte_operacion_sospechosa.numero_radicado IS 'UQ, NULL';
+COMMENT ON COLUMN auditoria.reporte_operacion_sospechosa.enviado_en IS 'NULL';

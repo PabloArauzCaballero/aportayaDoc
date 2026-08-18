@@ -2,7 +2,7 @@
 -- clase de dominio: ActivoInformacion
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS activo_informacion (
+CREATE TABLE IF NOT EXISTS cumplimiento.activo_informacion (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   propietario_id                     UUID,
   custodio_id                        UUID,
@@ -23,13 +23,13 @@ CREATE TABLE IF NOT EXISTS activo_informacion (
   CONSTRAINT ck_activo_informacion_criticidad CHECK (criticidad IN ('ALTA', 'BAJA', 'CRITICA', 'MEDIA'))
 );
 
-COMMENT ON TABLE activo_informacion IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
-COMMENT ON COLUMN activo_informacion.id IS 'PK';
-COMMENT ON COLUMN activo_informacion.propietario_id IS 'FK, NULL';
-COMMENT ON COLUMN activo_informacion.custodio_id IS 'FK, NULL';
-COMMENT ON COLUMN activo_informacion.contrato_tercero_id IS 'FK, NULL';
-COMMENT ON COLUMN activo_informacion.codigo IS 'UQ';
-COMMENT ON COLUMN activo_informacion.tipo IS 'CK';
-COMMENT ON COLUMN activo_informacion.clasificacion IS 'CK, IDX';
-COMMENT ON COLUMN activo_informacion.contiene_datos_personales IS 'IDX';
-COMMENT ON COLUMN activo_informacion.criticidad IS 'CK';
+COMMENT ON TABLE cumplimiento.activo_informacion IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
+COMMENT ON COLUMN cumplimiento.activo_informacion.id IS 'PK';
+COMMENT ON COLUMN cumplimiento.activo_informacion.propietario_id IS 'FK, NULL';
+COMMENT ON COLUMN cumplimiento.activo_informacion.custodio_id IS 'FK, NULL';
+COMMENT ON COLUMN cumplimiento.activo_informacion.contrato_tercero_id IS 'FK, NULL';
+COMMENT ON COLUMN cumplimiento.activo_informacion.codigo IS 'UQ';
+COMMENT ON COLUMN cumplimiento.activo_informacion.tipo IS 'CK';
+COMMENT ON COLUMN cumplimiento.activo_informacion.clasificacion IS 'CK, IDX';
+COMMENT ON COLUMN cumplimiento.activo_informacion.contiene_datos_personales IS 'IDX';
+COMMENT ON COLUMN cumplimiento.activo_informacion.criticidad IS 'CK';

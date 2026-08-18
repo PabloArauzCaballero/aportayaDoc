@@ -2,7 +2,7 @@
 -- clase de dominio: ArqueoPuntoAtencion
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS arqueo_punto_atencion (
+CREATE TABLE IF NOT EXISTS nucleo_financiero.arqueo_punto_atencion (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   punto_atencion_id                  UUID NOT NULL,
   arqueado_por                       UUID NOT NULL,
@@ -20,12 +20,12 @@ CREATE TABLE IF NOT EXISTS arqueo_punto_atencion (
   CONSTRAINT ck_arqueo_punto_atencion_estado CHECK (estado IN ('ABIERTO', 'CERRADO', 'CUADRADO', 'DESCUADRADO'))
 );
 
-COMMENT ON TABLE arqueo_punto_atencion IS 'Módulo 10 — Billetera, Custodia y Dinero Electrónico. El saldo no se guarda: se deriva, y todos los días cuadra contra el banco';
-COMMENT ON COLUMN arqueo_punto_atencion.id IS 'PK';
-COMMENT ON COLUMN arqueo_punto_atencion.punto_atencion_id IS 'FK, IDX';
-COMMENT ON COLUMN arqueo_punto_atencion.arqueado_por IS 'FK';
-COMMENT ON COLUMN arqueo_punto_atencion.fecha IS 'UQ+punto_atencion_id';
-COMMENT ON COLUMN arqueo_punto_atencion.diferencia IS 'GENERATED';
-COMMENT ON COLUMN arqueo_punto_atencion.estado IS 'CK';
-COMMENT ON COLUMN arqueo_punto_atencion.observaciones IS 'NULL';
-COMMENT ON COLUMN arqueo_punto_atencion.cerrado_en IS 'NULL';
+COMMENT ON TABLE nucleo_financiero.arqueo_punto_atencion IS 'Módulo 10 — Billetera, Custodia y Dinero Electrónico. El saldo no se guarda: se deriva, y todos los días cuadra contra el banco';
+COMMENT ON COLUMN nucleo_financiero.arqueo_punto_atencion.id IS 'PK';
+COMMENT ON COLUMN nucleo_financiero.arqueo_punto_atencion.punto_atencion_id IS 'FK, IDX';
+COMMENT ON COLUMN nucleo_financiero.arqueo_punto_atencion.arqueado_por IS 'FK';
+COMMENT ON COLUMN nucleo_financiero.arqueo_punto_atencion.fecha IS 'UQ+punto_atencion_id';
+COMMENT ON COLUMN nucleo_financiero.arqueo_punto_atencion.diferencia IS 'GENERATED';
+COMMENT ON COLUMN nucleo_financiero.arqueo_punto_atencion.estado IS 'CK';
+COMMENT ON COLUMN nucleo_financiero.arqueo_punto_atencion.observaciones IS 'NULL';
+COMMENT ON COLUMN nucleo_financiero.arqueo_punto_atencion.cerrado_en IS 'NULL';

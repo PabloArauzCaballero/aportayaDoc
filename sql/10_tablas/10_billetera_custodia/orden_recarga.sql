@@ -2,7 +2,7 @@
 -- clase de dominio: OrdenRecarga
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS orden_recarga (
+CREATE TABLE IF NOT EXISTS nucleo_financiero.orden_recarga (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   cuenta_billetera_id                UUID NOT NULL,
   instrumento_fondeo_id              UUID,
@@ -25,16 +25,16 @@ CREATE TABLE IF NOT EXISTS orden_recarga (
   CONSTRAINT ck_orden_recarga_estado CHECK (estado IN ('ACREDITADA', 'EXPIRADA', 'PENDIENTE', 'RECHAZADA', 'REVERSADA'))
 );
 
-COMMENT ON TABLE orden_recarga IS 'Módulo 10 — Billetera, Custodia y Dinero Electrónico. El saldo no se guarda: se deriva, y todos los días cuadra contra el banco';
-COMMENT ON COLUMN orden_recarga.id IS 'PK';
-COMMENT ON COLUMN orden_recarga.cuenta_billetera_id IS 'FK, IDX';
-COMMENT ON COLUMN orden_recarga.instrumento_fondeo_id IS 'FK, NULL';
-COMMENT ON COLUMN orden_recarga.proveedor_id IS 'FK, NULL, M3';
-COMMENT ON COLUMN orden_recarga.punto_atencion_id IS 'FK, NULL';
-COMMENT ON COLUMN orden_recarga.pago_id IS 'FK, NULL, M3';
-COMMENT ON COLUMN orden_recarga.transaccion_id IS 'FK, NULL';
-COMMENT ON COLUMN orden_recarga.monto_bruto IS 'CK: > 0';
-COMMENT ON COLUMN orden_recarga.estado IS 'CK, IDX';
-COMMENT ON COLUMN orden_recarga.referencia_externa IS 'UQ, NULL';
-COMMENT ON COLUMN orden_recarga.acreditada_en IS 'NULL';
-COMMENT ON COLUMN orden_recarga.expira_en IS 'NULL';
+COMMENT ON TABLE nucleo_financiero.orden_recarga IS 'Módulo 10 — Billetera, Custodia y Dinero Electrónico. El saldo no se guarda: se deriva, y todos los días cuadra contra el banco';
+COMMENT ON COLUMN nucleo_financiero.orden_recarga.id IS 'PK';
+COMMENT ON COLUMN nucleo_financiero.orden_recarga.cuenta_billetera_id IS 'FK, IDX';
+COMMENT ON COLUMN nucleo_financiero.orden_recarga.instrumento_fondeo_id IS 'FK, NULL';
+COMMENT ON COLUMN nucleo_financiero.orden_recarga.proveedor_id IS 'FK, NULL, M3';
+COMMENT ON COLUMN nucleo_financiero.orden_recarga.punto_atencion_id IS 'FK, NULL';
+COMMENT ON COLUMN nucleo_financiero.orden_recarga.pago_id IS 'FK, NULL, M3';
+COMMENT ON COLUMN nucleo_financiero.orden_recarga.transaccion_id IS 'FK, NULL';
+COMMENT ON COLUMN nucleo_financiero.orden_recarga.monto_bruto IS 'CK: > 0';
+COMMENT ON COLUMN nucleo_financiero.orden_recarga.estado IS 'CK, IDX';
+COMMENT ON COLUMN nucleo_financiero.orden_recarga.referencia_externa IS 'UQ, NULL';
+COMMENT ON COLUMN nucleo_financiero.orden_recarga.acreditada_en IS 'NULL';
+COMMENT ON COLUMN nucleo_financiero.orden_recarga.expira_en IS 'NULL';

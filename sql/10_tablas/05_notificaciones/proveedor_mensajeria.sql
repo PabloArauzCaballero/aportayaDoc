@@ -2,7 +2,7 @@
 -- clase de dominio: ProveedorMensajeria
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS proveedor_mensajeria (
+CREATE TABLE IF NOT EXISTS notificaciones.proveedor_mensajeria (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   codigo                             VARCHAR(30) NOT NULL,
   nombre                             VARCHAR(80) NOT NULL,
@@ -17,6 +17,6 @@ CREATE TABLE IF NOT EXISTS proveedor_mensajeria (
   CONSTRAINT pk_proveedor_mensajeria PRIMARY KEY (id)
 );
 
-COMMENT ON TABLE proveedor_mensajeria IS 'Módulo 05 — Notificaciones y Comunicaciones. WhatsApp como canal real de cobro, sin spam ni doble aviso';
-COMMENT ON COLUMN proveedor_mensajeria.id IS 'PK';
-COMMENT ON COLUMN proveedor_mensajeria.codigo IS 'UQ';
+COMMENT ON TABLE notificaciones.proveedor_mensajeria IS 'Módulo 05 — Notificaciones y Comunicaciones. WhatsApp como canal real de cobro, sin spam ni doble aviso';
+COMMENT ON COLUMN notificaciones.proveedor_mensajeria.id IS 'PK';
+COMMENT ON COLUMN notificaciones.proveedor_mensajeria.codigo IS 'UQ';

@@ -2,7 +2,7 @@
 -- clase de dominio: TareaAutomatizada
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS tarea_automatizada (
+CREATE TABLE IF NOT EXISTS organizador.tarea_automatizada (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   regla_id                           UUID NOT NULL,
   grupo_id                           UUID NOT NULL,
@@ -15,9 +15,9 @@ CREATE TABLE IF NOT EXISTS tarea_automatizada (
   CONSTRAINT ck_tarea_automatizada_estado CHECK (estado IN ('CANCELADA', 'COMPLETADA', 'EN_EJECUCION', 'FALLIDA', 'PROGRAMADA', 'REQUIERE_APROBACION'))
 );
 
-COMMENT ON TABLE tarea_automatizada IS 'Módulo 07 — Organizador y Automatización. Administrar es un rol, no un negocio: el organizador no cobra ni custodia';
-COMMENT ON COLUMN tarea_automatizada.id IS 'PK';
-COMMENT ON COLUMN tarea_automatizada.regla_id IS 'FK, IDX';
-COMMENT ON COLUMN tarea_automatizada.grupo_id IS 'FK, IDX';
-COMMENT ON COLUMN tarea_automatizada.programada_para IS 'IDX';
-COMMENT ON COLUMN tarea_automatizada.estado IS 'CK, IDX';
+COMMENT ON TABLE organizador.tarea_automatizada IS 'Módulo 07 — Organizador y Automatización. Administrar es un rol, no un negocio: el organizador no cobra ni custodia';
+COMMENT ON COLUMN organizador.tarea_automatizada.id IS 'PK';
+COMMENT ON COLUMN organizador.tarea_automatizada.regla_id IS 'FK, IDX';
+COMMENT ON COLUMN organizador.tarea_automatizada.grupo_id IS 'FK, IDX';
+COMMENT ON COLUMN organizador.tarea_automatizada.programada_para IS 'IDX';
+COMMENT ON COLUMN organizador.tarea_automatizada.estado IS 'CK, IDX';

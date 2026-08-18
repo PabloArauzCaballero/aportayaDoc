@@ -2,7 +2,7 @@
 -- clase de dominio: PerfilTransaccional
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS perfil_transaccional (
+CREATE TABLE IF NOT EXISTS cumplimiento.perfil_transaccional (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   usuario_id                         UUID NOT NULL,
   tipo                               VARCHAR(10) NOT NULL,
@@ -19,8 +19,8 @@ CREATE TABLE IF NOT EXISTS perfil_transaccional (
   CONSTRAINT ck_perfil_transaccional_tipo CHECK (tipo IN ('DECLARADO', 'OBSERVADO'))
 );
 
-COMMENT ON TABLE perfil_transaccional IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
-COMMENT ON COLUMN perfil_transaccional.id IS 'PK';
-COMMENT ON COLUMN perfil_transaccional.usuario_id IS 'FK, IDX, M1';
-COMMENT ON COLUMN perfil_transaccional.tipo IS 'CK';
-COMMENT ON COLUMN perfil_transaccional.codigo_ciiu IS 'NULL';
+COMMENT ON TABLE cumplimiento.perfil_transaccional IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
+COMMENT ON COLUMN cumplimiento.perfil_transaccional.id IS 'PK';
+COMMENT ON COLUMN cumplimiento.perfil_transaccional.usuario_id IS 'FK, IDX, M1';
+COMMENT ON COLUMN cumplimiento.perfil_transaccional.tipo IS 'CK';
+COMMENT ON COLUMN cumplimiento.perfil_transaccional.codigo_ciiu IS 'NULL';

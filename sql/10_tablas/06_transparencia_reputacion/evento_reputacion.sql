@@ -3,7 +3,7 @@
 -- APPEND-ONLY: sin UPDATE ni DELETE (ver sql/40_reglas)
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS evento_reputacion (
+CREATE TABLE IF NOT EXISTS transparencia.evento_reputacion (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   usuario_id                         UUID NOT NULL,
   grupo_id                           UUID,
@@ -24,13 +24,13 @@ CREATE TABLE IF NOT EXISTS evento_reputacion (
   CONSTRAINT ck_evento_reputacion_referencia_tipo CHECK (referencia_tipo IN ('COBERTURA_INCUMPLIMIENTO', 'ENTREGA_FONDO', 'GRUPO', 'OBLIGACION_APORTE', 'PARTICIPANTE', 'REGISTRO_INCUMPLIMIENTO', 'RESENA_PARTICIPANTE', 'TRASPASO_CUPO'))
 );
 
-COMMENT ON TABLE evento_reputacion IS 'Módulo 06 — Transparencia y Reputación. [append-only] Que nadie tenga que "creerle" al organizador';
-COMMENT ON COLUMN evento_reputacion.id IS 'PK';
-COMMENT ON COLUMN evento_reputacion.usuario_id IS 'FK, IDX';
-COMMENT ON COLUMN evento_reputacion.grupo_id IS 'FK, NULL, IDX';
-COMMENT ON COLUMN evento_reputacion.participante_id IS 'FK, NULL';
-COMMENT ON COLUMN evento_reputacion.tipo IS 'CK, IDX';
-COMMENT ON COLUMN evento_reputacion.referencia_tipo IS 'CK';
-COMMENT ON COLUMN evento_reputacion.referencia_origen_id IS 'NULL, polimorfica';
-COMMENT ON COLUMN evento_reputacion.revertido_por_id IS 'FK, NULL';
-COMMENT ON COLUMN evento_reputacion.ocurrido_en IS 'IDX';
+COMMENT ON TABLE transparencia.evento_reputacion IS 'Módulo 06 — Transparencia y Reputación. [append-only] Que nadie tenga que "creerle" al organizador';
+COMMENT ON COLUMN transparencia.evento_reputacion.id IS 'PK';
+COMMENT ON COLUMN transparencia.evento_reputacion.usuario_id IS 'FK, IDX';
+COMMENT ON COLUMN transparencia.evento_reputacion.grupo_id IS 'FK, NULL, IDX';
+COMMENT ON COLUMN transparencia.evento_reputacion.participante_id IS 'FK, NULL';
+COMMENT ON COLUMN transparencia.evento_reputacion.tipo IS 'CK, IDX';
+COMMENT ON COLUMN transparencia.evento_reputacion.referencia_tipo IS 'CK';
+COMMENT ON COLUMN transparencia.evento_reputacion.referencia_origen_id IS 'NULL, polimorfica';
+COMMENT ON COLUMN transparencia.evento_reputacion.revertido_por_id IS 'FK, NULL';
+COMMENT ON COLUMN transparencia.evento_reputacion.ocurrido_en IS 'IDX';

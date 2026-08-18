@@ -2,7 +2,7 @@
 -- clase de dominio: Organizador
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS organizador (
+CREATE TABLE IF NOT EXISTS organizador.organizador (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   usuario_id                         UUID NOT NULL,
   estado                             VARCHAR(25) NOT NULL,
@@ -23,10 +23,10 @@ CREATE TABLE IF NOT EXISTS organizador (
   CONSTRAINT ck_organizador_nivel CHECK (nivel IN ('APRENDIZ', 'ESTANDAR', 'MAESTRO', 'SENIOR'))
 );
 
-COMMENT ON TABLE organizador IS 'Módulo 07 — Organizador y Automatización. Administrar es un rol, no un negocio: el organizador no cobra ni custodia';
-COMMENT ON COLUMN organizador.id IS 'PK';
-COMMENT ON COLUMN organizador.usuario_id IS 'FK, UQ';
-COMMENT ON COLUMN organizador.estado IS 'CK, IDX';
-COMMENT ON COLUMN organizador.nivel IS 'CK';
-COMMENT ON COLUMN organizador.fecha_habilitacion IS 'NULL';
-COMMENT ON COLUMN organizador.fecha_suspension IS 'NULL';
+COMMENT ON TABLE organizador.organizador IS 'Módulo 07 — Organizador y Automatización. Administrar es un rol, no un negocio: el organizador no cobra ni custodia';
+COMMENT ON COLUMN organizador.organizador.id IS 'PK';
+COMMENT ON COLUMN organizador.organizador.usuario_id IS 'FK, UQ';
+COMMENT ON COLUMN organizador.organizador.estado IS 'CK, IDX';
+COMMENT ON COLUMN organizador.organizador.nivel IS 'CK';
+COMMENT ON COLUMN organizador.organizador.fecha_habilitacion IS 'NULL';
+COMMENT ON COLUMN organizador.organizador.fecha_suspension IS 'NULL';

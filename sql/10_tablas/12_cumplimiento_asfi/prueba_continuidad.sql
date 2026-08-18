@@ -2,7 +2,7 @@
 -- clase de dominio: PruebaContinuidad
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS prueba_continuidad (
+CREATE TABLE IF NOT EXISTS cumplimiento.prueba_continuidad (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   plan_continuidad_id                UUID NOT NULL,
   acta_comite_id                     UUID,
@@ -19,13 +19,13 @@ CREATE TABLE IF NOT EXISTS prueba_continuidad (
   CONSTRAINT ck_prueba_continuidad_resultado CHECK (resultado IN ('EXITOSA', 'FALLIDA', 'PARCIAL'))
 );
 
-COMMENT ON TABLE prueba_continuidad IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
-COMMENT ON COLUMN prueba_continuidad.id IS 'PK';
-COMMENT ON COLUMN prueba_continuidad.plan_continuidad_id IS 'FK, IDX';
-COMMENT ON COLUMN prueba_continuidad.acta_comite_id IS 'FK, NULL';
-COMMENT ON COLUMN prueba_continuidad.ejecutada_por IS 'FK';
-COMMENT ON COLUMN prueba_continuidad.tipo IS 'CK';
-COMMENT ON COLUMN prueba_continuidad.fecha IS 'IDX';
-COMMENT ON COLUMN prueba_continuidad.resultado IS 'CK, IDX';
-COMMENT ON COLUMN prueba_continuidad.hallazgos IS 'NULL';
-COMMENT ON COLUMN prueba_continuidad.evidencia_url IS 'NULL';
+COMMENT ON TABLE cumplimiento.prueba_continuidad IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
+COMMENT ON COLUMN cumplimiento.prueba_continuidad.id IS 'PK';
+COMMENT ON COLUMN cumplimiento.prueba_continuidad.plan_continuidad_id IS 'FK, IDX';
+COMMENT ON COLUMN cumplimiento.prueba_continuidad.acta_comite_id IS 'FK, NULL';
+COMMENT ON COLUMN cumplimiento.prueba_continuidad.ejecutada_por IS 'FK';
+COMMENT ON COLUMN cumplimiento.prueba_continuidad.tipo IS 'CK';
+COMMENT ON COLUMN cumplimiento.prueba_continuidad.fecha IS 'IDX';
+COMMENT ON COLUMN cumplimiento.prueba_continuidad.resultado IS 'CK, IDX';
+COMMENT ON COLUMN cumplimiento.prueba_continuidad.hallazgos IS 'NULL';
+COMMENT ON COLUMN cumplimiento.prueba_continuidad.evidencia_url IS 'NULL';

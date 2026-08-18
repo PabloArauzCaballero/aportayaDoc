@@ -3,7 +3,7 @@
 -- APPEND-ONLY: sin UPDATE ni DELETE (ver sql/40_reglas)
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS evento_riesgo_operativo (
+CREATE TABLE IF NOT EXISTS cumplimiento.evento_riesgo_operativo (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   codigo                             VARCHAR(20) NOT NULL,
   incidente_operativo_id             UUID,
@@ -28,16 +28,16 @@ CREATE TABLE IF NOT EXISTS evento_riesgo_operativo (
   CONSTRAINT ck_evento_riesgo_operativo_estado CHECK (estado IN ('CERRADO', 'EN_ANALISIS', 'EN_REMEDIACION', 'REGISTRADO'))
 );
 
-COMMENT ON TABLE evento_riesgo_operativo IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. [append-only] Que una inspección se responda con consultas, no armando carpetas';
-COMMENT ON COLUMN evento_riesgo_operativo.id IS 'PK';
-COMMENT ON COLUMN evento_riesgo_operativo.codigo IS 'UQ';
-COMMENT ON COLUMN evento_riesgo_operativo.incidente_operativo_id IS 'FK, NULL, M9';
-COMMENT ON COLUMN evento_riesgo_operativo.registrado_por IS 'FK';
-COMMENT ON COLUMN evento_riesgo_operativo.categoria_evento IS 'CK, IDX';
-COMMENT ON COLUMN evento_riesgo_operativo.factor_riesgo IS 'CK, IDX';
-COMMENT ON COLUMN evento_riesgo_operativo.reportado_central_riesgo_operativo IS 'IDX';
-COMMENT ON COLUMN evento_riesgo_operativo.fecha_ocurrencia IS 'IDX';
-COMMENT ON COLUMN evento_riesgo_operativo.fecha_contabilizacion IS 'NULL';
-COMMENT ON COLUMN evento_riesgo_operativo.perdida_neta IS 'GENERATED';
-COMMENT ON COLUMN evento_riesgo_operativo.causa_raiz IS 'NULL';
-COMMENT ON COLUMN evento_riesgo_operativo.estado IS 'CK, IDX';
+COMMENT ON TABLE cumplimiento.evento_riesgo_operativo IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. [append-only] Que una inspección se responda con consultas, no armando carpetas';
+COMMENT ON COLUMN cumplimiento.evento_riesgo_operativo.id IS 'PK';
+COMMENT ON COLUMN cumplimiento.evento_riesgo_operativo.codigo IS 'UQ';
+COMMENT ON COLUMN cumplimiento.evento_riesgo_operativo.incidente_operativo_id IS 'FK, NULL, M9';
+COMMENT ON COLUMN cumplimiento.evento_riesgo_operativo.registrado_por IS 'FK';
+COMMENT ON COLUMN cumplimiento.evento_riesgo_operativo.categoria_evento IS 'CK, IDX';
+COMMENT ON COLUMN cumplimiento.evento_riesgo_operativo.factor_riesgo IS 'CK, IDX';
+COMMENT ON COLUMN cumplimiento.evento_riesgo_operativo.reportado_central_riesgo_operativo IS 'IDX';
+COMMENT ON COLUMN cumplimiento.evento_riesgo_operativo.fecha_ocurrencia IS 'IDX';
+COMMENT ON COLUMN cumplimiento.evento_riesgo_operativo.fecha_contabilizacion IS 'NULL';
+COMMENT ON COLUMN cumplimiento.evento_riesgo_operativo.perdida_neta IS 'GENERATED';
+COMMENT ON COLUMN cumplimiento.evento_riesgo_operativo.causa_raiz IS 'NULL';
+COMMENT ON COLUMN cumplimiento.evento_riesgo_operativo.estado IS 'CK, IDX';

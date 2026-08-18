@@ -2,7 +2,7 @@
 -- clase de dominio: ReglaEntrega
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS regla_entrega (
+CREATE TABLE IF NOT EXISTS entregas.regla_entrega (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   codigo                             VARCHAR(40) NOT NULL,
   descripcion                        VARCHAR(200) NOT NULL,
@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS regla_entrega (
   CONSTRAINT pk_regla_entrega PRIMARY KEY (id)
 );
 
-COMMENT ON TABLE regla_entrega IS 'Módulo 04 — Entregas de Fondo. Que la bolsa llegue completa, a la persona correcta, una sola vez';
-COMMENT ON COLUMN regla_entrega.id IS 'PK';
-COMMENT ON COLUMN regla_entrega.codigo IS 'UQ';
-COMMENT ON COLUMN regla_entrega.rol_que_puede_omitir IS 'NULL';
+COMMENT ON TABLE entregas.regla_entrega IS 'Módulo 04 — Entregas de Fondo. Que la bolsa llegue completa, a la persona correcta, una sola vez';
+COMMENT ON COLUMN entregas.regla_entrega.id IS 'PK';
+COMMENT ON COLUMN entregas.regla_entrega.codigo IS 'UQ';
+COMMENT ON COLUMN entregas.regla_entrega.rol_que_puede_omitir IS 'NULL';

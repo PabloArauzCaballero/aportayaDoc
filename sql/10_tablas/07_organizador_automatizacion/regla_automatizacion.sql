@@ -2,7 +2,7 @@
 -- clase de dominio: ReglaAutomatizacion
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS regla_automatizacion (
+CREATE TABLE IF NOT EXISTS organizador.regla_automatizacion (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   codigo                             VARCHAR(40) NOT NULL,
   descripcion                        VARCHAR(200) NOT NULL,
@@ -18,8 +18,8 @@ CREATE TABLE IF NOT EXISTS regla_automatizacion (
   CONSTRAINT ck_regla_automatizacion_accion CHECK (accion IN ('APLICAR_MORA', 'EJECUTAR_ENTREGA', 'ENVIAR_RECORDATORIO', 'ESCALAR_COBRANZA', 'GENERAR_COBROS', 'LIQUIDAR_PERIODO'))
 );
 
-COMMENT ON TABLE regla_automatizacion IS 'Módulo 07 — Organizador y Automatización. Administrar es un rol, no un negocio: el organizador no cobra ni custodia';
-COMMENT ON COLUMN regla_automatizacion.id IS 'PK';
-COMMENT ON COLUMN regla_automatizacion.codigo IS 'UQ';
-COMMENT ON COLUMN regla_automatizacion.disparador IS 'CK';
-COMMENT ON COLUMN regla_automatizacion.accion IS 'CK';
+COMMENT ON TABLE organizador.regla_automatizacion IS 'Módulo 07 — Organizador y Automatización. Administrar es un rol, no un negocio: el organizador no cobra ni custodia';
+COMMENT ON COLUMN organizador.regla_automatizacion.id IS 'PK';
+COMMENT ON COLUMN organizador.regla_automatizacion.codigo IS 'UQ';
+COMMENT ON COLUMN organizador.regla_automatizacion.disparador IS 'CK';
+COMMENT ON COLUMN organizador.regla_automatizacion.accion IS 'CK';

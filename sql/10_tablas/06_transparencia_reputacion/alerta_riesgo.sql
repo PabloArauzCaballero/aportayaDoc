@@ -2,7 +2,7 @@
 -- clase de dominio: AlertaRiesgo
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS alerta_riesgo (
+CREATE TABLE IF NOT EXISTS transparencia.alerta_riesgo (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   ambito                             VARCHAR(15) NOT NULL,
   ambito_id                          UUID NOT NULL,
@@ -20,11 +20,11 @@ CREATE TABLE IF NOT EXISTS alerta_riesgo (
   CONSTRAINT ck_alerta_riesgo_estado CHECK (estado IN ('ABIERTA', 'CONFIRMADA', 'DESCARTADA', 'EN_REVISION'))
 );
 
-COMMENT ON TABLE alerta_riesgo IS 'Módulo 06 — Transparencia y Reputación. Que nadie tenga que "creerle" al organizador';
-COMMENT ON COLUMN alerta_riesgo.id IS 'PK';
-COMMENT ON COLUMN alerta_riesgo.ambito IS 'CK';
-COMMENT ON COLUMN alerta_riesgo.ambito_id IS 'IDX';
-COMMENT ON COLUMN alerta_riesgo.codigo IS 'CK';
-COMMENT ON COLUMN alerta_riesgo.severidad IS 'CK';
-COMMENT ON COLUMN alerta_riesgo.estado IS 'CK, IDX';
-COMMENT ON COLUMN alerta_riesgo.cerrada_en IS 'NULL';
+COMMENT ON TABLE transparencia.alerta_riesgo IS 'Módulo 06 — Transparencia y Reputación. Que nadie tenga que "creerle" al organizador';
+COMMENT ON COLUMN transparencia.alerta_riesgo.id IS 'PK';
+COMMENT ON COLUMN transparencia.alerta_riesgo.ambito IS 'CK';
+COMMENT ON COLUMN transparencia.alerta_riesgo.ambito_id IS 'IDX';
+COMMENT ON COLUMN transparencia.alerta_riesgo.codigo IS 'CK';
+COMMENT ON COLUMN transparencia.alerta_riesgo.severidad IS 'CK';
+COMMENT ON COLUMN transparencia.alerta_riesgo.estado IS 'CK, IDX';
+COMMENT ON COLUMN transparencia.alerta_riesgo.cerrada_en IS 'NULL';

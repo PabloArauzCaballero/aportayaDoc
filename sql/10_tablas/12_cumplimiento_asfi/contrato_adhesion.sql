@@ -2,7 +2,7 @@
 -- clase de dominio: ContratoAdhesion
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS contrato_adhesion (
+CREATE TABLE IF NOT EXISTS cumplimiento.contrato_adhesion (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   codigo                             VARCHAR(30) NOT NULL,
   version                            SMALLINT DEFAULT 0 NOT NULL,
@@ -21,12 +21,12 @@ CREATE TABLE IF NOT EXISTS contrato_adhesion (
   CONSTRAINT ck_contrato_adhesion_estado CHECK (estado IN ('ARCHIVADO', 'BORRADOR', 'EN_REGISTRO', 'SUSTITUIDO', 'VIGENTE'))
 );
 
-COMMENT ON TABLE contrato_adhesion IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
-COMMENT ON COLUMN contrato_adhesion.id IS 'PK';
-COMMENT ON COLUMN contrato_adhesion.codigo IS 'UQ+version';
-COMMENT ON COLUMN contrato_adhesion.tipo IS 'CK, IDX';
-COMMENT ON COLUMN contrato_adhesion.estado IS 'CK';
-COMMENT ON COLUMN contrato_adhesion.numero_registro IS 'NULL';
-COMMENT ON COLUMN contrato_adhesion.fecha_registro IS 'NULL';
-COMMENT ON COLUMN contrato_adhesion.vigente_hasta IS 'NULL';
-COMMENT ON COLUMN contrato_adhesion.aprobado_por IS 'FK, NULL';
+COMMENT ON TABLE cumplimiento.contrato_adhesion IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
+COMMENT ON COLUMN cumplimiento.contrato_adhesion.id IS 'PK';
+COMMENT ON COLUMN cumplimiento.contrato_adhesion.codigo IS 'UQ+version';
+COMMENT ON COLUMN cumplimiento.contrato_adhesion.tipo IS 'CK, IDX';
+COMMENT ON COLUMN cumplimiento.contrato_adhesion.estado IS 'CK';
+COMMENT ON COLUMN cumplimiento.contrato_adhesion.numero_registro IS 'NULL';
+COMMENT ON COLUMN cumplimiento.contrato_adhesion.fecha_registro IS 'NULL';
+COMMENT ON COLUMN cumplimiento.contrato_adhesion.vigente_hasta IS 'NULL';
+COMMENT ON COLUMN cumplimiento.contrato_adhesion.aprobado_por IS 'FK, NULL';

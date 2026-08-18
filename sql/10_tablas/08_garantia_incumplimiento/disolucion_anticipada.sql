@@ -2,7 +2,7 @@
 -- clase de dominio: DisolucionAnticipada
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS disolucion_anticipada (
+CREATE TABLE IF NOT EXISTS garantia.disolucion_anticipada (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   grupo_id                           UUID NOT NULL,
   acuerdo_grupo_id                   UUID,
@@ -19,10 +19,10 @@ CREATE TABLE IF NOT EXISTS disolucion_anticipada (
   CONSTRAINT ck_disolucion_anticipada_estado CHECK (estado IN ('CALCULADA', 'CERRADA', 'EJECUTADA', 'INICIADA'))
 );
 
-COMMENT ON TABLE disolucion_anticipada IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. El grupo no se detiene, pero la deuda no se perdona sola';
-COMMENT ON COLUMN disolucion_anticipada.id IS 'PK';
-COMMENT ON COLUMN disolucion_anticipada.grupo_id IS 'FK, UQ';
-COMMENT ON COLUMN disolucion_anticipada.acuerdo_grupo_id IS 'FK, NULL, M2';
-COMMENT ON COLUMN disolucion_anticipada.causal IS 'CK';
-COMMENT ON COLUMN disolucion_anticipada.estado IS 'CK';
-COMMENT ON COLUMN disolucion_anticipada.cerrada_en IS 'NULL';
+COMMENT ON TABLE garantia.disolucion_anticipada IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. El grupo no se detiene, pero la deuda no se perdona sola';
+COMMENT ON COLUMN garantia.disolucion_anticipada.id IS 'PK';
+COMMENT ON COLUMN garantia.disolucion_anticipada.grupo_id IS 'FK, UQ';
+COMMENT ON COLUMN garantia.disolucion_anticipada.acuerdo_grupo_id IS 'FK, NULL, M2';
+COMMENT ON COLUMN garantia.disolucion_anticipada.causal IS 'CK';
+COMMENT ON COLUMN garantia.disolucion_anticipada.estado IS 'CK';
+COMMENT ON COLUMN garantia.disolucion_anticipada.cerrada_en IS 'NULL';

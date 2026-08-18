@@ -2,7 +2,7 @@
 -- clase de dominio: OrdenCompra
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS orden_compra (
+CREATE TABLE IF NOT EXISTS erp.orden_compra (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   tercero_comercial_id               UUID NOT NULL,
   centro_costo_id                    UUID,
@@ -18,11 +18,11 @@ CREATE TABLE IF NOT EXISTS orden_compra (
   CONSTRAINT ck_orden_compra_estado CHECK (estado IN ('APROBADA', 'BORRADOR', 'CANCELADA', 'RECIBIDA_PARCIAL', 'RECIBIDA_TOTAL'))
 );
 
-COMMENT ON TABLE orden_compra IS 'Módulo 13 — Contabilidad Financiera y ERP. Que cerrar un mes no dependa de un Excel armado a mano';
-COMMENT ON COLUMN orden_compra.id IS 'PK';
-COMMENT ON COLUMN orden_compra.tercero_comercial_id IS 'FK, IDX';
-COMMENT ON COLUMN orden_compra.centro_costo_id IS 'FK, NULL';
-COMMENT ON COLUMN orden_compra.numero IS 'UQ';
-COMMENT ON COLUMN orden_compra.monto_total IS 'CK: > 0';
-COMMENT ON COLUMN orden_compra.estado IS 'CK, IDX';
-COMMENT ON COLUMN orden_compra.aprobada_por IS 'FK, NULL';
+COMMENT ON TABLE erp.orden_compra IS 'Módulo 13 — Contabilidad Financiera y ERP. Que cerrar un mes no dependa de un Excel armado a mano';
+COMMENT ON COLUMN erp.orden_compra.id IS 'PK';
+COMMENT ON COLUMN erp.orden_compra.tercero_comercial_id IS 'FK, IDX';
+COMMENT ON COLUMN erp.orden_compra.centro_costo_id IS 'FK, NULL';
+COMMENT ON COLUMN erp.orden_compra.numero IS 'UQ';
+COMMENT ON COLUMN erp.orden_compra.monto_total IS 'CK: > 0';
+COMMENT ON COLUMN erp.orden_compra.estado IS 'CK, IDX';
+COMMENT ON COLUMN erp.orden_compra.aprobada_por IS 'FK, NULL';

@@ -2,7 +2,7 @@
 -- clase de dominio: IndicadorKPI
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS indicador_kpi (
+CREATE TABLE IF NOT EXISTS auditoria.indicador_kpi (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   codigo                             VARCHAR(40) NOT NULL,
   nombre                             VARCHAR(80) NOT NULL,
@@ -18,10 +18,10 @@ CREATE TABLE IF NOT EXISTS indicador_kpi (
   CONSTRAINT ck_indicador_kpi_dimension CHECK (dimension IN ('GLOBAL', 'POR_GRUPO', 'POR_ORGANIZADOR'))
 );
 
-COMMENT ON TABLE indicador_kpi IS 'Módulo 09 — Auditoría, Reportes y Cumplimiento. Poder demostrar todo lo anterior ante un reclamo o un regulador';
-COMMENT ON COLUMN indicador_kpi.id IS 'PK';
-COMMENT ON COLUMN indicador_kpi.codigo IS 'UQ+dimension+dimension_id+periodo';
-COMMENT ON COLUMN indicador_kpi.dimension IS 'CK';
-COMMENT ON COLUMN indicador_kpi.dimension_id IS 'NULL';
-COMMENT ON COLUMN indicador_kpi.meta IS 'NULL';
-COMMENT ON COLUMN indicador_kpi.variacion_periodo_anterior IS 'NULL';
+COMMENT ON TABLE auditoria.indicador_kpi IS 'Módulo 09 — Auditoría, Reportes y Cumplimiento. Poder demostrar todo lo anterior ante un reclamo o un regulador';
+COMMENT ON COLUMN auditoria.indicador_kpi.id IS 'PK';
+COMMENT ON COLUMN auditoria.indicador_kpi.codigo IS 'UQ+dimension+dimension_id+periodo';
+COMMENT ON COLUMN auditoria.indicador_kpi.dimension IS 'CK';
+COMMENT ON COLUMN auditoria.indicador_kpi.dimension_id IS 'NULL';
+COMMENT ON COLUMN auditoria.indicador_kpi.meta IS 'NULL';
+COMMENT ON COLUMN auditoria.indicador_kpi.variacion_periodo_anterior IS 'NULL';

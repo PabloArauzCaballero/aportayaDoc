@@ -2,7 +2,7 @@
 -- clase de dominio: RequisitoHabilitacion
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS requisito_habilitacion (
+CREATE TABLE IF NOT EXISTS organizador.requisito_habilitacion (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   codigo                             VARCHAR(40) NOT NULL,
   descripcion                        VARCHAR(200) NOT NULL,
@@ -16,8 +16,8 @@ CREATE TABLE IF NOT EXISTS requisito_habilitacion (
   CONSTRAINT ck_requisito_habilitacion_nivel_requerido CHECK (nivel_requerido IN ('APRENDIZ', 'ESTANDAR', 'MAESTRO', 'SENIOR'))
 );
 
-COMMENT ON TABLE requisito_habilitacion IS 'Módulo 07 — Organizador y Automatización. Administrar es un rol, no un negocio: el organizador no cobra ni custodia';
-COMMENT ON COLUMN requisito_habilitacion.id IS 'PK';
-COMMENT ON COLUMN requisito_habilitacion.codigo IS 'UQ';
-COMMENT ON COLUMN requisito_habilitacion.tipo IS 'CK';
-COMMENT ON COLUMN requisito_habilitacion.nivel_requerido IS 'CK';
+COMMENT ON TABLE organizador.requisito_habilitacion IS 'Módulo 07 — Organizador y Automatización. Administrar es un rol, no un negocio: el organizador no cobra ni custodia';
+COMMENT ON COLUMN organizador.requisito_habilitacion.id IS 'PK';
+COMMENT ON COLUMN organizador.requisito_habilitacion.codigo IS 'UQ';
+COMMENT ON COLUMN organizador.requisito_habilitacion.tipo IS 'CK';
+COMMENT ON COLUMN organizador.requisito_habilitacion.nivel_requerido IS 'CK';

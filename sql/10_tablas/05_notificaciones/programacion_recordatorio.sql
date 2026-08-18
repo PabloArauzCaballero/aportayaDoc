@@ -2,7 +2,7 @@
 -- clase de dominio: ProgramacionRecordatorio
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS programacion_recordatorio (
+CREATE TABLE IF NOT EXISTS notificaciones.programacion_recordatorio (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   grupo_id                           UUID,
   evento_id                          UUID NOT NULL,
@@ -15,8 +15,8 @@ CREATE TABLE IF NOT EXISTS programacion_recordatorio (
   CONSTRAINT pk_programacion_recordatorio PRIMARY KEY (id)
 );
 
-COMMENT ON TABLE programacion_recordatorio IS 'Módulo 05 — Notificaciones y Comunicaciones. WhatsApp como canal real de cobro, sin spam ni doble aviso';
-COMMENT ON COLUMN programacion_recordatorio.id IS 'PK';
-COMMENT ON COLUMN programacion_recordatorio.grupo_id IS 'FK, NULL';
-COMMENT ON COLUMN programacion_recordatorio.evento_id IS 'FK';
-COMMENT ON COLUMN programacion_recordatorio.repetir_cada IS 'NULL';
+COMMENT ON TABLE notificaciones.programacion_recordatorio IS 'Módulo 05 — Notificaciones y Comunicaciones. WhatsApp como canal real de cobro, sin spam ni doble aviso';
+COMMENT ON COLUMN notificaciones.programacion_recordatorio.id IS 'PK';
+COMMENT ON COLUMN notificaciones.programacion_recordatorio.grupo_id IS 'FK, NULL';
+COMMENT ON COLUMN notificaciones.programacion_recordatorio.evento_id IS 'FK';
+COMMENT ON COLUMN notificaciones.programacion_recordatorio.repetir_cada IS 'NULL';

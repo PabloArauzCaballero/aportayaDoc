@@ -2,7 +2,7 @@
 -- clase de dominio: ConciliacionCustodia
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS conciliacion_custodia (
+CREATE TABLE IF NOT EXISTS nucleo_financiero.conciliacion_custodia (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   cuenta_custodia_id                 UUID NOT NULL,
   cierre_diario_id                   UUID,
@@ -20,13 +20,13 @@ CREATE TABLE IF NOT EXISTS conciliacion_custodia (
   CONSTRAINT ck_conciliacion_custodia_estado CHECK (estado IN ('CUADRADA', 'DESCUADRADA', 'EN_ANALISIS'))
 );
 
-COMMENT ON TABLE conciliacion_custodia IS 'Módulo 10 — Billetera, Custodia y Dinero Electrónico. El saldo no se guarda: se deriva, y todos los días cuadra contra el banco';
-COMMENT ON COLUMN conciliacion_custodia.id IS 'PK';
-COMMENT ON COLUMN conciliacion_custodia.cuenta_custodia_id IS 'FK, IDX';
-COMMENT ON COLUMN conciliacion_custodia.cierre_diario_id IS 'FK, NULL, M3';
-COMMENT ON COLUMN conciliacion_custodia.ejecutada_por IS 'FK, NULL';
-COMMENT ON COLUMN conciliacion_custodia.fecha IS 'UQ+cuenta_custodia_id';
-COMMENT ON COLUMN conciliacion_custodia.diferencia IS 'GENERATED';
-COMMENT ON COLUMN conciliacion_custodia.ratio_cobertura IS 'GENERATED';
-COMMENT ON COLUMN conciliacion_custodia.cumple_encaje IS 'IDX';
-COMMENT ON COLUMN conciliacion_custodia.estado IS 'CK, IDX';
+COMMENT ON TABLE nucleo_financiero.conciliacion_custodia IS 'Módulo 10 — Billetera, Custodia y Dinero Electrónico. El saldo no se guarda: se deriva, y todos los días cuadra contra el banco';
+COMMENT ON COLUMN nucleo_financiero.conciliacion_custodia.id IS 'PK';
+COMMENT ON COLUMN nucleo_financiero.conciliacion_custodia.cuenta_custodia_id IS 'FK, IDX';
+COMMENT ON COLUMN nucleo_financiero.conciliacion_custodia.cierre_diario_id IS 'FK, NULL, M3';
+COMMENT ON COLUMN nucleo_financiero.conciliacion_custodia.ejecutada_por IS 'FK, NULL';
+COMMENT ON COLUMN nucleo_financiero.conciliacion_custodia.fecha IS 'UQ+cuenta_custodia_id';
+COMMENT ON COLUMN nucleo_financiero.conciliacion_custodia.diferencia IS 'GENERATED';
+COMMENT ON COLUMN nucleo_financiero.conciliacion_custodia.ratio_cobertura IS 'GENERATED';
+COMMENT ON COLUMN nucleo_financiero.conciliacion_custodia.cumple_encaje IS 'IDX';
+COMMENT ON COLUMN nucleo_financiero.conciliacion_custodia.estado IS 'CK, IDX';

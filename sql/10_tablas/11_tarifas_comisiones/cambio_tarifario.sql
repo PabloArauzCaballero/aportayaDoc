@@ -2,7 +2,7 @@
 -- clase de dominio: CambioTarifario
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS cambio_tarifario (
+CREATE TABLE IF NOT EXISTS tarifas.cambio_tarifario (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   tarifario_anterior_id              UUID NOT NULL,
   tarifario_nuevo_id                 UUID NOT NULL,
@@ -19,12 +19,12 @@ CREATE TABLE IF NOT EXISTS cambio_tarifario (
   CONSTRAINT ck_cambio_tarifario_tipo_cambio CHECK (tipo_cambio IN ('ELIMINACION', 'INCREMENTO', 'NUEVO_CONCEPTO', 'REDUCCION'))
 );
 
-COMMENT ON TABLE cambio_tarifario IS 'Módulo 11 — Tarifas, Comisiones, Impuestos y Facturación. La política de cobro es dato, no código: se cambia con un seeder';
-COMMENT ON COLUMN cambio_tarifario.id IS 'PK';
-COMMENT ON COLUMN cambio_tarifario.tarifario_anterior_id IS 'FK';
-COMMENT ON COLUMN cambio_tarifario.tarifario_nuevo_id IS 'FK, UQ';
-COMMENT ON COLUMN cambio_tarifario.aprobado_por IS 'FK';
-COMMENT ON COLUMN cambio_tarifario.tipo_cambio IS 'CK';
-COMMENT ON COLUMN cambio_tarifario.fecha_aviso IS 'NULL';
-COMMENT ON COLUMN cambio_tarifario.canal_aviso IS 'NULL';
-COMMENT ON COLUMN cambio_tarifario.publicado_en IS 'NULL';
+COMMENT ON TABLE tarifas.cambio_tarifario IS 'Módulo 11 — Tarifas, Comisiones, Impuestos y Facturación. La política de cobro es dato, no código: se cambia con un seeder';
+COMMENT ON COLUMN tarifas.cambio_tarifario.id IS 'PK';
+COMMENT ON COLUMN tarifas.cambio_tarifario.tarifario_anterior_id IS 'FK';
+COMMENT ON COLUMN tarifas.cambio_tarifario.tarifario_nuevo_id IS 'FK, UQ';
+COMMENT ON COLUMN tarifas.cambio_tarifario.aprobado_por IS 'FK';
+COMMENT ON COLUMN tarifas.cambio_tarifario.tipo_cambio IS 'CK';
+COMMENT ON COLUMN tarifas.cambio_tarifario.fecha_aviso IS 'NULL';
+COMMENT ON COLUMN tarifas.cambio_tarifario.canal_aviso IS 'NULL';
+COMMENT ON COLUMN tarifas.cambio_tarifario.publicado_en IS 'NULL';

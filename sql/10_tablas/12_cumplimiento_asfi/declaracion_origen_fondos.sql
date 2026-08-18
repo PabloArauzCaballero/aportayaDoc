@@ -2,7 +2,7 @@
 -- clase de dominio: DeclaracionOrigenFondos
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS declaracion_origen_fondos (
+CREATE TABLE IF NOT EXISTS cumplimiento.declaracion_origen_fondos (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   usuario_id                         UUID NOT NULL,
   transaccion_id                     UUID,
@@ -20,12 +20,12 @@ CREATE TABLE IF NOT EXISTS declaracion_origen_fondos (
   CONSTRAINT ck_declaracion_origen_fondos_estado CHECK (estado IN ('DECLARADA', 'OBSERVADA', 'RECHAZADA', 'VERIFICADA'))
 );
 
-COMMENT ON TABLE declaracion_origen_fondos IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
-COMMENT ON COLUMN declaracion_origen_fondos.id IS 'PK';
-COMMENT ON COLUMN declaracion_origen_fondos.usuario_id IS 'FK, IDX, M1';
-COMMENT ON COLUMN declaracion_origen_fondos.transaccion_id IS 'FK, NULL, M10';
-COMMENT ON COLUMN declaracion_origen_fondos.verificada_por IS 'FK, NULL';
-COMMENT ON COLUMN declaracion_origen_fondos.origen IS 'CK';
-COMMENT ON COLUMN declaracion_origen_fondos.documento_respaldo_url IS 'NULL';
-COMMENT ON COLUMN declaracion_origen_fondos.hash_documento IS 'NULL';
-COMMENT ON COLUMN declaracion_origen_fondos.estado IS 'CK';
+COMMENT ON TABLE cumplimiento.declaracion_origen_fondos IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
+COMMENT ON COLUMN cumplimiento.declaracion_origen_fondos.id IS 'PK';
+COMMENT ON COLUMN cumplimiento.declaracion_origen_fondos.usuario_id IS 'FK, IDX, M1';
+COMMENT ON COLUMN cumplimiento.declaracion_origen_fondos.transaccion_id IS 'FK, NULL, M10';
+COMMENT ON COLUMN cumplimiento.declaracion_origen_fondos.verificada_por IS 'FK, NULL';
+COMMENT ON COLUMN cumplimiento.declaracion_origen_fondos.origen IS 'CK';
+COMMENT ON COLUMN cumplimiento.declaracion_origen_fondos.documento_respaldo_url IS 'NULL';
+COMMENT ON COLUMN cumplimiento.declaracion_origen_fondos.hash_documento IS 'NULL';
+COMMENT ON COLUMN cumplimiento.declaracion_origen_fondos.estado IS 'CK';

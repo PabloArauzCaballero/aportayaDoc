@@ -2,7 +2,7 @@
 -- clase de dominio: Subrogacion
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS subrogacion (
+CREATE TABLE IF NOT EXISTS garantia.subrogacion (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   cobertura_id                       UUID NOT NULL,
   deuda_id                           UUID NOT NULL,
@@ -14,8 +14,8 @@ CREATE TABLE IF NOT EXISTS subrogacion (
   CONSTRAINT pk_subrogacion PRIMARY KEY (id)
 );
 
-COMMENT ON TABLE subrogacion IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. El grupo no se detiene, pero la deuda no se perdona sola';
-COMMENT ON COLUMN subrogacion.id IS 'PK';
-COMMENT ON COLUMN subrogacion.cobertura_id IS 'FK, UQ';
-COMMENT ON COLUMN subrogacion.deuda_id IS 'FK, UQ';
-COMMENT ON COLUMN subrogacion.documento_respaldo_url IS 'NULL';
+COMMENT ON TABLE garantia.subrogacion IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. El grupo no se detiene, pero la deuda no se perdona sola';
+COMMENT ON COLUMN garantia.subrogacion.id IS 'PK';
+COMMENT ON COLUMN garantia.subrogacion.cobertura_id IS 'FK, UQ';
+COMMENT ON COLUMN garantia.subrogacion.deuda_id IS 'FK, UQ';
+COMMENT ON COLUMN garantia.subrogacion.documento_respaldo_url IS 'NULL';

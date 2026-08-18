@@ -2,7 +2,7 @@
 -- clase de dominio: AceptacionReglamento
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS aceptacion_reglamento (
+CREATE TABLE IF NOT EXISTS grupos.aceptacion_reglamento (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   reglamento_id                      UUID NOT NULL,
   participante_id                    UUID NOT NULL,
@@ -13,8 +13,8 @@ CREATE TABLE IF NOT EXISTS aceptacion_reglamento (
   CONSTRAINT pk_aceptacion_reglamento PRIMARY KEY (id)
 );
 
-COMMENT ON TABLE aceptacion_reglamento IS 'Módulo 02 — Grupos, Cupos, Turnos y Gobernanza. Reglas del juego, orden de cobro y decisiones colectivas';
-COMMENT ON COLUMN aceptacion_reglamento.id IS 'PK';
-COMMENT ON COLUMN aceptacion_reglamento.reglamento_id IS 'FK';
-COMMENT ON COLUMN aceptacion_reglamento.participante_id IS 'FK';
-COMMENT ON COLUMN aceptacion_reglamento.token_firma_id IS 'FK, NULL, M1';
+COMMENT ON TABLE grupos.aceptacion_reglamento IS 'Módulo 02 — Grupos, Cupos, Turnos y Gobernanza. Reglas del juego, orden de cobro y decisiones colectivas';
+COMMENT ON COLUMN grupos.aceptacion_reglamento.id IS 'PK';
+COMMENT ON COLUMN grupos.aceptacion_reglamento.reglamento_id IS 'FK';
+COMMENT ON COLUMN grupos.aceptacion_reglamento.participante_id IS 'FK';
+COMMENT ON COLUMN grupos.aceptacion_reglamento.token_firma_id IS 'FK, NULL, M1';

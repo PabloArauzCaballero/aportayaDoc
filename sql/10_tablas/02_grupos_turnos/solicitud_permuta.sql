@@ -2,7 +2,7 @@
 -- clase de dominio: SolicitudPermuta
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS solicitud_permuta (
+CREATE TABLE IF NOT EXISTS grupos.solicitud_permuta (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   turno_origen_id                    UUID NOT NULL,
   turno_destino_id                   UUID NOT NULL,
@@ -18,12 +18,12 @@ CREATE TABLE IF NOT EXISTS solicitud_permuta (
   CONSTRAINT ck_solicitud_permuta_estado CHECK (estado IN ('ACEPTADA', 'APROBADA_ORG', 'EJECUTADA', 'PENDIENTE', 'RECHAZADA'))
 );
 
-COMMENT ON TABLE solicitud_permuta IS 'Módulo 02 — Grupos, Cupos, Turnos y Gobernanza. Reglas del juego, orden de cobro y decisiones colectivas';
-COMMENT ON COLUMN solicitud_permuta.id IS 'PK';
-COMMENT ON COLUMN solicitud_permuta.turno_origen_id IS 'FK, IDX';
-COMMENT ON COLUMN solicitud_permuta.turno_destino_id IS 'FK';
-COMMENT ON COLUMN solicitud_permuta.solicitante_id IS 'FK';
-COMMENT ON COLUMN solicitud_permuta.contraparte_id IS 'FK';
-COMMENT ON COLUMN solicitud_permuta.compensacion_ofrecida IS 'NULL';
-COMMENT ON COLUMN solicitud_permuta.estado IS 'CK';
-COMMENT ON COLUMN solicitud_permuta.fecha_ejecucion IS 'NULL';
+COMMENT ON TABLE grupos.solicitud_permuta IS 'Módulo 02 — Grupos, Cupos, Turnos y Gobernanza. Reglas del juego, orden de cobro y decisiones colectivas';
+COMMENT ON COLUMN grupos.solicitud_permuta.id IS 'PK';
+COMMENT ON COLUMN grupos.solicitud_permuta.turno_origen_id IS 'FK, IDX';
+COMMENT ON COLUMN grupos.solicitud_permuta.turno_destino_id IS 'FK';
+COMMENT ON COLUMN grupos.solicitud_permuta.solicitante_id IS 'FK';
+COMMENT ON COLUMN grupos.solicitud_permuta.contraparte_id IS 'FK';
+COMMENT ON COLUMN grupos.solicitud_permuta.compensacion_ofrecida IS 'NULL';
+COMMENT ON COLUMN grupos.solicitud_permuta.estado IS 'CK';
+COMMENT ON COLUMN grupos.solicitud_permuta.fecha_ejecucion IS 'NULL';

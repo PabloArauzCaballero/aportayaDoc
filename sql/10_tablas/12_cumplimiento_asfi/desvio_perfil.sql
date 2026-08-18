@@ -2,7 +2,7 @@
 -- clase de dominio: DesvioPerfil
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS desvio_perfil (
+CREATE TABLE IF NOT EXISTS cumplimiento.desvio_perfil (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   usuario_id                         UUID NOT NULL,
   perfil_transaccional_id            UUID NOT NULL,
@@ -20,13 +20,13 @@ CREATE TABLE IF NOT EXISTS desvio_perfil (
   CONSTRAINT ck_desvio_perfil_estado CHECK (estado IN ('DETECTADO', 'EN_ANALISIS', 'ESCALADO', 'JUSTIFICADO'))
 );
 
-COMMENT ON TABLE desvio_perfil IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
-COMMENT ON COLUMN desvio_perfil.id IS 'PK';
-COMMENT ON COLUMN desvio_perfil.usuario_id IS 'FK, IDX, M1';
-COMMENT ON COLUMN desvio_perfil.perfil_transaccional_id IS 'FK';
-COMMENT ON COLUMN desvio_perfil.alerta_monitoreo_id IS 'FK, NULL';
-COMMENT ON COLUMN desvio_perfil.periodo IS 'UQ+usuario_id';
-COMMENT ON COLUMN desvio_perfil.desvio_porcentual IS 'IDX';
-COMMENT ON COLUMN desvio_perfil.severidad IS 'CK';
-COMMENT ON COLUMN desvio_perfil.estado IS 'CK, IDX';
-COMMENT ON COLUMN desvio_perfil.justificacion IS 'NULL';
+COMMENT ON TABLE cumplimiento.desvio_perfil IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
+COMMENT ON COLUMN cumplimiento.desvio_perfil.id IS 'PK';
+COMMENT ON COLUMN cumplimiento.desvio_perfil.usuario_id IS 'FK, IDX, M1';
+COMMENT ON COLUMN cumplimiento.desvio_perfil.perfil_transaccional_id IS 'FK';
+COMMENT ON COLUMN cumplimiento.desvio_perfil.alerta_monitoreo_id IS 'FK, NULL';
+COMMENT ON COLUMN cumplimiento.desvio_perfil.periodo IS 'UQ+usuario_id';
+COMMENT ON COLUMN cumplimiento.desvio_perfil.desvio_porcentual IS 'IDX';
+COMMENT ON COLUMN cumplimiento.desvio_perfil.severidad IS 'CK';
+COMMENT ON COLUMN cumplimiento.desvio_perfil.estado IS 'CK, IDX';
+COMMENT ON COLUMN cumplimiento.desvio_perfil.justificacion IS 'NULL';

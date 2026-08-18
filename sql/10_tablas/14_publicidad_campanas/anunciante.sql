@@ -2,7 +2,7 @@
 -- clase de dominio: Anunciante
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS anunciante (
+CREATE TABLE IF NOT EXISTS publicidad.anunciante (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   tipo                               VARCHAR(15) NOT NULL,
   organizador_id                     UUID,
@@ -15,9 +15,9 @@ CREATE TABLE IF NOT EXISTS anunciante (
   CONSTRAINT ck_anunciante_estado CHECK (estado IN ('ACTIVO', 'DADO_DE_BAJA', 'SUSPENDIDO'))
 );
 
-COMMENT ON TABLE anunciante IS 'Módulo 14 — Publicidad y Campañas. Que un partner se anuncie dentro de la app sin inventar un segundo cobro';
-COMMENT ON COLUMN anunciante.id IS 'PK';
-COMMENT ON COLUMN anunciante.tipo IS 'CK, IDX';
-COMMENT ON COLUMN anunciante.organizador_id IS 'FK, NULL, IDX, M7';
-COMMENT ON COLUMN anunciante.socio_comercial_id IS 'FK, NULL, IDX';
-COMMENT ON COLUMN anunciante.estado IS 'CK, IDX';
+COMMENT ON TABLE publicidad.anunciante IS 'Módulo 14 — Publicidad y Campañas. Que un partner se anuncie dentro de la app sin inventar un segundo cobro';
+COMMENT ON COLUMN publicidad.anunciante.id IS 'PK';
+COMMENT ON COLUMN publicidad.anunciante.tipo IS 'CK, IDX';
+COMMENT ON COLUMN publicidad.anunciante.organizador_id IS 'FK, NULL, IDX, M7';
+COMMENT ON COLUMN publicidad.anunciante.socio_comercial_id IS 'FK, NULL, IDX';
+COMMENT ON COLUMN publicidad.anunciante.estado IS 'CK, IDX';

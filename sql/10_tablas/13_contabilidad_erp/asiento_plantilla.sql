@@ -2,7 +2,7 @@
 -- clase de dominio: AsientoPlantilla
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS asiento_plantilla (
+CREATE TABLE IF NOT EXISTS erp.asiento_plantilla (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   codigo                             VARCHAR(30) NOT NULL,
   nombre                             VARCHAR(100) NOT NULL,
@@ -14,8 +14,8 @@ CREATE TABLE IF NOT EXISTS asiento_plantilla (
   CONSTRAINT ck_asiento_plantilla_periodicidad CHECK (periodicidad IN ('ANUAL', 'MANUAL', 'MENSUAL', 'TRIMESTRAL'))
 );
 
-COMMENT ON TABLE asiento_plantilla IS 'Módulo 13 — Contabilidad Financiera y ERP. Que cerrar un mes no dependa de un Excel armado a mano';
-COMMENT ON COLUMN asiento_plantilla.id IS 'PK';
-COMMENT ON COLUMN asiento_plantilla.codigo IS 'UQ';
-COMMENT ON COLUMN asiento_plantilla.periodicidad IS 'CK';
-COMMENT ON COLUMN asiento_plantilla.creada_por IS 'FK';
+COMMENT ON TABLE erp.asiento_plantilla IS 'Módulo 13 — Contabilidad Financiera y ERP. Que cerrar un mes no dependa de un Excel armado a mano';
+COMMENT ON COLUMN erp.asiento_plantilla.id IS 'PK';
+COMMENT ON COLUMN erp.asiento_plantilla.codigo IS 'UQ';
+COMMENT ON COLUMN erp.asiento_plantilla.periodicidad IS 'CK';
+COMMENT ON COLUMN erp.asiento_plantilla.creada_por IS 'FK';

@@ -2,7 +2,7 @@
 -- clase de dominio: WebhookPasarela
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS webhook_pasarela (
+CREATE TABLE IF NOT EXISTS aportes.webhook_pasarela (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   proveedor_id                       UUID NOT NULL,
   evento                             VARCHAR(60) NOT NULL,
@@ -20,11 +20,11 @@ CREATE TABLE IF NOT EXISTS webhook_pasarela (
   CONSTRAINT ck_webhook_pasarela_estado CHECK (estado IN ('DESCARTADO', 'DUPLICADO', 'FALLIDO', 'PROCESADO', 'RECIBIDO'))
 );
 
-COMMENT ON TABLE webhook_pasarela IS 'Módulo 03 — Aportes, Pagos QR y Conciliación. Que "pagué" signifique "el banco lo confirmó"';
-COMMENT ON COLUMN webhook_pasarela.id IS 'PK';
-COMMENT ON COLUMN webhook_pasarela.proveedor_id IS 'FK, IDX';
-COMMENT ON COLUMN webhook_pasarela.recibido_en IS 'IDX';
-COMMENT ON COLUMN webhook_pasarela.procesado_en IS 'NULL';
-COMMENT ON COLUMN webhook_pasarela.estado IS 'CK, IDX';
-COMMENT ON COLUMN webhook_pasarela.error_procesamiento IS 'NULL';
-COMMENT ON COLUMN webhook_pasarela.pago_id IS 'FK, NULL';
+COMMENT ON TABLE aportes.webhook_pasarela IS 'Módulo 03 — Aportes, Pagos QR y Conciliación. Que "pagué" signifique "el banco lo confirmó"';
+COMMENT ON COLUMN aportes.webhook_pasarela.id IS 'PK';
+COMMENT ON COLUMN aportes.webhook_pasarela.proveedor_id IS 'FK, IDX';
+COMMENT ON COLUMN aportes.webhook_pasarela.recibido_en IS 'IDX';
+COMMENT ON COLUMN aportes.webhook_pasarela.procesado_en IS 'NULL';
+COMMENT ON COLUMN aportes.webhook_pasarela.estado IS 'CK, IDX';
+COMMENT ON COLUMN aportes.webhook_pasarela.error_procesamiento IS 'NULL';
+COMMENT ON COLUMN aportes.webhook_pasarela.pago_id IS 'FK, NULL';

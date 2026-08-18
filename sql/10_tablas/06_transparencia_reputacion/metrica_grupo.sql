@@ -2,7 +2,7 @@
 -- clase de dominio: MetricaGrupo
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS metrica_grupo (
+CREATE TABLE IF NOT EXISTS transparencia.metrica_grupo (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   grupo_id                           UUID NOT NULL,
   periodo_id                         UUID,
@@ -15,10 +15,10 @@ CREATE TABLE IF NOT EXISTS metrica_grupo (
   CONSTRAINT pk_metrica_grupo PRIMARY KEY (id)
 );
 
-COMMENT ON TABLE metrica_grupo IS 'Módulo 06 — Transparencia y Reputación. Que nadie tenga que "creerle" al organizador';
-COMMENT ON COLUMN metrica_grupo.id IS 'PK';
-COMMENT ON COLUMN metrica_grupo.grupo_id IS 'FK, IDX';
-COMMENT ON COLUMN metrica_grupo.periodo_id IS 'FK, NULL';
-COMMENT ON COLUMN metrica_grupo.codigo IS 'UQ+grupo_id+periodo_id';
-COMMENT ON COLUMN metrica_grupo.umbral_alerta IS 'NULL';
-COMMENT ON COLUMN metrica_grupo.en_alerta IS 'IDX';
+COMMENT ON TABLE transparencia.metrica_grupo IS 'Módulo 06 — Transparencia y Reputación. Que nadie tenga que "creerle" al organizador';
+COMMENT ON COLUMN transparencia.metrica_grupo.id IS 'PK';
+COMMENT ON COLUMN transparencia.metrica_grupo.grupo_id IS 'FK, IDX';
+COMMENT ON COLUMN transparencia.metrica_grupo.periodo_id IS 'FK, NULL';
+COMMENT ON COLUMN transparencia.metrica_grupo.codigo IS 'UQ+grupo_id+periodo_id';
+COMMENT ON COLUMN transparencia.metrica_grupo.umbral_alerta IS 'NULL';
+COMMENT ON COLUMN transparencia.metrica_grupo.en_alerta IS 'IDX';

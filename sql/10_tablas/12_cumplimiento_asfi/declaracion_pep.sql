@@ -2,7 +2,7 @@
 -- clase de dominio: DeclaracionPep
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS declaracion_pep (
+CREATE TABLE IF NOT EXISTS cumplimiento.declaracion_pep (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   usuario_id                         UUID NOT NULL,
   verificada_por                     UUID,
@@ -19,15 +19,15 @@ CREATE TABLE IF NOT EXISTS declaracion_pep (
   CONSTRAINT ck_declaracion_pep_tipo_pep CHECK (tipo_pep IN ('ALLEGADO', 'EXTRANJERO', 'FAMILIAR', 'NACIONAL', 'ORG_INTERNACIONAL'))
 );
 
-COMMENT ON TABLE declaracion_pep IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
-COMMENT ON COLUMN declaracion_pep.id IS 'PK';
-COMMENT ON COLUMN declaracion_pep.usuario_id IS 'FK, IDX, M1';
-COMMENT ON COLUMN declaracion_pep.verificada_por IS 'FK, NULL';
-COMMENT ON COLUMN declaracion_pep.es_pep IS 'IDX';
-COMMENT ON COLUMN declaracion_pep.tipo_pep IS 'CK, NULL';
-COMMENT ON COLUMN declaracion_pep.cargo IS 'NULL';
-COMMENT ON COLUMN declaracion_pep.institucion IS 'NULL';
-COMMENT ON COLUMN declaracion_pep.pais IS 'NULL';
-COMMENT ON COLUMN declaracion_pep.desde IS 'NULL';
-COMMENT ON COLUMN declaracion_pep.hasta IS 'NULL';
-COMMENT ON COLUMN declaracion_pep.evidencia_url IS 'NULL';
+COMMENT ON TABLE cumplimiento.declaracion_pep IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
+COMMENT ON COLUMN cumplimiento.declaracion_pep.id IS 'PK';
+COMMENT ON COLUMN cumplimiento.declaracion_pep.usuario_id IS 'FK, IDX, M1';
+COMMENT ON COLUMN cumplimiento.declaracion_pep.verificada_por IS 'FK, NULL';
+COMMENT ON COLUMN cumplimiento.declaracion_pep.es_pep IS 'IDX';
+COMMENT ON COLUMN cumplimiento.declaracion_pep.tipo_pep IS 'CK, NULL';
+COMMENT ON COLUMN cumplimiento.declaracion_pep.cargo IS 'NULL';
+COMMENT ON COLUMN cumplimiento.declaracion_pep.institucion IS 'NULL';
+COMMENT ON COLUMN cumplimiento.declaracion_pep.pais IS 'NULL';
+COMMENT ON COLUMN cumplimiento.declaracion_pep.desde IS 'NULL';
+COMMENT ON COLUMN cumplimiento.declaracion_pep.hasta IS 'NULL';
+COMMENT ON COLUMN cumplimiento.declaracion_pep.evidencia_url IS 'NULL';

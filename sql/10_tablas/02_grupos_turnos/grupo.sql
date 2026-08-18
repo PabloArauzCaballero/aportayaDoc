@@ -2,7 +2,7 @@
 -- clase de dominio: Grupo
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS grupo (
+CREATE TABLE IF NOT EXISTS grupos.grupo (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   codigo_publico                     VARCHAR(12) NOT NULL,
   nombre                             VARCHAR(120) NOT NULL,
@@ -40,16 +40,16 @@ CREATE TABLE IF NOT EXISTS grupo (
   CONSTRAINT ck_grupo_visibilidad CHECK (visibilidad IN ('ENLACE_DIRECTO', 'PRIVADO', 'PUBLICO_DIRECTORIO'))
 );
 
-COMMENT ON TABLE grupo IS 'Módulo 02 — Grupos, Cupos, Turnos y Gobernanza. Reglas del juego, orden de cobro y decisiones colectivas';
-COMMENT ON COLUMN grupo.id IS 'PK';
-COMMENT ON COLUMN grupo.codigo_publico IS 'UQ';
-COMMENT ON COLUMN grupo.descripcion IS 'NULL';
-COMMENT ON COLUMN grupo.monto_aporte IS 'CK: > 0';
-COMMENT ON COLUMN grupo.periodicidad IS 'CK';
-COMMENT ON COLUMN grupo.num_periodos IS 'CK: >= 3';
-COMMENT ON COLUMN grupo.estado IS 'CK, IDX';
-COMMENT ON COLUMN grupo.tipo_conformacion IS 'CK';
-COMMENT ON COLUMN grupo.modalidad_turnos IS 'CK';
-COMMENT ON COLUMN grupo.visibilidad IS 'CK';
-COMMENT ON COLUMN grupo.organizador_id IS 'FK, NULL';
-COMMENT ON COLUMN grupo.cancelado_en IS 'NULL';
+COMMENT ON TABLE grupos.grupo IS 'Módulo 02 — Grupos, Cupos, Turnos y Gobernanza. Reglas del juego, orden de cobro y decisiones colectivas';
+COMMENT ON COLUMN grupos.grupo.id IS 'PK';
+COMMENT ON COLUMN grupos.grupo.codigo_publico IS 'UQ';
+COMMENT ON COLUMN grupos.grupo.descripcion IS 'NULL';
+COMMENT ON COLUMN grupos.grupo.monto_aporte IS 'CK: > 0';
+COMMENT ON COLUMN grupos.grupo.periodicidad IS 'CK';
+COMMENT ON COLUMN grupos.grupo.num_periodos IS 'CK: >= 3';
+COMMENT ON COLUMN grupos.grupo.estado IS 'CK, IDX';
+COMMENT ON COLUMN grupos.grupo.tipo_conformacion IS 'CK';
+COMMENT ON COLUMN grupos.grupo.modalidad_turnos IS 'CK';
+COMMENT ON COLUMN grupos.grupo.visibilidad IS 'CK';
+COMMENT ON COLUMN grupos.grupo.organizador_id IS 'FK, NULL';
+COMMENT ON COLUMN grupos.grupo.cancelado_en IS 'NULL';

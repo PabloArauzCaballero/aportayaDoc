@@ -2,7 +2,7 @@
 -- clase de dominio: Sesion
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS sesion (
+CREATE TABLE IF NOT EXISTS identidad.sesion (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   usuario_id                         UUID NOT NULL,
   dispositivo_id                     UUID NOT NULL,
@@ -17,12 +17,12 @@ CREATE TABLE IF NOT EXISTS sesion (
   CONSTRAINT pk_sesion PRIMARY KEY (id)
 );
 
-COMMENT ON TABLE sesion IS 'Módulo 01 — Identidad, Usuarios y Seguridad. Saber con certeza a quién le estás confiando plata ajena';
-COMMENT ON COLUMN sesion.id IS 'PK';
-COMMENT ON COLUMN sesion.usuario_id IS 'FK, IDX';
-COMMENT ON COLUMN sesion.dispositivo_id IS 'FK';
-COMMENT ON COLUMN sesion.refresco_familia_id IS 'NULL';
-COMMENT ON COLUMN sesion.expira_en IS 'IDX';
-COMMENT ON COLUMN sesion.geolocalizacion_aprox IS 'NULL';
-COMMENT ON COLUMN sesion.revocada_en IS 'NULL';
-COMMENT ON COLUMN sesion.motivo_revocacion IS 'NULL';
+COMMENT ON TABLE identidad.sesion IS 'Módulo 01 — Identidad, Usuarios y Seguridad. Saber con certeza a quién le estás confiando plata ajena';
+COMMENT ON COLUMN identidad.sesion.id IS 'PK';
+COMMENT ON COLUMN identidad.sesion.usuario_id IS 'FK, IDX';
+COMMENT ON COLUMN identidad.sesion.dispositivo_id IS 'FK';
+COMMENT ON COLUMN identidad.sesion.refresco_familia_id IS 'NULL';
+COMMENT ON COLUMN identidad.sesion.expira_en IS 'IDX';
+COMMENT ON COLUMN identidad.sesion.geolocalizacion_aprox IS 'NULL';
+COMMENT ON COLUMN identidad.sesion.revocada_en IS 'NULL';
+COMMENT ON COLUMN identidad.sesion.motivo_revocacion IS 'NULL';

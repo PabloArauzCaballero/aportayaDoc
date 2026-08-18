@@ -3,7 +3,7 @@
 -- APPEND-ONLY: sin UPDATE ni DELETE (ver sql/40_reglas)
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS factura_publicidad (
+CREATE TABLE IF NOT EXISTS publicidad.factura_publicidad (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   cuenta_publicitaria_id             UUID NOT NULL,
   periodo                            VARCHAR(7) NOT NULL,
@@ -18,10 +18,10 @@ CREATE TABLE IF NOT EXISTS factura_publicidad (
   CONSTRAINT ck_factura_publicidad_estado CHECK (estado IN ('ANULADA', 'COBRADA', 'FACTURADA', 'GENERADA'))
 );
 
-COMMENT ON TABLE factura_publicidad IS 'Módulo 14 — Publicidad y Campañas. [append-only] Que un partner se anuncie dentro de la app sin inventar un segundo cobro';
-COMMENT ON COLUMN factura_publicidad.id IS 'PK';
-COMMENT ON COLUMN factura_publicidad.cuenta_publicitaria_id IS 'FK, IDX';
-COMMENT ON COLUMN factura_publicidad.monto_total IS 'CK: > 0';
-COMMENT ON COLUMN factura_publicidad.factura_electronica_id IS 'FK, NULL, M11';
-COMMENT ON COLUMN factura_publicidad.cuenta_por_cobrar_id IS 'FK, NULL, M13';
-COMMENT ON COLUMN factura_publicidad.estado IS 'CK, IDX';
+COMMENT ON TABLE publicidad.factura_publicidad IS 'Módulo 14 — Publicidad y Campañas. [append-only] Que un partner se anuncie dentro de la app sin inventar un segundo cobro';
+COMMENT ON COLUMN publicidad.factura_publicidad.id IS 'PK';
+COMMENT ON COLUMN publicidad.factura_publicidad.cuenta_publicitaria_id IS 'FK, IDX';
+COMMENT ON COLUMN publicidad.factura_publicidad.monto_total IS 'CK: > 0';
+COMMENT ON COLUMN publicidad.factura_publicidad.factura_electronica_id IS 'FK, NULL, M11';
+COMMENT ON COLUMN publicidad.factura_publicidad.cuenta_por_cobrar_id IS 'FK, NULL, M13';
+COMMENT ON COLUMN publicidad.factura_publicidad.estado IS 'CK, IDX';

@@ -2,7 +2,7 @@
 -- clase de dominio: AcuerdoQuita
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS acuerdo_quita (
+CREATE TABLE IF NOT EXISTS garantia.acuerdo_quita (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   registro_id                        UUID NOT NULL,
   aprobado_por                       UUID NOT NULL,
@@ -17,9 +17,9 @@ CREATE TABLE IF NOT EXISTS acuerdo_quita (
   CONSTRAINT ck_acuerdo_quita_estado CHECK (estado IN ('APROBADO', 'EJECUTADO', 'PROPUESTO', 'RECHAZADO'))
 );
 
-COMMENT ON TABLE acuerdo_quita IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. El grupo no se detiene, pero la deuda no se perdona sola';
-COMMENT ON COLUMN acuerdo_quita.id IS 'PK';
-COMMENT ON COLUMN acuerdo_quita.registro_id IS 'FK, UQ';
-COMMENT ON COLUMN acuerdo_quita.aprobado_por IS 'FK';
-COMMENT ON COLUMN acuerdo_quita.acuerdo_grupo_id IS 'FK, NULL, M2';
-COMMENT ON COLUMN acuerdo_quita.estado IS 'CK';
+COMMENT ON TABLE garantia.acuerdo_quita IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. El grupo no se detiene, pero la deuda no se perdona sola';
+COMMENT ON COLUMN garantia.acuerdo_quita.id IS 'PK';
+COMMENT ON COLUMN garantia.acuerdo_quita.registro_id IS 'FK, UQ';
+COMMENT ON COLUMN garantia.acuerdo_quita.aprobado_por IS 'FK';
+COMMENT ON COLUMN garantia.acuerdo_quita.acuerdo_grupo_id IS 'FK, NULL, M2';
+COMMENT ON COLUMN garantia.acuerdo_quita.estado IS 'CK';

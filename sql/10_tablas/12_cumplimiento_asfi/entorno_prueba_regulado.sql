@@ -2,7 +2,7 @@
 -- clase de dominio: EntornoPruebaRegulado
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS entorno_prueba_regulado (
+CREATE TABLE IF NOT EXISTS cumplimiento.entorno_prueba_regulado (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   licencia_regulatoria_id            UUID NOT NULL,
   servicio_en_prueba                 VARCHAR(120) NOT NULL,
@@ -18,10 +18,10 @@ CREATE TABLE IF NOT EXISTS entorno_prueba_regulado (
   CONSTRAINT ck_entorno_prueba_regulado_estado CHECK (estado IN ('ACTIVO', 'FINALIZADO', 'SOLICITADO', 'SUSPENDIDO'))
 );
 
-COMMENT ON TABLE entorno_prueba_regulado IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
-COMMENT ON COLUMN entorno_prueba_regulado.id IS 'PK';
-COMMENT ON COLUMN entorno_prueba_regulado.licencia_regulatoria_id IS 'FK, IDX';
-COMMENT ON COLUMN entorno_prueba_regulado.limite_usuarios IS 'NULL';
-COMMENT ON COLUMN entorno_prueba_regulado.limite_monto_operacion IS 'NULL';
-COMMENT ON COLUMN entorno_prueba_regulado.garantia_constituida IS 'NULL';
-COMMENT ON COLUMN entorno_prueba_regulado.estado IS 'CK, IDX';
+COMMENT ON TABLE cumplimiento.entorno_prueba_regulado IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
+COMMENT ON COLUMN cumplimiento.entorno_prueba_regulado.id IS 'PK';
+COMMENT ON COLUMN cumplimiento.entorno_prueba_regulado.licencia_regulatoria_id IS 'FK, IDX';
+COMMENT ON COLUMN cumplimiento.entorno_prueba_regulado.limite_usuarios IS 'NULL';
+COMMENT ON COLUMN cumplimiento.entorno_prueba_regulado.limite_monto_operacion IS 'NULL';
+COMMENT ON COLUMN cumplimiento.entorno_prueba_regulado.garantia_constituida IS 'NULL';
+COMMENT ON COLUMN cumplimiento.entorno_prueba_regulado.estado IS 'CK, IDX';

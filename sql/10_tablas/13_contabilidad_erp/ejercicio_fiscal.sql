@@ -2,7 +2,7 @@
 -- clase de dominio: EjercicioFiscal
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS ejercicio_fiscal (
+CREATE TABLE IF NOT EXISTS erp.ejercicio_fiscal (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   anio                               SMALLINT NOT NULL,
   fecha_inicio                       DATE NOT NULL,
@@ -14,9 +14,9 @@ CREATE TABLE IF NOT EXISTS ejercicio_fiscal (
   CONSTRAINT ck_ejercicio_fiscal_estado CHECK (estado IN ('ABIERTO', 'CERRADO'))
 );
 
-COMMENT ON TABLE ejercicio_fiscal IS 'Módulo 13 — Contabilidad Financiera y ERP. Que cerrar un mes no dependa de un Excel armado a mano';
-COMMENT ON COLUMN ejercicio_fiscal.id IS 'PK';
-COMMENT ON COLUMN ejercicio_fiscal.anio IS 'UQ';
-COMMENT ON COLUMN ejercicio_fiscal.estado IS 'CK, IDX';
-COMMENT ON COLUMN ejercicio_fiscal.cerrado_en IS 'NULL';
-COMMENT ON COLUMN ejercicio_fiscal.cerrado_por IS 'FK, NULL';
+COMMENT ON TABLE erp.ejercicio_fiscal IS 'Módulo 13 — Contabilidad Financiera y ERP. Que cerrar un mes no dependa de un Excel armado a mano';
+COMMENT ON COLUMN erp.ejercicio_fiscal.id IS 'PK';
+COMMENT ON COLUMN erp.ejercicio_fiscal.anio IS 'UQ';
+COMMENT ON COLUMN erp.ejercicio_fiscal.estado IS 'CK, IDX';
+COMMENT ON COLUMN erp.ejercicio_fiscal.cerrado_en IS 'NULL';
+COMMENT ON COLUMN erp.ejercicio_fiscal.cerrado_por IS 'FK, NULL';

@@ -2,7 +2,7 @@
 -- clase de dominio: ReglaImpactoEvento
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS regla_impacto_evento (
+CREATE TABLE IF NOT EXISTS transparencia.regla_impacto_evento (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   modelo_id                          UUID NOT NULL,
   tipo_evento                        VARCHAR(40) NOT NULL,
@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS regla_impacto_evento (
   CONSTRAINT pk_regla_impacto_evento PRIMARY KEY (id)
 );
 
-COMMENT ON TABLE regla_impacto_evento IS 'Módulo 06 — Transparencia y Reputación. Que nadie tenga que "creerle" al organizador';
-COMMENT ON COLUMN regla_impacto_evento.id IS 'PK';
-COMMENT ON COLUMN regla_impacto_evento.modelo_id IS 'FK, IDX';
-COMMENT ON COLUMN regla_impacto_evento.tipo_evento IS 'UQ+modelo_id';
+COMMENT ON TABLE transparencia.regla_impacto_evento IS 'Módulo 06 — Transparencia y Reputación. Que nadie tenga que "creerle" al organizador';
+COMMENT ON COLUMN transparencia.regla_impacto_evento.id IS 'PK';
+COMMENT ON COLUMN transparencia.regla_impacto_evento.modelo_id IS 'FK, IDX';
+COMMENT ON COLUMN transparencia.regla_impacto_evento.tipo_evento IS 'UQ+modelo_id';

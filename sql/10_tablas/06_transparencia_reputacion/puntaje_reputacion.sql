@@ -2,7 +2,7 @@
 -- clase de dominio: PuntajeReputacion
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS puntaje_reputacion (
+CREATE TABLE IF NOT EXISTS transparencia.puntaje_reputacion (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   usuario_id                         UUID NOT NULL,
   modelo_id                          UUID NOT NULL,
@@ -25,11 +25,11 @@ CREATE TABLE IF NOT EXISTS puntaje_reputacion (
   CONSTRAINT ck_puntaje_reputacion_nivel_confianza CHECK (nivel_confianza IN ('BASICO', 'CONFIABLE', 'EN_OBSERVACION', 'MUY_CONFIABLE', 'REFERENTE', 'RESTRINGIDO', 'SIN_HISTORIAL'))
 );
 
-COMMENT ON TABLE puntaje_reputacion IS 'Módulo 06 — Transparencia y Reputación. Que nadie tenga que "creerle" al organizador';
-COMMENT ON COLUMN puntaje_reputacion.id IS 'PK';
-COMMENT ON COLUMN puntaje_reputacion.usuario_id IS 'FK, UQ';
-COMMENT ON COLUMN puntaje_reputacion.modelo_id IS 'FK';
-COMMENT ON COLUMN puntaje_reputacion.puntaje IS 'IDX';
-COMMENT ON COLUMN puntaje_reputacion.nivel_confianza IS 'CK, IDX';
-COMMENT ON COLUMN puntaje_reputacion.vigente_hasta IS 'NULL';
-COMMENT ON COLUMN puntaje_reputacion.proximo_recalculo_en IS 'IDX';
+COMMENT ON TABLE transparencia.puntaje_reputacion IS 'Módulo 06 — Transparencia y Reputación. Que nadie tenga que "creerle" al organizador';
+COMMENT ON COLUMN transparencia.puntaje_reputacion.id IS 'PK';
+COMMENT ON COLUMN transparencia.puntaje_reputacion.usuario_id IS 'FK, UQ';
+COMMENT ON COLUMN transparencia.puntaje_reputacion.modelo_id IS 'FK';
+COMMENT ON COLUMN transparencia.puntaje_reputacion.puntaje IS 'IDX';
+COMMENT ON COLUMN transparencia.puntaje_reputacion.nivel_confianza IS 'CK, IDX';
+COMMENT ON COLUMN transparencia.puntaje_reputacion.vigente_hasta IS 'NULL';
+COMMENT ON COLUMN transparencia.puntaje_reputacion.proximo_recalculo_en IS 'IDX';

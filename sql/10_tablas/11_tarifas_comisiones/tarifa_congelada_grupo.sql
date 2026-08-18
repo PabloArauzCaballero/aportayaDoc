@@ -2,7 +2,7 @@
 -- clase de dominio: TarifaCongeladaGrupo
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS tarifa_congelada_grupo (
+CREATE TABLE IF NOT EXISTS tarifas.tarifa_congelada_grupo (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   grupo_id                           UUID NOT NULL,
   tarifario_id                       UUID NOT NULL,
@@ -14,9 +14,9 @@ CREATE TABLE IF NOT EXISTS tarifa_congelada_grupo (
   CONSTRAINT pk_tarifa_congelada_grupo PRIMARY KEY (id)
 );
 
-COMMENT ON TABLE tarifa_congelada_grupo IS 'Módulo 11 — Tarifas, Comisiones, Impuestos y Facturación. La política de cobro es dato, no código: se cambia con un seeder';
-COMMENT ON COLUMN tarifa_congelada_grupo.id IS 'PK';
-COMMENT ON COLUMN tarifa_congelada_grupo.grupo_id IS 'FK, UQ, M2';
-COMMENT ON COLUMN tarifa_congelada_grupo.tarifario_id IS 'FK';
-COMMENT ON COLUMN tarifa_congelada_grupo.acuerdo_id IS 'FK, NULL, M2';
-COMMENT ON COLUMN tarifa_congelada_grupo.vigente_hasta_ciclo_nro IS 'NULL';
+COMMENT ON TABLE tarifas.tarifa_congelada_grupo IS 'Módulo 11 — Tarifas, Comisiones, Impuestos y Facturación. La política de cobro es dato, no código: se cambia con un seeder';
+COMMENT ON COLUMN tarifas.tarifa_congelada_grupo.id IS 'PK';
+COMMENT ON COLUMN tarifas.tarifa_congelada_grupo.grupo_id IS 'FK, UQ, M2';
+COMMENT ON COLUMN tarifas.tarifa_congelada_grupo.tarifario_id IS 'FK';
+COMMENT ON COLUMN tarifas.tarifa_congelada_grupo.acuerdo_id IS 'FK, NULL, M2';
+COMMENT ON COLUMN tarifas.tarifa_congelada_grupo.vigente_hasta_ciclo_nro IS 'NULL';

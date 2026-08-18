@@ -109,15 +109,18 @@ psql -d aportaya -f sql/50_verificacion/prueba_humo.sql
 | Políticas de seguridad por fila | 2 |
 | Comentarios de columna | 1.883 |
 
-## Introspección con Kysely
+## Introspección con jOOQ
 
-El acceso a datos es **Kysely**, un constructor de consultas tipado, no un ORM
-([[ADR-002 Acceso a datos]]). Los tipos se generan por introspección del esquema
-real, así que la base sigue siendo la fuente de verdad:
+El acceso a datos es **jOOQ**, un constructor de consultas tipado, no un ORM
+([[ADR-016 Acceso a datos con jOOQ]]). Las clases se generan por introspección del
+esquema real, así que la base sigue siendo la fuente de verdad:
 
 ```bash
-yarn kysely-codegen --dialect postgres --out-file packages/datos/src/esquema.d.ts
+./gradlew :servicios:<x>:generateJooq   # solo las tablas del esquema de <x>
 ```
+
+El código generado **no se versiona**: el gate es la compilación. Si el esquema
+cambió y el código no, el build falla.
 
 Lo que el esquema aporta a esa generación:
 
@@ -127,7 +130,7 @@ Lo que el esquema aporta a esa generación:
   la generación y quedan a la vista en el editor.
 - **Tipos nativos**: `uuid`, `numeric`, `timestamptz`, `date`, `jsonb`, `inet`,
   `char(n)`. Sin tipos `enum` de PostgreSQL a propósito: los enumerados son
-  `CHECK` sobre `varchar`, que se mapean a uniones de literales de TypeScript.
+  `CHECK` sobre `varchar`, que jOOQ mapea a `String` con el `CHECK` como garantía.
 - **`numeric` llega como cadena** y se opera con decimales exactos, nunca con
   `number` ([[ADR-005 Dinero y decimales]], skill `dinero-decimal`).
 

@@ -2,7 +2,7 @@
 -- clase de dominio: SimulacionTarifa
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS simulacion_tarifa (
+CREATE TABLE IF NOT EXISTS tarifas.simulacion_tarifa (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   tarifario_id                       UUID NOT NULL,
   ejecutada_por                      UUID NOT NULL,
@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS simulacion_tarifa (
   CONSTRAINT pk_simulacion_tarifa PRIMARY KEY (id)
 );
 
-COMMENT ON TABLE simulacion_tarifa IS 'Módulo 11 — Tarifas, Comisiones, Impuestos y Facturación. La política de cobro es dato, no código: se cambia con un seeder';
-COMMENT ON COLUMN simulacion_tarifa.id IS 'PK';
-COMMENT ON COLUMN simulacion_tarifa.tarifario_id IS 'FK, IDX';
-COMMENT ON COLUMN simulacion_tarifa.ejecutada_por IS 'FK';
+COMMENT ON TABLE tarifas.simulacion_tarifa IS 'Módulo 11 — Tarifas, Comisiones, Impuestos y Facturación. La política de cobro es dato, no código: se cambia con un seeder';
+COMMENT ON COLUMN tarifas.simulacion_tarifa.id IS 'PK';
+COMMENT ON COLUMN tarifas.simulacion_tarifa.tarifario_id IS 'FK, IDX';
+COMMENT ON COLUMN tarifas.simulacion_tarifa.ejecutada_por IS 'FK';

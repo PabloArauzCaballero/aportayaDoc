@@ -2,7 +2,7 @@
 -- clase de dominio: DevolucionFondo
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS devolucion_fondo (
+CREATE TABLE IF NOT EXISTS garantia.devolucion_fondo (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   fondo_id                           UUID NOT NULL,
   participante_id                    UUID NOT NULL,
@@ -16,9 +16,9 @@ CREATE TABLE IF NOT EXISTS devolucion_fondo (
   CONSTRAINT ck_devolucion_fondo_estado CHECK (estado IN ('CALCULADA', 'PAGADA', 'RETENIDA'))
 );
 
-COMMENT ON TABLE devolucion_fondo IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. El grupo no se detiene, pero la deuda no se perdona sola';
-COMMENT ON COLUMN devolucion_fondo.id IS 'PK';
-COMMENT ON COLUMN devolucion_fondo.fondo_id IS 'FK, IDX';
-COMMENT ON COLUMN devolucion_fondo.participante_id IS 'FK';
-COMMENT ON COLUMN devolucion_fondo.estado IS 'CK';
-COMMENT ON COLUMN devolucion_fondo.motivo_retencion IS 'NULL';
+COMMENT ON TABLE garantia.devolucion_fondo IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. El grupo no se detiene, pero la deuda no se perdona sola';
+COMMENT ON COLUMN garantia.devolucion_fondo.id IS 'PK';
+COMMENT ON COLUMN garantia.devolucion_fondo.fondo_id IS 'FK, IDX';
+COMMENT ON COLUMN garantia.devolucion_fondo.participante_id IS 'FK';
+COMMENT ON COLUMN garantia.devolucion_fondo.estado IS 'CK';
+COMMENT ON COLUMN garantia.devolucion_fondo.motivo_retencion IS 'NULL';

@@ -2,7 +2,7 @@
 -- clase de dominio: AlertaCumplimiento
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS alerta_cumplimiento (
+CREATE TABLE IF NOT EXISTS auditoria.alerta_cumplimiento (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   regla_id                           UUID NOT NULL,
   usuario_id                         UUID NOT NULL,
@@ -23,16 +23,16 @@ CREATE TABLE IF NOT EXISTS alerta_cumplimiento (
   CONSTRAINT ck_alerta_cumplimiento_estado CHECK (estado IN ('ABIERTA', 'DESCARTADA', 'EN_ANALISIS', 'ESCALADA', 'REPORTADA'))
 );
 
-COMMENT ON TABLE alerta_cumplimiento IS 'Módulo 09 — Auditoría, Reportes y Cumplimiento. Poder demostrar todo lo anterior ante un reclamo o un regulador';
-COMMENT ON COLUMN alerta_cumplimiento.id IS 'PK';
-COMMENT ON COLUMN alerta_cumplimiento.regla_id IS 'FK, IDX';
-COMMENT ON COLUMN alerta_cumplimiento.usuario_id IS 'FK, IDX';
-COMMENT ON COLUMN alerta_cumplimiento.grupo_id IS 'FK, NULL';
-COMMENT ON COLUMN alerta_cumplimiento.analista_id IS 'FK, NULL';
-COMMENT ON COLUMN alerta_cumplimiento.reporte_sospechoso_id IS 'FK, NULL';
-COMMENT ON COLUMN alerta_cumplimiento.operacion_id IS 'IDX';
-COMMENT ON COLUMN alerta_cumplimiento.severidad IS 'CK';
-COMMENT ON COLUMN alerta_cumplimiento.estado IS 'CK, IDX';
-COMMENT ON COLUMN alerta_cumplimiento.conclusion IS 'NULL';
-COMMENT ON COLUMN alerta_cumplimiento.detectada_en IS 'IDX';
-COMMENT ON COLUMN alerta_cumplimiento.resuelta_en IS 'NULL';
+COMMENT ON TABLE auditoria.alerta_cumplimiento IS 'Módulo 09 — Auditoría, Reportes y Cumplimiento. Poder demostrar todo lo anterior ante un reclamo o un regulador';
+COMMENT ON COLUMN auditoria.alerta_cumplimiento.id IS 'PK';
+COMMENT ON COLUMN auditoria.alerta_cumplimiento.regla_id IS 'FK, IDX';
+COMMENT ON COLUMN auditoria.alerta_cumplimiento.usuario_id IS 'FK, IDX';
+COMMENT ON COLUMN auditoria.alerta_cumplimiento.grupo_id IS 'FK, NULL';
+COMMENT ON COLUMN auditoria.alerta_cumplimiento.analista_id IS 'FK, NULL';
+COMMENT ON COLUMN auditoria.alerta_cumplimiento.reporte_sospechoso_id IS 'FK, NULL';
+COMMENT ON COLUMN auditoria.alerta_cumplimiento.operacion_id IS 'IDX';
+COMMENT ON COLUMN auditoria.alerta_cumplimiento.severidad IS 'CK';
+COMMENT ON COLUMN auditoria.alerta_cumplimiento.estado IS 'CK, IDX';
+COMMENT ON COLUMN auditoria.alerta_cumplimiento.conclusion IS 'NULL';
+COMMENT ON COLUMN auditoria.alerta_cumplimiento.detectada_en IS 'IDX';
+COMMENT ON COLUMN auditoria.alerta_cumplimiento.resuelta_en IS 'NULL';

@@ -2,7 +2,7 @@
 -- clase de dominio: PoliticaBilletera
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS politica_billetera (
+CREATE TABLE IF NOT EXISTS nucleo_financiero.politica_billetera (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   codigo                             VARCHAR(40) NOT NULL,
   moneda                             CHAR(3) NOT NULL,
@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS politica_billetera (
   CONSTRAINT pk_politica_billetera PRIMARY KEY (id)
 );
 
-COMMENT ON TABLE politica_billetera IS 'Módulo 10 — Billetera, Custodia y Dinero Electrónico. El saldo no se guarda: se deriva, y todos los días cuadra contra el banco';
-COMMENT ON COLUMN politica_billetera.id IS 'PK';
-COMMENT ON COLUMN politica_billetera.codigo IS 'UQ';
-COMMENT ON COLUMN politica_billetera.aprobada_por IS 'FK, NULL';
+COMMENT ON TABLE nucleo_financiero.politica_billetera IS 'Módulo 10 — Billetera, Custodia y Dinero Electrónico. El saldo no se guarda: se deriva, y todos los días cuadra contra el banco';
+COMMENT ON COLUMN nucleo_financiero.politica_billetera.id IS 'PK';
+COMMENT ON COLUMN nucleo_financiero.politica_billetera.codigo IS 'UQ';
+COMMENT ON COLUMN nucleo_financiero.politica_billetera.aprobada_por IS 'FK, NULL';

@@ -2,7 +2,7 @@
 -- clase de dominio: BloqueoSaldo
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS bloqueo_saldo (
+CREATE TABLE IF NOT EXISTS nucleo_financiero.bloqueo_saldo (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   cuenta_billetera_id                UUID NOT NULL,
   retencion_id                       UUID,
@@ -25,16 +25,16 @@ CREATE TABLE IF NOT EXISTS bloqueo_saldo (
   CONSTRAINT ck_bloqueo_saldo_estado CHECK (estado IN ('LEVANTADO', 'VENCIDO', 'VIGENTE'))
 );
 
-COMMENT ON TABLE bloqueo_saldo IS 'Módulo 10 — Billetera, Custodia y Dinero Electrónico. El saldo no se guarda: se deriva, y todos los días cuadra contra el banco';
-COMMENT ON COLUMN bloqueo_saldo.id IS 'PK';
-COMMENT ON COLUMN bloqueo_saldo.cuenta_billetera_id IS 'FK, IDX';
-COMMENT ON COLUMN bloqueo_saldo.retencion_id IS 'FK, NULL';
-COMMENT ON COLUMN bloqueo_saldo.levantada_por IS 'FK, NULL';
-COMMENT ON COLUMN bloqueo_saldo.autoridad IS 'CK';
-COMMENT ON COLUMN bloqueo_saldo.tipo_orden IS 'CK';
-COMMENT ON COLUMN bloqueo_saldo.numero_oficio IS 'UQ';
-COMMENT ON COLUMN bloqueo_saldo.monto_bloqueado IS 'NULL';
-COMMENT ON COLUMN bloqueo_saldo.alcance IS 'CK';
-COMMENT ON COLUMN bloqueo_saldo.estado IS 'CK, IDX';
-COMMENT ON COLUMN bloqueo_saldo.vence_en IS 'NULL';
-COMMENT ON COLUMN bloqueo_saldo.levantado_en IS 'NULL';
+COMMENT ON TABLE nucleo_financiero.bloqueo_saldo IS 'Módulo 10 — Billetera, Custodia y Dinero Electrónico. El saldo no se guarda: se deriva, y todos los días cuadra contra el banco';
+COMMENT ON COLUMN nucleo_financiero.bloqueo_saldo.id IS 'PK';
+COMMENT ON COLUMN nucleo_financiero.bloqueo_saldo.cuenta_billetera_id IS 'FK, IDX';
+COMMENT ON COLUMN nucleo_financiero.bloqueo_saldo.retencion_id IS 'FK, NULL';
+COMMENT ON COLUMN nucleo_financiero.bloqueo_saldo.levantada_por IS 'FK, NULL';
+COMMENT ON COLUMN nucleo_financiero.bloqueo_saldo.autoridad IS 'CK';
+COMMENT ON COLUMN nucleo_financiero.bloqueo_saldo.tipo_orden IS 'CK';
+COMMENT ON COLUMN nucleo_financiero.bloqueo_saldo.numero_oficio IS 'UQ';
+COMMENT ON COLUMN nucleo_financiero.bloqueo_saldo.monto_bloqueado IS 'NULL';
+COMMENT ON COLUMN nucleo_financiero.bloqueo_saldo.alcance IS 'CK';
+COMMENT ON COLUMN nucleo_financiero.bloqueo_saldo.estado IS 'CK, IDX';
+COMMENT ON COLUMN nucleo_financiero.bloqueo_saldo.vence_en IS 'NULL';
+COMMENT ON COLUMN nucleo_financiero.bloqueo_saldo.levantado_en IS 'NULL';

@@ -2,7 +2,7 @@
 -- clase de dominio: CandidatoReemplazo
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS candidato_reemplazo (
+CREATE TABLE IF NOT EXISTS garantia.candidato_reemplazo (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   reemplazo_id                       UUID NOT NULL,
   usuario_id                         UUID NOT NULL,
@@ -15,9 +15,9 @@ CREATE TABLE IF NOT EXISTS candidato_reemplazo (
   CONSTRAINT ck_candidato_reemplazo_estado CHECK (estado IN ('ACEPTADO', 'DESCARTADO', 'PROPUESTO'))
 );
 
-COMMENT ON TABLE candidato_reemplazo IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. El grupo no se detiene, pero la deuda no se perdona sola';
-COMMENT ON COLUMN candidato_reemplazo.id IS 'PK';
-COMMENT ON COLUMN candidato_reemplazo.reemplazo_id IS 'FK, IDX';
-COMMENT ON COLUMN candidato_reemplazo.usuario_id IS 'FK';
-COMMENT ON COLUMN candidato_reemplazo.fuente_candidato IS 'CK';
-COMMENT ON COLUMN candidato_reemplazo.estado IS 'CK';
+COMMENT ON TABLE garantia.candidato_reemplazo IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. El grupo no se detiene, pero la deuda no se perdona sola';
+COMMENT ON COLUMN garantia.candidato_reemplazo.id IS 'PK';
+COMMENT ON COLUMN garantia.candidato_reemplazo.reemplazo_id IS 'FK, IDX';
+COMMENT ON COLUMN garantia.candidato_reemplazo.usuario_id IS 'FK';
+COMMENT ON COLUMN garantia.candidato_reemplazo.fuente_candidato IS 'CK';
+COMMENT ON COLUMN garantia.candidato_reemplazo.estado IS 'CK';

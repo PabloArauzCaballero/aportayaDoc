@@ -2,7 +2,7 @@
 -- clase de dominio: IntentoPago
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS intento_pago (
+CREATE TABLE IF NOT EXISTS aportes.intento_pago (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   orden_cobro_id                     UUID NOT NULL,
   numero_intento                     SMALLINT NOT NULL,
@@ -18,11 +18,11 @@ CREATE TABLE IF NOT EXISTS intento_pago (
   CONSTRAINT ck_intento_pago_estado CHECK (estado IN ('APROBADA', 'DESCONOCIDA', 'EXPIRADA', 'PENDIENTE', 'RECHAZADA'))
 );
 
-COMMENT ON TABLE intento_pago IS 'Módulo 03 — Aportes, Pagos QR y Conciliación. Que "pagué" signifique "el banco lo confirmó"';
-COMMENT ON COLUMN intento_pago.id IS 'PK';
-COMMENT ON COLUMN intento_pago.orden_cobro_id IS 'FK, IDX';
-COMMENT ON COLUMN intento_pago.canal IS 'CK';
-COMMENT ON COLUMN intento_pago.finalizado_en IS 'NULL';
-COMMENT ON COLUMN intento_pago.estado IS 'CK';
-COMMENT ON COLUMN intento_pago.codigo_error IS 'NULL';
-COMMENT ON COLUMN intento_pago.mensaje_proveedor IS 'NULL';
+COMMENT ON TABLE aportes.intento_pago IS 'Módulo 03 — Aportes, Pagos QR y Conciliación. Que "pagué" signifique "el banco lo confirmó"';
+COMMENT ON COLUMN aportes.intento_pago.id IS 'PK';
+COMMENT ON COLUMN aportes.intento_pago.orden_cobro_id IS 'FK, IDX';
+COMMENT ON COLUMN aportes.intento_pago.canal IS 'CK';
+COMMENT ON COLUMN aportes.intento_pago.finalizado_en IS 'NULL';
+COMMENT ON COLUMN aportes.intento_pago.estado IS 'CK';
+COMMENT ON COLUMN aportes.intento_pago.codigo_error IS 'NULL';
+COMMENT ON COLUMN aportes.intento_pago.mensaje_proveedor IS 'NULL';

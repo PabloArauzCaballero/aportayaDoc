@@ -2,7 +2,7 @@
 -- clase de dominio: LiquidacionParticipante
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS liquidacion_participante (
+CREATE TABLE IF NOT EXISTS garantia.liquidacion_participante (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   disolucion_id                      UUID NOT NULL,
   participante_id                    UUID NOT NULL,
@@ -15,8 +15,8 @@ CREATE TABLE IF NOT EXISTS liquidacion_participante (
   CONSTRAINT ck_liquidacion_participante_estado CHECK (estado IN ('CALCULADA', 'EN_COBRANZA', 'PAGADA'))
 );
 
-COMMENT ON TABLE liquidacion_participante IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. El grupo no se detiene, pero la deuda no se perdona sola';
-COMMENT ON COLUMN liquidacion_participante.id IS 'PK';
-COMMENT ON COLUMN liquidacion_participante.disolucion_id IS 'FK, IDX';
-COMMENT ON COLUMN liquidacion_participante.participante_id IS 'FK';
-COMMENT ON COLUMN liquidacion_participante.estado IS 'CK';
+COMMENT ON TABLE garantia.liquidacion_participante IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. El grupo no se detiene, pero la deuda no se perdona sola';
+COMMENT ON COLUMN garantia.liquidacion_participante.id IS 'PK';
+COMMENT ON COLUMN garantia.liquidacion_participante.disolucion_id IS 'FK, IDX';
+COMMENT ON COLUMN garantia.liquidacion_participante.participante_id IS 'FK';
+COMMENT ON COLUMN garantia.liquidacion_participante.estado IS 'CK';

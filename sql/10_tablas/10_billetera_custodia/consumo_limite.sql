@@ -2,7 +2,7 @@
 -- clase de dominio: ConsumoLimite
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS consumo_limite (
+CREATE TABLE IF NOT EXISTS nucleo_financiero.consumo_limite (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   cuenta_billetera_id                UUID NOT NULL,
   limite_id                          UUID NOT NULL,
@@ -14,8 +14,8 @@ CREATE TABLE IF NOT EXISTS consumo_limite (
   CONSTRAINT pk_consumo_limite PRIMARY KEY (id)
 );
 
-COMMENT ON TABLE consumo_limite IS 'Módulo 10 — Billetera, Custodia y Dinero Electrónico. El saldo no se guarda: se deriva, y todos los días cuadra contra el banco';
-COMMENT ON COLUMN consumo_limite.id IS 'PK';
-COMMENT ON COLUMN consumo_limite.cuenta_billetera_id IS 'FK, IDX';
-COMMENT ON COLUMN consumo_limite.limite_id IS 'FK, IDX';
-COMMENT ON COLUMN consumo_limite.ventana_inicio IS 'UQ+cuenta_billetera_id+limite_id';
+COMMENT ON TABLE nucleo_financiero.consumo_limite IS 'Módulo 10 — Billetera, Custodia y Dinero Electrónico. El saldo no se guarda: se deriva, y todos los días cuadra contra el banco';
+COMMENT ON COLUMN nucleo_financiero.consumo_limite.id IS 'PK';
+COMMENT ON COLUMN nucleo_financiero.consumo_limite.cuenta_billetera_id IS 'FK, IDX';
+COMMENT ON COLUMN nucleo_financiero.consumo_limite.limite_id IS 'FK, IDX';
+COMMENT ON COLUMN nucleo_financiero.consumo_limite.ventana_inicio IS 'UQ+cuenta_billetera_id+limite_id';

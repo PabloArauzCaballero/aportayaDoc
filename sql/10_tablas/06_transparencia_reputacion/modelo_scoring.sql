@@ -2,7 +2,7 @@
 -- clase de dominio: ModeloScoring
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS modelo_scoring (
+CREATE TABLE IF NOT EXISTS transparencia.modelo_scoring (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   version                            VARCHAR(20) NOT NULL,
   descripcion                        VARCHAR(200) NOT NULL,
@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS modelo_scoring (
   CONSTRAINT pk_modelo_scoring PRIMARY KEY (id)
 );
 
-COMMENT ON TABLE modelo_scoring IS 'Módulo 06 — Transparencia y Reputación. Que nadie tenga que "creerle" al organizador';
-COMMENT ON COLUMN modelo_scoring.id IS 'PK';
-COMMENT ON COLUMN modelo_scoring.version IS 'UQ';
-COMMENT ON COLUMN modelo_scoring.vigente_hasta IS 'NULL';
+COMMENT ON TABLE transparencia.modelo_scoring IS 'Módulo 06 — Transparencia y Reputación. Que nadie tenga que "creerle" al organizador';
+COMMENT ON COLUMN transparencia.modelo_scoring.id IS 'PK';
+COMMENT ON COLUMN transparencia.modelo_scoring.version IS 'UQ';
+COMMENT ON COLUMN transparencia.modelo_scoring.vigente_hasta IS 'NULL';

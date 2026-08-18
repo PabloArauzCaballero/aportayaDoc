@@ -2,7 +2,7 @@
 -- clase de dominio: AceptacionContrato
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS aceptacion_contrato (
+CREATE TABLE IF NOT EXISTS cumplimiento.aceptacion_contrato (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   contrato_adhesion_id               UUID NOT NULL,
   usuario_id                         UUID NOT NULL,
@@ -15,10 +15,10 @@ CREATE TABLE IF NOT EXISTS aceptacion_contrato (
   CONSTRAINT pk_aceptacion_contrato PRIMARY KEY (id)
 );
 
-COMMENT ON TABLE aceptacion_contrato IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
-COMMENT ON COLUMN aceptacion_contrato.id IS 'PK';
-COMMENT ON COLUMN aceptacion_contrato.contrato_adhesion_id IS 'FK, IDX';
-COMMENT ON COLUMN aceptacion_contrato.usuario_id IS 'FK, IDX, M1';
-COMMENT ON COLUMN aceptacion_contrato.dispositivo_id IS 'FK, NULL, M1';
-COMMENT ON COLUMN aceptacion_contrato.token_firma_id IS 'FK, NULL, M1';
-COMMENT ON COLUMN aceptacion_contrato.ip IS 'NULL';
+COMMENT ON TABLE cumplimiento.aceptacion_contrato IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
+COMMENT ON COLUMN cumplimiento.aceptacion_contrato.id IS 'PK';
+COMMENT ON COLUMN cumplimiento.aceptacion_contrato.contrato_adhesion_id IS 'FK, IDX';
+COMMENT ON COLUMN cumplimiento.aceptacion_contrato.usuario_id IS 'FK, IDX, M1';
+COMMENT ON COLUMN cumplimiento.aceptacion_contrato.dispositivo_id IS 'FK, NULL, M1';
+COMMENT ON COLUMN cumplimiento.aceptacion_contrato.token_firma_id IS 'FK, NULL, M1';
+COMMENT ON COLUMN cumplimiento.aceptacion_contrato.ip IS 'NULL';

@@ -2,7 +2,7 @@
 -- clase de dominio: DatosFacturacion
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS datos_facturacion (
+CREATE TABLE IF NOT EXISTS tarifas.datos_facturacion (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   usuario_id                         UUID NOT NULL,
   tipo_documento                     VARCHAR(5) NOT NULL,
@@ -16,8 +16,8 @@ CREATE TABLE IF NOT EXISTS datos_facturacion (
   CONSTRAINT ck_datos_facturacion_tipo_documento CHECK (tipo_documento IN ('CEX', 'CI', 'NIT'))
 );
 
-COMMENT ON TABLE datos_facturacion IS 'Módulo 11 — Tarifas, Comisiones, Impuestos y Facturación. La política de cobro es dato, no código: se cambia con un seeder';
-COMMENT ON COLUMN datos_facturacion.id IS 'PK';
-COMMENT ON COLUMN datos_facturacion.usuario_id IS 'FK, IDX, M1';
-COMMENT ON COLUMN datos_facturacion.tipo_documento IS 'CK';
-COMMENT ON COLUMN datos_facturacion.numero_documento IS 'UQ+usuario_id';
+COMMENT ON TABLE tarifas.datos_facturacion IS 'Módulo 11 — Tarifas, Comisiones, Impuestos y Facturación. La política de cobro es dato, no código: se cambia con un seeder';
+COMMENT ON COLUMN tarifas.datos_facturacion.id IS 'PK';
+COMMENT ON COLUMN tarifas.datos_facturacion.usuario_id IS 'FK, IDX, M1';
+COMMENT ON COLUMN tarifas.datos_facturacion.tipo_documento IS 'CK';
+COMMENT ON COLUMN tarifas.datos_facturacion.numero_documento IS 'UQ+usuario_id';

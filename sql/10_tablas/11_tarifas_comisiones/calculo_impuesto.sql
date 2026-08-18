@@ -2,7 +2,7 @@
 -- clase de dominio: CalculoImpuesto
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS calculo_impuesto (
+CREATE TABLE IF NOT EXISTS tarifas.calculo_impuesto (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   devengo_id                         UUID NOT NULL,
   impuesto_id                        UUID NOT NULL,
@@ -14,8 +14,8 @@ CREATE TABLE IF NOT EXISTS calculo_impuesto (
   CONSTRAINT pk_calculo_impuesto PRIMARY KEY (id)
 );
 
-COMMENT ON TABLE calculo_impuesto IS 'Módulo 11 — Tarifas, Comisiones, Impuestos y Facturación. La política de cobro es dato, no código: se cambia con un seeder';
-COMMENT ON COLUMN calculo_impuesto.id IS 'PK';
-COMMENT ON COLUMN calculo_impuesto.devengo_id IS 'FK, IDX';
-COMMENT ON COLUMN calculo_impuesto.impuesto_id IS 'FK';
-COMMENT ON COLUMN calculo_impuesto.periodo_fiscal IS 'IDX';
+COMMENT ON TABLE tarifas.calculo_impuesto IS 'Módulo 11 — Tarifas, Comisiones, Impuestos y Facturación. La política de cobro es dato, no código: se cambia con un seeder';
+COMMENT ON COLUMN tarifas.calculo_impuesto.id IS 'PK';
+COMMENT ON COLUMN tarifas.calculo_impuesto.devengo_id IS 'FK, IDX';
+COMMENT ON COLUMN tarifas.calculo_impuesto.impuesto_id IS 'FK';
+COMMENT ON COLUMN tarifas.calculo_impuesto.periodo_fiscal IS 'IDX';

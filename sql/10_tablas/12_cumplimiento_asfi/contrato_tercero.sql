@@ -2,7 +2,7 @@
 -- clase de dominio: ContratoTercero
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS contrato_tercero (
+CREATE TABLE IF NOT EXISTS cumplimiento.contrato_tercero (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   responsable_id                     UUID,
   razon_social                       VARCHAR(150) NOT NULL,
@@ -26,13 +26,13 @@ CREATE TABLE IF NOT EXISTS contrato_tercero (
   CONSTRAINT ck_contrato_tercero_estado CHECK (estado IN ('EN_NEGOCIACION', 'SUSPENDIDO', 'TERMINADO', 'VIGENTE'))
 );
 
-COMMENT ON TABLE contrato_tercero IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
-COMMENT ON COLUMN contrato_tercero.id IS 'PK';
-COMMENT ON COLUMN contrato_tercero.responsable_id IS 'FK, NULL';
-COMMENT ON COLUMN contrato_tercero.nit IS 'NULL';
-COMMENT ON COLUMN contrato_tercero.es_critico IS 'IDX';
-COMMENT ON COLUMN contrato_tercero.accede_a_datos_personales IS 'IDX';
-COMMENT ON COLUMN contrato_tercero.nivel_riesgo IS 'CK';
-COMMENT ON COLUMN contrato_tercero.evaluacion_riesgo_url IS 'NULL';
-COMMENT ON COLUMN contrato_tercero.vigente_hasta IS 'NULL';
-COMMENT ON COLUMN contrato_tercero.estado IS 'CK, IDX';
+COMMENT ON TABLE cumplimiento.contrato_tercero IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
+COMMENT ON COLUMN cumplimiento.contrato_tercero.id IS 'PK';
+COMMENT ON COLUMN cumplimiento.contrato_tercero.responsable_id IS 'FK, NULL';
+COMMENT ON COLUMN cumplimiento.contrato_tercero.nit IS 'NULL';
+COMMENT ON COLUMN cumplimiento.contrato_tercero.es_critico IS 'IDX';
+COMMENT ON COLUMN cumplimiento.contrato_tercero.accede_a_datos_personales IS 'IDX';
+COMMENT ON COLUMN cumplimiento.contrato_tercero.nivel_riesgo IS 'CK';
+COMMENT ON COLUMN cumplimiento.contrato_tercero.evaluacion_riesgo_url IS 'NULL';
+COMMENT ON COLUMN cumplimiento.contrato_tercero.vigente_hasta IS 'NULL';
+COMMENT ON COLUMN cumplimiento.contrato_tercero.estado IS 'CK, IDX';

@@ -2,7 +2,7 @@
 -- clase de dominio: CostoProveedorOperacion
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS costo_proveedor_operacion (
+CREATE TABLE IF NOT EXISTS tarifas.costo_proveedor_operacion (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   proveedor_id                       UUID NOT NULL,
   transaccion_id                     UUID,
@@ -19,10 +19,10 @@ CREATE TABLE IF NOT EXISTS costo_proveedor_operacion (
   CONSTRAINT ck_costo_proveedor_operacion_tipo_operacion CHECK (tipo_operacion IN ('COBRO_QR', 'DESEMBOLSO', 'MENSAJERIA', 'RECARGA', 'RETIRO', 'TRANSFERENCIA'))
 );
 
-COMMENT ON TABLE costo_proveedor_operacion IS 'Módulo 11 — Tarifas, Comisiones, Impuestos y Facturación. La política de cobro es dato, no código: se cambia con un seeder';
-COMMENT ON COLUMN costo_proveedor_operacion.id IS 'PK';
-COMMENT ON COLUMN costo_proveedor_operacion.proveedor_id IS 'FK, IDX, M3';
-COMMENT ON COLUMN costo_proveedor_operacion.transaccion_id IS 'FK, NULL, M10';
-COMMENT ON COLUMN costo_proveedor_operacion.liquidacion_ingresos_id IS 'FK, NULL';
-COMMENT ON COLUMN costo_proveedor_operacion.tipo_operacion IS 'CK';
-COMMENT ON COLUMN costo_proveedor_operacion.periodo IS 'IDX';
+COMMENT ON TABLE tarifas.costo_proveedor_operacion IS 'Módulo 11 — Tarifas, Comisiones, Impuestos y Facturación. La política de cobro es dato, no código: se cambia con un seeder';
+COMMENT ON COLUMN tarifas.costo_proveedor_operacion.id IS 'PK';
+COMMENT ON COLUMN tarifas.costo_proveedor_operacion.proveedor_id IS 'FK, IDX, M3';
+COMMENT ON COLUMN tarifas.costo_proveedor_operacion.transaccion_id IS 'FK, NULL, M10';
+COMMENT ON COLUMN tarifas.costo_proveedor_operacion.liquidacion_ingresos_id IS 'FK, NULL';
+COMMENT ON COLUMN tarifas.costo_proveedor_operacion.tipo_operacion IS 'CK';
+COMMENT ON COLUMN tarifas.costo_proveedor_operacion.periodo IS 'IDX';

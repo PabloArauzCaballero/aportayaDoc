@@ -2,7 +2,7 @@
 -- clase de dominio: PlanRegularizacion
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS plan_regularizacion (
+CREATE TABLE IF NOT EXISTS aportes.plan_regularizacion (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   participante_id                    UUID NOT NULL,
   monto_total                        NUMERIC(14,2) DEFAULT 0 NOT NULL,
@@ -14,8 +14,8 @@ CREATE TABLE IF NOT EXISTS plan_regularizacion (
   CONSTRAINT ck_plan_regularizacion_estado CHECK (estado IN ('ANULADO', 'CUMPLIDO', 'INCUMPLIDO', 'VIGENTE'))
 );
 
-COMMENT ON TABLE plan_regularizacion IS 'Módulo 03 — Aportes, Pagos QR y Conciliación. Que "pagué" signifique "el banco lo confirmó"';
-COMMENT ON COLUMN plan_regularizacion.id IS 'PK';
-COMMENT ON COLUMN plan_regularizacion.participante_id IS 'FK, IDX';
-COMMENT ON COLUMN plan_regularizacion.estado IS 'CK';
-COMMENT ON COLUMN plan_regularizacion.aprobado_por IS 'FK';
+COMMENT ON TABLE aportes.plan_regularizacion IS 'Módulo 03 — Aportes, Pagos QR y Conciliación. Que "pagué" signifique "el banco lo confirmó"';
+COMMENT ON COLUMN aportes.plan_regularizacion.id IS 'PK';
+COMMENT ON COLUMN aportes.plan_regularizacion.participante_id IS 'FK, IDX';
+COMMENT ON COLUMN aportes.plan_regularizacion.estado IS 'CK';
+COMMENT ON COLUMN aportes.plan_regularizacion.aprobado_por IS 'FK';

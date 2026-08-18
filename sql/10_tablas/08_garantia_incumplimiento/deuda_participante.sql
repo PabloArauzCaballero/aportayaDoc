@@ -2,7 +2,7 @@
 -- clase de dominio: DeudaParticipante
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS deuda_participante (
+CREATE TABLE IF NOT EXISTS garantia.deuda_participante (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   usuario_id                         UUID NOT NULL,
   participante_id                    UUID NOT NULL,
@@ -27,14 +27,14 @@ CREATE TABLE IF NOT EXISTS deuda_participante (
   CONSTRAINT ck_deuda_participante_estado CHECK (estado IN ('CASTIGADA', 'CONDONADA', 'EN_MORA', 'EN_PLAN_DE_PAGO', 'JUDICIALIZADA', 'PAGADA', 'VIGENTE'))
 );
 
-COMMENT ON TABLE deuda_participante IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. El grupo no se detiene, pero la deuda no se perdona sola';
-COMMENT ON COLUMN deuda_participante.id IS 'PK';
-COMMENT ON COLUMN deuda_participante.usuario_id IS 'FK, IDX';
-COMMENT ON COLUMN deuda_participante.participante_id IS 'FK';
-COMMENT ON COLUMN deuda_participante.grupo_id IS 'FK, IDX';
-COMMENT ON COLUMN deuda_participante.registro_id IS 'FK, UQ';
-COMMENT ON COLUMN deuda_participante.cobertura_id IS 'FK, NULL, UQ';
-COMMENT ON COLUMN deuda_participante.acreedor IS 'CK';
-COMMENT ON COLUMN deuda_participante.saldo_actual IS 'CK: >= 0, IDX';
-COMMENT ON COLUMN deuda_participante.estado IS 'CK, IDX';
-COMMENT ON COLUMN deuda_participante.fecha_prescripcion IS 'IDX';
+COMMENT ON TABLE garantia.deuda_participante IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. El grupo no se detiene, pero la deuda no se perdona sola';
+COMMENT ON COLUMN garantia.deuda_participante.id IS 'PK';
+COMMENT ON COLUMN garantia.deuda_participante.usuario_id IS 'FK, IDX';
+COMMENT ON COLUMN garantia.deuda_participante.participante_id IS 'FK';
+COMMENT ON COLUMN garantia.deuda_participante.grupo_id IS 'FK, IDX';
+COMMENT ON COLUMN garantia.deuda_participante.registro_id IS 'FK, UQ';
+COMMENT ON COLUMN garantia.deuda_participante.cobertura_id IS 'FK, NULL, UQ';
+COMMENT ON COLUMN garantia.deuda_participante.acreedor IS 'CK';
+COMMENT ON COLUMN garantia.deuda_participante.saldo_actual IS 'CK: >= 0, IDX';
+COMMENT ON COLUMN garantia.deuda_participante.estado IS 'CK, IDX';
+COMMENT ON COLUMN garantia.deuda_participante.fecha_prescripcion IS 'IDX';

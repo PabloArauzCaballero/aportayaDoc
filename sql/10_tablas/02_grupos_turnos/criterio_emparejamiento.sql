@@ -2,7 +2,7 @@
 -- clase de dominio: CriterioEmparejamiento
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS criterio_emparejamiento (
+CREATE TABLE IF NOT EXISTS grupos.criterio_emparejamiento (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   peso_reputacion                    NUMERIC(4,3) NOT NULL,
   peso_monto                         NUMERIC(4,3) NOT NULL,
@@ -14,5 +14,5 @@ CREATE TABLE IF NOT EXISTS criterio_emparejamiento (
   CONSTRAINT pk_criterio_emparejamiento PRIMARY KEY (id)
 );
 
-COMMENT ON TABLE criterio_emparejamiento IS 'Módulo 02 — Grupos, Cupos, Turnos y Gobernanza. Reglas del juego, orden de cobro y decisiones colectivas';
-COMMENT ON COLUMN criterio_emparejamiento.id IS 'PK';
+COMMENT ON TABLE grupos.criterio_emparejamiento IS 'Módulo 02 — Grupos, Cupos, Turnos y Gobernanza. Reglas del juego, orden de cobro y decisiones colectivas';
+COMMENT ON COLUMN grupos.criterio_emparejamiento.id IS 'PK';

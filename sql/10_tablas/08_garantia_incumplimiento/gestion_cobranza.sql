@@ -2,7 +2,7 @@
 -- clase de dominio: GestionCobranza
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS gestion_cobranza (
+CREATE TABLE IF NOT EXISTS garantia.gestion_cobranza (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   registro_id                        UUID NOT NULL,
   estrategia_id                      UUID NOT NULL,
@@ -20,13 +20,13 @@ CREATE TABLE IF NOT EXISTS gestion_cobranza (
   CONSTRAINT ck_gestion_cobranza_estado CHECK (estado IN ('ACTIVA', 'CERRADA_EXITOSA', 'CERRADA_SIN_EXITO', 'PAUSADA'))
 );
 
-COMMENT ON TABLE gestion_cobranza IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. El grupo no se detiene, pero la deuda no se perdona sola';
-COMMENT ON COLUMN gestion_cobranza.id IS 'PK';
-COMMENT ON COLUMN gestion_cobranza.registro_id IS 'FK, UQ';
-COMMENT ON COLUMN gestion_cobranza.estrategia_id IS 'FK';
-COMMENT ON COLUMN gestion_cobranza.gestor_asignado_id IS 'FK, NULL, IDX';
-COMMENT ON COLUMN gestion_cobranza.etapa_actual IS 'CK, IDX';
-COMMENT ON COLUMN gestion_cobranza.ultimo_contacto_en IS 'NULL';
-COMMENT ON COLUMN gestion_cobranza.proxima_accion_en IS 'IDX';
-COMMENT ON COLUMN gestion_cobranza.estado IS 'CK, IDX';
-COMMENT ON COLUMN gestion_cobranza.cerrada_en IS 'NULL';
+COMMENT ON TABLE garantia.gestion_cobranza IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. El grupo no se detiene, pero la deuda no se perdona sola';
+COMMENT ON COLUMN garantia.gestion_cobranza.id IS 'PK';
+COMMENT ON COLUMN garantia.gestion_cobranza.registro_id IS 'FK, UQ';
+COMMENT ON COLUMN garantia.gestion_cobranza.estrategia_id IS 'FK';
+COMMENT ON COLUMN garantia.gestion_cobranza.gestor_asignado_id IS 'FK, NULL, IDX';
+COMMENT ON COLUMN garantia.gestion_cobranza.etapa_actual IS 'CK, IDX';
+COMMENT ON COLUMN garantia.gestion_cobranza.ultimo_contacto_en IS 'NULL';
+COMMENT ON COLUMN garantia.gestion_cobranza.proxima_accion_en IS 'IDX';
+COMMENT ON COLUMN garantia.gestion_cobranza.estado IS 'CK, IDX';
+COMMENT ON COLUMN garantia.gestion_cobranza.cerrada_en IS 'NULL';

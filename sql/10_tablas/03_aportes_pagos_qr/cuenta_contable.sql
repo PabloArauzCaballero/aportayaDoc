@@ -2,7 +2,7 @@
 -- clase de dominio: CuentaContable
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS cuenta_contable (
+CREATE TABLE IF NOT EXISTS nucleo_financiero.cuenta_contable (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   codigo                             VARCHAR(20) NOT NULL,
   nombre                             VARCHAR(80) NOT NULL,
@@ -19,11 +19,11 @@ CREATE TABLE IF NOT EXISTS cuenta_contable (
   CONSTRAINT ck_cuenta_contable_naturaleza CHECK (naturaleza IN ('ACREEDORA', 'DEUDORA'))
 );
 
-COMMENT ON TABLE cuenta_contable IS 'Módulo 03 — Aportes, Pagos QR y Conciliación. Que "pagué" signifique "el banco lo confirmó"';
-COMMENT ON COLUMN cuenta_contable.id IS 'PK';
-COMMENT ON COLUMN cuenta_contable.codigo IS 'UQ';
-COMMENT ON COLUMN cuenta_contable.tipo IS 'CK';
-COMMENT ON COLUMN cuenta_contable.naturaleza IS 'CK';
-COMMENT ON COLUMN cuenta_contable.cuenta_padre_id IS 'FK, NULL, IDX';
-COMMENT ON COLUMN cuenta_contable.grupo_id IS 'FK, NULL';
-COMMENT ON COLUMN cuenta_contable.participante_id IS 'FK, NULL';
+COMMENT ON TABLE nucleo_financiero.cuenta_contable IS 'Módulo 03 — Aportes, Pagos QR y Conciliación. Que "pagué" signifique "el banco lo confirmó"';
+COMMENT ON COLUMN nucleo_financiero.cuenta_contable.id IS 'PK';
+COMMENT ON COLUMN nucleo_financiero.cuenta_contable.codigo IS 'UQ';
+COMMENT ON COLUMN nucleo_financiero.cuenta_contable.tipo IS 'CK';
+COMMENT ON COLUMN nucleo_financiero.cuenta_contable.naturaleza IS 'CK';
+COMMENT ON COLUMN nucleo_financiero.cuenta_contable.cuenta_padre_id IS 'FK, NULL, IDX';
+COMMENT ON COLUMN nucleo_financiero.cuenta_contable.grupo_id IS 'FK, NULL';
+COMMENT ON COLUMN nucleo_financiero.cuenta_contable.participante_id IS 'FK, NULL';

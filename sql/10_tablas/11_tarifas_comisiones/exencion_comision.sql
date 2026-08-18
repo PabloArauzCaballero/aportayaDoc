@@ -2,7 +2,7 @@
 -- clase de dominio: ExencionComision
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS exencion_comision (
+CREATE TABLE IF NOT EXISTS tarifas.exencion_comision (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   usuario_id                         UUID,
   grupo_id                           UUID,
@@ -23,16 +23,16 @@ CREATE TABLE IF NOT EXISTS exencion_comision (
   CONSTRAINT ck_exencion_comision_porcentaje_exencion CHECK (porcentaje_exencion BETWEEN 0 AND 100)
 );
 
-COMMENT ON TABLE exencion_comision IS 'Módulo 11 — Tarifas, Comisiones, Impuestos y Facturación. La política de cobro es dato, no código: se cambia con un seeder';
-COMMENT ON COLUMN exencion_comision.id IS 'PK';
-COMMENT ON COLUMN exencion_comision.usuario_id IS 'FK, NULL, M1';
-COMMENT ON COLUMN exencion_comision.grupo_id IS 'FK, NULL, M2';
-COMMENT ON COLUMN exencion_comision.concepto_tarifa_id IS 'FK, NULL';
-COMMENT ON COLUMN exencion_comision.segmento_id IS 'FK, NULL';
-COMMENT ON COLUMN exencion_comision.autorizada_por IS 'FK';
-COMMENT ON COLUMN exencion_comision.alcance IS 'CK, IDX';
-COMMENT ON COLUMN exencion_comision.motivo IS 'CK';
-COMMENT ON COLUMN exencion_comision.porcentaje_exencion IS 'CK: 0-100';
-COMMENT ON COLUMN exencion_comision.monto_tope IS 'NULL';
-COMMENT ON COLUMN exencion_comision.vigente_hasta IS 'NULL';
-COMMENT ON COLUMN exencion_comision.activa IS 'IDX';
+COMMENT ON TABLE tarifas.exencion_comision IS 'Módulo 11 — Tarifas, Comisiones, Impuestos y Facturación. La política de cobro es dato, no código: se cambia con un seeder';
+COMMENT ON COLUMN tarifas.exencion_comision.id IS 'PK';
+COMMENT ON COLUMN tarifas.exencion_comision.usuario_id IS 'FK, NULL, M1';
+COMMENT ON COLUMN tarifas.exencion_comision.grupo_id IS 'FK, NULL, M2';
+COMMENT ON COLUMN tarifas.exencion_comision.concepto_tarifa_id IS 'FK, NULL';
+COMMENT ON COLUMN tarifas.exencion_comision.segmento_id IS 'FK, NULL';
+COMMENT ON COLUMN tarifas.exencion_comision.autorizada_por IS 'FK';
+COMMENT ON COLUMN tarifas.exencion_comision.alcance IS 'CK, IDX';
+COMMENT ON COLUMN tarifas.exencion_comision.motivo IS 'CK';
+COMMENT ON COLUMN tarifas.exencion_comision.porcentaje_exencion IS 'CK: 0-100';
+COMMENT ON COLUMN tarifas.exencion_comision.monto_tope IS 'NULL';
+COMMENT ON COLUMN tarifas.exencion_comision.vigente_hasta IS 'NULL';
+COMMENT ON COLUMN tarifas.exencion_comision.activa IS 'IDX';

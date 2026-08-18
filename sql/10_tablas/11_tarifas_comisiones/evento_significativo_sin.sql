@@ -1,7 +1,7 @@
 -- evento_significativo_sin · módulo 11 — Tarifas, Comisiones, Impuestos y Facturación
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS evento_significativo_sin (
+CREATE TABLE IF NOT EXISTS tarifas.evento_significativo_sin (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   registrado_por                     UUID,
   codigo_evento                      VARCHAR(10) NOT NULL,
@@ -21,13 +21,13 @@ CREATE TABLE IF NOT EXISTS evento_significativo_sin (
   CONSTRAINT ck_evento_significativo_sin_estado CHECK (estado IN ('ABIERTO', 'CERRADO', 'REGISTRADO', 'VENCIDO'))
 );
 
-COMMENT ON TABLE evento_significativo_sin IS 'Módulo 11 — Tarifas, Comisiones, Impuestos y Facturación. La política de cobro es dato, no código: se cambia con un seeder';
-COMMENT ON COLUMN evento_significativo_sin.id IS 'PK';
-COMMENT ON COLUMN evento_significativo_sin.registrado_por IS 'FK, NULL';
-COMMENT ON COLUMN evento_significativo_sin.codigo_evento IS 'CK, IDX';
-COMMENT ON COLUMN evento_significativo_sin.fecha_inicio IS 'IDX';
-COMMENT ON COLUMN evento_significativo_sin.fecha_fin IS 'NULL';
-COMMENT ON COLUMN evento_significativo_sin.plazo_registro IS 'IDX';
-COMMENT ON COLUMN evento_significativo_sin.registrado_en_sin IS 'NULL';
-COMMENT ON COLUMN evento_significativo_sin.codigo_recepcion_evento IS 'UQ, NULL';
-COMMENT ON COLUMN evento_significativo_sin.estado IS 'CK, IDX';
+COMMENT ON TABLE tarifas.evento_significativo_sin IS 'Módulo 11 — Tarifas, Comisiones, Impuestos y Facturación. La política de cobro es dato, no código: se cambia con un seeder';
+COMMENT ON COLUMN tarifas.evento_significativo_sin.id IS 'PK';
+COMMENT ON COLUMN tarifas.evento_significativo_sin.registrado_por IS 'FK, NULL';
+COMMENT ON COLUMN tarifas.evento_significativo_sin.codigo_evento IS 'CK, IDX';
+COMMENT ON COLUMN tarifas.evento_significativo_sin.fecha_inicio IS 'IDX';
+COMMENT ON COLUMN tarifas.evento_significativo_sin.fecha_fin IS 'NULL';
+COMMENT ON COLUMN tarifas.evento_significativo_sin.plazo_registro IS 'IDX';
+COMMENT ON COLUMN tarifas.evento_significativo_sin.registrado_en_sin IS 'NULL';
+COMMENT ON COLUMN tarifas.evento_significativo_sin.codigo_recepcion_evento IS 'UQ, NULL';
+COMMENT ON COLUMN tarifas.evento_significativo_sin.estado IS 'CK, IDX';

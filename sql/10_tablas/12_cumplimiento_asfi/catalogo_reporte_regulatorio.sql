@@ -2,7 +2,7 @@
 -- clase de dominio: CatalogoReporteRegulatorio
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS catalogo_reporte_regulatorio (
+CREATE TABLE IF NOT EXISTS cumplimiento.catalogo_reporte_regulatorio (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   codigo                             VARCHAR(30) NOT NULL,
   organismo                          VARCHAR(10) NOT NULL,
@@ -19,9 +19,9 @@ CREATE TABLE IF NOT EXISTS catalogo_reporte_regulatorio (
   CONSTRAINT ck_catalogo_reporte_regulatorio_formato CHECK (formato IN ('CSV', 'JSON', 'TXT', 'WEB', 'XLSX', 'XML'))
 );
 
-COMMENT ON TABLE catalogo_reporte_regulatorio IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
-COMMENT ON COLUMN catalogo_reporte_regulatorio.id IS 'PK';
-COMMENT ON COLUMN catalogo_reporte_regulatorio.codigo IS 'UQ';
-COMMENT ON COLUMN catalogo_reporte_regulatorio.organismo IS 'CK, IDX';
-COMMENT ON COLUMN catalogo_reporte_regulatorio.periodicidad IS 'CK';
-COMMENT ON COLUMN catalogo_reporte_regulatorio.formato IS 'CK';
+COMMENT ON TABLE cumplimiento.catalogo_reporte_regulatorio IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
+COMMENT ON COLUMN cumplimiento.catalogo_reporte_regulatorio.id IS 'PK';
+COMMENT ON COLUMN cumplimiento.catalogo_reporte_regulatorio.codigo IS 'UQ';
+COMMENT ON COLUMN cumplimiento.catalogo_reporte_regulatorio.organismo IS 'CK, IDX';
+COMMENT ON COLUMN cumplimiento.catalogo_reporte_regulatorio.periodicidad IS 'CK';
+COMMENT ON COLUMN cumplimiento.catalogo_reporte_regulatorio.formato IS 'CK';

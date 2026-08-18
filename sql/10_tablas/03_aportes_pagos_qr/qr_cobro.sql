@@ -2,7 +2,7 @@
 -- clase de dominio: QRCobro
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS qr_cobro (
+CREATE TABLE IF NOT EXISTS aportes.qr_cobro (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   orden_cobro_id                     UUID NOT NULL,
   payload_emv                        TEXT NOT NULL,
@@ -15,6 +15,6 @@ CREATE TABLE IF NOT EXISTS qr_cobro (
   CONSTRAINT pk_qr_cobro PRIMARY KEY (id)
 );
 
-COMMENT ON TABLE qr_cobro IS 'Módulo 03 — Aportes, Pagos QR y Conciliación. Que "pagué" signifique "el banco lo confirmó"';
-COMMENT ON COLUMN qr_cobro.id IS 'PK';
-COMMENT ON COLUMN qr_cobro.orden_cobro_id IS 'FK, UQ';
+COMMENT ON TABLE aportes.qr_cobro IS 'Módulo 03 — Aportes, Pagos QR y Conciliación. Que "pagué" signifique "el banco lo confirmó"';
+COMMENT ON COLUMN aportes.qr_cobro.id IS 'PK';
+COMMENT ON COLUMN aportes.qr_cobro.orden_cobro_id IS 'FK, UQ';

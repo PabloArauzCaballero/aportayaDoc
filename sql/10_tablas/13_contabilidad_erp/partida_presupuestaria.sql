@@ -2,7 +2,7 @@
 -- clase de dominio: PartidaPresupuestaria
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS partida_presupuestaria (
+CREATE TABLE IF NOT EXISTS erp.partida_presupuestaria (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   presupuesto_id                     UUID NOT NULL,
   cuenta_contable_id                 UUID NOT NULL,
@@ -14,9 +14,9 @@ CREATE TABLE IF NOT EXISTS partida_presupuestaria (
   CONSTRAINT ck_partida_presupuestaria_monto_presupuestado CHECK (monto_presupuestado > 0)
 );
 
-COMMENT ON TABLE partida_presupuestaria IS 'Módulo 13 — Contabilidad Financiera y ERP. Que cerrar un mes no dependa de un Excel armado a mano';
-COMMENT ON COLUMN partida_presupuestaria.id IS 'PK';
-COMMENT ON COLUMN partida_presupuestaria.presupuesto_id IS 'FK, IDX';
-COMMENT ON COLUMN partida_presupuestaria.cuenta_contable_id IS 'FK, IDX, M3';
-COMMENT ON COLUMN partida_presupuestaria.periodo_contable_id IS 'FK, IDX';
-COMMENT ON COLUMN partida_presupuestaria.monto_presupuestado IS 'CK: > 0';
+COMMENT ON TABLE erp.partida_presupuestaria IS 'Módulo 13 — Contabilidad Financiera y ERP. Que cerrar un mes no dependa de un Excel armado a mano';
+COMMENT ON COLUMN erp.partida_presupuestaria.id IS 'PK';
+COMMENT ON COLUMN erp.partida_presupuestaria.presupuesto_id IS 'FK, IDX';
+COMMENT ON COLUMN erp.partida_presupuestaria.cuenta_contable_id IS 'FK, IDX, M3';
+COMMENT ON COLUMN erp.partida_presupuestaria.periodo_contable_id IS 'FK, IDX';
+COMMENT ON COLUMN erp.partida_presupuestaria.monto_presupuestado IS 'CK: > 0';

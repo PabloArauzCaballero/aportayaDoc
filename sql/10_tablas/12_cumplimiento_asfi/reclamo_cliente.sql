@@ -2,7 +2,7 @@
 -- clase de dominio: ReclamoCliente
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS reclamo_cliente (
+CREATE TABLE IF NOT EXISTS cumplimiento.reclamo_cliente (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   codigo                             VARCHAR(20) NOT NULL,
   usuario_id                         UUID NOT NULL,
@@ -35,26 +35,26 @@ CREATE TABLE IF NOT EXISTS reclamo_cliente (
   CONSTRAINT ck_reclamo_cliente_resultado CHECK (resultado IN ('DESFAVORABLE', 'DESISTIDO', 'FAVORABLE', 'PARCIAL'))
 );
 
-COMMENT ON TABLE reclamo_cliente IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
-COMMENT ON COLUMN reclamo_cliente.id IS 'PK';
-COMMENT ON COLUMN reclamo_cliente.codigo IS 'UQ';
-COMMENT ON COLUMN reclamo_cliente.usuario_id IS 'FK, IDX, M1';
-COMMENT ON COLUMN reclamo_cliente.punto_reclamo_id IS 'FK';
-COMMENT ON COLUMN reclamo_cliente.responsable_id IS 'FK, NULL';
-COMMENT ON COLUMN reclamo_cliente.ticket_soporte_id IS 'FK, NULL, M9';
-COMMENT ON COLUMN reclamo_cliente.devolucion_comision_id IS 'FK, NULL, M11';
-COMMENT ON COLUMN reclamo_cliente.categoria IS 'CK, IDX';
-COMMENT ON COLUMN reclamo_cliente.monto_reclamado IS 'NULL';
-COMMENT ON COLUMN reclamo_cliente.canal_ingreso IS 'CK';
-COMMENT ON COLUMN reclamo_cliente.estado IS 'CK, IDX';
-COMMENT ON COLUMN reclamo_cliente.fecha_ingreso IS 'IDX';
-COMMENT ON COLUMN reclamo_cliente.plazo_respuesta IS 'IDX';
-COMMENT ON COLUMN reclamo_cliente.plazo_prorrogado_hasta IS 'NULL';
-COMMENT ON COLUMN reclamo_cliente.prorroga_comunicada_al_cliente_en IS 'NULL';
-COMMENT ON COLUMN reclamo_cliente.prorroga_comunicada_al_organismo_en IS 'NULL';
-COMMENT ON COLUMN reclamo_cliente.justificacion_prorroga IS 'NULL';
-COMMENT ON COLUMN reclamo_cliente.fecha_respuesta IS 'NULL';
-COMMENT ON COLUMN reclamo_cliente.resultado IS 'CK, NULL';
-COMMENT ON COLUMN reclamo_cliente.respuesta IS 'NULL';
-COMMENT ON COLUMN reclamo_cliente.incluido_en_reporte_mensual IS 'NULL, IDX';
-COMMENT ON COLUMN reclamo_cliente.conservar_hasta IS 'IDX';
+COMMENT ON TABLE cumplimiento.reclamo_cliente IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
+COMMENT ON COLUMN cumplimiento.reclamo_cliente.id IS 'PK';
+COMMENT ON COLUMN cumplimiento.reclamo_cliente.codigo IS 'UQ';
+COMMENT ON COLUMN cumplimiento.reclamo_cliente.usuario_id IS 'FK, IDX, M1';
+COMMENT ON COLUMN cumplimiento.reclamo_cliente.punto_reclamo_id IS 'FK';
+COMMENT ON COLUMN cumplimiento.reclamo_cliente.responsable_id IS 'FK, NULL';
+COMMENT ON COLUMN cumplimiento.reclamo_cliente.ticket_soporte_id IS 'FK, NULL, M9';
+COMMENT ON COLUMN cumplimiento.reclamo_cliente.devolucion_comision_id IS 'FK, NULL, M11';
+COMMENT ON COLUMN cumplimiento.reclamo_cliente.categoria IS 'CK, IDX';
+COMMENT ON COLUMN cumplimiento.reclamo_cliente.monto_reclamado IS 'NULL';
+COMMENT ON COLUMN cumplimiento.reclamo_cliente.canal_ingreso IS 'CK';
+COMMENT ON COLUMN cumplimiento.reclamo_cliente.estado IS 'CK, IDX';
+COMMENT ON COLUMN cumplimiento.reclamo_cliente.fecha_ingreso IS 'IDX';
+COMMENT ON COLUMN cumplimiento.reclamo_cliente.plazo_respuesta IS 'IDX';
+COMMENT ON COLUMN cumplimiento.reclamo_cliente.plazo_prorrogado_hasta IS 'NULL';
+COMMENT ON COLUMN cumplimiento.reclamo_cliente.prorroga_comunicada_al_cliente_en IS 'NULL';
+COMMENT ON COLUMN cumplimiento.reclamo_cliente.prorroga_comunicada_al_organismo_en IS 'NULL';
+COMMENT ON COLUMN cumplimiento.reclamo_cliente.justificacion_prorroga IS 'NULL';
+COMMENT ON COLUMN cumplimiento.reclamo_cliente.fecha_respuesta IS 'NULL';
+COMMENT ON COLUMN cumplimiento.reclamo_cliente.resultado IS 'CK, NULL';
+COMMENT ON COLUMN cumplimiento.reclamo_cliente.respuesta IS 'NULL';
+COMMENT ON COLUMN cumplimiento.reclamo_cliente.incluido_en_reporte_mensual IS 'NULL, IDX';
+COMMENT ON COLUMN cumplimiento.reclamo_cliente.conservar_hasta IS 'IDX';

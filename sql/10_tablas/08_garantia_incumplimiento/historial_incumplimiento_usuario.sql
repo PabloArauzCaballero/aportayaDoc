@@ -2,7 +2,7 @@
 -- clase de dominio: HistorialIncumplimientoUsuario
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS historial_incumplimiento_usuario (
+CREATE TABLE IF NOT EXISTS garantia.historial_incumplimiento_usuario (
   usuario_id                         UUID DEFAULT gen_random_uuid() NOT NULL,
   total_incumplimientos              SMALLINT DEFAULT 0 NOT NULL,
   incumplimientos_leves              SMALLINT NOT NULL,
@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS historial_incumplimiento_usuario (
   CONSTRAINT pk_historial_incumplimiento_usuario PRIMARY KEY (usuario_id)
 );
 
-COMMENT ON TABLE historial_incumplimiento_usuario IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. El grupo no se detiene, pero la deuda no se perdona sola';
-COMMENT ON COLUMN historial_incumplimiento_usuario.usuario_id IS 'PK, FK';
-COMMENT ON COLUMN historial_incumplimiento_usuario.incumplimientos_abiertos IS 'IDX';
-COMMENT ON COLUMN historial_incumplimiento_usuario.ultimo_incumplimiento_en IS 'NULL';
+COMMENT ON TABLE garantia.historial_incumplimiento_usuario IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. El grupo no se detiene, pero la deuda no se perdona sola';
+COMMENT ON COLUMN garantia.historial_incumplimiento_usuario.usuario_id IS 'PK, FK';
+COMMENT ON COLUMN garantia.historial_incumplimiento_usuario.incumplimientos_abiertos IS 'IDX';
+COMMENT ON COLUMN garantia.historial_incumplimiento_usuario.ultimo_incumplimiento_en IS 'NULL';

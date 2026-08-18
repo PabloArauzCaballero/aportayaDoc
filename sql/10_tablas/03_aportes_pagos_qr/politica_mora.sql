@@ -2,7 +2,7 @@
 -- clase de dominio: PoliticaMora
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS politica_mora (
+CREATE TABLE IF NOT EXISTS aportes.politica_mora (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   grupo_id                           UUID,
   dias_gracia                        SMALLINT NOT NULL,
@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS politica_mora (
   CONSTRAINT ck_politica_mora_tipo_recargo CHECK (tipo_recargo IN ('DIARIO_COMPUESTO', 'FIJO', 'PORCENTUAL'))
 );
 
-COMMENT ON TABLE politica_mora IS 'Módulo 03 — Aportes, Pagos QR y Conciliación. Que "pagué" signifique "el banco lo confirmó"';
-COMMENT ON COLUMN politica_mora.id IS 'PK';
-COMMENT ON COLUMN politica_mora.grupo_id IS 'FK, NULL';
-COMMENT ON COLUMN politica_mora.tipo_recargo IS 'CK';
+COMMENT ON TABLE aportes.politica_mora IS 'Módulo 03 — Aportes, Pagos QR y Conciliación. Que "pagué" signifique "el banco lo confirmó"';
+COMMENT ON COLUMN aportes.politica_mora.id IS 'PK';
+COMMENT ON COLUMN aportes.politica_mora.grupo_id IS 'FK, NULL';
+COMMENT ON COLUMN aportes.politica_mora.tipo_recargo IS 'CK';

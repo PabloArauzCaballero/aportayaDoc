@@ -2,7 +2,7 @@
 -- clase de dominio: MatrizRiesgoLft
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS matriz_riesgo_lft (
+CREATE TABLE IF NOT EXISTS cumplimiento.matriz_riesgo_lft (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   version                            SMALLINT DEFAULT 0 NOT NULL,
   dimension                          VARCHAR(20) NOT NULL,
@@ -17,9 +17,9 @@ CREATE TABLE IF NOT EXISTS matriz_riesgo_lft (
   CONSTRAINT ck_matriz_riesgo_lft_dimension CHECK (dimension IN ('CANAL', 'CLIENTE', 'PRODUCTO', 'ZONA_GEOGRAFICA'))
 );
 
-COMMENT ON TABLE matriz_riesgo_lft IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
-COMMENT ON COLUMN matriz_riesgo_lft.id IS 'PK';
-COMMENT ON COLUMN matriz_riesgo_lft.version IS 'UQ+dimension+factor';
-COMMENT ON COLUMN matriz_riesgo_lft.dimension IS 'CK';
-COMMENT ON COLUMN matriz_riesgo_lft.vigente_hasta IS 'NULL';
-COMMENT ON COLUMN matriz_riesgo_lft.aprobada_por IS 'FK, NULL';
+COMMENT ON TABLE cumplimiento.matriz_riesgo_lft IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
+COMMENT ON COLUMN cumplimiento.matriz_riesgo_lft.id IS 'PK';
+COMMENT ON COLUMN cumplimiento.matriz_riesgo_lft.version IS 'UQ+dimension+factor';
+COMMENT ON COLUMN cumplimiento.matriz_riesgo_lft.dimension IS 'CK';
+COMMENT ON COLUMN cumplimiento.matriz_riesgo_lft.vigente_hasta IS 'NULL';
+COMMENT ON COLUMN cumplimiento.matriz_riesgo_lft.aprobada_por IS 'FK, NULL';

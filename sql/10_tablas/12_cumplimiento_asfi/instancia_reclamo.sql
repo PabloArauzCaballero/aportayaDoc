@@ -2,7 +2,7 @@
 -- clase de dominio: InstanciaReclamo
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS instancia_reclamo (
+CREATE TABLE IF NOT EXISTS cumplimiento.instancia_reclamo (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   reclamo_id                         UUID NOT NULL,
   instancia                          VARCHAR(15) NOT NULL,
@@ -17,12 +17,12 @@ CREATE TABLE IF NOT EXISTS instancia_reclamo (
   CONSTRAINT ck_instancia_reclamo_estado CHECK (estado IN ('DESISTIDA', 'EN_TRAMITE', 'PRESENTADA', 'RESUELTA'))
 );
 
-COMMENT ON TABLE instancia_reclamo IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
-COMMENT ON COLUMN instancia_reclamo.id IS 'PK';
-COMMENT ON COLUMN instancia_reclamo.reclamo_id IS 'FK, IDX';
-COMMENT ON COLUMN instancia_reclamo.instancia IS 'CK';
-COMMENT ON COLUMN instancia_reclamo.numero_expediente IS 'NULL';
-COMMENT ON COLUMN instancia_reclamo.estado IS 'CK';
-COMMENT ON COLUMN instancia_reclamo.resolucion IS 'NULL';
-COMMENT ON COLUMN instancia_reclamo.fecha_resolucion IS 'NULL';
-COMMENT ON COLUMN instancia_reclamo.monto_resarcido IS 'NULL';
+COMMENT ON TABLE cumplimiento.instancia_reclamo IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
+COMMENT ON COLUMN cumplimiento.instancia_reclamo.id IS 'PK';
+COMMENT ON COLUMN cumplimiento.instancia_reclamo.reclamo_id IS 'FK, IDX';
+COMMENT ON COLUMN cumplimiento.instancia_reclamo.instancia IS 'CK';
+COMMENT ON COLUMN cumplimiento.instancia_reclamo.numero_expediente IS 'NULL';
+COMMENT ON COLUMN cumplimiento.instancia_reclamo.estado IS 'CK';
+COMMENT ON COLUMN cumplimiento.instancia_reclamo.resolucion IS 'NULL';
+COMMENT ON COLUMN cumplimiento.instancia_reclamo.fecha_resolucion IS 'NULL';
+COMMENT ON COLUMN cumplimiento.instancia_reclamo.monto_resarcido IS 'NULL';

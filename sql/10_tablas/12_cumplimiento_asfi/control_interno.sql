@@ -2,7 +2,7 @@
 -- clase de dominio: ControlInterno
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS control_interno (
+CREATE TABLE IF NOT EXISTS cumplimiento.control_interno (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   codigo                             VARCHAR(20) NOT NULL,
   proceso                            VARCHAR(60) NOT NULL,
@@ -18,11 +18,11 @@ CREATE TABLE IF NOT EXISTS control_interno (
   CONSTRAINT ck_control_interno_frecuencia CHECK (frecuencia IN ('ANUAL', 'BIMESTRAL', 'CONTINUA', 'DIARIA', 'MENSUAL', 'QUINCENAL', 'SEMANAL', 'SEMESTRAL', 'TRIMESTRAL'))
 );
 
-COMMENT ON TABLE control_interno IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
-COMMENT ON COLUMN control_interno.id IS 'PK';
-COMMENT ON COLUMN control_interno.codigo IS 'UQ';
-COMMENT ON COLUMN control_interno.proceso IS 'IDX';
-COMMENT ON COLUMN control_interno.tipo IS 'CK';
-COMMENT ON COLUMN control_interno.frecuencia IS 'CK';
-COMMENT ON COLUMN control_interno.responsable_id IS 'FK, NULL';
-COMMENT ON COLUMN control_interno.activo IS 'IDX';
+COMMENT ON TABLE cumplimiento.control_interno IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
+COMMENT ON COLUMN cumplimiento.control_interno.id IS 'PK';
+COMMENT ON COLUMN cumplimiento.control_interno.codigo IS 'UQ';
+COMMENT ON COLUMN cumplimiento.control_interno.proceso IS 'IDX';
+COMMENT ON COLUMN cumplimiento.control_interno.tipo IS 'CK';
+COMMENT ON COLUMN cumplimiento.control_interno.frecuencia IS 'CK';
+COMMENT ON COLUMN cumplimiento.control_interno.responsable_id IS 'FK, NULL';
+COMMENT ON COLUMN cumplimiento.control_interno.activo IS 'IDX';

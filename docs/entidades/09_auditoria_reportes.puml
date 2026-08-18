@@ -533,8 +533,10 @@ legend top right
   <b>Notacion</b>
   * PK    # FK    <<UQ>> unico    <<IDX>> indexado
   <<CK>> CHECK    <<NULL>> admite nulos
-  bitacora_evento, evento_dominio y registro_acceso_datos:
+  bitacora_evento y registro_acceso_datos:
   INSERT-ONLY, particionadas por mes, con retencion por politica.
+  El outbox (evento_dominio) vive por esquema de servicio (ADR-027),
+  no aca: es infraestructura, no entidad de dominio.
 endlegend
 
 entity "bitacora_evento" as bit {
@@ -560,23 +562,6 @@ entity "bitacora_evento" as bit {
   hash_registro : VARCHAR(64) <<UQ>>
   hash_anterior : VARCHAR(64)
   fecha_hora : TIMESTAMPTZ <<IDX, particion>>
-}
-
-entity "evento_dominio" as evtdom {
-  * id : UUID <<PK>>
-  --
-  tipo : VARCHAR(60) <<IDX>>
-  version : VARCHAR(10)
-  agregado : VARCHAR(40)
-  agregado_id : UUID <<IDX>>
-  payload : JSONB
-  metadatos : JSONB
-  correlation_id : UUID <<IDX>>
-  causation_id : UUID <<NULL>>
-  ocurrido_en : TIMESTAMPTZ <<IDX>>
-  publicado_en : TIMESTAMPTZ <<NULL>>
-  estado : VARCHAR(15) <<CK, IDX>>
-  intentos : SMALLINT
 }
 
 entity "registro_acceso_datos" as accdatos {
@@ -837,15 +822,6 @@ note top of bit
   cualquier PK de los modulos 1-8: se valida en
   aplicacion, no por FK, para no acoplar la
   auditoria al esquema que audita.
-end note
-
-note bottom of evtdom
-  <b>Outbox transaccional</b>
-  Indice parcial de despacho:
-  CREATE INDEX ON evento_dominio (ocurrido_en)
-    WHERE estado = 'PENDIENTE';
-  Consumidores: reputacion (M6), notificaciones
-  (M5), metricas (M6/M9) y cumplimiento (este modulo).
 end note
 
 note bottom of accdatos

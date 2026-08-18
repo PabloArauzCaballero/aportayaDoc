@@ -2,7 +2,7 @@
 -- clase de dominio: Periodo
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS periodo (
+CREATE TABLE IF NOT EXISTS grupos.periodo (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   grupo_id                           UUID NOT NULL,
   numero                             SMALLINT NOT NULL,
@@ -18,9 +18,9 @@ CREATE TABLE IF NOT EXISTS periodo (
   CONSTRAINT ck_periodo_estado CHECK (estado IN ('ABIERTO', 'CANCELADO', 'CERRADO', 'EN_GRACIA', 'LIQUIDADO', 'PROGRAMADO'))
 );
 
-COMMENT ON TABLE periodo IS 'Módulo 02 — Grupos, Cupos, Turnos y Gobernanza. Reglas del juego, orden de cobro y decisiones colectivas';
-COMMENT ON COLUMN periodo.id IS 'PK';
-COMMENT ON COLUMN periodo.grupo_id IS 'FK, IDX';
-COMMENT ON COLUMN periodo.numero IS 'UQ+grupo_id';
-COMMENT ON COLUMN periodo.fecha_limite_pago IS 'IDX';
-COMMENT ON COLUMN periodo.estado IS 'CK, IDX';
+COMMENT ON TABLE grupos.periodo IS 'Módulo 02 — Grupos, Cupos, Turnos y Gobernanza. Reglas del juego, orden de cobro y decisiones colectivas';
+COMMENT ON COLUMN grupos.periodo.id IS 'PK';
+COMMENT ON COLUMN grupos.periodo.grupo_id IS 'FK, IDX';
+COMMENT ON COLUMN grupos.periodo.numero IS 'UQ+grupo_id';
+COMMENT ON COLUMN grupos.periodo.fecha_limite_pago IS 'IDX';
+COMMENT ON COLUMN grupos.periodo.estado IS 'CK, IDX';

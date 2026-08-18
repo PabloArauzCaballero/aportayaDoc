@@ -2,7 +2,7 @@
 -- clase de dominio: PlanContingencia
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS plan_contingencia (
+CREATE TABLE IF NOT EXISTS garantia.plan_contingencia (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   grupo_id                           UUID NOT NULL,
   acuerdo_grupo_id                   UUID,
@@ -20,11 +20,11 @@ CREATE TABLE IF NOT EXISTS plan_contingencia (
   CONSTRAINT ck_plan_contingencia_estado CHECK (estado IN ('APROBADO', 'DESCARTADO', 'EJECUTADO', 'PROPUESTO'))
 );
 
-COMMENT ON TABLE plan_contingencia IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. El grupo no se detiene, pero la deuda no se perdona sola';
-COMMENT ON COLUMN plan_contingencia.id IS 'PK';
-COMMENT ON COLUMN plan_contingencia.grupo_id IS 'FK, IDX';
-COMMENT ON COLUMN plan_contingencia.acuerdo_grupo_id IS 'FK, NULL, M2';
-COMMENT ON COLUMN plan_contingencia.disparador IS 'CK';
-COMMENT ON COLUMN plan_contingencia.tipo IS 'CK';
-COMMENT ON COLUMN plan_contingencia.estado IS 'CK';
-COMMENT ON COLUMN plan_contingencia.ejecutado_en IS 'NULL';
+COMMENT ON TABLE garantia.plan_contingencia IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. El grupo no se detiene, pero la deuda no se perdona sola';
+COMMENT ON COLUMN garantia.plan_contingencia.id IS 'PK';
+COMMENT ON COLUMN garantia.plan_contingencia.grupo_id IS 'FK, IDX';
+COMMENT ON COLUMN garantia.plan_contingencia.acuerdo_grupo_id IS 'FK, NULL, M2';
+COMMENT ON COLUMN garantia.plan_contingencia.disparador IS 'CK';
+COMMENT ON COLUMN garantia.plan_contingencia.tipo IS 'CK';
+COMMENT ON COLUMN garantia.plan_contingencia.estado IS 'CK';
+COMMENT ON COLUMN garantia.plan_contingencia.ejecutado_en IS 'NULL';

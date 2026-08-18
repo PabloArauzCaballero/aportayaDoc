@@ -2,7 +2,7 @@
 -- clase de dominio: Invitacion
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS invitacion (
+CREATE TABLE IF NOT EXISTS grupos.invitacion (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   grupo_id                           UUID NOT NULL,
   telefono_invitado                  VARCHAR(20) NOT NULL,
@@ -20,13 +20,13 @@ CREATE TABLE IF NOT EXISTS invitacion (
   CONSTRAINT ck_invitacion_estado CHECK (estado IN ('ACEPTADA', 'ENVIADA', 'EXPIRADA', 'PENDIENTE', 'RECHAZADA', 'REVOCADA'))
 );
 
-COMMENT ON TABLE invitacion IS 'Módulo 02 — Grupos, Cupos, Turnos y Gobernanza. Reglas del juego, orden de cobro y decisiones colectivas';
-COMMENT ON COLUMN invitacion.id IS 'PK';
-COMMENT ON COLUMN invitacion.grupo_id IS 'FK, IDX';
-COMMENT ON COLUMN invitacion.telefono_invitado IS 'IDX';
-COMMENT ON COLUMN invitacion.nombre_sugerido IS 'NULL';
-COMMENT ON COLUMN invitacion.emisor_id IS 'FK';
-COMMENT ON COLUMN invitacion.token_id IS 'FK, UQ, M1';
-COMMENT ON COLUMN invitacion.canal IS 'CK';
-COMMENT ON COLUMN invitacion.estado IS 'CK';
-COMMENT ON COLUMN invitacion.fecha_respuesta IS 'NULL';
+COMMENT ON TABLE grupos.invitacion IS 'Módulo 02 — Grupos, Cupos, Turnos y Gobernanza. Reglas del juego, orden de cobro y decisiones colectivas';
+COMMENT ON COLUMN grupos.invitacion.id IS 'PK';
+COMMENT ON COLUMN grupos.invitacion.grupo_id IS 'FK, IDX';
+COMMENT ON COLUMN grupos.invitacion.telefono_invitado IS 'IDX';
+COMMENT ON COLUMN grupos.invitacion.nombre_sugerido IS 'NULL';
+COMMENT ON COLUMN grupos.invitacion.emisor_id IS 'FK';
+COMMENT ON COLUMN grupos.invitacion.token_id IS 'FK, UQ, M1';
+COMMENT ON COLUMN grupos.invitacion.canal IS 'CK';
+COMMENT ON COLUMN grupos.invitacion.estado IS 'CK';
+COMMENT ON COLUMN grupos.invitacion.fecha_respuesta IS 'NULL';

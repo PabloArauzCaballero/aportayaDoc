@@ -2,7 +2,7 @@
 -- clase de dominio: ExcepcionConciliacion
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS excepcion_conciliacion (
+CREATE TABLE IF NOT EXISTS aportes.excepcion_conciliacion (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   conciliacion_id                    UUID NOT NULL,
   tipo                               VARCHAR(30) NOT NULL,
@@ -18,11 +18,11 @@ CREATE TABLE IF NOT EXISTS excepcion_conciliacion (
   CONSTRAINT ck_excepcion_conciliacion_estado CHECK (estado IN ('ABIERTA', 'EN_GESTION', 'ESCALADA', 'RESUELTA'))
 );
 
-COMMENT ON TABLE excepcion_conciliacion IS 'Módulo 03 — Aportes, Pagos QR y Conciliación. Que "pagué" signifique "el banco lo confirmó"';
-COMMENT ON COLUMN excepcion_conciliacion.id IS 'PK';
-COMMENT ON COLUMN excepcion_conciliacion.conciliacion_id IS 'FK, IDX';
-COMMENT ON COLUMN excepcion_conciliacion.tipo IS 'CK';
-COMMENT ON COLUMN excepcion_conciliacion.estado IS 'CK, IDX';
-COMMENT ON COLUMN excepcion_conciliacion.asignada_a IS 'FK, NULL';
-COMMENT ON COLUMN excepcion_conciliacion.resolucion IS 'NULL';
-COMMENT ON COLUMN excepcion_conciliacion.resuelta_en IS 'NULL';
+COMMENT ON TABLE aportes.excepcion_conciliacion IS 'Módulo 03 — Aportes, Pagos QR y Conciliación. Que "pagué" signifique "el banco lo confirmó"';
+COMMENT ON COLUMN aportes.excepcion_conciliacion.id IS 'PK';
+COMMENT ON COLUMN aportes.excepcion_conciliacion.conciliacion_id IS 'FK, IDX';
+COMMENT ON COLUMN aportes.excepcion_conciliacion.tipo IS 'CK';
+COMMENT ON COLUMN aportes.excepcion_conciliacion.estado IS 'CK, IDX';
+COMMENT ON COLUMN aportes.excepcion_conciliacion.asignada_a IS 'FK, NULL';
+COMMENT ON COLUMN aportes.excepcion_conciliacion.resolucion IS 'NULL';
+COMMENT ON COLUMN aportes.excepcion_conciliacion.resuelta_en IS 'NULL';

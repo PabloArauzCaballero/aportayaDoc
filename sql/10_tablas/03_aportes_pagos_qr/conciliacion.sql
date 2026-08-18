@@ -2,7 +2,7 @@
 -- clase de dominio: Conciliacion
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS conciliacion (
+CREATE TABLE IF NOT EXISTS aportes.conciliacion (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   pago_id                            UUID NOT NULL,
   movimiento_bancario_id             UUID,
@@ -16,11 +16,11 @@ CREATE TABLE IF NOT EXISTS conciliacion (
   CONSTRAINT ck_conciliacion_metodo CHECK (metodo IN ('MANUAL', 'MONTO_FECHA', 'REFERENCIA_EXACTA'))
 );
 
-COMMENT ON TABLE conciliacion IS 'Módulo 03 — Aportes, Pagos QR y Conciliación. Que "pagué" signifique "el banco lo confirmó"';
-COMMENT ON COLUMN conciliacion.id IS 'PK';
-COMMENT ON COLUMN conciliacion.pago_id IS 'FK, UQ';
-COMMENT ON COLUMN conciliacion.movimiento_bancario_id IS 'FK, NULL, UQ';
-COMMENT ON COLUMN conciliacion.estado IS 'CK, IDX';
-COMMENT ON COLUMN conciliacion.metodo IS 'CK';
-COMMENT ON COLUMN conciliacion.conciliado_por IS 'FK, NULL';
-COMMENT ON COLUMN conciliacion.fecha_conciliacion IS 'NULL';
+COMMENT ON TABLE aportes.conciliacion IS 'Módulo 03 — Aportes, Pagos QR y Conciliación. Que "pagué" signifique "el banco lo confirmó"';
+COMMENT ON COLUMN aportes.conciliacion.id IS 'PK';
+COMMENT ON COLUMN aportes.conciliacion.pago_id IS 'FK, UQ';
+COMMENT ON COLUMN aportes.conciliacion.movimiento_bancario_id IS 'FK, NULL, UQ';
+COMMENT ON COLUMN aportes.conciliacion.estado IS 'CK, IDX';
+COMMENT ON COLUMN aportes.conciliacion.metodo IS 'CK';
+COMMENT ON COLUMN aportes.conciliacion.conciliado_por IS 'FK, NULL';
+COMMENT ON COLUMN aportes.conciliacion.fecha_conciliacion IS 'NULL';

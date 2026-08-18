@@ -2,7 +2,7 @@
 -- clase de dominio: EnvioNotificacion
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS envio_notificacion (
+CREATE TABLE IF NOT EXISTS notificaciones.envio_notificacion (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   notificacion_id                    UUID NOT NULL,
   proveedor_id                       UUID NOT NULL,
@@ -30,17 +30,17 @@ CREATE TABLE IF NOT EXISTS envio_notificacion (
   CONSTRAINT ck_envio_notificacion_estado CHECK (estado IN ('ACEPTADO_POR_PROVEEDOR', 'ENTREGADO', 'ENVIADO', 'EXPIRADO', 'FALLIDO', 'LEIDO', 'PENDIENTE', 'RECHAZADO'))
 );
 
-COMMENT ON TABLE envio_notificacion IS 'Módulo 05 — Notificaciones y Comunicaciones. WhatsApp como canal real de cobro, sin spam ni doble aviso';
-COMMENT ON COLUMN envio_notificacion.id IS 'PK';
-COMMENT ON COLUMN envio_notificacion.notificacion_id IS 'FK, IDX';
-COMMENT ON COLUMN envio_notificacion.proveedor_id IS 'FK';
-COMMENT ON COLUMN envio_notificacion.version_plantilla_id IS 'FK';
-COMMENT ON COLUMN envio_notificacion.canal_vinculado_id IS 'FK, NULL';
-COMMENT ON COLUMN envio_notificacion.canal IS 'CK';
-COMMENT ON COLUMN envio_notificacion.estado IS 'CK, IDX';
-COMMENT ON COLUMN envio_notificacion.id_mensaje_proveedor IS 'UQ, NULL';
-COMMENT ON COLUMN envio_notificacion.codigo_error IS 'NULL';
-COMMENT ON COLUMN envio_notificacion.enviado_en IS 'NULL';
-COMMENT ON COLUMN envio_notificacion.entregado_en IS 'NULL';
-COMMENT ON COLUMN envio_notificacion.leido_en IS 'NULL';
-COMMENT ON COLUMN envio_notificacion.proximo_reintento_en IS 'NULL, IDX';
+COMMENT ON TABLE notificaciones.envio_notificacion IS 'Módulo 05 — Notificaciones y Comunicaciones. WhatsApp como canal real de cobro, sin spam ni doble aviso';
+COMMENT ON COLUMN notificaciones.envio_notificacion.id IS 'PK';
+COMMENT ON COLUMN notificaciones.envio_notificacion.notificacion_id IS 'FK, IDX';
+COMMENT ON COLUMN notificaciones.envio_notificacion.proveedor_id IS 'FK';
+COMMENT ON COLUMN notificaciones.envio_notificacion.version_plantilla_id IS 'FK';
+COMMENT ON COLUMN notificaciones.envio_notificacion.canal_vinculado_id IS 'FK, NULL';
+COMMENT ON COLUMN notificaciones.envio_notificacion.canal IS 'CK';
+COMMENT ON COLUMN notificaciones.envio_notificacion.estado IS 'CK, IDX';
+COMMENT ON COLUMN notificaciones.envio_notificacion.id_mensaje_proveedor IS 'UQ, NULL';
+COMMENT ON COLUMN notificaciones.envio_notificacion.codigo_error IS 'NULL';
+COMMENT ON COLUMN notificaciones.envio_notificacion.enviado_en IS 'NULL';
+COMMENT ON COLUMN notificaciones.envio_notificacion.entregado_en IS 'NULL';
+COMMENT ON COLUMN notificaciones.envio_notificacion.leido_en IS 'NULL';
+COMMENT ON COLUMN notificaciones.envio_notificacion.proximo_reintento_en IS 'NULL, IDX';

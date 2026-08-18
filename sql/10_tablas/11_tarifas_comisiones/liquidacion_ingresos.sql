@@ -2,7 +2,7 @@
 -- clase de dominio: LiquidacionIngresos
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS liquidacion_ingresos (
+CREATE TABLE IF NOT EXISTS tarifas.liquidacion_ingresos (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   periodo                            CHAR(7) NOT NULL,
   fecha_inicio                       DATE NOT NULL,
@@ -24,11 +24,11 @@ CREATE TABLE IF NOT EXISTS liquidacion_ingresos (
   CONSTRAINT ck_liquidacion_ingresos_estado CHECK (estado IN ('ABIERTA', 'CERRADA', 'EN_CIERRE', 'REABIERTA'))
 );
 
-COMMENT ON TABLE liquidacion_ingresos IS 'Módulo 11 — Tarifas, Comisiones, Impuestos y Facturación. La política de cobro es dato, no código: se cambia con un seeder';
-COMMENT ON COLUMN liquidacion_ingresos.id IS 'PK';
-COMMENT ON COLUMN liquidacion_ingresos.periodo IS 'UQ';
-COMMENT ON COLUMN liquidacion_ingresos.ingreso_neto IS 'GENERATED';
-COMMENT ON COLUMN liquidacion_ingresos.estado IS 'CK, IDX';
-COMMENT ON COLUMN liquidacion_ingresos.asiento_contable_id IS 'FK, NULL, M3';
-COMMENT ON COLUMN liquidacion_ingresos.cerrada_por IS 'FK, NULL';
-COMMENT ON COLUMN liquidacion_ingresos.cerrada_en IS 'NULL';
+COMMENT ON TABLE tarifas.liquidacion_ingresos IS 'Módulo 11 — Tarifas, Comisiones, Impuestos y Facturación. La política de cobro es dato, no código: se cambia con un seeder';
+COMMENT ON COLUMN tarifas.liquidacion_ingresos.id IS 'PK';
+COMMENT ON COLUMN tarifas.liquidacion_ingresos.periodo IS 'UQ';
+COMMENT ON COLUMN tarifas.liquidacion_ingresos.ingreso_neto IS 'GENERATED';
+COMMENT ON COLUMN tarifas.liquidacion_ingresos.estado IS 'CK, IDX';
+COMMENT ON COLUMN tarifas.liquidacion_ingresos.asiento_contable_id IS 'FK, NULL, M3';
+COMMENT ON COLUMN tarifas.liquidacion_ingresos.cerrada_por IS 'FK, NULL';
+COMMENT ON COLUMN tarifas.liquidacion_ingresos.cerrada_en IS 'NULL';

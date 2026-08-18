@@ -3,7 +3,7 @@
 -- APPEND-ONLY: sin UPDATE ni DELETE (ver sql/40_reglas)
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS registro_incumplimiento (
+CREATE TABLE IF NOT EXISTS garantia.registro_incumplimiento (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   codigo_expediente                  VARCHAR(20) NOT NULL,
   usuario_id                         UUID NOT NULL,
@@ -41,25 +41,25 @@ CREATE TABLE IF NOT EXISTS registro_incumplimiento (
   CONSTRAINT ck_registro_incumplimiento_origen_deteccion CHECK (origen_deteccion IN ('ALERTA_DE_RIESGO', 'AUDITORIA_INTERNA', 'AUTOMATICO_CONCILIACION', 'AUTOMATICO_VENCIMIENTO', 'REPORTE_DE_ORGANIZADOR', 'REPORTE_DE_PARTICIPANTE'))
 );
 
-COMMENT ON TABLE registro_incumplimiento IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. [append-only] El grupo no se detiene, pero la deuda no se perdona sola';
-COMMENT ON COLUMN registro_incumplimiento.id IS 'PK';
-COMMENT ON COLUMN registro_incumplimiento.codigo_expediente IS 'UQ';
-COMMENT ON COLUMN registro_incumplimiento.usuario_id IS 'FK, IDX';
-COMMENT ON COLUMN registro_incumplimiento.participante_id IS 'FK, IDX';
-COMMENT ON COLUMN registro_incumplimiento.grupo_id IS 'FK, IDX';
-COMMENT ON COLUMN registro_incumplimiento.periodo_id IS 'FK, NULL';
-COMMENT ON COLUMN registro_incumplimiento.cupo_id IS 'FK, NULL';
-COMMENT ON COLUMN registro_incumplimiento.obligacion_id IS 'FK, NULL, UQ parcial';
-COMMENT ON COLUMN registro_incumplimiento.entrega_afectada_id IS 'FK, NULL, M4';
-COMMENT ON COLUMN registro_incumplimiento.responsable_gestion IS 'FK, NULL';
-COMMENT ON COLUMN registro_incumplimiento.tipo IS 'CK, IDX';
-COMMENT ON COLUMN registro_incumplimiento.severidad IS 'CK, IDX';
-COMMENT ON COLUMN registro_incumplimiento.estado IS 'CK, IDX';
-COMMENT ON COLUMN registro_incumplimiento.origen_deteccion IS 'CK';
-COMMENT ON COLUMN registro_incumplimiento.detectado_en IS 'IDX';
-COMMENT ON COLUMN registro_incumplimiento.notificado_en IS 'NULL';
-COMMENT ON COLUMN registro_incumplimiento.fecha_limite_subsanacion IS 'NULL';
-COMMENT ON COLUMN registro_incumplimiento.cerrado_en IS 'NULL';
-COMMENT ON COLUMN registro_incumplimiento.motivo_cierre IS 'NULL';
-COMMENT ON COLUMN registro_incumplimiento.resumen_resolucion IS 'NULL';
-COMMENT ON COLUMN registro_incumplimiento.reportado_por IS 'FK, NULL';
+COMMENT ON TABLE garantia.registro_incumplimiento IS 'Módulo 08 — Garantía, Incumplimiento, Cobranza y Sanciones. [append-only] El grupo no se detiene, pero la deuda no se perdona sola';
+COMMENT ON COLUMN garantia.registro_incumplimiento.id IS 'PK';
+COMMENT ON COLUMN garantia.registro_incumplimiento.codigo_expediente IS 'UQ';
+COMMENT ON COLUMN garantia.registro_incumplimiento.usuario_id IS 'FK, IDX';
+COMMENT ON COLUMN garantia.registro_incumplimiento.participante_id IS 'FK, IDX';
+COMMENT ON COLUMN garantia.registro_incumplimiento.grupo_id IS 'FK, IDX';
+COMMENT ON COLUMN garantia.registro_incumplimiento.periodo_id IS 'FK, NULL';
+COMMENT ON COLUMN garantia.registro_incumplimiento.cupo_id IS 'FK, NULL';
+COMMENT ON COLUMN garantia.registro_incumplimiento.obligacion_id IS 'FK, NULL, UQ parcial';
+COMMENT ON COLUMN garantia.registro_incumplimiento.entrega_afectada_id IS 'FK, NULL, M4';
+COMMENT ON COLUMN garantia.registro_incumplimiento.responsable_gestion IS 'FK, NULL';
+COMMENT ON COLUMN garantia.registro_incumplimiento.tipo IS 'CK, IDX';
+COMMENT ON COLUMN garantia.registro_incumplimiento.severidad IS 'CK, IDX';
+COMMENT ON COLUMN garantia.registro_incumplimiento.estado IS 'CK, IDX';
+COMMENT ON COLUMN garantia.registro_incumplimiento.origen_deteccion IS 'CK';
+COMMENT ON COLUMN garantia.registro_incumplimiento.detectado_en IS 'IDX';
+COMMENT ON COLUMN garantia.registro_incumplimiento.notificado_en IS 'NULL';
+COMMENT ON COLUMN garantia.registro_incumplimiento.fecha_limite_subsanacion IS 'NULL';
+COMMENT ON COLUMN garantia.registro_incumplimiento.cerrado_en IS 'NULL';
+COMMENT ON COLUMN garantia.registro_incumplimiento.motivo_cierre IS 'NULL';
+COMMENT ON COLUMN garantia.registro_incumplimiento.resumen_resolucion IS 'NULL';
+COMMENT ON COLUMN garantia.registro_incumplimiento.reportado_por IS 'FK, NULL';

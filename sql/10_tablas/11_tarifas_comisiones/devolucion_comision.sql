@@ -2,7 +2,7 @@
 -- clase de dominio: DevolucionComision
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS devolucion_comision (
+CREATE TABLE IF NOT EXISTS tarifas.devolucion_comision (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   devengo_id                         UUID NOT NULL,
   transaccion_id                     UUID,
@@ -22,14 +22,14 @@ CREATE TABLE IF NOT EXISTS devolucion_comision (
   CONSTRAINT ck_devolucion_comision_estado CHECK (estado IN ('AUTORIZADA', 'EJECUTADA', 'RECHAZADA', 'SOLICITADA'))
 );
 
-COMMENT ON TABLE devolucion_comision IS 'Módulo 11 — Tarifas, Comisiones, Impuestos y Facturación. La política de cobro es dato, no código: se cambia con un seeder';
-COMMENT ON COLUMN devolucion_comision.id IS 'PK';
-COMMENT ON COLUMN devolucion_comision.devengo_id IS 'FK, IDX';
-COMMENT ON COLUMN devolucion_comision.transaccion_id IS 'FK, NULL, M10';
-COMMENT ON COLUMN devolucion_comision.reclamo_id IS 'FK, NULL, M12';
-COMMENT ON COLUMN devolucion_comision.autorizada_por IS 'FK';
-COMMENT ON COLUMN devolucion_comision.motivo IS 'CK';
-COMMENT ON COLUMN devolucion_comision.monto_devuelto IS 'CK: > 0';
-COMMENT ON COLUMN devolucion_comision.forma IS 'CK';
-COMMENT ON COLUMN devolucion_comision.estado IS 'CK, IDX';
-COMMENT ON COLUMN devolucion_comision.ejecutada_en IS 'NULL';
+COMMENT ON TABLE tarifas.devolucion_comision IS 'Módulo 11 — Tarifas, Comisiones, Impuestos y Facturación. La política de cobro es dato, no código: se cambia con un seeder';
+COMMENT ON COLUMN tarifas.devolucion_comision.id IS 'PK';
+COMMENT ON COLUMN tarifas.devolucion_comision.devengo_id IS 'FK, IDX';
+COMMENT ON COLUMN tarifas.devolucion_comision.transaccion_id IS 'FK, NULL, M10';
+COMMENT ON COLUMN tarifas.devolucion_comision.reclamo_id IS 'FK, NULL, M12';
+COMMENT ON COLUMN tarifas.devolucion_comision.autorizada_por IS 'FK';
+COMMENT ON COLUMN tarifas.devolucion_comision.motivo IS 'CK';
+COMMENT ON COLUMN tarifas.devolucion_comision.monto_devuelto IS 'CK: > 0';
+COMMENT ON COLUMN tarifas.devolucion_comision.forma IS 'CK';
+COMMENT ON COLUMN tarifas.devolucion_comision.estado IS 'CK, IDX';
+COMMENT ON COLUMN tarifas.devolucion_comision.ejecutada_en IS 'NULL';

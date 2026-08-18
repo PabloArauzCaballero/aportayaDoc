@@ -2,7 +2,7 @@
 -- clase de dominio: SolicitudRetiro
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS solicitud_retiro (
+CREATE TABLE IF NOT EXISTS grupos.solicitud_retiro (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   participante_id                    UUID NOT NULL,
   motivo                             VARCHAR(200) NOT NULL,
@@ -17,9 +17,9 @@ CREATE TABLE IF NOT EXISTS solicitud_retiro (
   CONSTRAINT ck_solicitud_retiro_posicion CHECK (posicion IN ('ACREEDORA', 'DEUDORA', 'NEUTRA'))
 );
 
-COMMENT ON TABLE solicitud_retiro IS 'Módulo 02 — Grupos, Cupos, Turnos y Gobernanza. Reglas del juego, orden de cobro y decisiones colectivas';
-COMMENT ON COLUMN solicitud_retiro.id IS 'PK';
-COMMENT ON COLUMN solicitud_retiro.participante_id IS 'FK, UQ parcial';
-COMMENT ON COLUMN solicitud_retiro.estado IS 'CK';
-COMMENT ON COLUMN solicitud_retiro.posicion IS 'CK, NULL';
-COMMENT ON COLUMN solicitud_retiro.plan_regularizacion_id IS 'FK, NULL';
+COMMENT ON TABLE grupos.solicitud_retiro IS 'Módulo 02 — Grupos, Cupos, Turnos y Gobernanza. Reglas del juego, orden de cobro y decisiones colectivas';
+COMMENT ON COLUMN grupos.solicitud_retiro.id IS 'PK';
+COMMENT ON COLUMN grupos.solicitud_retiro.participante_id IS 'FK, UQ parcial';
+COMMENT ON COLUMN grupos.solicitud_retiro.estado IS 'CK';
+COMMENT ON COLUMN grupos.solicitud_retiro.posicion IS 'CK, NULL';
+COMMENT ON COLUMN grupos.solicitud_retiro.plan_regularizacion_id IS 'FK, NULL';

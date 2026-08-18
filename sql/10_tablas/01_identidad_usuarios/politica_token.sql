@@ -2,7 +2,7 @@
 -- clase de dominio: PoliticaToken
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS politica_token (
+CREATE TABLE IF NOT EXISTS identidad.politica_token (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   proposito                          VARCHAR(35) NOT NULL,
   ttl_segundos                       INTEGER NOT NULL,
@@ -18,6 +18,6 @@ CREATE TABLE IF NOT EXISTS politica_token (
   CONSTRAINT pk_politica_token PRIMARY KEY (id)
 );
 
-COMMENT ON TABLE politica_token IS 'Módulo 01 — Identidad, Usuarios y Seguridad. Saber con certeza a quién le estás confiando plata ajena';
-COMMENT ON COLUMN politica_token.id IS 'PK';
-COMMENT ON COLUMN politica_token.proposito IS 'UQ+vigente_desde';
+COMMENT ON TABLE identidad.politica_token IS 'Módulo 01 — Identidad, Usuarios y Seguridad. Saber con certeza a quién le estás confiando plata ajena';
+COMMENT ON COLUMN identidad.politica_token.id IS 'PK';
+COMMENT ON COLUMN identidad.politica_token.proposito IS 'UQ+vigente_desde';

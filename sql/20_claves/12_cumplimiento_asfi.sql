@@ -3,410 +3,410 @@
 -- Se aplican después de crear todas las tablas: el modelo tiene
 -- referencias circulares entre módulos.
 
-ALTER TABLE aceptacion_contrato
+ALTER TABLE cumplimiento.aceptacion_contrato
   ADD CONSTRAINT fk_aceptacion_contrato_contrato_adhesion_id
-  FOREIGN KEY (contrato_adhesion_id) REFERENCES contrato_adhesion (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (contrato_adhesion_id) REFERENCES cumplimiento.contrato_adhesion (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE aceptacion_contrato
+ALTER TABLE cumplimiento.aceptacion_contrato
   ADD CONSTRAINT fk_aceptacion_contrato_dispositivo_id
-  FOREIGN KEY (dispositivo_id) REFERENCES dispositivo (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (dispositivo_id) REFERENCES identidad.dispositivo (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE aceptacion_contrato
+ALTER TABLE cumplimiento.aceptacion_contrato
   ADD CONSTRAINT fk_aceptacion_contrato_token_firma_id
-  FOREIGN KEY (token_firma_id) REFERENCES token_verificacion (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (token_firma_id) REFERENCES identidad.token_verificacion (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE aceptacion_contrato
+ALTER TABLE cumplimiento.aceptacion_contrato
   ADD CONSTRAINT fk_aceptacion_contrato_usuario_id
-  FOREIGN KEY (usuario_id) REFERENCES usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (usuario_id) REFERENCES identidad.usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE acta_comite
+ALTER TABLE cumplimiento.acta_comite
   ADD CONSTRAINT fk_acta_comite_comite_gobierno_id
-  FOREIGN KEY (comite_gobierno_id) REFERENCES comite_gobierno (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (comite_gobierno_id) REFERENCES cumplimiento.comite_gobierno (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE acta_comite
+ALTER TABLE cumplimiento.acta_comite
   ADD CONSTRAINT fk_acta_comite_elaborada_por
-  FOREIGN KEY (elaborada_por) REFERENCES usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (elaborada_por) REFERENCES identidad.usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE activo_informacion
+ALTER TABLE cumplimiento.activo_informacion
   ADD CONSTRAINT fk_activo_informacion_contrato_tercero_id
-  FOREIGN KEY (contrato_tercero_id) REFERENCES contrato_tercero (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (contrato_tercero_id) REFERENCES cumplimiento.contrato_tercero (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE activo_informacion
+ALTER TABLE cumplimiento.activo_informacion
   ADD CONSTRAINT fk_activo_informacion_custodio_id
-  FOREIGN KEY (custodio_id) REFERENCES usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (custodio_id) REFERENCES identidad.usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE activo_informacion
+ALTER TABLE cumplimiento.activo_informacion
   ADD CONSTRAINT fk_activo_informacion_propietario_id
-  FOREIGN KEY (propietario_id) REFERENCES usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (propietario_id) REFERENCES identidad.usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE alerta_monitoreo_lft
+ALTER TABLE cumplimiento.alerta_monitoreo_lft
   ADD CONSTRAINT fk_alerta_monitoreo_lft_asignada_a
-  FOREIGN KEY (asignada_a) REFERENCES usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (asignada_a) REFERENCES identidad.usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE alerta_monitoreo_lft
+ALTER TABLE cumplimiento.alerta_monitoreo_lft
   ADD CONSTRAINT fk_alerta_monitoreo_lft_caso_id
-  FOREIGN KEY (caso_id) REFERENCES caso_investigacion_lft (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (caso_id) REFERENCES cumplimiento.caso_investigacion_lft (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE alerta_monitoreo_lft
+ALTER TABLE cumplimiento.alerta_monitoreo_lft
   ADD CONSTRAINT fk_alerta_monitoreo_lft_cuenta_billetera_id
-  FOREIGN KEY (cuenta_billetera_id) REFERENCES cuenta_billetera (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (cuenta_billetera_id) REFERENCES nucleo_financiero.cuenta_billetera (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE alerta_monitoreo_lft
+ALTER TABLE cumplimiento.alerta_monitoreo_lft
   ADD CONSTRAINT fk_alerta_monitoreo_lft_regla_monitoreo_id
-  FOREIGN KEY (regla_monitoreo_id) REFERENCES regla_monitoreo_lft (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (regla_monitoreo_id) REFERENCES cumplimiento.regla_monitoreo_lft (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE alerta_monitoreo_lft
+ALTER TABLE cumplimiento.alerta_monitoreo_lft
   ADD CONSTRAINT fk_alerta_monitoreo_lft_transaccion_id
-  FOREIGN KEY (transaccion_id) REFERENCES transaccion_billetera (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (transaccion_id) REFERENCES nucleo_financiero.transaccion_billetera (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE alerta_monitoreo_lft
+ALTER TABLE cumplimiento.alerta_monitoreo_lft
   ADD CONSTRAINT fk_alerta_monitoreo_lft_usuario_id
-  FOREIGN KEY (usuario_id) REFERENCES usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (usuario_id) REFERENCES identidad.usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE beneficiario_final
+ALTER TABLE cumplimiento.beneficiario_final
   ADD CONSTRAINT fk_beneficiario_final_usuario_id
-  FOREIGN KEY (usuario_id) REFERENCES usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (usuario_id) REFERENCES identidad.usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE calificacion_riesgo_cliente
+ALTER TABLE cumplimiento.calificacion_riesgo_cliente
   ADD CONSTRAINT fk_calificacion_riesgo_cliente_calificado_por
-  FOREIGN KEY (calificado_por) REFERENCES usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (calificado_por) REFERENCES identidad.usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE calificacion_riesgo_cliente
+ALTER TABLE cumplimiento.calificacion_riesgo_cliente
   ADD CONSTRAINT fk_calificacion_riesgo_cliente_matriz_riesgo_id
-  FOREIGN KEY (matriz_riesgo_id) REFERENCES matriz_riesgo_lft (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (matriz_riesgo_id) REFERENCES cumplimiento.matriz_riesgo_lft (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE calificacion_riesgo_cliente
+ALTER TABLE cumplimiento.calificacion_riesgo_cliente
   ADD CONSTRAINT fk_calificacion_riesgo_cliente_usuario_id
-  FOREIGN KEY (usuario_id) REFERENCES usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (usuario_id) REFERENCES identidad.usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE capacitacion_cumplimiento
+ALTER TABLE cumplimiento.capacitacion_cumplimiento
   ADD CONSTRAINT fk_capacitacion_cumplimiento_usuario_id
-  FOREIGN KEY (usuario_id) REFERENCES usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (usuario_id) REFERENCES identidad.usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE caso_investigacion_lft
+ALTER TABLE cumplimiento.caso_investigacion_lft
   ADD CONSTRAINT fk_caso_investigacion_lft_analista_id
-  FOREIGN KEY (analista_id) REFERENCES usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (analista_id) REFERENCES identidad.usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE caso_investigacion_lft
+ALTER TABLE cumplimiento.caso_investigacion_lft
   ADD CONSTRAINT fk_caso_investigacion_lft_reporte_operacion_sospechosa_id
-  FOREIGN KEY (reporte_operacion_sospechosa_id) REFERENCES reporte_operacion_sospechosa (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (reporte_operacion_sospechosa_id) REFERENCES auditoria.reporte_operacion_sospechosa (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE caso_investigacion_lft
+ALTER TABLE cumplimiento.caso_investigacion_lft
   ADD CONSTRAINT fk_caso_investigacion_lft_revisado_por
-  FOREIGN KEY (revisado_por) REFERENCES usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (revisado_por) REFERENCES identidad.usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE caso_investigacion_lft
+ALTER TABLE cumplimiento.caso_investigacion_lft
   ADD CONSTRAINT fk_caso_investigacion_lft_usuario_id
-  FOREIGN KEY (usuario_id) REFERENCES usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (usuario_id) REFERENCES identidad.usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE contrato_adhesion
+ALTER TABLE cumplimiento.contrato_adhesion
   ADD CONSTRAINT fk_contrato_adhesion_aprobado_por
-  FOREIGN KEY (aprobado_por) REFERENCES usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (aprobado_por) REFERENCES identidad.usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE contrato_tercero
+ALTER TABLE cumplimiento.contrato_tercero
   ADD CONSTRAINT fk_contrato_tercero_responsable_id
-  FOREIGN KEY (responsable_id) REFERENCES usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (responsable_id) REFERENCES identidad.usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE control_interno
+ALTER TABLE cumplimiento.control_interno
   ADD CONSTRAINT fk_control_interno_responsable_id
-  FOREIGN KEY (responsable_id) REFERENCES usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (responsable_id) REFERENCES identidad.usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE debida_diligencia
+ALTER TABLE cumplimiento.debida_diligencia
   ADD CONSTRAINT fk_debida_diligencia_aprobada_por
-  FOREIGN KEY (aprobada_por) REFERENCES usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (aprobada_por) REFERENCES identidad.usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE debida_diligencia
+ALTER TABLE cumplimiento.debida_diligencia
   ADD CONSTRAINT fk_debida_diligencia_calificacion_riesgo_id
-  FOREIGN KEY (calificacion_riesgo_id) REFERENCES calificacion_riesgo_cliente (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (calificacion_riesgo_id) REFERENCES cumplimiento.calificacion_riesgo_cliente (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE debida_diligencia
+ALTER TABLE cumplimiento.debida_diligencia
   ADD CONSTRAINT fk_debida_diligencia_segunda_revision_por
-  FOREIGN KEY (segunda_revision_por) REFERENCES usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (segunda_revision_por) REFERENCES identidad.usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE debida_diligencia
+ALTER TABLE cumplimiento.debida_diligencia
   ADD CONSTRAINT fk_debida_diligencia_usuario_id
-  FOREIGN KEY (usuario_id) REFERENCES usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (usuario_id) REFERENCES identidad.usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE debida_diligencia
+ALTER TABLE cumplimiento.debida_diligencia
   ADD CONSTRAINT fk_debida_diligencia_verificacion_kyc_id
-  FOREIGN KEY (verificacion_kyc_id) REFERENCES verificacion_kyc (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (verificacion_kyc_id) REFERENCES identidad.verificacion_kyc (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE declaracion_origen_fondos
+ALTER TABLE cumplimiento.declaracion_origen_fondos
   ADD CONSTRAINT fk_declaracion_origen_fondos_transaccion_id
-  FOREIGN KEY (transaccion_id) REFERENCES transaccion_billetera (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (transaccion_id) REFERENCES nucleo_financiero.transaccion_billetera (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE declaracion_origen_fondos
+ALTER TABLE cumplimiento.declaracion_origen_fondos
   ADD CONSTRAINT fk_declaracion_origen_fondos_usuario_id
-  FOREIGN KEY (usuario_id) REFERENCES usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (usuario_id) REFERENCES identidad.usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE declaracion_origen_fondos
+ALTER TABLE cumplimiento.declaracion_origen_fondos
   ADD CONSTRAINT fk_declaracion_origen_fondos_verificada_por
-  FOREIGN KEY (verificada_por) REFERENCES usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (verificada_por) REFERENCES identidad.usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE declaracion_pep
+ALTER TABLE cumplimiento.declaracion_pep
   ADD CONSTRAINT fk_declaracion_pep_usuario_id
-  FOREIGN KEY (usuario_id) REFERENCES usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (usuario_id) REFERENCES identidad.usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE declaracion_pep
+ALTER TABLE cumplimiento.declaracion_pep
   ADD CONSTRAINT fk_declaracion_pep_verificada_por
-  FOREIGN KEY (verificada_por) REFERENCES usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (verificada_por) REFERENCES identidad.usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE designacion_regulatoria
+ALTER TABLE cumplimiento.designacion_regulatoria
   ADD CONSTRAINT fk_designacion_regulatoria_acta_comite_id
-  FOREIGN KEY (acta_comite_id) REFERENCES acta_comite (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (acta_comite_id) REFERENCES cumplimiento.acta_comite (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE designacion_regulatoria
+ALTER TABLE cumplimiento.designacion_regulatoria
   ADD CONSTRAINT fk_designacion_regulatoria_usuario_id
-  FOREIGN KEY (usuario_id) REFERENCES usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (usuario_id) REFERENCES identidad.usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE desvio_perfil
+ALTER TABLE cumplimiento.desvio_perfil
   ADD CONSTRAINT fk_desvio_perfil_alerta_monitoreo_id
-  FOREIGN KEY (alerta_monitoreo_id) REFERENCES alerta_monitoreo_lft (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (alerta_monitoreo_id) REFERENCES cumplimiento.alerta_monitoreo_lft (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE desvio_perfil
+ALTER TABLE cumplimiento.desvio_perfil
   ADD CONSTRAINT fk_desvio_perfil_perfil_transaccional_id
-  FOREIGN KEY (perfil_transaccional_id) REFERENCES perfil_transaccional (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (perfil_transaccional_id) REFERENCES cumplimiento.perfil_transaccional (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE desvio_perfil
+ALTER TABLE cumplimiento.desvio_perfil
   ADD CONSTRAINT fk_desvio_perfil_usuario_id
-  FOREIGN KEY (usuario_id) REFERENCES usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (usuario_id) REFERENCES identidad.usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE documento_publicado
+ALTER TABLE cumplimiento.documento_publicado
   ADD CONSTRAINT fk_documento_publicado_publicado_por
-  FOREIGN KEY (publicado_por) REFERENCES usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (publicado_por) REFERENCES identidad.usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE entorno_prueba_regulado
+ALTER TABLE cumplimiento.entorno_prueba_regulado
   ADD CONSTRAINT fk_entorno_prueba_regulado_licencia_regulatoria_id
-  FOREIGN KEY (licencia_regulatoria_id) REFERENCES licencia_regulatoria (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (licencia_regulatoria_id) REFERENCES catalogo.licencia_regulatoria (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE envio_regulatorio
+ALTER TABLE cumplimiento.envio_regulatorio
   ADD CONSTRAINT fk_envio_regulatorio_enviado_por
-  FOREIGN KEY (enviado_por) REFERENCES usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (enviado_por) REFERENCES identidad.usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE envio_regulatorio
+ALTER TABLE cumplimiento.envio_regulatorio
   ADD CONSTRAINT fk_envio_regulatorio_reporte_regulatorio_id
-  FOREIGN KEY (reporte_regulatorio_id) REFERENCES reporte_regulatorio (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (reporte_regulatorio_id) REFERENCES cumplimiento.reporte_regulatorio (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE evaluacion_riesgo_producto
+ALTER TABLE cumplimiento.evaluacion_riesgo_producto
   ADD CONSTRAINT fk_evaluacion_riesgo_producto_aprobada_por
-  FOREIGN KEY (aprobada_por) REFERENCES usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (aprobada_por) REFERENCES identidad.usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE evaluacion_tercero
+ALTER TABLE cumplimiento.evaluacion_tercero
   ADD CONSTRAINT fk_evaluacion_tercero_contrato_tercero_id
-  FOREIGN KEY (contrato_tercero_id) REFERENCES contrato_tercero (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (contrato_tercero_id) REFERENCES cumplimiento.contrato_tercero (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE evaluacion_tercero
+ALTER TABLE cumplimiento.evaluacion_tercero
   ADD CONSTRAINT fk_evaluacion_tercero_evaluado_por
-  FOREIGN KEY (evaluado_por) REFERENCES usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (evaluado_por) REFERENCES identidad.usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE evento_riesgo_operativo
+ALTER TABLE cumplimiento.evento_riesgo_operativo
   ADD CONSTRAINT fk_evento_riesgo_operativo_incidente_operativo_id
-  FOREIGN KEY (incidente_operativo_id) REFERENCES incidente_operativo (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (incidente_operativo_id) REFERENCES auditoria.incidente_operativo (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE evento_riesgo_operativo
+ALTER TABLE cumplimiento.evento_riesgo_operativo
   ADD CONSTRAINT fk_evento_riesgo_operativo_registrado_por
-  FOREIGN KEY (registrado_por) REFERENCES usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (registrado_por) REFERENCES identidad.usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE expediente_cliente
+ALTER TABLE cumplimiento.expediente_cliente
   ADD CONSTRAINT fk_expediente_cliente_responsable_id
-  FOREIGN KEY (responsable_id) REFERENCES usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (responsable_id) REFERENCES identidad.usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE expediente_cliente
+ALTER TABLE cumplimiento.expediente_cliente
   ADD CONSTRAINT fk_expediente_cliente_usuario_id
-  FOREIGN KEY (usuario_id) REFERENCES usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (usuario_id) REFERENCES identidad.usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE factor_riesgo_evaluado
+ALTER TABLE cumplimiento.factor_riesgo_evaluado
   ADD CONSTRAINT fk_factor_riesgo_evaluado_matriz_riesgo_id
-  FOREIGN KEY (matriz_riesgo_id) REFERENCES matriz_riesgo_lft (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (matriz_riesgo_id) REFERENCES cumplimiento.matriz_riesgo_lft (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE factor_riesgo_evaluado
+ALTER TABLE cumplimiento.factor_riesgo_evaluado
   ADD CONSTRAINT fk_factor_riesgo_evaluado_usuario_id
-  FOREIGN KEY (usuario_id) REFERENCES usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (usuario_id) REFERENCES identidad.usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE hallazgo_auditoria
+ALTER TABLE cumplimiento.hallazgo_auditoria
   ADD CONSTRAINT fk_hallazgo_auditoria_responsable_id
-  FOREIGN KEY (responsable_id) REFERENCES usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (responsable_id) REFERENCES identidad.usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE incidente_seguridad
+ALTER TABLE cumplimiento.incidente_seguridad
   ADD CONSTRAINT fk_incidente_seguridad_activo_informacion_id
-  FOREIGN KEY (activo_informacion_id) REFERENCES activo_informacion (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (activo_informacion_id) REFERENCES cumplimiento.activo_informacion (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE incidente_seguridad
+ALTER TABLE cumplimiento.incidente_seguridad
   ADD CONSTRAINT fk_incidente_seguridad_evento_riesgo_id
-  FOREIGN KEY (evento_riesgo_id) REFERENCES evento_riesgo_operativo (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (evento_riesgo_id) REFERENCES cumplimiento.evento_riesgo_operativo (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE incidente_seguridad
+ALTER TABLE cumplimiento.incidente_seguridad
   ADD CONSTRAINT fk_incidente_seguridad_incidente_operativo_id
-  FOREIGN KEY (incidente_operativo_id) REFERENCES incidente_operativo (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (incidente_operativo_id) REFERENCES auditoria.incidente_operativo (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE incidente_seguridad
+ALTER TABLE cumplimiento.incidente_seguridad
   ADD CONSTRAINT fk_incidente_seguridad_responsable_id
-  FOREIGN KEY (responsable_id) REFERENCES usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (responsable_id) REFERENCES identidad.usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE instancia_reclamo
+ALTER TABLE cumplimiento.instancia_reclamo
   ADD CONSTRAINT fk_instancia_reclamo_reclamo_id
-  FOREIGN KEY (reclamo_id) REFERENCES reclamo_cliente (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (reclamo_id) REFERENCES cumplimiento.reclamo_cliente (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE licencia_regulatoria
+ALTER TABLE catalogo.licencia_regulatoria
   ADD CONSTRAINT fk_licencia_regulatoria_responsable_id
-  FOREIGN KEY (responsable_id) REFERENCES usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (responsable_id) REFERENCES identidad.usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE matriz_riesgo_lft
+ALTER TABLE cumplimiento.matriz_riesgo_lft
   ADD CONSTRAINT fk_matriz_riesgo_lft_aprobada_por
-  FOREIGN KEY (aprobada_por) REFERENCES usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (aprobada_por) REFERENCES identidad.usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE observacion_regulatoria
+ALTER TABLE cumplimiento.observacion_regulatoria
   ADD CONSTRAINT fk_observacion_regulatoria_envio_regulatorio_id
-  FOREIGN KEY (envio_regulatorio_id) REFERENCES envio_regulatorio (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (envio_regulatorio_id) REFERENCES cumplimiento.envio_regulatorio (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE observacion_regulatoria
+ALTER TABLE cumplimiento.observacion_regulatoria
   ADD CONSTRAINT fk_observacion_regulatoria_responsable_id
-  FOREIGN KEY (responsable_id) REFERENCES usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (responsable_id) REFERENCES identidad.usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE oficial_cumplimiento
+ALTER TABLE cumplimiento.oficial_cumplimiento
   ADD CONSTRAINT fk_oficial_cumplimiento_usuario_id
-  FOREIGN KEY (usuario_id) REFERENCES usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (usuario_id) REFERENCES identidad.usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE perfil_transaccional
+ALTER TABLE cumplimiento.perfil_transaccional
   ADD CONSTRAINT fk_perfil_transaccional_usuario_id
-  FOREIGN KEY (usuario_id) REFERENCES usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (usuario_id) REFERENCES identidad.usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE plan_accion_riesgo
+ALTER TABLE cumplimiento.plan_accion_riesgo
   ADD CONSTRAINT fk_plan_accion_riesgo_evento_riesgo_id
-  FOREIGN KEY (evento_riesgo_id) REFERENCES evento_riesgo_operativo (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (evento_riesgo_id) REFERENCES cumplimiento.evento_riesgo_operativo (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE plan_accion_riesgo
+ALTER TABLE cumplimiento.plan_accion_riesgo
   ADD CONSTRAINT fk_plan_accion_riesgo_hallazgo_id
-  FOREIGN KEY (hallazgo_id) REFERENCES hallazgo_auditoria (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (hallazgo_id) REFERENCES cumplimiento.hallazgo_auditoria (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE plan_accion_riesgo
+ALTER TABLE cumplimiento.plan_accion_riesgo
   ADD CONSTRAINT fk_plan_accion_riesgo_responsable_id
-  FOREIGN KEY (responsable_id) REFERENCES usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (responsable_id) REFERENCES identidad.usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE plan_continuidad
+ALTER TABLE cumplimiento.plan_continuidad
   ADD CONSTRAINT fk_plan_continuidad_politica_interna_id
-  FOREIGN KEY (politica_interna_id) REFERENCES politica_interna (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (politica_interna_id) REFERENCES cumplimiento.politica_interna (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE plan_continuidad
+ALTER TABLE cumplimiento.plan_continuidad
   ADD CONSTRAINT fk_plan_continuidad_responsable_id
-  FOREIGN KEY (responsable_id) REFERENCES usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (responsable_id) REFERENCES identidad.usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE politica_interna
+ALTER TABLE cumplimiento.politica_interna
   ADD CONSTRAINT fk_politica_interna_acta_comite_id
-  FOREIGN KEY (acta_comite_id) REFERENCES acta_comite (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (acta_comite_id) REFERENCES cumplimiento.acta_comite (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE politica_interna
+ALTER TABLE cumplimiento.politica_interna
   ADD CONSTRAINT fk_politica_interna_responsable_id
-  FOREIGN KEY (responsable_id) REFERENCES usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (responsable_id) REFERENCES identidad.usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE prueba_continuidad
+ALTER TABLE cumplimiento.prueba_continuidad
   ADD CONSTRAINT fk_prueba_continuidad_acta_comite_id
-  FOREIGN KEY (acta_comite_id) REFERENCES acta_comite (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (acta_comite_id) REFERENCES cumplimiento.acta_comite (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE prueba_continuidad
+ALTER TABLE cumplimiento.prueba_continuidad
   ADD CONSTRAINT fk_prueba_continuidad_ejecutada_por
-  FOREIGN KEY (ejecutada_por) REFERENCES usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (ejecutada_por) REFERENCES identidad.usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE prueba_continuidad
+ALTER TABLE cumplimiento.prueba_continuidad
   ADD CONSTRAINT fk_prueba_continuidad_plan_continuidad_id
-  FOREIGN KEY (plan_continuidad_id) REFERENCES plan_continuidad (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (plan_continuidad_id) REFERENCES cumplimiento.plan_continuidad (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE prueba_control
+ALTER TABLE cumplimiento.prueba_control
   ADD CONSTRAINT fk_prueba_control_control_id
-  FOREIGN KEY (control_id) REFERENCES control_interno (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (control_id) REFERENCES cumplimiento.control_interno (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE prueba_control
+ALTER TABLE cumplimiento.prueba_control
   ADD CONSTRAINT fk_prueba_control_ejecutada_por
-  FOREIGN KEY (ejecutada_por) REFERENCES usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (ejecutada_por) REFERENCES identidad.usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE punto_reclamo
+ALTER TABLE cumplimiento.punto_reclamo
   ADD CONSTRAINT fk_punto_reclamo_responsable_id
-  FOREIGN KEY (responsable_id) REFERENCES usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (responsable_id) REFERENCES identidad.usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE reclamo_cliente
+ALTER TABLE cumplimiento.reclamo_cliente
   ADD CONSTRAINT fk_reclamo_cliente_devolucion_comision_id
-  FOREIGN KEY (devolucion_comision_id) REFERENCES devolucion_comision (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (devolucion_comision_id) REFERENCES tarifas.devolucion_comision (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE reclamo_cliente
+ALTER TABLE cumplimiento.reclamo_cliente
   ADD CONSTRAINT fk_reclamo_cliente_punto_reclamo_id
-  FOREIGN KEY (punto_reclamo_id) REFERENCES punto_reclamo (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (punto_reclamo_id) REFERENCES cumplimiento.punto_reclamo (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE reclamo_cliente
+ALTER TABLE cumplimiento.reclamo_cliente
   ADD CONSTRAINT fk_reclamo_cliente_responsable_id
-  FOREIGN KEY (responsable_id) REFERENCES usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (responsable_id) REFERENCES identidad.usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE reclamo_cliente
+ALTER TABLE cumplimiento.reclamo_cliente
   ADD CONSTRAINT fk_reclamo_cliente_ticket_soporte_id
-  FOREIGN KEY (ticket_soporte_id) REFERENCES ticket_soporte (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (ticket_soporte_id) REFERENCES auditoria.ticket_soporte (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE reclamo_cliente
+ALTER TABLE cumplimiento.reclamo_cliente
   ADD CONSTRAINT fk_reclamo_cliente_usuario_id
-  FOREIGN KEY (usuario_id) REFERENCES usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (usuario_id) REFERENCES identidad.usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE registro_operacion_relevante
+ALTER TABLE cumplimiento.registro_operacion_relevante
   ADD CONSTRAINT fk_registro_operacion_relevante_declaracion_origen_fondos_id
-  FOREIGN KEY (declaracion_origen_fondos_id) REFERENCES declaracion_origen_fondos (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (declaracion_origen_fondos_id) REFERENCES cumplimiento.declaracion_origen_fondos (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE registro_operacion_relevante
+ALTER TABLE cumplimiento.registro_operacion_relevante
   ADD CONSTRAINT fk_registro_operacion_relevante_operacion_inicio_ventana_id
-  FOREIGN KEY (operacion_inicio_ventana_id) REFERENCES registro_operacion_relevante (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (operacion_inicio_ventana_id) REFERENCES cumplimiento.registro_operacion_relevante (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE registro_operacion_relevante
+ALTER TABLE cumplimiento.registro_operacion_relevante
   ADD CONSTRAINT fk_registro_operacion_relevante_reporte_regulatorio_id
-  FOREIGN KEY (reporte_regulatorio_id) REFERENCES reporte_regulatorio (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (reporte_regulatorio_id) REFERENCES cumplimiento.reporte_regulatorio (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE registro_operacion_relevante
+ALTER TABLE cumplimiento.registro_operacion_relevante
   ADD CONSTRAINT fk_registro_operacion_relevante_transaccion_id
-  FOREIGN KEY (transaccion_id) REFERENCES transaccion_billetera (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (transaccion_id) REFERENCES nucleo_financiero.transaccion_billetera (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE registro_operacion_relevante
+ALTER TABLE cumplimiento.registro_operacion_relevante
   ADD CONSTRAINT fk_registro_operacion_relevante_umbral_reporte_id
-  FOREIGN KEY (umbral_reporte_id) REFERENCES umbral_reporte_uif (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (umbral_reporte_id) REFERENCES catalogo.umbral_reporte_uif (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE registro_operacion_relevante
+ALTER TABLE cumplimiento.registro_operacion_relevante
   ADD CONSTRAINT fk_registro_operacion_relevante_usuario_id
-  FOREIGN KEY (usuario_id) REFERENCES usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (usuario_id) REFERENCES identidad.usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE regla_monitoreo_lft
+ALTER TABLE cumplimiento.regla_monitoreo_lft
   ADD CONSTRAINT fk_regla_monitoreo_lft_aprobada_por
-  FOREIGN KEY (aprobada_por) REFERENCES usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (aprobada_por) REFERENCES identidad.usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE reporte_regulatorio
+ALTER TABLE cumplimiento.reporte_regulatorio
   ADD CONSTRAINT fk_reporte_regulatorio_aprobado_por
-  FOREIGN KEY (aprobado_por) REFERENCES usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (aprobado_por) REFERENCES identidad.usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE reporte_regulatorio
+ALTER TABLE cumplimiento.reporte_regulatorio
   ADD CONSTRAINT fk_reporte_regulatorio_catalogo_reporte_id
-  FOREIGN KEY (catalogo_reporte_id) REFERENCES catalogo_reporte_regulatorio (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (catalogo_reporte_id) REFERENCES cumplimiento.catalogo_reporte_regulatorio (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE reporte_regulatorio
+ALTER TABLE cumplimiento.reporte_regulatorio
   ADD CONSTRAINT fk_reporte_regulatorio_generado_por
-  FOREIGN KEY (generado_por) REFERENCES usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (generado_por) REFERENCES identidad.usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE reporte_regulatorio
+ALTER TABLE cumplimiento.reporte_regulatorio
   ADD CONSTRAINT fk_reporte_regulatorio_revisado_por
-  FOREIGN KEY (revisado_por) REFERENCES usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (revisado_por) REFERENCES identidad.usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE requerimiento_autoridad
+ALTER TABLE cumplimiento.requerimiento_autoridad
   ADD CONSTRAINT fk_requerimiento_autoridad_bloqueo_saldo_id
-  FOREIGN KEY (bloqueo_saldo_id) REFERENCES bloqueo_saldo (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (bloqueo_saldo_id) REFERENCES nucleo_financiero.bloqueo_saldo (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE requerimiento_autoridad
+ALTER TABLE cumplimiento.requerimiento_autoridad
   ADD CONSTRAINT fk_requerimiento_autoridad_respondido_por
-  FOREIGN KEY (respondido_por) REFERENCES usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (respondido_por) REFERENCES identidad.usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE requerimiento_autoridad
+ALTER TABLE cumplimiento.requerimiento_autoridad
   ADD CONSTRAINT fk_requerimiento_autoridad_usuario_afectado_id
-  FOREIGN KEY (usuario_afectado_id) REFERENCES usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (usuario_afectado_id) REFERENCES identidad.usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE revision_periodica_kyc
+ALTER TABLE cumplimiento.revision_periodica_kyc
   ADD CONSTRAINT fk_revision_periodica_kyc_calificacion_riesgo_id
-  FOREIGN KEY (calificacion_riesgo_id) REFERENCES calificacion_riesgo_cliente (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (calificacion_riesgo_id) REFERENCES cumplimiento.calificacion_riesgo_cliente (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE revision_periodica_kyc
+ALTER TABLE cumplimiento.revision_periodica_kyc
   ADD CONSTRAINT fk_revision_periodica_kyc_ejecutada_por
-  FOREIGN KEY (ejecutada_por) REFERENCES usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY (ejecutada_por) REFERENCES identidad.usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE revision_periodica_kyc
+ALTER TABLE cumplimiento.revision_periodica_kyc
   ADD CONSTRAINT fk_revision_periodica_kyc_usuario_id
-  FOREIGN KEY (usuario_id) REFERENCES usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY (usuario_id) REFERENCES identidad.usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;

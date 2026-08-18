@@ -1,5 +1,5 @@
 {
-  "descripcion": "Roles y permisos base del control de accesos (M1).",
+  "descripcion": "Roles y permisos base del control de accesos (M1), con los de contabilidad ERP (M13) y publicidad (M14).",
   "entorno": "minimo",
   "bloques": [
     {
@@ -78,6 +78,24 @@
           "codigo": "PARTICIPANTE",
           "nombre": "Participante de grupo",
           "ambito": "GRUPO",
+          "es_sistema": true
+        },
+        {
+          "codigo": "OPERADOR_PUBLICIDAD",
+          "nombre": "Operador de publicidad",
+          "ambito": "GLOBAL",
+          "es_sistema": true
+        },
+        {
+          "codigo": "MODERADOR_CONTENIDO",
+          "nombre": "Moderador de contenido publicitario",
+          "ambito": "GLOBAL",
+          "es_sistema": true
+        },
+        {
+          "codigo": "ANUNCIANTE",
+          "nombre": "Anunciante",
+          "ambito": "GLOBAL",
           "es_sistema": true
         }
       ]
@@ -198,6 +216,97 @@
           "descripcion": "Consultar documentos y cuentas de clientes",
           "recurso": "documento_identidad",
           "accion": "LEER",
+          "requiere_mfa": true
+        },
+        {
+          "codigo": "CONTABILIDAD_ERP_CERRAR",
+          "descripcion": "Cerrar un período o ejercicio contable",
+          "recurso": "periodo_contable",
+          "accion": "CERRAR",
+          "requiere_mfa": true
+        },
+        {
+          "codigo": "CONTABILIDAD_ERP_PRESUPUESTO",
+          "descripcion": "Crear y aprobar presupuestos por centro de costo",
+          "recurso": "presupuesto",
+          "accion": "GESTIONAR",
+          "requiere_mfa": false
+        },
+        {
+          "codigo": "CONTABILIDAD_ERP_COMPRAS",
+          "descripcion": "Dar de alta terceros comerciales y aprobar órdenes de compra",
+          "recurso": "orden_compra",
+          "accion": "GESTIONAR",
+          "requiere_mfa": false
+        },
+        {
+          "codigo": "CONTABILIDAD_ERP_CUENTAS_POR_PAGAR",
+          "descripcion": "Registrar y aprobar facturas de proveedor",
+          "recurso": "factura_proveedor",
+          "accion": "APROBAR",
+          "requiere_mfa": true
+        },
+        {
+          "codigo": "CONTABILIDAD_ERP_PAGAR",
+          "descripcion": "Autorizar el pago de una factura de proveedor",
+          "recurso": "pago_a_proveedor",
+          "accion": "AUTORIZAR",
+          "requiere_mfa": true
+        },
+        {
+          "codigo": "CONTABILIDAD_ERP_COBRAR",
+          "descripcion": "Registrar cobros de cuentas por cobrar",
+          "recurso": "cuenta_por_cobrar",
+          "accion": "GESTIONAR",
+          "requiere_mfa": true
+        },
+        {
+          "codigo": "CONTABILIDAD_ERP_ACTIVOS_FIJOS",
+          "descripcion": "Dar de alta y de baja activos fijos",
+          "recurso": "activo_fijo",
+          "accion": "GESTIONAR",
+          "requiere_mfa": false
+        },
+        {
+          "codigo": "CONTABILIDAD_ERP_REPORTES",
+          "descripcion": "Generar y consultar estados financieros",
+          "recurso": "estado_financiero_generado",
+          "accion": "LEER",
+          "requiere_mfa": false
+        },
+        {
+          "codigo": "PUBLICIDAD_ANUNCIANTES",
+          "descripcion": "Dar de alta y verificar anunciantes y socios comerciales",
+          "recurso": "anunciante",
+          "accion": "GESTIONAR",
+          "requiere_mfa": false
+        },
+        {
+          "codigo": "PUBLICIDAD_CAMPANA_GESTIONAR",
+          "descripcion": "Crear y editar campañas propias",
+          "recurso": "campana_publicitaria",
+          "accion": "GESTIONAR",
+          "requiere_mfa": false
+        },
+        {
+          "codigo": "PUBLICIDAD_APROBAR_CAMPANA",
+          "descripcion": "Aprobar o rechazar una campaña publicitaria",
+          "recurso": "campana_publicitaria",
+          "accion": "APROBAR",
+          "requiere_mfa": false
+        },
+        {
+          "codigo": "PUBLICIDAD_MODERAR",
+          "descripcion": "Aprobar o rechazar piezas creativas",
+          "recurso": "pieza_creativa",
+          "accion": "MODERAR",
+          "requiere_mfa": false
+        },
+        {
+          "codigo": "PUBLICIDAD_LIQUIDAR",
+          "descripcion": "Liquidar y facturar el gasto publicitario",
+          "recurso": "factura_publicidad",
+          "accion": "GESTIONAR",
           "requiere_mfa": true
         }
       ],
@@ -559,6 +668,146 @@
           "permiso_id": {
             "$ref": "permiso",
             "codigo": "BILLETERA_OPERAR"
+          }
+        },
+        {
+          "rol_id": {
+            "$ref": "rol",
+            "codigo": "CONTABILIDAD"
+          },
+          "permiso_id": {
+            "$ref": "permiso",
+            "codigo": "CONTABILIDAD_ERP_CERRAR"
+          }
+        },
+        {
+          "rol_id": {
+            "$ref": "rol",
+            "codigo": "CONTABILIDAD"
+          },
+          "permiso_id": {
+            "$ref": "permiso",
+            "codigo": "CONTABILIDAD_ERP_PRESUPUESTO"
+          }
+        },
+        {
+          "rol_id": {
+            "$ref": "rol",
+            "codigo": "CONTABILIDAD"
+          },
+          "permiso_id": {
+            "$ref": "permiso",
+            "codigo": "CONTABILIDAD_ERP_COMPRAS"
+          }
+        },
+        {
+          "rol_id": {
+            "$ref": "rol",
+            "codigo": "CONTABILIDAD"
+          },
+          "permiso_id": {
+            "$ref": "permiso",
+            "codigo": "CONTABILIDAD_ERP_CUENTAS_POR_PAGAR"
+          }
+        },
+        {
+          "rol_id": {
+            "$ref": "rol",
+            "codigo": "CONTABILIDAD"
+          },
+          "permiso_id": {
+            "$ref": "permiso",
+            "codigo": "CONTABILIDAD_ERP_ACTIVOS_FIJOS"
+          }
+        },
+        {
+          "rol_id": {
+            "$ref": "rol",
+            "codigo": "CONTABILIDAD"
+          },
+          "permiso_id": {
+            "$ref": "permiso",
+            "codigo": "CONTABILIDAD_ERP_REPORTES"
+          }
+        },
+        {
+          "rol_id": {
+            "$ref": "rol",
+            "codigo": "TESORERIA"
+          },
+          "permiso_id": {
+            "$ref": "permiso",
+            "codigo": "CONTABILIDAD_ERP_PAGAR"
+          }
+        },
+        {
+          "rol_id": {
+            "$ref": "rol",
+            "codigo": "TESORERIA"
+          },
+          "permiso_id": {
+            "$ref": "permiso",
+            "codigo": "CONTABILIDAD_ERP_COBRAR"
+          }
+        },
+        {
+          "rol_id": {
+            "$ref": "rol",
+            "codigo": "AUDITOR_INTERNO"
+          },
+          "permiso_id": {
+            "$ref": "permiso",
+            "codigo": "CONTABILIDAD_ERP_REPORTES"
+          }
+        },
+        {
+          "rol_id": {
+            "$ref": "rol",
+            "codigo": "OPERADOR_PUBLICIDAD"
+          },
+          "permiso_id": {
+            "$ref": "permiso",
+            "codigo": "PUBLICIDAD_ANUNCIANTES"
+          }
+        },
+        {
+          "rol_id": {
+            "$ref": "rol",
+            "codigo": "OPERADOR_PUBLICIDAD"
+          },
+          "permiso_id": {
+            "$ref": "permiso",
+            "codigo": "PUBLICIDAD_APROBAR_CAMPANA"
+          }
+        },
+        {
+          "rol_id": {
+            "$ref": "rol",
+            "codigo": "OPERADOR_PUBLICIDAD"
+          },
+          "permiso_id": {
+            "$ref": "permiso",
+            "codigo": "PUBLICIDAD_LIQUIDAR"
+          }
+        },
+        {
+          "rol_id": {
+            "$ref": "rol",
+            "codigo": "MODERADOR_CONTENIDO"
+          },
+          "permiso_id": {
+            "$ref": "permiso",
+            "codigo": "PUBLICIDAD_MODERAR"
+          }
+        },
+        {
+          "rol_id": {
+            "$ref": "rol",
+            "codigo": "ANUNCIANTE"
+          },
+          "permiso_id": {
+            "$ref": "permiso",
+            "codigo": "PUBLICIDAD_CAMPANA_GESTIONAR"
           }
         }
       ]

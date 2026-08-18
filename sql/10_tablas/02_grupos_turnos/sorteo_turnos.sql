@@ -2,7 +2,7 @@
 -- clase de dominio: SorteoTurnos
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS sorteo_turnos (
+CREATE TABLE IF NOT EXISTS grupos.sorteo_turnos (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   grupo_id                           UUID NOT NULL,
   algoritmo                          VARCHAR(30) NOT NULL,
@@ -21,12 +21,12 @@ CREATE TABLE IF NOT EXISTS sorteo_turnos (
   CONSTRAINT ck_sorteo_turnos_estado CHECK (estado IN ('ANULADO', 'COMPROMETIDO', 'REVELADO'))
 );
 
-COMMENT ON TABLE sorteo_turnos IS 'Módulo 02 — Grupos, Cupos, Turnos y Gobernanza. Reglas del juego, orden de cobro y decisiones colectivas';
-COMMENT ON COLUMN sorteo_turnos.id IS 'PK';
-COMMENT ON COLUMN sorteo_turnos.grupo_id IS 'FK, UQ parcial';
-COMMENT ON COLUMN sorteo_turnos.estado IS 'CK, IDX';
-COMMENT ON COLUMN sorteo_turnos.aportes_entropia IS 'NULL';
-COMMENT ON COLUMN sorteo_turnos.fecha_revelado_prevista IS 'NULL';
-COMMENT ON COLUMN sorteo_turnos.semilla_servidor IS 'NULL hasta revelar';
-COMMENT ON COLUMN sorteo_turnos.ejecutado_por IS 'FK';
-COMMENT ON COLUMN sorteo_turnos.anulado_en IS 'NULL';
+COMMENT ON TABLE grupos.sorteo_turnos IS 'Módulo 02 — Grupos, Cupos, Turnos y Gobernanza. Reglas del juego, orden de cobro y decisiones colectivas';
+COMMENT ON COLUMN grupos.sorteo_turnos.id IS 'PK';
+COMMENT ON COLUMN grupos.sorteo_turnos.grupo_id IS 'FK, UQ parcial';
+COMMENT ON COLUMN grupos.sorteo_turnos.estado IS 'CK, IDX';
+COMMENT ON COLUMN grupos.sorteo_turnos.aportes_entropia IS 'NULL';
+COMMENT ON COLUMN grupos.sorteo_turnos.fecha_revelado_prevista IS 'NULL';
+COMMENT ON COLUMN grupos.sorteo_turnos.semilla_servidor IS 'NULL hasta revelar';
+COMMENT ON COLUMN grupos.sorteo_turnos.ejecutado_por IS 'FK';
+COMMENT ON COLUMN grupos.sorteo_turnos.anulado_en IS 'NULL';

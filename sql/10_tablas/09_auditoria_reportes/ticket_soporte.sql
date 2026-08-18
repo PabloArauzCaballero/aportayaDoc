@@ -2,7 +2,7 @@
 -- clase de dominio: TicketSoporte
 -- Generado por scripts/generar_ddl.py — no editar a mano.
 
-CREATE TABLE IF NOT EXISTS ticket_soporte (
+CREATE TABLE IF NOT EXISTS auditoria.ticket_soporte (
   id                                 UUID DEFAULT gen_random_uuid() NOT NULL,
   usuario_id                         UUID NOT NULL,
   asignado_a                         UUID,
@@ -21,12 +21,12 @@ CREATE TABLE IF NOT EXISTS ticket_soporte (
   CONSTRAINT ck_ticket_soporte_estado CHECK (estado IN ('ABIERTO', 'CERRADO', 'EN_ATENCION', 'ESPERANDO_USUARIO', 'RESUELTO'))
 );
 
-COMMENT ON TABLE ticket_soporte IS 'Módulo 09 — Auditoría, Reportes y Cumplimiento. Poder demostrar todo lo anterior ante un reclamo o un regulador';
-COMMENT ON COLUMN ticket_soporte.id IS 'PK';
-COMMENT ON COLUMN ticket_soporte.usuario_id IS 'FK, IDX';
-COMMENT ON COLUMN ticket_soporte.asignado_a IS 'FK, NULL, IDX';
-COMMENT ON COLUMN ticket_soporte.prioridad IS 'CK';
-COMMENT ON COLUMN ticket_soporte.estado IS 'CK, IDX';
-COMMENT ON COLUMN ticket_soporte.referencia_entidad IS 'NULL';
-COMMENT ON COLUMN ticket_soporte.referencia_id IS 'NULL';
-COMMENT ON COLUMN ticket_soporte.resuelto_en IS 'NULL';
+COMMENT ON TABLE auditoria.ticket_soporte IS 'Módulo 09 — Auditoría, Reportes y Cumplimiento. Poder demostrar todo lo anterior ante un reclamo o un regulador';
+COMMENT ON COLUMN auditoria.ticket_soporte.id IS 'PK';
+COMMENT ON COLUMN auditoria.ticket_soporte.usuario_id IS 'FK, IDX';
+COMMENT ON COLUMN auditoria.ticket_soporte.asignado_a IS 'FK, NULL, IDX';
+COMMENT ON COLUMN auditoria.ticket_soporte.prioridad IS 'CK';
+COMMENT ON COLUMN auditoria.ticket_soporte.estado IS 'CK, IDX';
+COMMENT ON COLUMN auditoria.ticket_soporte.referencia_entidad IS 'NULL';
+COMMENT ON COLUMN auditoria.ticket_soporte.referencia_id IS 'NULL';
+COMMENT ON COLUMN auditoria.ticket_soporte.resuelto_en IS 'NULL';
