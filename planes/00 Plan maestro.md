@@ -419,10 +419,11 @@ plazo ya emitido).
 
 ---
 
-## 8 · Las 21 fases
+## 8 · Las 20 fases
 
 El orden no es preferencia: cada fase **habilita** la siguiente. La columna
-"Bloquea a" dice qué se cae si esta fase queda a medias.
+"Bloquea a" dice qué se cae si esta fase queda a medias. Son **20 fases de backend**:
+las dieciocho de 0–17 más las dos de cola (18 y 19).
 
 | Fase | Nombre | Servicio | CU | Bloquea a | Documento |
 | :-: | --- | --- | --- | --- | --- |
@@ -444,10 +445,14 @@ El orden no es preferencia: cada fase **habilita** la siguiente. La columna
 | **15** | Auditoría, reportes, datos personales e indicadores | `auditoria` | 07, 54, 55, 58, 98 | — | ídem |
 | **16** | Cumplimiento UIF/ASFI, reclamos y continuidad | `cumplimiento` | 41–45, 47–49, 52, 53, 56, 94 | — | ídem |
 | **17** | Endurecimiento, rendimiento, E2E y despliegue | todos | — | — | [[06 Fase 17 · Endurecimiento, E2E y despliegue]] |
+| **18** | Contabilidad ERP | `erp` | 100–106 | F13 | [[18 Fichas de carril · las 38 unidades de trabajo]] · ficha `5A` |
+| **19** | Publicidad y campañas | `publicidad` | 110–114 | F14 | [[18 Fichas de carril · las 38 unidades de trabajo]] · ficha `5B` |
 
 **Los 87 casos de uso del núcleo están asignados. Ninguno queda huérfano.** Los 12
-restantes —contabilidad ERP (CU-100–106) y publicidad (CU-110–114)— se asignan en las
-fases 18 y 19, definidas en [[17 Plan de acción secuencial · coordinación de cinco máquinas]].
+restantes —contabilidad ERP (CU-100–106) y publicidad (CU-110–114)— completan los
+**99** en las fases 18 y 19; sus servicios ya están andamiados en `servicios/erp/` y
+`servicios/publicidad/`, y sus fichas de carril son `5A` y `5B` de
+[[18 Fichas de carril · las 38 unidades de trabajo]].
 
 ### Camino crítico
 
@@ -456,29 +461,40 @@ fases 18 y 19, definidas en [[17 Plan de acción secuencial · coordinación de 
                               ↘ 8 ↗
 ```
 
-Las fases **12 a 16** son paralelizables entre sí una vez cerrada la 11. La **17**
-cierra todo.
+Las fases **12 a 16 no dependen de la 11** —esa dependencia era del orden del
+monolito—: cada una declara su dependencia real en artefactos, no en "fase cerrada"
+(12 sobre los eventos notificables definidos; 13 sobre la 8; 14 sobre nada del backend
+de dinero; 15 sobre la bitácora de la 2; 16 sobre la 4 y `comun-reglas`), y corre en
+cuanto esa dependencia está en `dev`
+([[20 Saneamiento del plan · huecos de la migración a microservicios]] §5). La **17**
+es la única convergencia real: cierra todo.
 
-> **Para ejecutar esto en paralelo**, las 21 fases se agrupan en **seis olas de
+> **Para ejecutar esto en paralelo**, las 20 fases se agrupan en **olas de
 > carriles** en [[07 Carriles de trabajo concurrente]]: hasta cinco máquinas a la vez,
 > cada una dueña de un servicio entero.
 
-### Los dos hitos de validación temprana
+### Los tres hitos de validación temprana
+
+Escalonados, uno por tramo, para no descubrir tarde una falla de arquitectura
+([[20 Saneamiento del plan · huecos de la migración a microservicios]] §5):
 
 | Hito | Qué valida | Cuándo |
 | --- | --- | :-: |
-| **CU-31** de punta a punta | Que el **stack** sostiene el dominio: dinero, tarifario congelado, partida doble, outbox e impuestos | Al cerrar la Fase 7 |
-| **CU-21** con su saga | Que la **partición en servicios** es viable: cruza `aportes`, `nucleo-financiero` y `tarifas`, y tiene que compensar bien al forzar el fallo de cada paso | Al cerrar la Fase 9 |
+| **CU-24** de punta a punta en `nucleo-financiero` | Que el **stack** (Spring + jOOQ + RLS + outbox) sostiene una operación real, **antes** de que el tramo siguiente abra tres servicios sobre él | Al cerrar **T2** |
+| **CU-31** de punta a punta | Que la **partición en servicios** aguanta la primera saga real de dinero: dinero, tarifario congelado, partida doble, outbox e impuestos | Al cerrar **T3** |
+| **CU-21** con su saga | Que la **saga completa de tres servicios** es viable: cruza `aportes`, `nucleo-financiero` y `tarifas`, y compensa bien al forzar el fallo de cada paso | Al cerrar **T4** |
 
-Si CU-31 no pasa con sus criterios de aceptación como pruebas, se revisa `ADR-015`
-antes de seguir. **Si CU-21 no compensa correctamente, la frontera entre servicios
-está mal puesta y se revisa `ADR-014` antes de escribir los servicios restantes.**
+Si CU-24 no pasa con sus criterios de aceptación como pruebas, se revisa `ADR-015`
+antes de abrir el tramo siguiente. Si CU-31 no pasa, se revisa `ADR-014` antes de
+seguir. **Si CU-21 no compensa correctamente, la frontera entre servicios está mal
+puesta y se revisa `ADR-014` antes de escribir los servicios restantes.** Los tramos
+son los de [[17 Plan de acción secuencial · coordinación de cinco máquinas]] §5.
 
 ---
 
-## 9 · Gate de fase — el mismo para las 21
+## 9 · Gate de fase — el mismo para las 20
 
-Ninguna fase se declara terminada sin las trece casillas. **No se marca una casilla
+Ninguna fase se declara terminada sin las catorce casillas. **No se marca una casilla
 sin haber ejecutado el comando**; "debería pasar" no es evidencia (skill
 `definicion-de-terminado`, y §15 del estándar de ejecución: está prohibido afirmar
 "listo", "compila", "pasa las pruebas" o "es seguro" sin haberlo corrido).
@@ -491,6 +507,9 @@ sin haber ejecutado el comando**; "debería pasar" no es evidencia (skill
 - [ ] `./gradlew test integrationTest` en verde
 - [ ] `./gradlew contractTest` en verde por cada par de servicios que se llama
 - [ ] `./gradlew sagaTest` en verde por cada operación que cruza servicios
+- [ ] **El contrato OpenAPI de este servicio y el esquema de sus eventos están
+      publicados en `dev` *antes de abrir el tramo* en que otro carril los consume**
+      (tabla §4 de [[20 Saneamiento del plan · huecos de la migración a microservicios]])
 - [ ] Cada criterio de aceptación de cada CU de la fase tiene su prueba con su nombre
 - [ ] Cada `R-XXX-nn` citado por esos CU tiene una prueba de **rechazo**
 - [ ] La prueba de aislamiento pasa: el rol del servicio no lee ningún otro esquema

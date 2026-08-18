@@ -100,10 +100,10 @@ De `implementar-desde-boveda`. **No se saltea ninguno y no se cambia el orden.**
 | **2** | **Semillas de catálogo** — umbrales, límites, tarifario, impuestos, licencia | Sin catálogo, *denegar por omisión* bloquea todo. Y eso es correcto |
 | **3** | **Contrato** como operación en `openapi/<servicio>.yaml` | Cierra preguntas que si no aparecen a mitad del código |
 | **4** | **Átomos** puros, con pruebas en milisegundos | Son la parte que se puede probar rápido y mil veces |
-| **5** | **Moléculas** — repositorios y adaptadores, uno por colaborador, sin abrir transacción | |
-| **6** | **Organismo** — el caso de uso, única frontera transaccional | |
-| **7** | **Página** — el controlador: traduce y delega, sin lógica | |
-| **8** | **Pruebas** — los criterios de aceptación, traducidos uno a uno | |
+| **5** | **Moléculas** — repositorios y adaptadores, uno por colaborador, sin abrir transacción | Un colaborador por pieza; ninguna orquesta a otra ni abre transacción — eso es del organismo |
+| **6** | **Organismo** — el caso de uso, única frontera transaccional | El `@Transactional` vive acá y en ningún otro nivel: una sola frontera por caso de uso |
+| **7** | **Página** — el controlador: traduce y delega, sin lógica | Va después del organismo porque implementa la interfaz generada y solo mapea entrada y salida |
+| **8** | **Pruebas** — los criterios de aceptación, traducidos uno a uno | Al final porque recién acá existe todo lo que verifican; una por criterio, más las siete obligatorias de `00b` §9 |
 
 ### Estructura de archivos resultante
 
@@ -448,7 +448,52 @@ con §4 y §8.
 | Pasos remotos: **HTTP idempotente** | La `Idempotency-Key` se **deriva**: `id_saga + numero_de_paso`. El reintento no puede duplicar |
 | Recuperación: **el barredor** | Un `@Scheduled` + ShedLock por servicio orquestador toma las sagas con `edad > timeout_de_paso` (30 s por omisión) y decide: reintentar el paso o **compensar** |
 | **Compensación = movimiento inverso** | Nunca un `UPDATE` del libro: el reverso es su propio asiento, referido al original. El **estado** de la saga y de la obligación sí avanza por `UPDATE` |
+| Pasos sin usuario: **credencial de sistema** | El barredor y los pasos disparados por evento no llevan JWT de nadie: llaman con un token de cliente emitido por `identidad` (client credentials, `app.rol='sistema'`, vigencia corta, alcance por servicio). Ningún paso de saga viaja sin identidad verificable |
 | Saga sin compensar = **incidente** | Se abre incidente operativo y **se avisa a una persona**; el usuario ve «en revisión», nunca un éxito ni un fallo silencioso |
+
+### La firma del orquestador
+
+El organismo de saga es el único que abre transacción, igual que en §4 — pero además
+**persiste el paso en `estado_saga` en la misma transacción que el efecto local**.
+El paso remoto **no** va dentro de esta transacción: lo dispara el barredor leyendo
+`estado_saga`, con la clave derivada.
+
+```java
+@Service
+public class CU21CobrarAporteSaga {
+
+    @Transactional                                        // ← BEGIN. Solo el efecto LOCAL
+    public SalidaCobro iniciar(EntradaCobro entrada, ContextoSesion ctx) {
+        return datos.conContexto(ctx, dsl -> {
+            idempotencia.exigirNueva(dsl, entrada.clave());
+
+            var obligacion = obligaciones.tomarParaActualizar(dsl, entrada.obligacionId());
+            var calculo    = CalculoDeAporte.de(obligacion, entrada.monto());   // átomo puro
+
+            movimientos.insertarPar(dsl, calculo);                              // efecto local
+            saga.registrarPaso(dsl, entrada.idSaga(), 1, "credito_nucleo");     // MISMA tx
+            return calculo.aSalida();                                          // el paso remoto lo hará el barredor
+        });
+    }
+}
+```
+
+> El paso remoto (`credito_nucleo`) lo ejecuta el barredor con la `Idempotency-Key`
+> derivada `idSaga + numeroDePaso`. Nunca dentro de `conContexto`: sería red dentro de
+> la transacción, prohibido por §15.
+
+### La tabla `estado_saga`
+
+Vive en el esquema del servicio orquestador ([[ADR-027 Infraestructura de mensajería en el modelo]],
+plantilla por módulo — no se escribe a mano). El barredor solo necesita estas columnas:
+
+| Columna | Para qué |
+| --- | --- |
+| `id_saga` | La clave que deriva la `Idempotency-Key` de cada paso remoto |
+| `tipo_saga` · `paso_actual` | Qué saga es y en qué paso quedó |
+| `estado` (`en_curso`/`compensando`/`resuelta`/`en_revision`) | Máquina de estados, avanza por `UPDATE` |
+| `actualizado_en` | Del que sale `edad_del_paso` que el barredor compara contra `timeout_de_paso` |
+| `intentos` | Barrida > N (3 por omisión) ⇒ compensación obligatoria |
 
 ### La prueba de la saga
 

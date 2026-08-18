@@ -7,7 +7,7 @@ titulo: "Carril <ID> — <módulo>"
 ola: <N>
 fase: <N>
 modulo: <NN_nombre>
-rama: carril/<ola>-<id>-<modulo>
+rama: <usuario>/feature/carril-<id>
 estado: en curso
 ---
 
@@ -75,17 +75,34 @@ real del comando, no un adjetivo.
 ### Frases prohibidas sin evidencia
 
 «Está listo» · «debería funcionar» · «ya está probado» · «es seguro». Se reemplazan
-por el número que salió: *«14 criterios como pruebas, 6 rechazos de restricción,
-`yarn test:integracion` en verde»*.
+por el número que salió: en un carril de backend, *«14 criterios como pruebas, 6
+rechazos de restricción, `./gradlew test` en verde»*; en uno de frontend, *«12
+componentes con prueba, `yarn test:front` y `yarn test:a11y` en verde, JS del sitio
+en 138 KB»*.
 
 ## Gate de salida — evidencia
 
-Comandos **ejecutados**, con su resultado. No se marca sin correr.
+Comandos **ejecutados**, con su resultado. No se marca sin correr. Se usa **la
+variante que corresponde al tipo de carril**; un carril no mezcla las dos.
+
+### Variante backend (carril Java · Gradle)
+
+- [ ] `./gradlew spotlessCheck` (formato y estilo)
+- [ ] `./gradlew build` (compila; verificación de tipos implícita)
+- [ ] `./gradlew test integrationTest apiTest` (los corredores de JUnit del servicio)
+- [ ] Cada criterio de aceptación con su `@Test` + `@DisplayName` nombrado igual
+- [ ] Cada `R-XXX-nn` citado con prueba de rechazo
+- [ ] `sagaTest` por cada operación que cruza servicios (si el carril las tiene)
+- [ ] Checklist de PR de §12 del estándar
+- [ ] Gate específico de la fase
+
+### Variante frontend (carril `apps/**` · yarn)
 
 - [ ] `yarn lint && yarn typecheck`
-- [ ] `yarn test:unit && yarn test:integracion && yarn test:api`
-- [ ] Cada criterio de aceptación con su `it()` nombrado igual
-- [ ] Cada `R-XXX-nn` citado con prueba de rechazo
+- [ ] `yarn test:front && yarn test:a11y`
+- [ ] Presupuestos respetados (JS del sitio ≤ 150 KB; Lighthouse según fase)
+- [ ] Cada criterio de aceptación con su prueba nombrada igual
+- [ ] Cuatro estados por pantalla (cargando, vacío, error, contenido)
 - [ ] Checklist de PR de §12 del estándar
 - [ ] Gate específico de la fase
 

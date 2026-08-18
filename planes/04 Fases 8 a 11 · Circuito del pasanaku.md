@@ -93,13 +93,17 @@ plazos nuevos usan el calendario nuevo.
 | --- | --- |
 | Átomo | `congelarConceptos` — serializa el tarifario y calcula su hash |
 | Átomo | `proyectarCalendario` — genera períodos y fechas desde la periodicidad |
-| Molécula | `GrupoRepositorio` · `TarifaCongeladaRepositorio` · `CuentaBilleteraRepositorio` |
-| Organismo | `CU20CrearGrupo` — **una transacción**: grupo, configuración, cuenta, snapshot y calendario |
+| Molécula | `GrupoRepositorio` · `TarifaCongeladaRepositorio` |
+| Organismo | `CU20CrearGrupo` — **una transacción**: grupo, configuración, snapshot, calendario y evento `grupos.grupo_activado` |
 | Página | `POST /v1/grupos` |
 
-> **La cuenta de billetera cuyo titular es el grupo se abre en la misma transacción
-> que el grupo.** Un grupo sin cuenta es un estado que no debe existir ni por un
-> instante (`R-BIL-04`, `R-BIL-05`).
+> [!important] La cuenta de billetera del grupo ya no está en la transacción de CU-20
+> La cuenta cuyo titular es el grupo la abre `nucleo-financiero` al **consumir**
+> `grupos.grupo_activado` (S5 de [[20 Saneamiento del plan · huecos de la migración a microservicios]] §2),
+> con reintento idempotente ante consumo duplicado o fuera de orden. `grupos` no toca
+> `cuenta_billetera`; el grupo no opera dinero hasta que llega el evento de vuelta.
+> Por eso `CuentaBilleteraRepositorio` **desaparece de `grupos`**: solo
+> `nucleo-financiero` lo tiene ([[20 Saneamiento del plan · huecos de la migración a microservicios]] §3).
 
 El snapshot del tarifario congelado es lo que la Fase 7 ya prevé en
 `TarifarioRepositorio.congelado()` (`R-TAR-07`, `R-TAR-12`).
@@ -167,7 +171,7 @@ cerrado de efectos**: un acuerdo no puede ejecutar código arbitrario (skill
 - [ ] Gate común
 - [ ] **Plazo emitido no se mueve al agregar un feriado posterior** (invariante 8)
 - [ ] `sumarDiasHabiles` con pruebas de propiedad y bordes de fin de año en verde
-- [ ] Grupo sin cuenta de billetera: estado imposible, probado
+- [ ] El evento `grupos.grupo_activado` abre la cuenta del grupo en `nucleo-financiero`; consumido dos veces o fuera de orden ⇒ una sola cuenta (S5, probado)
 - [ ] Un tarifario nuevo no altera el precio congelado del grupo (regresión de F7)
 - [ ] Token de invitación usado dos veces ⇒ el segundo falla (`R-NOT-02`)
 - [ ] Votación: parte interesada **no** puede votar; la abstención queda **registrada**
@@ -227,18 +231,28 @@ Se implementa **antes** que CU-21 porque el cobro por QR pasa por acá.
 | Molécula | `ObligacionRepositorio` | Toma la obligación para actualizar, **con bloqueo** |
 | Molécula | `OrdenCobroRepositorio` | Emite la orden y su QR conciliable |
 | Molécula | `ConciliacionRepositorio` | Cruce contra el extracto bancario |
-| Organismo | `CU21CobrarAporte` | Transacción: pago, obligación, movimientos y asiento |
+| Organismo | `CU21CobrarAporte` | **Orquesta la saga S1**: local en `aportes` (pago + obligación + estado de saga); pasos remotos en `nucleo-financiero` y `tarifas` |
 | Página | `POST /v1/aportes` | |
 
-### Frontera transaccional de CU-21, escrita
+### Frontera transaccional de CU-21 — saga S1, escrita
+
+CU-21 **cruza tres servicios**: por eso deja de ser una transacción ACID local (la
+herencia del monolito) y pasa a ser la saga orquestada S1 de
+[[20 Saneamiento del plan · huecos de la migración a microservicios]] §2, según
+[[ADR-028 Mecánica de saga|ADR-028]].
 
 | Pregunta | Respuesta |
 | --- | --- |
-| Todo junto o nada | `obligacion_aporte.monto_pagado` + estado · `transaccion_billetera` con crédito a la cuenta del grupo · `asiento_contable` |
-| Fuera del commit | El QR al proveedor, el aviso al participante, la cancelación de recordatorios, la evaluación de umbrales UIF que genere reporte |
-| Clave de idempotencia | **Del cliente** para el pago con saldo; **del proveedor** (referencia) para el webhook de pasarela |
+| Todo junto o nada (local en `aportes`) | `obligacion_aporte.monto_pagado` + estado, y el paso actual en `estado_saga`, en la misma transacción |
+| **¿Cruza a otro servicio y qué pasa si el otro falla?** | **Sí: saga S1.** `aportes` → `nucleo-financiero` (crédito a la cuenta del grupo + `asiento_contable`) → `tarifas` (devengo). Orquestador: `aportes`. **Compensación**: reverso del crédito en `nucleo-financiero` y la obligación vuelve a `PENDIENTE` — nunca se edita el libro, se reversa (ADR-028) |
+| Fuera del commit | El QR al proveedor, el aviso al participante, la cancelación de recordatorios, y la evaluación de umbrales UIF por **evento post-commit** que `cumplimiento` consume (S9) |
+| Clave de idempotencia | **Del cliente** para el pago con saldo; **del proveedor** (referencia) para el webhook; **derivada de id de saga + número de paso** para los pasos remotos (ADR-028) |
 | Qué se bloquea | La fila de `obligacion_aporte`, con `SELECT … FOR UPDATE`. Granularidad: la obligación, no el grupo |
-| Si el proceso muere tras el commit | El pago está acreditado y el evento encolado; el worker despacha el aviso al reiniciar. No se pierde nada |
+| Si el proceso muere entre pasos | El `@Scheduled` + ShedLock de `aportes` barre `estado_saga`, reintenta el paso o compensa; el consumidor despacha el aviso al reiniciar. No se pierde nada |
+
+Prueba obligatoria: **`CU21CobrarAporteSagaTest`** — camino feliz, paso remoto que
+falla ⇒ compensación (reverso del crédito, obligación en `PENDIENTE`), y reintento
+idempotente por id de saga + paso.
 
 ### Las reglas de CU-21 que se implementan como código, no como comentario
 
@@ -273,7 +287,7 @@ Fase 2.
 
 **Riesgo 9 del plan maestro.** El cierre no puede correr dos veces: `job_key` de
 ShedLock **más** bloqueo consultivo. La prueba obligatoria levanta **dos
-réplicas del worker** y verifica que el cierre se ejecute una sola vez.
+réplicas del servicio `aportes`** y verifica que el cierre se ejecute una sola vez.
 
 Y el cierre **no cuadra** si hay una `excepcion_conciliacion` abierta o un descuadre
 de custodia sin resolver (F6). Esa dependencia es el control, no un inconveniente.
@@ -292,9 +306,10 @@ de custodia sin resolver (F6). Esa dependencia es el control, no un inconvenient
 - [ ] Dos participantes pagando la misma obligación a la vez ⇒ uno gana, sin doble acreditación
 - [ ] Pago no conciliado ⇒ el cierre diario **no puede** marcarse cuadrado
 - [ ] Recargo de mora es obligación nueva con `obligacion_origen_id`; el original intacto
-- [ ] **Dos réplicas del worker ⇒ el cierre diario se ejecuta una sola vez** (riesgo 9)
+- [ ] **Dos réplicas del servicio `aportes` ⇒ el cierre diario se ejecuta una sola vez** (riesgo 9)
 - [ ] Proveedor principal caído ⇒ conmutación al secundario **con evento**, no en silencio
-- [ ] Los tres criterios de aceptación `gherkin` de CU-21 tienen su `it()` con el mismo nombre
+- [ ] **`CU21CobrarAporteSagaTest` en verde**: camino feliz, compensación (reverso del crédito, obligación en `PENDIENTE`) y reintento idempotente por id de saga + paso (S1)
+- [ ] Los tres criterios de aceptación `gherkin` de CU-21 tienen su `@Test` con `@DisplayName` del mismo nombre
 
 ---
 
@@ -341,13 +356,27 @@ Sin cuenta verificada no hay desembolso posible. Se implementa antes que CU-22.
 | --- | --- |
 | Átomo | `calcularDeducciones` — arma las líneas **en orden** y devuelve el neto. **Pruebas de propiedad** |
 | Átomo | `componerAsientoDeEntrega` — partidas de bolsa, beneficiario, ingreso e impuesto |
-| Molécula | `EntregaRepositorio` · `ValidacionPreEntregaRepositorio` (ejecuta y **registra** cada regla) · `DevengoComisionRepositorio` |
-| Organismo | `CU22LiquidarEntrega` — **transacción: liquidación completa, sin estados intermedios** |
+| Molécula | `EntregaRepositorio` · `ValidacionPreEntregaRepositorio` (ejecuta y **registra** cada regla) |
+| Organismo | `CU22LiquidarEntrega` — **orquesta la saga S2**: local la liquidación (sin estados intermedios); débito + asiento en `nucleo-financiero` |
 | Página | `POST /v1/entregas/:turnoId` |
 
-La comisión se devenga **del tarifario congelado del grupo** (F7 + F8), no del
-vigente. Es `R-TAR-06` y es la razón por la que `TarifarioRepositorio` tiene dos
-métodos.
+### Frontera transaccional de CU-22 — saga S2
+
+CU-22 **cruza a `nucleo-financiero` y a `tarifas`**: es la saga orquestada S2 de
+[[20 Saneamiento del plan · huecos de la migración a microservicios]] §2. `entregas` →
+`nucleo-financiero` (débito de la cuenta del grupo + `asiento_contable`), orquestada
+por `entregas` según [[ADR-028 Mecánica de saga|ADR-028]]. **Compensación**: reverso
+del débito; la entrega vuelve a `APROBADA`.
+
+La comisión **no** se devenga dentro de la transacción de la entrega: `tarifas`
+**consume** el evento `entregas.entrega_liquidada` y devenga en su propia transacción,
+idempotente por `id_evento` (S7). Por eso `DevengoComisionRepositorio` vive en
+`tarifas`, no en `entregas`. El devengo usa **el tarifario congelado del grupo**
+(F7 + F8), no el vigente — es `R-TAR-06` y la razón por la que `TarifarioRepositorio`
+tiene dos métodos.
+
+Prueba obligatoria: **`CU22LiquidarEntregaSagaTest`** — camino feliz, compensación
+(reverso del débito, entrega en `APROBADA`) y reintento idempotente por id de saga + paso.
 
 `ValidacionPreEntregaRepositorio` **registra cada regla evaluada**, no solo el
 resultado: ante un reclamo hay que poder mostrar qué se verificó antes de entregar.
@@ -389,6 +418,7 @@ reintentable** y escala a una persona. Denegar por omisión también acá.
 - [ ] Cada descifrado de instrumento deja registro de quién y por qué
 - [ ] `calcularDeducciones`: pruebas de propiedad, sin centavos perdidos
 - [ ] La entrega usa el tarifario **congelado**, no el vigente (probado con tarifario nuevo publicado)
+- [ ] **`CU22LiquidarEntregaSagaTest` en verde**: compensación (reverso del débito, entrega en `APROBADA`) y reintento idempotente por id de saga + paso (S2)
 - [ ] Error de proveedor desconocido ⇒ **no** reintenta y escala
 
 ---
@@ -456,14 +486,27 @@ uno recalculado.
 | Páginas | `POST /v1/fondo/coberturas` · `POST /v1/avales/:id/ejecuciones` · `/ejecuciones-aval/:id/respuesta` |
 
 > **La subrogación convierte al que pagó en acreedor.** No es un detalle contable: es
-> lo que hace que el aval sirva de algo. La transacción escribe cobertura + deuda +
-> subrogación + asiento, todo junto o nada.
+> lo que hace que el aval sirva de algo. En `garantia`, en la misma transacción local,
+> se escribe cobertura + deuda + subrogación + estado de saga, todo junto o nada.
+
+### Frontera transaccional de CU-23 — saga S3
+
+La cobertura **cruza a `nucleo-financiero`**: es la saga orquestada S3 de
+[[20 Saneamiento del plan · huecos de la migración a microservicios]] §2. `garantia` →
+`nucleo-financiero` (movimiento + `asiento_contable`), orquestada por `garantia` según
+[[ADR-028 Mecánica de saga|ADR-028]]. El asiento **no** va dentro de la transacción de
+la cobertura: es el paso remoto de la saga. **Compensación**: reverso del movimiento;
+la cobertura queda `FALLIDA` con una incidencia abierta.
+
+Prueba obligatoria: **`CU23CoberturaSagaTest`** — camino feliz, compensación (reverso,
+cobertura `FALLIDA` con incidencia) y reintento idempotente por id de saga + paso.
 
 `cubreElHecho` evalúa la vigencia **a la fecha del hecho**, no a hoy. Un aval vencido
 hoy cubre un incumplimiento de cuando estaba vigente.
 
 **Gate 11.B:** ejecutar el mismo aval dos veces no supera el tope firmado
-(concurrencia probada); la deuda subrogada aparece con el avalista como acreedor.
+(concurrencia probada); la deuda subrogada aparece con el avalista como acreedor;
+**`CU23CoberturaSagaTest` en verde** (compensación + reintento idempotente).
 
 ## Sub-fase 11.C — Restricción y cobranza (CU-27)
 

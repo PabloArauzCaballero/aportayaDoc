@@ -145,10 +145,14 @@ carril de backend y trabaja en otra pantalla mientras tanto (regla cero).
 
 | Ruta | Nota |
 | --- | --- |
-| Su directorio de pantallas o rutas | Todo lo de adentro |
-| `packages/cliente-api/src/CU<NN>.ts` | **Solo los CU de su carril** |
-| Sus *handlers* de MSW | `pruebas/mocks/<su-dominio>/` |
+| Su directorio de pantallas o rutas | Todo lo de adentro, incluido su `dominio/` (los hooks por CU que envuelven el cliente generado) |
+| Sus *handlers* de MSW | `pruebas/mocks/<servicio>/` — organizados **por servicio**, no por dominio de carril. El handler de un CU lo crea el **primer carril** que lo necesita; el segundo lo importa (barrido: un CU no tiene dos handlers) |
 | `planes/informes/carril-<id>.md` | Su informe |
+
+> **El cliente de API no aparece acá porque no tiene dueño.** `clientes/typescript` es
+> **generado** desde los `openapi/*.yaml` del backend: no se edita a mano, lo regenera
+> quien corre `generateOpenApiClients` y por eso el solape de CU **deja de ser un
+> conflicto** ([[20 Saneamiento del plan · huecos de la migración a microservicios]] §6.2–6.3).
 
 ### Lo que ningún carril toca (solo lectura)
 
@@ -264,9 +268,8 @@ TU ALCANCE
   Rama:        <usuario>/feature/carril-<id>          (PR hacia dev)
 
 POSEÉS EN EXCLUSIVA
-  <su directorio de pantallas o rutas>
-  packages/cliente-api/src/CU<NN>.ts   (solo los tuyos)
-  pruebas/mocks/<tu-dominio>/
+  <su directorio de pantallas o rutas>   (incluido su dominio/ por CU)
+  pruebas/mocks/<servicio>/              (el handler de un CU lo crea el primer carril; el segundo lo importa)
   planes/informes/carril-<id>.md
 
 NO TOCÁS (solo lectura)

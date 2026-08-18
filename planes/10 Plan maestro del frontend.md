@@ -51,7 +51,7 @@ Cuatro casos de uso ya devuelven **rutas públicas sin sesión**. Sin `apps/web`
 rutas devuelven JSON a un navegador y la obligación de transparencia queda sin
 superficie.
 
-> **Requiere [[ADR-018 Sitio público]]** escrito en la Fase F0, con la plantilla de
+> **Requiere [[ADR-037 Sitio público]]** escrito en la Fase F0, con la plantilla de
 > `decisiones-adr`, enmendando ADR-004 (que descartó Next.js **como billetera**, no
 > como sitio público — no hay contradicción, pero hay que dejarlo escrito).
 
@@ -93,7 +93,7 @@ Espejo de los diez del backend. Ninguna fase los suspende.
 | Diseño | **`packages/ui`** — tokens, átomos, moléculas, organismos | skill `disenar-frontend` · `docs/Views/Sistema-Diseno/` |
 | Estado servidor | **TanStack Query** en los tres | Caché con invalidación explícita |
 | Formularios | **React Hook Form + los tipos generados del OpenAPI** | Invariante 2: el esquema no se reescribe |
-| Cliente de API | Generado desde los contratos, un archivo por CU | `packages/cliente-api` |
+| Cliente de API | **Generado** desde el contrato OpenAPI, un archivo por CU | `clientes/typescript` — no se edita, **sin dueño de carril** |
 | Logs de cliente | Sin PII, con `traza` propagada al backend | Cabecera `x-request-id` |
 | Pruebas unitarias | **Jest + Testing Library** | Se prueba lo que el usuario ve |
 | Pruebas de componente | **Jest + RTL**, con **MSW** para la API | Mocks derivados del contrato OpenAPI |
@@ -112,6 +112,23 @@ Espejo de los diez del backend. Ninguna fase los suspende.
 - Una pantalla de datos sin sus cuatro estados.
 - Un `div` que hace de botón.
 - Datos sensibles en la URL, en el estado global o en `AsyncStorage` plano.
+
+### Base URL, sesión y CORS
+
+Los tres clientes —app, backoffice y sitio— apuntan a **una sola base URL: el
+gateway**. Nunca se habla directo con un servicio: el **prefijo de la ruta** es lo que
+enruta al servicio correcto ([[19 Contrato de carril · conflicto cero, skills y calidad verificada]] §3.1).
+
+| Regla | Cómo se implementa |
+| --- | --- |
+| **Una sola base URL** | Toda petición sale hacia el gateway. El servicio destino se resuelve por el prefijo, no por el host |
+| **Refresh vía gateway** | El refresh va a `identidad` **a través del gateway**, como cualquier otra ruta |
+| **Un `401` ⇒ un intento** | Un `401` en cualquier servicio dispara **un** intento de refresh y **un** reintento de la petición original. Si el refresh falla, se cierra la sesión global (una sola vez, no en bucle) |
+| **CORS en el gateway** | El gateway configura CORS para los orígenes del **backoffice** y del **sitio** —los dos clientes de navegador—. El frontend no gestiona CORS: lo recibe resuelto |
+
+> **Esta política vive en un solo lugar del cliente:** el interceptor de la capa de
+> dominio (F0.2) y el `ProveedorSesion` del shell móvil (F2). Ninguna pantalla ve un
+> `401` ni conoce la URL de `identidad`.
 
 ---
 
@@ -138,7 +155,7 @@ tokens/                       único lugar con valores literales
 | `moleculas/` | `atomos/`, `dominio/` | Orquestar la pantalla, decidir navegación | Comportamiento: escribe, valida, emite |
 | `organismos/` | `moleculas/`, `atomos/`, `dominio/` | HTTP directo | Flujo completo con API simulada, con error y reintento |
 | `pantallas/` | `organismos/` | Cálculos, reglas | E2E |
-| `dominio/` | `clientes/typescript` (generado del OpenAPI) | Renderizar | Contrato: la respuesta simulada valida contra el Zod |
+| `dominio/` | `clientes/typescript` (generado del OpenAPI) | Renderizar | Contrato: la respuesta simulada valida contra el esquema del contrato OpenAPI |
 
 **Lo que sirve a dos productos sube a `packages/ui`.** Lo que depende de una API
 nativa (cámara, biometría) se queda en `apps/movil`.
@@ -187,7 +204,7 @@ nativa (cámara, biometría) se queda en `apps/movil`.
 | **Átomo** | Jest + RTL | Variantes y estados | `<Atomo>.spec.tsx` |
 | **Molécula** | Jest + RTL | Comportamiento observable | `<Molecula>.spec.tsx` |
 | **Organismo** | Jest + RTL + **MSW** | Flujo con API simulada, **incluidos error y reintento** | `<Organismo>.spec.tsx` |
-| **Contrato** | Vitest + validación contra el OpenAPI | La respuesta simulada **valida contra el Zod real** | `CU<NN>.contrato.spec.ts` |
+| **Contrato** | Validación contra el OpenAPI | La respuesta simulada **valida contra el esquema del contrato OpenAPI** | `CU<NN>.contrato.spec.ts` |
 | **Accesibilidad** | `jest-axe` | Cero violaciones serias por pantalla | `<Pantalla>.a11y.spec.tsx` |
 | **E2E web** | Playwright + Chromium | Backoffice y sitio público | `<flujo>.e2e.spec.ts` |
 | **E2E móvil** | Maestro | App en build de desarrollo | `<flujo>.maestro.yaml` |

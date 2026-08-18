@@ -33,8 +33,9 @@ habilita: [F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12]
 
 - [ ] Fase 0 del backend cerrada: el monorepo yarn, el `tsconfig.base.json`, el lint y
       el CI ya existen
-- [ ] el `openapi/identidad.yaml` existe con al menos la operación de CU-01 escrita — lo entrega la **Fase
-      0 §0.6b** del backend, no la Fase 2 (delta 1 de
+- [ ] el `openapi/identidad.yaml` existe con al menos la operación de CU-01 escrita, y
+      su cliente TypeScript ya está generado en `clientes/typescript` — lo entrega
+      **`01 §0.8`** del backend, no la Fase 2 (delta 1 de
       [[17 Plan de acción secuencial · coordinación de cinco máquinas]])
 
 > [!note] Esta fase se ejecuta en tres puestos a la vez
@@ -60,28 +61,37 @@ apps/
 └── web/            Astro 5 + islas React · adaptador Node
     └── src/{content,pages,componentes,seo,estilos}/
 packages/
-├── ui/             tokens + átomos + moléculas + organismos compartidos
-└── cliente-api/    un cliente por CU, tipado desde clientes/typescript
+└── ui/             tokens + átomos + moléculas + organismos compartidos
+clientes/
+└── typescript/     cliente generado desde el OpenAPI · no se edita · sin dueño de carril
 ```
+
+> **`clientes/typescript` no es un paquete de este monorepo con dueño: es un artefacto
+> generado.** Lo regenera quien corre `generateOpenApiClients` a partir de los
+> `openapi/*.yaml` del backend; no se versiona a mano y por eso no produce conflictos.
+> La **capa de dominio por CU** (los hooks de TanStack Query) vive en el `dominio/` de
+> cada app y **importa** de este cliente generado.
 
 > **Los tres usan enrutamiento por sistema de archivos.** No es un detalle: es lo que
 > permite que varios carriles agreguen pantallas **sin editar nunca un registro
 > compartido** ([[16 Carriles de frontend]] §4). Un `routes.tsx` central sería un
 > conflicto de merge por PR.
 
-## F0.2 · `packages/cliente-api` — la capa de dominio
+## F0.2 · La capa de dominio sobre `clientes/typescript`
 
-Un archivo por caso de uso, generado y tipado desde el contrato:
+Un archivo por caso de uso en el `dominio/` de cada app, que **envuelve** el cliente
+generado y lo tipa desde el contrato:
 
 ```ts
-// packages/cliente-api/src/CU21.ts
+// apps/movil/src/dominio/CU21.ts
 import { EntradaCU21, SalidaCU21, ErroresCU21 } from 'clientes/typescript/CU21'
 
 export function usarCobrarAporte() { /* TanStack Query mutation */ }
 ```
 
 Reglas:
-- **Los tipos vienen del cliente generado.** Nunca se declaran a mano (invariante 2).
+- **Los tipos vienen del cliente generado** (`clientes/typescript`). Nunca se declaran a
+  mano (invariante 2).
 - Cada mutación acepta y reenvía la **clave de idempotencia**.
 - La respuesta se **valida** contra el esquema OpenAPI de salida en desarrollo y en pruebas: si la
   API devuelve algo que no encaja, se descubre acá y no en la pantalla.
@@ -89,6 +99,11 @@ Reglas:
   versionado.
 - La cabecera `x-request-id` viaja en cada request para que la traza del cliente
   llegue al log del backend.
+- **Una sola base URL: el gateway.** El cliente apunta siempre al gateway y el prefijo
+  enruta al servicio; el refresh va a `identidad` vía gateway. Un `401` dispara **un**
+  intento de refresh y **un** reintento; si falla, sesión cerrada global. Es el
+  interceptor de esta capa quien lo maneja, no la pantalla (ver
+  [[10 Plan maestro del frontend]] §3).
 
 ## F0.3 · Servidor simulado con MSW
 
@@ -97,7 +112,8 @@ con el esquema OpenAPI de salida, no a mano.
 
 > **Un mock escrito a mano diverge del contrato en la segunda semana y deja la
 > pantalla verde mientras ya está rota.** Por eso la prueba de contrato
-> (`CU<NN>.contrato.spec.ts`) es obligatoria: valida que el mock encaje en el Zod real.
+> (`CU<NN>.contrato.spec.ts`) es obligatoria: valida que el mock encaje en el esquema
+> del contrato OpenAPI.
 
 ## F0.4 · Herramientas de calidad
 
@@ -116,8 +132,8 @@ con el esquema OpenAPI de salida, no a mano.
 
 | ADR | Qué decide |
 | --- | --- |
-| **ADR-018 · Sitio público** | Que existe un tercer producto web y por qué (§1 de [[10 Plan maestro del frontend]]: CU-34, CU-61, CU-72, CU-73, CU-75, punto de reclamo, contrato de adhesión). Elige **Astro + islas React**: estático por defecto ⇒ menos JS ⇒ mejores Core Web Vitals ⇒ mejor posicionamiento, y *content collections* para los documentos regulatorios. Enmienda ADR-004, que descartó Next.js **como billetera**, no como sitio público |
-| **ADR-019 · Política de rastreadores de IA** | **Búsqueda sí, entrenamiento no.** Se permiten `OAI-SearchBot`, `ClaudeBot`, `PerplexityBot`; se bloquean `GPTBot`, `Google-Extended`, `Applebot-Extended`, `CCBot`. Todos bloqueados en `/verificar/` y `/publico/`. Es decisión de negocio, no técnica, y por eso lleva ADR |
+| **ADR-037 · Sitio público** | Que existe un tercer producto web y por qué (§1 de [[10 Plan maestro del frontend]]: CU-34, CU-61, CU-72, CU-73, CU-75, punto de reclamo, contrato de adhesión). Elige **Astro + islas React**: estático por defecto ⇒ menos JS ⇒ mejores Core Web Vitals ⇒ mejor posicionamiento, y *content collections* para los documentos regulatorios. Enmienda ADR-004, que descartó Next.js **como billetera**, no como sitio público |
+| **ADR-038 · Política de rastreadores de IA** | **Búsqueda sí, entrenamiento no.** Se permiten `OAI-SearchBot`, `ClaudeBot`, `PerplexityBot`; se bloquean `GPTBot`, `Google-Extended`, `Applebot-Extended`, `CCBot`. Todos bloqueados en `/verificar/` y `/publico/`. Es decisión de negocio, no técnica, y por eso lleva ADR |
 
 **Entregable F0:** los tres productos levantan; el cliente de API valida contra los
 contratos; MSW responde; CI en verde con los cinco corredores.
@@ -134,7 +150,7 @@ docker build -f docker/Dockerfile.web . && docker build -f docker/Dockerfile.bac
 
 - [ ] Gate común de §10 del plan maestro del frontend
 - [ ] Una pantalla real por producto, contra MSW, con sus cuatro estados
-- [ ] ADR-018 y ADR-019 escritos; `verificar_boveda.py` en verde
+- [ ] ADR-037 y ADR-038 escritos; `verificar_boveda.py` en verde
 - [ ] Enrutamiento por archivos funcionando en los tres: una pantalla nueva **no
       requiere editar ningún registro compartido** (probado agregando una vacía)
 

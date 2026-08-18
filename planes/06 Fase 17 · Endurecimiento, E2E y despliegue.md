@@ -21,8 +21,9 @@ habilita: []
 > [!important] Antes de escribir la primera línea
 > [[00b Estándar de ejecución · código limpio, pruebas y calidad]] aplica en
 > esta fase entera: regla cero de no inventar, composición atómica, KISS,
-> nombres del dominio, las seis pruebas obligatorias por caso de uso y el
-> checklist de PR. **Se declara cada pieza por nivel antes de crearla.**
+> nombres del dominio, las siete pruebas obligatorias por caso de uso (la séptima es
+> la compensación de saga) y el checklist de PR. **Se declara cada pieza por nivel
+> antes de crearla.**
 
 > **Receta exacta:** [[00c Recetario · implementar un caso de uso]] fija el orden de
 > lectura, el orden de construcción en ocho pasos, las firmas canónicas y los
@@ -34,7 +35,8 @@ implementar, pertenece a su fase, no a esta.
 ## Gate de entrada
 
 - [ ] Fases 12 a 16 cerradas con sus gates ejecutados
-- [ ] Los 87 casos de uso del núcleo implementados (las fases 18 y 19 van después)
+- [ ] 94 de los 99 casos de uso implementados — la fase 18 (ERP) ya corrió antes; solo
+      la fase 19 (publicidad) va después
 - [ ] La prueba E2E `PasanakuCompletoE2ETest.java` (hito de la Fase 11) en verde
 
 ## Leer antes
@@ -260,7 +262,7 @@ exige un comando ejecutado o un informe con evidencia. La skill
 `definicion-de-terminado` prohíbe explícitamente marcarlas sin eso.
 
 ### Funcionalidad
-- [ ] Los **87 casos de uso del núcleo** implementados, cada uno con sus criterios de aceptación como pruebas nombradas
+- [ ] **94 de los 99 casos de uso** implementados (todos salvo la fase 19, publicidad), cada uno con sus criterios de aceptación como pruebas nombradas
 - [ ] Las **138 restricciones** con prueba de rechazo
 - [ ] Las **306 tablas** tienen código que las escribe — verificable recién con las fases 18 y 19 cerradas; el verificador vive en `verificar_criterios.py` sobre las clases jOOQ usadas
 - [ ] Los seis recorridos E2E en verde
@@ -305,12 +307,12 @@ No es omisión: es alcance declarado, para que nadie lo descubra tarde.
 
 | Pendiente | Por qué queda fuera | Cuándo se retoma |
 | --- | --- | --- |
-| **Object storage con *object lock*** | ADR-017 eligió Multer local como transitorio. La evidencia regulatoria (reportes UIF, respaldos de reclamo, extractos) pide inmutabilidad real | Antes de operar con licencia otorgada |
-| **`apps/movil` y `apps/backoffice`** | Este plan es del backend. Los contratos de `packages/contratos` ya los habilitan | Plan de frontend aparte |
+| **Object storage con *object lock*** | ADR-017 eligió el puerto `AlmacenArchivos` con adaptador local como transitorio. La evidencia regulatoria (reportes UIF, respaldos de reclamo, extractos) pide inmutabilidad real | Antes de operar con licencia otorgada |
+| **`apps/movil` y `apps/backoffice`** | Este plan es del backend. El cliente `clientes/typescript` generado de los contratos ya los habilita | Plan de frontend aparte |
 | **Integraciones reales** (pasarela QR, SIAT, WhatsApp, KYC) | Se implementan los adaptadores y se prueban con simuladores; la integración real exige contratos comerciales | Cuando existan los convenios |
 | **Confirmación legal de los catálogos provisionales** | Límites, impuestos y umbrales UIF están sembrados como borrador con su advertencia | Antes de producción |
 | **Spring Boot + jOOQ** | [[Stack]] deja registrado que la decisión se revierte si el objetivo real es integrarse con core bancario | Si aparece ese objetivo |
 
 ## Ver también
 
-[[00c Recetario · implementar un caso de uso]] · [[07 Carriles de trabajo concurrente]] · [[00b Estándar de ejecución · código limpio, pruebas y calidad]] · [[00 Plan maestro]] · [[05 Fases 12 a 16 · Plataforma, reputación y cumplimiento]] · [[ADR-012 Empaquetado y despliegue]] · [[ADR-013 Respaldo y continuidad]] · [[Entornos y despliegue]]
+[[00c Recetario · implementar un caso de uso]] · [[07 Carriles de trabajo concurrente]] · [[00b Estándar de ejecución · código limpio, pruebas y calidad]] · [[00 Plan maestro]] · [[05 Fases 12 a 16 · Plataforma, reputación y cumplimiento]] · [[ADR-025 Empaquetado y despliegue de los servicios]] · [[ADR-013 Respaldo y continuidad]] · [[Entornos y despliegue]]

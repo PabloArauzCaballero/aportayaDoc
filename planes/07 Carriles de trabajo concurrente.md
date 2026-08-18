@@ -189,7 +189,8 @@ orden en que están listados (A primero).
 | --- | --- |
 | `servicios/<su-servicio>/**` | **Todo**: `build.gradle.kts`, `application.yml`, `openapi/`, las cuatro capas, `trabajos/`, pruebas, `descriptor.yml`, `README.md` |
 | `planes/informes/carril-<id>.md` | Su informe de progreso |
-| `despliegue/compose/<su-servicio>.yml` | Su fragmento de compose, si necesita un servicio auxiliar |
+| `despliegue/compose/<su-servicio>.yml` | Su fragmento de compose. **Lo crea el generador `nuevoServicio`** y lo posee el carril ([[20 Saneamiento del plan · huecos de la migración a microservicios]] §3.1) |
+| `plataforma/gateway/src/main/resources/rutas/<su-servicio>.yml` | **Excepción a `plataforma/**`**: su fragmento de la tabla de rutas del gateway. Lo crea el generador `nuevoServicio`; el gateway **compone** su tabla de rutas desde estos archivos, uno por servicio (§3.1 de [[20 Saneamiento del plan · huecos de la migración a microservicios]]) |
 
 **Eso es todo lo que necesita.** No hay ningún archivo fuera de su directorio que
 tenga que tocar para entregar un caso de uso completo — y esa frase es el objetivo
@@ -200,7 +201,7 @@ entero de este documento.
 | Ruta | Quién la cambia |
 | --- | --- |
 | `sql/**`, `docs/**`, `scripts/**` | Nadie durante los carriles. Cambio de modelo = para todo y se hace en troncal |
-| `plataforma/**` | Ola 0. Un átomo nuevo compartido = micro-PR |
+| `plataforma/**` | Ola 0. Un átomo nuevo compartido = micro-PR. **Excepción:** `plataforma/gateway/src/main/resources/rutas/<servicio>.yml` lo posee el carril dueño del servicio (§3.1 de [[20 Saneamiento del plan · huecos de la migración a microservicios]]) |
 | `gradle/libs.versions.toml` | **Micro-PR.** Una dependencia nueva nunca se agrega en rama de carril |
 | `settings.gradle.kts` | Nadie: descubre `servicios/` por barrido |
 | `despliegue/Dockerfile`, `despliegue/k8s/**` | Ola 0 y Ola 5. Los manifiestos son **generados** |
@@ -404,8 +405,13 @@ Va a pasar. Qué hacer:
   independencia de modelo**: un cambio de esquema rompe la compilación de los catorce
   a la vez, y eso es correcto pero hay que hacerlo ordenado.
 - **La Ola 0.** Es el piso; si se parte, cada carril inventa su propio piso.
-- **Los dos tramos de `nucleo-financiero`.** Fase 5 y Fase 6 son el mismo servicio y
-  el mismo esquema: van en olas distintas, nunca a la vez.
+- **Los dos tramos de un mismo servicio.** Cuando un servicio se construye o se
+  retoma en más de un tramo, **sus dos tramos nunca corren a la vez**: son el mismo
+  esquema, y dos carriles escribiéndolo en paralelo es el conflicto que este diseño
+  evita. Vale para los tres que tienen esa forma
+  ([[20 Saneamiento del plan · huecos de la migración a microservicios]] §7.2):
+  `nucleo-financiero` (Fase 5 libro contable + Fase 6 billetera), `cumplimiento`
+  (Fase 4 habilitación parcial + Fase 16 UIF/ASFI) y `auditoria`.
 - **La Ola 5.** Rendimiento, resiliencia y despliegue se miden sobre el sistema
   entero, no por partes.
 

@@ -136,9 +136,11 @@ suyas está trabajando de memoria.
 | `5B` publicidad ★ | `facturacion-sin` · `motor-de-reglas` · `proveedores-externos` |
 | `F0-*` andamiajes | `decisiones-adr` · `ci-calidad` |
 | `F1` sistema de diseño | `disenar-frontend` **completa**, con `docs/Views/Sistema-Diseno/` |
+| `F2` shell móvil | `movil-expo` · `autenticacion-jwt` *(de lectura: el `ProveedorSesion`, refresh y `401`)* · `resiliencia-rendimiento` *(offline e intermitencia)* |
 | `F3` móvil identidad | `kyc-onboarding` · `autenticacion-jwt` |
 | `F4` móvil billetera | `qr-pagos` · `dinero-decimal` |
 | `F5` móvil pasanaku | `gobernanza-grupo` · `alertas-riesgo-temprano` · `reclamos-consumidor` |
+| `F6` shell backoffice | `web-backoffice` · `roles-y-accesos` *(navegación y tabla según rol)* |
 | `F7` backoffice operación | `roles-y-accesos` · `extraccion-de-datos` |
 | `F8` backoffice cumplimiento | `cumplimiento-uif` · `debido-proceso` · `gobierno-comites` |
 | `F9` sitio público | `sorteo-transparencia` · `reputacion-social` · `reclamos-consumidor` |
@@ -305,7 +307,7 @@ válido y no falla; `87 casos de uso`, a secas, no.
 
 ---
 
-## 5 · Las quince pruebas de barrido
+## 5 · Las diecisiete pruebas de barrido
 
 **Se escriben una vez, en la Ola 0, y cubren para siempre todo lo que venga después.**
 No enumeran casos: enumeran **el registro vivo** de rutas, trabajos, eventos y métricas,
@@ -335,7 +337,7 @@ servicio nuevo queda cubierto sin que nadie agregue nada.
 | 11 | **Contrato implementado** | Toda operación del `openapi/` del servicio tiene su controlador, y ningún controlador expone una ruta que no esté en el contrato | corrección |
 | 12 | **Documentación viva** | El servicio tiene su `README.md` y su tabla de CU **coincide con los CU realmente registrados** en el código | documentación |
 
-### Los tres que solo pueden correr **entre** servicios
+### Los cuatro que solo pueden correr **entre** servicios
 
 Estos son nuevos, y son la contrapartida de haber partido el despliegue: **ninguno se
 puede evaluar dentro de un servicio.** Corren en el CI de integración y en la Ola 5.
@@ -345,6 +347,16 @@ puede evaluar dentro de un servicio.** Corren en el CI de integración y en la O
 | 13 | **Prefijo sin dos dueños** | Juntando los catorce `openapi/`, ningún prefijo de ruta aparece en dos servicios | Un servicio no ve las rutas de los otros. Con un solo proceso chocaban al arrancar; ahora **nadie se entera** hasta que el gateway enruta mal |
 | 14 | **Outbox sin huérfanos** | Todo tema emitido por alguien tiene al menos un consumidor registrado, y todo consumidor escucha un tema que alguien emite | El emisor y el consumidor son procesos distintos |
 | 15 | **Aislamiento de esquema** | Por cada par de servicios, el rol de uno **no puede leer** el esquema del otro | Es una propiedad de los `GRANT`, no del código |
+| 16 | **Rutas del gateway** | Juntando los archivos `plataforma/gateway/**/rutas/<servicio>.yml`, ningún prefijo se repite y **todo** prefijo está en la lista reservada de §3.1 | La tabla de rutas del gateway se compone desde un archivo por servicio ([[20 Saneamiento del plan · huecos de la migración a microservicios]] §3.1); el choque solo se ve al juntarlos |
+
+### El que corre sobre el **frontend**
+
+Vive en el CI de frontend (`test:front`), no en el de servicios, y cubre el único
+recurso compartido que quedó entre carriles de interfaz: los mocks de MSW.
+
+| # | Barrido | Qué afirma | Preocupación |
+| :-: | --- | --- | --- |
+| 17 | **Mocks sin duplicar** | En `pruebas/mocks/`, **ningún CU tiene dos handlers**: el primer carril que necesita un CU crea su handler y el segundo lo importa ([[20 Saneamiento del plan · huecos de la migración a microservicios]] §6.3) | conflicto |
 
 > **El barrido 13 es el que reemplaza a una garantía que se perdió.** Con un solo
 > proceso, dos rutas iguales rompían el arranque y alguien lo veía en el acto. Con
@@ -378,10 +390,13 @@ ninguno, porque entonces «va lento» es una opinión.
 | Cobertura | los pisos de §6 del [[00 Plan maestro]] | CI | sí |
 | Dependencias nuevas en rama de carril | **0** | `gradle/libs.versions.toml` sin diff | sí |
 
-> **El presupuesto se mide en la máquina de medición.** Los números de latencia salen
-> de **P2 · Ubuntu**, con Docker nativo. Un p95 medido bajo la VM de macOS o bajo WSL2
-> mide la virtualización, no el sistema
-> ([[17 Plan de acción secuencial · coordinación de cinco máquinas]] §7).
+> **El presupuesto se mide en la máquina de medición.** Los números de **latencia de
+> backend** salen de **P2 · Ubuntu**, con Docker nativo. Un p95 medido bajo la VM de
+> macOS o bajo WSL2 mide la virtualización, no el sistema
+> ([[17 Plan de acción secuencial · coordinación de cinco máquinas]] §7). Los
+> **presupuestos de frontend** —JS del sitio, Lighthouse y CWV— se miden en **P5**, la
+> máquina que trabaja el sitio; **P2 no toca frontend en ningún tramo**, solo publica
+> el número en el informe.
 
 ---
 
@@ -409,7 +424,7 @@ derecha es la que importa: si está vacía, la de la izquierda es una intención
 | Entrega del carril | Verificación |
 | --- | --- |
 | Una **traza** por caso de uso, nombrada `<modulo>.CU-<NN>`, con `x-request-id` propagado | barrido 1 y 12 |
-| **Registro estructurado** con Pino: sin `console.*`, sin PII, con `traza` | lint `sin-console-log` + **barrido 8** |
+| **Registro estructurado** con Logback: sin `console.*`, sin PII, con `traza` | lint `sin-console-log` + **barrido 8** |
 | **Métricas** con prefijo de módulo: contador de operaciones, histograma de latencia, contador de rechazos por código de error | barrido 7 |
 | Un **evento de dominio en el outbox** por cada hecho relevante | barrido 11 |
 | **Bitácora** de toda operación que cambia dinero, estado legal o permisos | prueba por CU: la operación deja su rastro |
@@ -431,6 +446,7 @@ derecha es la que importa: si está vacía, la de la izquierda es una intención
 | Secretos **fuera** de la base, del código y de la imagen | paso 19 del CI: escaneo de secretos |
 | Datos sensibles **cifrados** en reposo (cuenta bancaria, documentos) | prueba de `3D`: el valor en la base no es legible |
 | Contenedor **sin root**, sin `latest`, sin puerto publicado salvo NGINX | `despliegue-contenedores` + gate de la fase 0 |
+| **CORS configurado en el gateway** para los orígenes del backoffice y del sitio —los dos clientes de navegador—; ningún servicio ni cliente lo gestiona por su cuenta. Los tres frontends apuntan a **una sola base URL: el gateway**, y el prefijo enruta (§3.1) | revisión del gateway (troncal) — ver [[10 Plan maestro del frontend]] §3 |
 
 ### 7.4 · Resistencia y resiliencia
 
@@ -440,7 +456,7 @@ derecha es la que importa: si está vacía, la de la izquierda es una intención
 | **Timeout** en todo adaptador externo, sin excepción | **barrido 10** |
 | **Reintento con retroceso y variación aleatoria** — nunca reintento inmediato en bucle | prueba con proveedor simulado que falla dos veces |
 | **Cortacircuitos** por proveedor, con conmutación **nunca silenciosa** | barrido 10 + `proveedores-externos` |
-| **Exactamente una vez entre réplicas** en todo trabajo programado | prueba con dos workers levantados |
+| **Exactamente una vez entre réplicas** en todo trabajo programado | prueba con dos réplicas del servicio levantadas |
 | **Webhook duplicado y fuera de orden** absorbidos | prueba obligatoria en `3A` y en todo carril con proveedor |
 | **Apagado controlado**: `SIGTERM` termina el request en curso y cierra el pool | prueba de integración del proceso |
 | **Reverso, nunca `UPDATE`**, para corregir dinero | lint `sin-update-append-only` + prueba de rechazo |
@@ -465,13 +481,13 @@ derecha es la que importa: si está vacía, la de la izquierda es una intención
 ## 8 · Qué se agrega al pipeline
 
 Los 19 pasos de §6 del [[00 Plan maestro]] siguen igual y en el mismo orden. Se agregan
-cuatro, **todos bloqueantes**:
+cuatro pasos de **backend**, **todos bloqueantes**:
 
 ```
  6b  python3 scripts/verificar_criterios.py    criterios gherkin ↔ prueba  ·  R-XXX ↔ prueba de rechazo
 12b  ./gradlew testAislamiento                 barrido 15: ningún rol lee un esquema ajeno
 16b  ./gradlew testBarrido                     los 12 barridos locales de §5
-16d  ./gradlew testBarridoEntreServicios       los 3 de §5 que solo existen integrados (13, 14, 15)
+16d  ./gradlew testBarridoEntreServicios       los 4 de §5 que solo existen integrados (13, 14, 15, 16)
 16c  ./gradlew presupuestos                    los números de §6, medidos, no declarados
 ```
 
@@ -480,6 +496,20 @@ Y una guarda sobre las guardas:
 ```
      ./gradlew testActivas                     el número de pruebas activas NUNCA baja
 ```
+
+Y los pasos de **frontend**, que corren en los carriles `F*`, todos **bloqueantes**:
+
+```
+ f1  yarn lint && yarn typecheck               capas, tokens, tipos del contrato
+ f2  yarn test:front                           unitarias, componente (MSW) y contrato · incluye el barrido 17 (mocks sin duplicar)
+ f3  yarn test:a11y                            jest-axe / axe-core: cero violaciones serias
+ f4  npx lighthouse-ci autorun                 CWV y presupuesto de JS del sitio (§6: ≤ 150 KB) — corre en P5
+ f5  yarn seo:validar                          metadatos, canonical, hreflang, JSON-LD (solo `apps/web`)
+```
+
+> **Lighthouse y la medición de frontend corren en P5**, la máquina que trabaja el
+> sitio; **P2 solo publica el número en el informe** —no toca frontend en ningún
+> tramo—. La latencia de backend, en cambio, se mide en P2 (§6).
 
 > **`13b` desapareció y `12b` ocupó su lugar.** El paso que verificaba los fragmentos
 > `.env.d/` ya no tiene objeto: con un servicio por carril, la configuración vive
@@ -500,7 +530,7 @@ puesto (P1 · Mac) y antes de que exista un solo caso de uso.
 | Lo que hay que construir | Dónde |
 | --- | --- |
 | Los tres generadores de §4 | `T0` |
-| Las quince pruebas de barrido de §5 | `T2` — necesitan el registro de rutas y el outbox |
+| Las diecisiete pruebas de barrido de §5 (la 17, de mocks, en el andamiaje de frontend F0) | `T2` — necesitan el registro de rutas y el outbox |
 | `verificar_criterios.py` | `T0` |
 | El generador de manifiestos desde `descriptor.yml` | `T0` |
 | La tabla de prefijos reservados y su barrido | `T0` |
@@ -524,7 +554,11 @@ unificarlos significa tocar los cinco.
 ## 10 · Checklist de cierre de carril
 
 Se pega en `planes/informes/carril-P<N>.md` al cerrar. **Cada casilla se marca con la
-salida del comando pegada abajo, no con una afirmación.**
+salida del comando pegada abajo, no con una afirmación.** Hay **dos variantes**: la de
+carril de **backend** (abajo) y la de carril de **frontend** (al final de la sección);
+cada carril pega la que le corresponde.
+
+### Variante de carril de backend
 
 ```markdown
 ### Cierre del carril <ID> — tramo T<N>
@@ -555,6 +589,39 @@ salida del comando pegada abajo, no con una afirmación.**
 **Lo que no verifica ninguna máquina** — se responde por escrito:
 - [ ] ¿Los nombres dicen lo que las cosas son? (`glosario-dominio`)
 - [ ] ¿La frontera transaccional es la correcta, o solo pasa las pruebas?
+- [ ] ¿Qué supuse que no estaba en la bóveda?
+- [ ] ¿Qué dejé peor de como lo encontré?
+```
+
+### Variante de carril de frontend
+
+```markdown
+### Cierre del carril <ID> — tramo T<N>
+
+- [ ] Las skills obligatorias del carril de frontend (§2) estaban cargadas antes del primer archivo
+- [ ] Piezas declaradas por nivel (átomo/molécula/organismo/pantalla) antes de escribir, con visto bueno
+
+**Verificado por máquina** — salida pegada abajo
+- [ ] `yarn lint && yarn typecheck` en verde   → capas, tokens, tipos del contrato
+- [ ] `yarn test:front` en verde                → unitarias, componente (MSW) y contrato · incluye el barrido 17 (mocks sin duplicar)
+- [ ] `yarn test:a11y` en verde                 → cero violaciones serias
+- [ ] `npx lighthouse-ci autorun` en verde (solo `apps/web`) → CWV y **JS ≤ 150 KB** (§6) · corrido en P5
+- [ ] `yarn seo:validar` en verde (solo `apps/web`)  → metadatos, canonical, hreflang, JSON-LD
+
+**Presupuestos (§6)**
+- [ ] JS inicial del sitio ≤ 150 KB (gate) · objetivo < 50 KB en páginas de contenido
+- [ ] Tamaño de archivo bajo el límite · arranque de la app ≤ 3 s en Android de gama baja (F12)
+
+**Invariantes del frontend**
+- [ ] Los cuatro estados en toda pantalla con datos: cargando, vacío, error, éxito
+- [ ] Cero literales de diseño fuera de tokens (lint) · ningún importe formateado fuera de `Monto`
+- [ ] Ningún `fetch` en un componente · ningún tipo reescrito a mano (viene de `clientes/typescript`)
+- [ ] Doble envío bloqueado en operaciones de dinero, con la misma clave de idempotencia
+- [ ] Contraste AA, foco visible, navegación por teclado · claro y oscuro probados
+
+**Lo que no verifica ninguna máquina** — se responde por escrito:
+- [ ] ¿Los nombres dicen lo que las cosas son? (`glosario-dominio`)
+- [ ] ¿La pantalla sale de la sección Interfaz del CU, sin inventar? (regla cero)
 - [ ] ¿Qué supuse que no estaba en la bóveda?
 - [ ] ¿Qué dejé peor de como lo encontré?
 ```

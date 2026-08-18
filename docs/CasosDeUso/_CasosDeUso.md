@@ -218,7 +218,7 @@ Norma (docs/Cumplimiento.md)  →  Caso de uso (esta carpeta)  →  Restricción
 
 ## Casos de uso todavía no escritos
 
-Ninguno. **Las 307 entidades del modelo tienen al menos un caso de uso que las
+Ninguno. **Las 306 entidades del modelo tienen al menos un caso de uso que las
 especifica**, y esa es la verificación que se corre: si aparece una entidad sin caso,
 falta escribirlo o sobra la tabla.
 

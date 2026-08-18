@@ -404,7 +404,8 @@ evidencia de que sean un problema · preferencias dentro del mismo nivel.
 - **Mensajes de commit en español**, describiendo el porqué, no el qué del diff.
 - Un PR = un alcance. Si toca a la vez la bóveda y el código, el PR lo dice y
   regenera los derivados.
-- **Nunca** se commitean secretos, `.env`, dumps ni artefactos.
+- **Nunca** se commitean secretos, dumps ni artefactos. No hay archivos `.env`: la
+  configuración vive en `application.yml` y los secretos los inyecta el entorno (§11).
 
 ---
 

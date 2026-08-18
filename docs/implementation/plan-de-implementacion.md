@@ -1,5 +1,21 @@
 # Plan de implementación — Portal Administrativo, Contabilidad ERP y Publicidad
 
+> [!important] Este documento queda subordinado al plan por fases
+> Auditoría del 2026-08-18 (ver `planes/20 · Saneamiento del plan` §9): este archivo
+> **deja de ser una fuente de verdad paralela**. Es
+> **documentación derivada** del descubrimiento y la arquitectura de los módulos 13 y
+> 14; manda el plan maestro por fases.
+>
+> - Su numeración propia ("fase 5 de 12") **no rige**. Sus **fases 5–12** se convierten
+>   en el contenido de las fases **18** (backend contabilidad ERP · carril 5A) y **19**
+>   (backend publicidad · carril 5B) del plan maestro, y de **F13** (backoffice ERP) y
+>   **F14** (backoffice publicidad), en los tramos **T8–T9** de
+>   `planes/17 · Plan de acción secuencial` §5.
+> - El **contrato es OpenAPI 3.1**, no Zod (ADR-020): donde este documento diga
+>   "contrato Zod" se lee el contrato OpenAPI 3.1 del caso de uso.
+> - **`apps/backoffice` no existe todavía**: lo levantan los carriles de frontend
+>   (shell F6, luego F13/F14). Este documento no lo da por existente.
+
 Fase actual: 5 de 12
 Fases completadas: 1, 2, 3, 4
 Fases restantes: 5-12
@@ -22,8 +38,9 @@ Tres decisiones de producto fijan el diseño (respondidas 2026-08-14):
    (`ORGANIZADOR` | `SOCIO_COMERCIAL`) y FK condicional al `organizador` existente
    o a un `socio_comercial` nuevo (negocio externo sin cuenta de usuario operativa
    en la plataforma).
-2. **Portal administrativo**: se extiende `apps/backoffice` (web) existente, que
-   ya sirve a cumplimiento/soporte/contabilidad. No se construye una app móvil de
+2. **Portal administrativo**: se construye sobre `apps/backoffice` (web) —que **aún
+   no existe**: lo levantan los carriles de frontend (shell F6, luego F13/F14)— y que
+   servirá a cumplimiento/soporte/contabilidad. No se construye una app móvil de
    administración nueva en esta ronda.
 3. **Profundidad contable**: ERP financiero completo — plan de cuentas
    jerárquico, centros de costo, presupuestos, activos fijos y depreciación,
@@ -49,9 +66,9 @@ Hallazgos relevantes de la bóveda actual, para no duplicar:
   plataforma cobra, el organizador no recibe nada por ser publicitado más que
   visibilidad. `anunciante` referencia a `organizador` solo como *quien contrata*,
   nunca como beneficiario de un ingreso.
-- `apps/backoffice` ya es el portal administrativo web (`web-backoffice`): tablas
-  densas, permisos por servidor, motivo obligatorio, nada editable. Los módulos
-  13 y 14 heredan ese patrón, no inventan uno nuevo.
+- `apps/backoffice` **está por construirse** como portal administrativo web
+  (`web-backoffice`): tablas densas, permisos por servidor, motivo obligatorio,
+  nada editable. Los módulos 13 y 14 heredan ese patrón, no inventan uno nuevo.
 - Roles y permisos (`roles-y-accesos`) ya tienen el patrón
   `<RECURSO>_<ACCION>` con ámbito `PLATAFORMA`/`GRUPO` y segregación de funciones
   explícita. Los permisos nuevos (`CONTABILIDAD_ERP_*`, `PUBLICIDAD_*`) siguen
@@ -136,10 +153,10 @@ Reglas de diseño que evitan romper invariantes existentes:
 
 ### Portal administrativo
 
-No es una entidad nueva: es alcance de UI sobre lo anterior. `apps/backoffice` se
-extiende (fase 10) con pantallas de gobierno de datos (roles, catálogos,
-auditoría — ya existentes) más los módulos 13 y 14. No requiere ADR de
-arquitectura nueva; sigue `web-backoffice` tal cual está escrito.
+No es una entidad nueva: es alcance de UI sobre lo anterior. `apps/backoffice` —que
+levantan los carriles de frontend (shell F6)— recibe en **F13/F14** las pantallas de
+gobierno de datos (roles, catálogos, auditoría) más los módulos 13 y 14. No requiere
+ADR de arquitectura nueva; sigue `web-backoffice` tal cual está escrito.
 
 ## 2.1 Estado real de la verificación (2026-08-14)
 
@@ -149,7 +166,7 @@ Ejecutado en este entorno, en orden:
 | --- | --- |
 | `python3 scripts/generar_boveda.py` | Verde. `sin_resolver: []`. 275 → **307 tablas**, 633 FK, 328 cruzan de módulo. |
 | `python3 scripts/generar_ddl.py` | Verde. `Sin pendientes a nivel de datos.` 307 tablas · 633 FK · 701 índices · 425 CHECK. Semillas: 1127 filas validadas contra el modelo. |
-| 12 casos de uso nuevos (`CU-100`..`CU-106`, `CU-101` a `CU-106` de M13; `CU-110`..`CU-114` de M14) | Escritos con la plantilla completa de `caso-de-uso`: 13 secciones, ≥3 Gherkin, ≥4 flujos alternativos, contrato Zod con errores correlativos `AP-CU<NN>-<nn>`. 87 → **99 casos de uso**. |
+| 12 casos de uso nuevos (`CU-100`..`CU-106`, `CU-101` a `CU-106` de M13; `CU-110`..`CU-114` de M14) | Escritos con la plantilla completa de `caso-de-uso`: 13 secciones, ≥3 Gherkin, ≥4 flujos alternativos, contrato OpenAPI 3.1 con errores correlativos `AP-CU<NN>-<nn>`. 87 → **99 casos de uso**. |
 | `scripts/verificar_boveda.py` | Requería códigos de 3 dígitos (`CU-100`+), que rompían un supuesto de ancho fijo (`stem[3:5]`) en el script. Se corrigió para extraer el número con regex; 2 dígitos existentes no cambian de comportamiento. |
 | `python3 scripts/verificar_boveda.py` (segunda corrida) | **`TODO OK`.** 99 casos de uso, 307 entidades todas cubiertas, 124 restricciones balanceadas, índice de casos y de skills completos, cero wikilinks rotos. |
 | Prueba de humo contra Postgres real (`docker run postgres:16` + `aplicar.sql`) | **No ejecutada**: este entorno no tiene `docker` ni `psql` disponibles. Es la única verificación de esta fase que queda pendiente — corre en cualquier entorno con Docker, antes de empezar la fase 4. |

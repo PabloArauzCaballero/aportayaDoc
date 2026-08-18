@@ -156,7 +156,7 @@ superficie tiene el carril.
 | --- | --- |
 | **Puesto · tramo · fase** | **P1** · Mac M5 · **T0** · fase 0 |
 | **Documento** | [[01 Fase 0 · Cimientos del repositorio]] |
-| **Alcance** | monorepo Gradle, Docker, esquemas y roles, análisis estático, cuatro corredores de Jest, esqueletos de `api` y `worker`, CI, **y `packages/contratos` con `CU-01`** (delta 1) |
+| **Alcance** | monorepo Gradle, Docker, esquemas y roles, análisis estático, los cinco corredores de JUnit, descubrimiento de servicios por barrido de `settings.gradle.kts` (no hay `apps/api` ni `apps/worker`: no existen), CI, **y los tres contratos OpenAPI base con `CU-01` más su cliente `clientes/typescript` generado** (delta 1) |
 | **Tamaño** | ●●●○○ · cero CU de negocio, pero **habilita las 20 fases restantes** |
 
 **Necesita en `dev`.** Nada de código. Sí de la bóveda: `sql/aplicar.sql` corre limpio
@@ -167,8 +167,8 @@ sobre base vacía y `verificar_boveda.py` está en verde.
 | Entrega | Lo espera |
 | --- | --- |
 | Monorepo yarn, `tsconfig.base.json`, alias `@aportaya/*` | **todos** |
-| Las 9 reglas propias de ESLint y los 4 corredores de Jest | **todos** |
-| `docker-compose.yml` con Postgres, PgBouncer y NGINX | **todos los de backend** |
+| Las reglas propias de análisis estático (ArchUnit) y los cinco corredores de JUnit | **todos** |
+| `docker-compose.yml` con Postgres, PgBouncer, Kafka y NGINX | **todos los de backend** |
 | **Todas** las dependencias declaradas en el catálogo de versiones de una vez | **todos** — nadie corre una dependencia agregada al catálogo |
 | Los tres contratos OpenAPI base | `F0-M`, `F0-B`, `F0-W` (T1) |
 
@@ -216,7 +216,7 @@ del CI empieza a fallar sin que nadie entienda por qué.
 | --- | --- |
 | **Puesto · tramo · fase** | **P1** · Mac M5 · **T1** · fase 2 |
 | **Documento** | [[02 Fases 1 y 2 · Capa de datos y núcleo transversal]] |
-| **Alcance** | `plataforma/comun-web/`: `conContexto`, contexto de sesión para RLS por `SET LOCAL`, catálogo de errores, idempotencia, `apps/worker` con outbox y planificador, **carga de módulos por glob** |
+| **Alcance** | `plataforma/comun-web/`: `conContexto`, contexto de sesión para RLS por `SET LOCAL`, catálogo de errores, idempotencia, el relevo del outbox y el planificador con ShedLock, **descubrimiento de servicios por barrido de Gradle** |
 | **Tamaño** | ●●●●○ · define la forma de los 99 casos de uso |
 
 **Necesita en `dev`.** `T1` cerrado, con las entidades congeladas.
@@ -230,7 +230,7 @@ del CI empieza a fallar sin que nadie entienda por qué.
 | Catálogo `constraint_name → AP-CU<NN>-<nn>` | Traduce el error de PostgreSQL a mensaje útil |
 | `respuesta_idempotente` y su envoltorio | Todo endpoint con efecto |
 | Outbox + relevo a Kafka corriendo | `1D` arranca directo sobre esto en T2 |
-| **Carga por glob de `modulos/**/*.module.ts`** | Elimina el conflicto nº 1: `app.module.ts` no vuelve a cambiar |
+| **Descubrimiento de servicios por barrido de `settings.gradle.kts`** | Elimina el conflicto nº 1: no hay `app.module.ts` que registrar |
 
 **Gate propio.** Las diez pruebas de `CU-00` (el pipeline transversal), y una prueba
 que agrega un módulo vacío y comprueba que **se descubre solo**, sin editar nada.
@@ -297,12 +297,13 @@ y se lleva puesto el histórico contable.
 
 **Casos de uso.** CU-24 · Registrar el asiento contable de una operación.
 
-> [!warning] El módulo 03 de la bóveda se implementa en **dos** directorios de código
-> `modulos/03_contabilidad/` (este carril, `1B`) y `modulos/03_aportes_pagos_qr/`
-> (`3A`, tramo T4). La frontera es exacta: **`1B` posee las cuatro entidades
-> contables** de la lista de arriba; `3A` posee las otras 19. Sin esa partición, dos
-> carriles de dos olas distintas comparten directorio y el reparto de propiedad de
-> archivos deja de significar algo.
+> [!warning] El módulo 03 de la bóveda se reparte entre **dos** servicios de código
+> `servicios/nucleo-financiero` (la parte contable, este carril `1B`) y
+> `servicios/aportes` (`3A`, tramo T4). La frontera es exacta: **`1B` posee las cuatro
+> entidades contables** de la lista de arriba, que viven en `nucleo-financiero`; `3A`
+> posee las otras 19 en `aportes`. Sin esa partición, dos carriles de dos olas
+> distintas compartirían servicio y el reparto de propiedad de archivos dejaría de
+> significar algo.
 
 **Necesita en `dev`.** `T2` completo. **No** necesita billetera: el asiento es anterior
 y más general que la billetera.
@@ -832,7 +833,7 @@ macOS o bajo WSL2 no son los del sistema, son los de la capa de virtualización.
 | **Módulo** | `13_contabilidad_erp` — 18 entidades |
 | **Servicio** | `erp` — un desplegable, propiedad exclusiva del carril |
 | **Esquema · rol** | `erp` · `svc_erp` — no lee ningún otro esquema |
-| **Documento** | **no existe todavía** — hay que escribirlo (§11 de [[17 Plan de acción secuencial · coordinación de cinco máquinas]]) |
+| **Documento** | El servicio `servicios/erp/` ya está andamiado; el documento de fase está pendiente de redactar (§11 de [[17 Plan de acción secuencial · coordinación de cinco máquinas]]) |
 | **Tamaño** | ●●●○○ · 7 CU |
 
 **Casos de uso.** CU-100 abrir y cerrar el período contable · CU-101 presupuestar por
@@ -870,7 +871,7 @@ sistema es cómo el balance del ERP deja de coincidir con el libro de la billete
 | **Módulo** | `14_publicidad_campanas` — 14 entidades |
 | **Servicio** | `publicidad` — un desplegable, propiedad exclusiva del carril |
 | **Esquema · rol** | `publicidad` · `svc_publicidad` — no lee ningún otro esquema |
-| **Documento** | **no existe todavía** — hay que escribirlo |
+| **Documento** | El servicio `servicios/publicidad/` ya está andamiado; el documento de fase está pendiente de redactar (§11 de [[17 Plan de acción secuencial · coordinación de cinco máquinas]]) |
 | **Tamaño** | ●●○○○ · 5 CU |
 
 **Casos de uso.** CU-110 dar de alta un anunciante y su cuenta publicitaria · CU-111
@@ -917,24 +918,25 @@ libro, la custodia y el encaje dejan de cuadrar y el problema aparece en CU-50.
 | --- | --- |
 | **Puesto · tramo · fase** | **P3** · Legion · **T1** · fase F0 |
 | **Documento** | [[11 Fases F0 y F1 · Cimientos y sistema de diseño]] |
-| **Posee** | `apps/movil/**` · **`packages/cliente-api`** · **MSW** |
+| **Posee** | `apps/movil/**` · el andamiaje de **MSW**. El cliente `clientes/typescript` es **generado**: no lo posee ningún carril |
 | **Tamaño** | ●●○○○ |
 
-**Necesita en `dev`.** `T0` cerrado, con los contratos OpenAPI base publicados. `packages/contratos/src/CU01.ts` (delta 1).
+**Necesita en `dev`.** `T0` cerrado, con los tres contratos OpenAPI base publicados y su cliente `clientes/typescript` generado (delta 1).
 
-**Entrega, y quién espera.** Expo SDK 54 con **Expo Router** funcionando, más
-`packages/cliente-api` y el servidor simulado. Lo esperan **los otros dos andamiajes**
-(comparten `cliente-api` y MSW) y todos los carriles de pantalla.
+**Entrega, y quién espera.** Expo SDK 54 con **Expo Router** funcionando y el servidor
+simulado (MSW). Lo esperan **los otros dos andamiajes** (comparten el andamiaje MSW; el
+cliente `clientes/typescript` es generado y no tiene dueño) y todos los carriles de
+pantalla.
 
 **Gate propio.** `yarn --cwd apps/movil start` abre en Expo Go con **una pantalla real contra MSW y
 sus cuatro estados**. Y la prueba que importa: **agregar una pantalla vacía no requiere
 editar ningún registro compartido** — si hay que tocar un `routes.tsx`, el
 enrutamiento por archivos no está bien montado y el conflicto nº 1 sigue vivo.
 
-**Dónde se rompe.** Este carril posee dos piezas compartidas (`cliente-api` y MSW) que
-los otros dos consumen en el mismo tramo. Se entregan **primero**, en los primeros
-commits, no al final: si llegan tarde, `F0-B` y `F0-W` improvisan las suyas y quedan
-tres clientes de API distintos.
+**Dónde se rompe.** El andamiaje de MSW lo consumen los otros dos andamiajes en el
+mismo tramo. Se entrega **primero**, en los primeros commits, no al final: si llega
+tarde, `F0-B` y `F0-W` improvisan el suyo y quedan tres servidores simulados distintos.
+El cliente `clientes/typescript` no se improvisa: es generado del contrato.
 
 ---
 
@@ -946,7 +948,7 @@ tres clientes de API distintos.
 | **Posee** | `apps/backoffice/**` |
 | **Tamaño** | ●●○○○ |
 
-**Necesita en `dev`.** `T0` · `cliente-api` y MSW de `F0-M` (mismo tramo).
+**Necesita en `dev`.** `T0` · el andamiaje MSW de `F0-M` (mismo tramo) · el cliente `clientes/typescript` generado.
 
 **Entrega, y quién espera.** React 19 + Vite con **TanStack Router** por archivos y
 TanStack Query. Lo esperan `F6` (shell, T3), `F7`, `F8`, `F13`, `F14`.
@@ -968,12 +970,12 @@ de diseño, que todavía no existe.
 | **Posee** | `apps/web/**` · `astro.config` |
 | **Tamaño** | ●●○○○ |
 
-**Necesita en `dev`.** `T0` · `cliente-api` y MSW de `F0-M`.
+**Necesita en `dev`.** `T0` · el andamiaje MSW de `F0-M` · el cliente `clientes/typescript` generado.
 
 **Entrega, y quién espera.** Astro 5 con islas React y adaptador Node: estático por
 defecto, SSR **solo** en las rutas de verificación. Lo esperan `F9`, `F10`, `F11`.
 
-**Gate propio.** `yarn --cwd apps/sitio dev` y `docker build -f docker/Dockerfile.web .`. Más:
+**Gate propio.** `yarn --cwd apps/web dev` y `docker build -f docker/Dockerfile.web .`. Más:
 **ADR-018 escrito** —el sitio público es el tercer producto y enmienda ADR-004— con
 `verificar_boveda.py` en verde.
 
@@ -1311,7 +1313,7 @@ corre en P3 en paralelo, pero el envío a las tiendas no se delega.
 | --- | --- |
 | **Puesto · tramo · fase** | **P3** · Legion · **T9** · fase F13 |
 | **Posee** | `apps/backoffice/src/rutas/contabilidad/` |
-| **Documento** | **no existe todavía** — hay que escribirlo |
+| **Documento** | El backend `servicios/erp/` ya está andamiado; el documento de fase está pendiente de redactar (§11 de [[17 Plan de acción secuencial · coordinación de cinco máquinas]]) |
 | **Tamaño** | ●●○○○ · CU-100–106 |
 
 **Necesita en `dev`.** `F6` shell · contratos de **`5A`** (T8, mismo puesto).
@@ -1335,7 +1337,7 @@ del mismo número es un documento que nadie firma.
 | --- | --- |
 | **Puesto · tramo · fase** | **P4** · Dell A · **T9** · fase F14 |
 | **Posee** | `apps/backoffice/src/rutas/publicidad/` |
-| **Documento** | **no existe todavía** — hay que escribirlo |
+| **Documento** | El backend `servicios/publicidad/` ya está andamiado; el documento de fase está pendiente de redactar (§11 de [[17 Plan de acción secuencial · coordinación de cinco máquinas]]) |
 | **Tamaño** | ●●○○○ · CU-110–114 |
 
 **Necesita en `dev`.** `F6` shell · contratos de **`5B`** (T8, mismo puesto).

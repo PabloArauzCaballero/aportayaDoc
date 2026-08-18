@@ -21,7 +21,8 @@ habilita: [17]
 > [!important] Antes de escribir la primera línea
 > [[00b Estándar de ejecución · código limpio, pruebas y calidad]] aplica en
 > esta fase entera: regla cero de no inventar, composición atómica, KISS,
-> nombres del dominio, las seis pruebas obligatorias por caso de uso y el
+> nombres del dominio, las siete pruebas obligatorias por caso de uso —la séptima
+> es la compensación de saga— y el
 > checklist de PR. **Se declara cada pieza por nivel antes de crearla.**
 
 > **Receta exacta:** [[00c Recetario · implementar un caso de uso]] fija el orden de
@@ -39,8 +40,10 @@ entre personas o ejecutar en cualquier orden, con dos salvedades:
 | F15 (`definicion_reporte`, `ejecucion_reporte`) antes de F16 § reportes UIF | CU-43 usa la maquinaria de reportes de CU-58 |
 
 **Regla de lectura obligatoria** (igual que en las fases anteriores): leer el CU
-completo antes de implementarlo y responder por escrito las cinco preguntas de
-frontera transaccional.
+completo antes de implementarlo y responder por escrito las **seis preguntas de
+frontera transaccional** — la sexta, restaurada por
+[[20 Saneamiento del plan · huecos de la migración a microservicios]] §2: *¿esto
+cruza a otro servicio y qué pasa si el otro falla?*
 
 ---
 
@@ -133,8 +136,9 @@ skills `reputacion-social`, `sorteo-transparencia`, `alertas-riesgo-temprano`
 | Organismos | `CU72SellarBloque` · `CU73VerificarCadena` · `CU61VerificarSorteo` | |
 | Páginas | `GET /v1/publico/grupos/:codigo/bloques` · `/verificacion` · `GET /v1/publico/sorteos/:id/verificacion` | **Rutas públicas, sin sesión** |
 
-> **Las rutas públicas son las únicas del sistema marcadas `@Publico()` fuera de
-> registro y login.** No exponen datos personales: exponen hashes y órdenes. Eso hay
+> **Las rutas públicas son las únicas del sistema declaradas públicas en
+> `SecurityConfig` —y marcadas así en el contrato OpenAPI— fuera de registro y
+> login.** No exponen datos personales: exponen hashes y órdenes. Eso hay
 > que verificarlo con una prueba que inspeccione la respuesta, no confiar en el
 > diseño.
 
@@ -247,14 +251,14 @@ Es la fase donde es más fácil abrir un agujero. Las cinco reglas del motor:
 
 | Regla | Pieza que la implementa |
 | --- | --- |
-| La condición se **compila a un AST validado**, nunca se evalúa como código | `compilarCondicion(texto)` |
+| La condición se **compila a un AST validado**, nunca se evalúa como código | `compilarExpresion(texto)` — la **misma** implementación que usa Cumplimiento (F16), en `plataforma/comun-reglas` ([[20 Saneamiento del plan · huecos de la migración a microservicios]] §3) |
 | Los umbrales **apuntan al catálogo**, no llevan números | `ReglaAutomatizacionRepositorio` con referencia a `umbral_operativo` |
 | **Simulación obligatoria** contra el histórico antes de activar | `SimuladorDeReglas`, en **solo lectura** |
 | **Catálogo cerrado de acciones**: un ejecutor por acción, misma interfaz | `EjecutorDeAccion` |
 | Lo sensible **exige confirmación humana**, que **caduca** | `exigeConfirmacion(accion)` con tabla explícita |
 
 Más: `claveDeTarea(regla, ambito, hecho)` es **determinista** — la idempotencia sale
-del hecho disparador, no de un UUID generado en el worker. `TareaRepositorio` toma
+del hecho disparador, no de un UUID generado en el consumidor. `TareaRepositorio` toma
 con `SKIP LOCKED`. `describirAccion` da la vista previa en lenguaje llano para la
 confirmación.
 
@@ -296,7 +300,7 @@ Páginas: `POST /v1/automatizacion/reglas` · `/:id/simulacion` ·
 ## Gate de entrada
 
 - [ ] Fase 11 cerrada
-- [ ] Réplica de lectura configurada (`BD_URL_LECTURA`, ADR-011)
+- [ ] Réplica de lectura configurada (`aportaya.datasource.lectura.url`, ADR-031 — supera a ADR-011)
 
 ## Leer antes
 
@@ -323,7 +327,9 @@ Páginas: `POST /v1/automatizacion/reglas` · `/:id/simulacion` ·
 > consultando, tampoco puede verla exportando. Esto se prueba explícitamente.
 
 La exportación **caduca** y tiene **tope de descargas**. El archivo va por el puerto
-`AlmacenArchivos` (Multer local, ADR-017) cifrado, con su SHA-256 en base.
+`AlmacenArchivos` de `plataforma/comun-dominio`
+([[20 Saneamiento del plan · huecos de la migración a microservicios]] §3) cifrado,
+con su SHA-256 en base.
 
 ## 15.2 · Derechos sobre datos personales (CU-07)
 
@@ -417,19 +423,25 @@ Los doce CU · **`docs/Cumplimiento.md` completo** · `docs/Restricciones.md` §
 | Átomo | `convertirAUsd` | Aplica el tipo de cambio del día **y lo devuelve para guardarlo** |
 | Átomo | `clasificarConceptoRog` | Tipo de transacción → concepto del art. 53 |
 | Moléculas | `UmbralUifRepositorio` · `OperacionRelevanteRepositorio` · `TipoCambioRepositorio` |
-| Organismos | `CU41RegistrarPcc01` · `CU42RegistrarRog` — **se ejecutan en la transacción de la operación** |
+| Organismos | `CU41RegistrarPcc01` · `CU42RegistrarRog` — **consumidores idempotentes del evento post-commit** (S9), nunca dentro de la transacción de la operación |
 | Páginas | — sin endpoint |
 
 > **`convertirAUsd` devuelve el tipo de cambio para guardarlo, no solo el monto
 > convertido.** Un reporte a la UIF tiene que poder reconstruirse tal cual se generó,
 > años después, con la cotización que se usó ese día.
 
-Estos dos organismos se **enganchan en las fases 6 y 9**, que ya emitían el evento
-`umbral.evaluar`. Hasta acá el evento quedaba sin consumidor.
+Estos dos organismos **consumen el evento post-commit** que las fases 6 y 9 emiten al
+mover dinero (S9 de [[20 Saneamiento del plan · huecos de la migración a microservicios]] §2).
+El umbral se evalúa contra el `catalogo` local del servicio de dinero **antes** del
+commit; el registro de la operación relevante lo escribe `cumplimiento` **al consumir
+el evento**, append-only e idempotente por `id_evento`. **Nunca** se registra dentro de
+la transacción de la operación: eso cruzaría a otro servicio dentro del commit, que es
+justo lo que S9 evita.
 
-**Gate 16.A:** una operación que cruza el umbral registra la operación relevante en
-la **misma transacción**; la ventana acumulada es reproducible; el tipo de cambio
-queda guardado.
+**Gate 16.A:** una operación que cruza el umbral emite el evento post-commit y
+`cumplimiento` registra la operación relevante **al consumirlo** (S9); el mismo evento
+duplicado ⇒ un solo registro (acumulado idempotente); la ventana acumulada es
+reproducible; el tipo de cambio queda guardado.
 
 ## Sub-fase 16.B — Monitoreo, casos y ROS (CU-44, CU-48, CU-45)
 

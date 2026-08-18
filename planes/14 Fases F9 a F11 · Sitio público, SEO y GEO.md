@@ -21,7 +21,7 @@ habilita: [F12]
 > que en ningún lado la **regla cero**: en un sitio público de finanzas, una
 > afirmación inventada no es un bug — es publicidad engañosa.
 
-**Producto:** `apps/web`, Astro 5 + islas React (ADR-018).
+**Producto:** `apps/web`, Astro 5 + islas React (ADR-037).
 **Es la única superficie indexable de AportaYa.**
 
 ---
@@ -124,8 +124,16 @@ Solo cuatro fragmentos necesitan JavaScript. Todo lo demás es HTML estático:
 > **Los verificadores recomputan en el cliente, no le creen al servidor.** Ese es el
 > punto entero de CU-61 y CU-73: un tercero tiene que poder auditar *sin depender de
 > nosotros*. Los átomos `barajarDeterminista`, `verificarCompromiso`,
-> `serializarCanonico` y `hashDeBloque` se importan de `plataforma/comun-dominio` — **los
-> mismos** que usa el backend.
+> `serializarCanonico` y `hashDeBloque` **no se pueden importar del backend** —está
+> escrito en Java—: se **reimplementan en TypeScript** en `packages/dominio-cliente`.
+
+> **Cómo se garantiza que coinciden byte a byte con el backend: vectores dorados.** La
+> prueba Java de esos mismos átomos **genera un JSON de casos** (entrada → salida
+> esperada) que se **versiona** en `packages/dominio-cliente`; la prueba TypeScript lo
+> **consume** y exige que su reimplementación produzca exactamente esas salidas. Sin
+> ese JSON compartido, la afirmación del gate «el cliente recomputa y coincide» no es
+> verificable — sería confiar en que dos implementaciones independientes coinciden por
+> casualidad ([[20 Saneamiento del plan · huecos de la migración a microservicios]] §3).
 
 ## Gate de salida F9
 
@@ -267,9 +275,12 @@ muestra**; si no coincide, es *structured data spam* y se penaliza.
 | **LCP** | < 2.0 s | HTML estático, sin JS bloqueante, imagen del héroe con `priority` |
 | **INP** | < 200 ms | Solo cuatro islas hidratadas; el resto es HTML |
 | **CLS** | < 0.05 | Dimensiones explícitas en imágenes y fuentes con `size-adjust` |
-| Peso de JS | < 50 KB en páginas de contenido | `client:visible`, nunca `client:load` sin motivo |
+| Peso de JS | **objetivo** < 50 KB en páginas de contenido | `client:visible`, nunca `client:load` sin motivo |
 
-Medido con Lighthouse CI en cada PR, **bloqueante**.
+LCP, INP y CLS se miden con Lighthouse CI en cada PR, **bloqueantes**. El peso de JS de
+50 KB es un **objetivo** de las páginas de contenido, no un gate: el presupuesto
+bloqueante en CI es el de [[19 Contrato de carril · conflicto cero, skills y calidad verificada]] §6
+(**≤ 150 KB de JS inicial del sitio**).
 
 ## F10.5 · YMYL y E-E-A-T
 
@@ -297,7 +308,7 @@ npx lighthouse-ci autorun              # CWV bloqueante
 - [ ] Cero `Review`/`AggregateRating`; cero `FinancialService` mientras no haya licencia
 - [ ] `sitemap.xml` **sin** rutas `noindex`; `lastmod` real
 - [ ] CWV en verde en las páginas de contenido
-- [ ] JS < 50 KB en páginas de contenido
+- [ ] JS bajo el **objetivo** de < 50 KB en páginas de contenido (el gate bloqueante es el de `19 §6`: **≤ 150 KB**)
 - [ ] Pie con identidad legal, NIT, dirección y estado regulatorio
 - [ ] `X-Robots-Tag: noindex` verificado con `curl` en `/verificar/`, `/publico/`, `/catalogo`
 
@@ -314,7 +325,7 @@ máquina entienda, extraiga y cite**. Se parecen en la base y difieren en lo que
 importa: al motor generativo no le sirve una página bonita — le sirve una afirmación
 clara, fechada, atribuible y fácil de extraer.
 
-## F11.1 · Política de rastreadores (ADR-019)
+## F11.1 · Política de rastreadores (ADR-038)
 
 **Decisión: búsqueda sí, entrenamiento no.**
 
@@ -487,7 +498,7 @@ curl -s https://…/tarifas.md | head                  # espejo markdown
 ```
 
 - [ ] Gate común
-- [ ] `robots.txt` refleja ADR-019, con los ocho bots nombrados explícitamente
+- [ ] `robots.txt` refleja ADR-038, con los ocho bots nombrados explícitamente
 - [ ] `/verificar/`, `/publico/`, `/catalogo` y `/api/` bloqueados para **todos**
 - [ ] `llms.txt` y `llms-full.txt` **generados en el build**, no escritos a mano
 - [ ] Cada página indexable tiene su `.md` y su `<link rel="alternate">`

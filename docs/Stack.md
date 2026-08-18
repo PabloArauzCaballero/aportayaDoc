@@ -30,7 +30,7 @@ las tiene que soportar.
 
 | Exigencia | De dónde viene | Qué le pide al stack |
 | --- | --- | --- |
-| **La base es la fuente de verdad, y su DDL es generado** | `scripts/generar_ddl.py` → 307 tablas, 633 FK | Un ORM que *administre* el esquema está descartado. El acceso a datos se genera **desde** la base (introspección/codegen), nunca al revés |
+| **La base es la fuente de verdad, y su DDL es generado** | `scripts/generar_ddl.py` → 306 tablas, 633 FK | Un ORM que *administre* el esquema está descartado. El acceso a datos se genera **desde** la base (introspección/codegen), nunca al revés |
 | **Una transacción por caso de uso** | `implementar-desde-boveda` | Control explícito de la frontera transaccional en la capa de aplicación. Nada de repositorios con autocommit implícito |
 | **Contexto de sesión para RLS** | `app.usuario_id`, `app.rol` | Poder ejecutar `SET LOCAL` en la **misma conexión** que la transacción. Esto elimina varios ORM y todo pooling mal configurado |
 | **Dinero exacto en `DECIMAL(14,2)`** | modelo relacional, partida doble | Tipo decimal real de punta a punta. Un `float` en cualquier capa es un defecto de cumplimiento, no de estilo |

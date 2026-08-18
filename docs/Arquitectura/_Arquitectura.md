@@ -50,7 +50,7 @@ está en [[Stack]]. El motivo por el que son catorce y no uno está en
 | --- | --- | --- | :-: |
 | [[ADR-014 Arquitectura de servicios\|014]] | Cuántos servicios y dónde está el límite de cada uno | Catorce servicios, uno por módulo; el libro contable entero en uno | — |
 | [[ADR-015 Lenguaje, runtime y framework\|015]] | Lenguaje, runtime y framework de los servicios | Java 21 · Spring Boot 3 · MVC con hilos virtuales | 001 |
-| [[ADR-016 Acceso a datos con jOOQ\|016]] | Cómo habla el código con las 307 tablas | jOOQ generado desde la base viva · **JPA prohibido** | 002 |
+| [[ADR-016 Acceso a datos con jOOQ\|016]] | Cómo habla el código con las 306 tablas | jOOQ generado desde la base viva · **JPA prohibido** | 002 |
 | [[ADR-017 Propiedad de datos por servicio\|017]] | Si se parte la base y cómo | Un clúster, un esquema y un rol por servicio; FK cruzadas conservadas | — |
 | [[ADR-018 Outbox transaccional y mensajería\|018]] | Efectos externos, eventos entre servicios y cron | Outbox en PostgreSQL · relevo a Kafka · ShedLock | 003 |
 | [[ADR-004 Frontend\|004]] | App del participante y backoffice | Expo + React/Vite | — |

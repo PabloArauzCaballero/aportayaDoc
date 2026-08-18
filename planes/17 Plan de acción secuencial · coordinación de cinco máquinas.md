@@ -45,7 +45,7 @@ alcance: backend + frontend, ejecutados a la vez sobre el parque real de máquin
 | 1 | **El pico real es de 8 carriles, no de 5.** Backend Ola 2 (5 carriles) corre a la vez que frontend Ola F1 (3). Cada documento contaba solo su mitad | [[07 Carriles de trabajo concurrente]] §3 · [[16 Carriles de frontend]] §2 | La unidad de planificación deja de ser la **ola** y pasa a ser el **tramo** (§5): cinco casillas fijas, siempre llenas, que pueden mezclar carriles de dos olas |
 | 2 | **Las máquinas figuran como intercambiables** | ambos | §2 y §3: cinco **puestos** con máquina asignada y capacidad declarada. Solo el Mac compila iOS; solo la Legion tiene emulador Android acelerado; solo Ubuntu tiene Docker nativo |
 | 3 | **Dos convenciones de rama incompatibles** | 07 §8 usa `<usuario>/feature/…`, 16 §8 usa `carril/f…` | Manda `git-flujo`: `<usuario>/feature/carril-<id>`. Delta 3 |
-| 4 | **La Ola 0 deja cuatro máquinas paradas**, y la Ola F0 no puede arrancar porque su gate pide `packages/contratos`, que nace en la Fase 2 | [[01 Fase 0 · Cimientos del repositorio]] · [[11 Fases F0 y F1 · Cimientos y sistema de diseño]] gate de entrada | Deltas 1 y 2: el paquete de contratos con CU-01 se adelanta al cierre de la Fase 0, y la Ola F0 se parte en tres andamiajes concurrentes |
+| 4 | **La Ola 0 deja cuatro máquinas paradas**, y la Ola F0 no puede arrancar porque su gate pide el cliente `clientes/typescript`, que nace en la Fase 2 | [[01 Fase 0 · Cimientos del repositorio]] · [[11 Fases F0 y F1 · Cimientos y sistema de diseño]] gate de entrada | Deltas 1 y 2: los tres contratos OpenAPI base con CU-01 y su cliente `clientes/typescript` generado se adelantan al cierre de la Fase 0, y la Ola F0 se parte en tres andamiajes concurrentes |
 | 5 | **Doce casos de uso no tienen carril.** `13_contabilidad_erp` (CU-100–106) y `14_publicidad_campanas` (CU-110–114) existen en `docs/entidades/` y en `docs/CasosDeUso/`, pero **ninguna ola, ninguna fase y ningún carril los nombra** | los tres documentos de plan, que siguen contando **87** casos de uso cuando son **99** | Fases **18** y **19** de backend y **F13** y **F14** de frontend — 18 en **T5** (adelantada: condición de licencia), 19 en T9, F13 en T9 y F14 en T10 (§5). Y una tarea explícita: **escribir los cuatro documentos de fase que faltan** (§11) |
 
 ### El número que hay que tener en la cabeza
@@ -160,7 +160,7 @@ Nada de esto se aplica en silencio. Cada delta es un cambio explícito a
 
 | # | Delta | Documento que cambia | Por qué |
 | :-: | --- | --- | --- |
-| **1** | **los tres contratos OpenAPI base se adelanta al cierre de la Fase 0**, en vez de nacer en la Fase 2 | [[01 Fase 0 · Cimientos del repositorio]] §0.6 | Es el esqueleto de un paquete más un archivo cuya forma ya fija el [[00c Recetario · implementar un caso de uso]]. Desbloquea la Ola F0 **un tramo entero antes**, y el paquete existe igual para todos los carriles |
+| **1** | **los tres contratos OpenAPI base se adelantan al cierre de la Fase 0 y su cliente TS generado se publica en `dev`**, en vez de nacer en la Fase 2 | [[01 Fase 0 · Cimientos del repositorio]] §0.6 | Es un archivo de contrato por servicio cuya forma ya fija el [[00c Recetario · implementar un caso de uso]], más el cliente `clientes/typescript` que se genera de él. Desbloquea la Ola F0 **un tramo entero antes**, y el cliente generado existe igual para todos los carriles |
 | **2** | **La Ola F0 se parte en tres andamiajes concurrentes**: móvil, backoffice y web, un puesto cada uno | [[16 Carriles de frontend]] §2 | Son **tres directorios nuevos**: colisión cero. Lo único compartido son lint y CI, y de eso se encarga P1 por micro-PR. `packages/ui` (F1) **sigue siendo de un solo puesto**: partirlo es partir el sistema de diseño |
 | **3** | **Una sola convención de rama**: `<usuario>/feature/carril-<id>` | [[16 Carriles de frontend]] §8, que decía `carril/f<ola>-<id>` | Manda `git-flujo`. Dos convenciones conviviendo son dos filtros de CI y dos formas de perder un PR |
 | **4** | **La unidad de planificación es el tramo, no la ola** | [[07 Carriles de trabajo concurrente]] §3 y §7 | Un tramo puede mezclar carriles de dos olas mientras las dependencias estén fusionadas en `dev`. El §10 de 07 ya lo permitía para un carril adelantado; acá se vuelve la regla. El punto de sincronización sigue existiendo: pasa a ser **por tramo** |
@@ -178,7 +178,7 @@ son semanas**: duran lo que dure su carril más lento.
 
 | Puesto | Atención | Trabajo | Entregable |
 | :-: | :-: | --- | --- |
-| **P1** Mac | **primer plano** | **Backend Fase 0** — monorepo, Docker, ADR de desviación, lint, corredores de Jest, esqueletos, CI · **+ Delta 1**: `packages/contratos` con `CU-01` | Gate de salida de la Fase 0, ejecutado |
+| **P1** Mac | **primer plano** | **Backend Fase 0** — monorepo, Docker, ADR de desviación, lint, corredores de JUnit, esqueletos, CI · **+ Delta 1**: los tres contratos OpenAPI base (con `CU-01`) y su cliente `clientes/typescript` generado, publicados en `dev` | Gate de salida de la Fase 0, ejecutado |
 | **P2** Ubuntu | segundo plano | **Verificación independiente del gate de P1** sobre su propia máquina, y afinado de Postgres para desarrollo | El gate pasa en **dos** máquinas, no en una |
 | **P3** Legion | segundo plano | Preparación de carril: leer los CU de grupos y transparencia, declarar las piezas por nivel | `informes/carril-P3.md` con la declaración |
 | **P4** Dell A | segundo plano | Preparación de carril: CU de habilitación y auditoría | `informes/carril-P4.md` |
@@ -202,7 +202,7 @@ son semanas**: duran lo que dure su carril más lento.
 | :-: | --- |
 | **P1** Mac | **Backend Fases 1 y 2** — capa de datos generada, `comun/`, worker, outbox. **Congela `packages/datos/src/entidades/`** |
 | **P2** Ubuntu | Acompaña el troncal: segunda ejecución de los gates de las Fases 1 y 2, convenciones de `pruebas/fixtures/`, script de reseteo rápido de base |
-| **P3** Legion | **F0 · andamiaje móvil** + `packages/cliente-api` + MSW *(Delta 2)* |
+| **P3** Legion | **F0 · andamiaje móvil** + `clientes/typescript` (generado) + MSW *(Delta 2)* |
 | **P4** Dell A | **F0 · andamiaje backoffice** *(Delta 2)* |
 | **P5** Dell B | **F0 · andamiaje web** (Astro) *(Delta 2)* |
 

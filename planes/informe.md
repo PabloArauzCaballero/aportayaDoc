@@ -3,7 +3,7 @@ tags:
   - plan
   - informe
 titulo: "Informe consolidado — AportaYa"
-actualizado: 2026-08-13
+actualizado: 2026-08-18
 ---
 
 # Informe consolidado — backend y frontend
