@@ -58,7 +58,7 @@ normas: [ASFI Consumidor Financiero — transparencia y preaviso]
 - Nunca hay dos tarifarios vigentes solapados para el mismo ámbito.
 - Se puede probar qué se cobraba en cualquier fecha pasada y que se avisó.
 
-## Contrato · `packages/contratos/CU-34.ts`
+## Contrato · `openapi/tarifas.yaml`
 
 ```ts
 export const EntradaCU34 = z.object({

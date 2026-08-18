@@ -71,7 +71,7 @@ normas: [UIF designación de oficial de cumplimiento, ASFI Res. 540/2025, capaci
 - La cobertura de capacitación del período es una lista nominal, con evidencia por
   persona.
 
-## Contrato · `packages/contratos/CU-49.ts`
+## Contrato · `openapi/cumplimiento.yaml`
 
 ```ts
 export const EntradaCU49 = z.object({
@@ -159,7 +159,7 @@ export const ErroresCU49 = {
 
 [[oficial_cumplimiento]] · [[capacitacion_cumplimiento]] ·
 [[designacion_regulatoria]] · [[acta_comite]] · [[asignacion_rol]] ·
-[[hallazgo_auditoria]] · [[evento_dominio]]
+[[hallazgo_auditoria]] · `evento_dominio`
 
 ## Criterios de aceptación
 

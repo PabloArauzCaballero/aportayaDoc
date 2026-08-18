@@ -53,7 +53,7 @@ no queda roto:
 | Un caso de uso | Sus restricciones citadas, si son nuevas |
 | Una restricción | Su prueba de rechazo y su consulta de verificación |
 | Un catálogo | El JSON en `seeders/`, el manifiesto y el README |
-| Código de un caso de uso | Su contrato en `packages/contratos/` y sus pruebas |
+| Código de un caso de uso | Su contrato en `openapi/ del servicio/` y sus pruebas |
 | Un cambio de precio o de plazo regulatorio | La fila con vigencia y su cita normativa |
 
 Un PR que cambia el código y deja la bóveda vieja crea dos verdades. En este

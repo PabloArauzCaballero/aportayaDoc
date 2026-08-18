@@ -76,7 +76,7 @@ normas: [Debido proceso, ASFI Consumidor Financiero, gobernanza]
 - Ninguna sanción firme carece de causal, descargo y decisión motivada.
 - Ningún grupo pierde administración por una sanción a su organizador.
 
-## Contrato · `packages/contratos/CU-93.ts`
+## Contrato · `openapi/organizador.yaml`
 
 ```ts
 export const EntradaCU93 = z.object({
@@ -160,7 +160,7 @@ export const ErroresCU93 = {
 
 [[sancion_organizador]] · [[apelacion_sancion_org]] · [[evaluacion_desempeno]] ·
 [[contrato_organizador]] · [[acta_comite]] · [[evento_riesgo_operativo]] ·
-[[evento_dominio]]
+`evento_dominio`
 
 ## Criterios de aceptación
 

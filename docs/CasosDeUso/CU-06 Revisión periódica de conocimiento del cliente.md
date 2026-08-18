@@ -61,7 +61,7 @@ normas: [UIF EBR]
 - Ningún cliente activo queda sin revisión más allá de su periodicidad sin que eso
   sea visible y tenga consecuencia operativa.
 
-## Contrato · `packages/contratos/CU-06.ts`
+## Contrato · `openapi/cumplimiento.yaml`
 
 ```ts
 export const EntradaCU06 = z.object({

@@ -55,7 +55,7 @@ normas: [ASFI transparencia y consumidor financiero]
 - Existe evidencia de qué se le mostró al usuario y cuándo.
 - El devengo posterior usa exactamente esa cotización (`cotizacion_id`).
 
-## Contrato · `packages/contratos/CU-30.ts`
+## Contrato · `openapi/tarifas.yaml`
 
 ```ts
 export const EntradaCU30 = z.object({

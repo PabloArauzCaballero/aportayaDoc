@@ -16,7 +16,7 @@ normas: [Transparencia con el consumidor, trazabilidad]
 
 ## Actores y disparador
 
-- **Actor principal:** el consumidor de [[evento_dominio]] (outbox).
+- **Actor principal:** el consumidor de `evento_dominio` (outbox).
 - **Disparadores:** aporte pagado a tiempo, aporte en mora, incumplimiento firme,
   cobertura del fondo, deuda saldada, grupo completado, expulsión, reseña recibida.
 
@@ -52,7 +52,7 @@ normas: [Transparencia con el consumidor, trazabilidad]
 - Existe un rastro completo: cada punto tiene su hecho.
 - El puntaje quedó marcado para recálculo, no recalculado a mano.
 
-## Contrato · `packages/contratos/CU-70.ts`
+## Contrato · `openapi/transparencia.yaml`
 
 ```ts
 export const EntradaCU70 = z.object({
@@ -112,7 +112,7 @@ export const ErroresCU70 = {
 
 ## Evidencia que deja
 
-[[evento_reputacion]] (*append-only*) · [[evento_dominio]] consumido
+[[evento_reputacion]] (*append-only*) · `evento_dominio` consumido
 
 ## Criterios de aceptación
 

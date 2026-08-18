@@ -169,4 +169,4 @@ quedó fuera, dilo explícitamente.
 
 ## Ver también
 
-[[Prompt de backend]] · [[Prompt de frontend]] · [[Método de arquitectura]] · [[ADR-009 Composición atómica]]
+[[Prompt de backend]] · [[Prompt de frontend]] · [[Método de arquitectura]] · [[ADR-023 Composición atómica en Java]]

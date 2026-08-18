@@ -16,7 +16,7 @@ Antes de escribir el primer archivo, se listan las piezas y su nivel.
 | **Átomo** | Sin estado de dominio y **sin IO**. Entra dato, sale dato o píxeles | `Dinero`, `Periodo`, `calcularMora`, `siguienteTurno` | `Boton`, `Campo`, `Monto`, `ChipEstado` |
 | **Molécula** | Hace **una** cosa contra **un** colaborador | `ObligacionRepositorio`, `PasarelaQrAdapter`, `PoliticaLimite` | `CampoMonto`, `FilaAporte`, `useAporte` |
 | **Organismo** | Orquesta piezas para un objetivo completo | `CU21CobrarAporte` — única frontera transaccional | `FormularioDeAporte`, `TablaDeAportes` |
-| **Página** | Compone organismos, sin lógica | `aportes.controller.ts` | `PantallaDeAporte` |
+| **Página** | Compone organismos, sin lógica | `AportesController.java` | `PantallaDeAporte` |
 
 ## Cómo decidir el nivel de una pieza
 
@@ -49,12 +49,12 @@ Declará la descomposición. Literalmente, en el mensaje o en el PR:
 
 ```
 CU-21 Cobrar el aporte del período
-  Organismo  CU21CobrarAporte.ts             abre la transacción
-  Moléculas  ObligacionRepositorio.ts        lee y marca la obligación
-             MovimientoRepositorio.ts        inserta la contrapartida
-             PasarelaQrAdapter.ts            (borde, se invoca desde el worker)
-  Átomos     CalculoDeAporte.ts              monto + recargo, puro
-             Dinero.ts                       ya existe en packages/dominio
+  Organismo  CU21CobrarAporte.java             abre la transacción
+  Moléculas  ObligacionRepositorio.java        lee y marca la obligación
+             MovimientoRepositorio.java        inserta la contrapartida
+             PasarelaQrAdapter.java            (borde, se invoca desde el worker)
+  Átomos     CalculoDeAporte.java              monto + recargo, puro
+             Dinero.java                       ya existe en plataforma/comun-dominio
 ```
 
 Si no podés escribir esa lista, todavía no entendiste el caso de uso: volvé a
@@ -64,15 +64,15 @@ Si no podés escribir esa lista, todavía no entendiste el caso de uso: volvé a
 
 | Nivel | Prueba | Dónde |
 | --- | --- | --- |
-| Átomo | Unitaria pura, milisegundos; propiedad si hay aritmética | `pruebas/<Atomo>.spec.ts` |
-| Molécula | Contra Postgres real; verifica que la restricción **rechaza** | `pruebas/<Molecula>.spec.ts` |
-| Organismo | Criterios de aceptación del caso de uso, uno a uno | `pruebas/CU<NN>.spec.ts` |
+| Átomo | Unitaria pura, milisegundos; propiedad si hay aritmética | `<Atomo>Test.java` |
+| Molécula | Contra Postgres real; verifica que la restricción **rechaza** | `<Molecula>Test.java` |
+| Organismo | Criterios de aceptación del caso de uso, uno a uno | `CU<NN>Test.java` |
 
 ## Cuándo se abstrae
 
 **Al tercer uso.** Dos piezas parecidas se dejan duplicadas y se espera: con dos
 ejemplos no se ve el patrón, se adivina. Al tercero, el átomo común es evidente y se
-extrae con nombre propio —nunca a un archivo `utils.ts`, que es un átomo sin dueño.
+extrae con nombre propio —nunca a un archivo `Utils.java`, que es un átomo sin dueño.
 
 Nunca se abstrae por anticipado "por si mañana". Ese *mañana* llega con requisitos
 distintos a los imaginados y la abstracción estorba.
@@ -84,11 +84,11 @@ distintos a los imaginados y la abstracción estorba.
 | Un archivo pasa de ~200 líneas (backend) o ~150 (componente) | Varios niveles mezclados |
 | Hay que leer tres archivos para entender uno | Las dependencias no van en una dirección |
 | La prueba necesita levantar media aplicación | El nivel probado no está aislado |
-| Aparece `utils.ts`, `helpers.ts`, `common.ts` | Átomos sin nombre |
-| El mismo cálculo aparece en la app y en la API | Falta un átomo en `packages/dominio` |
+| Aparece `Utils.java`, `Helpers.java`, `Common.java` | Átomos sin nombre |
+| El mismo cálculo aparece en la app y en la API | Falta un átomo en `plataforma/comun-dominio` |
 | Un componente hace `fetch` | Falta la capa de dominio del cliente |
 
 ## Ver también
 
-`glosario-dominio` · `errores-api` · `implementar-desde-boveda` · `codigo-limpio` · `back-nestjs` · `web-backoffice` ·
+`glosario-dominio` · `errores-api` · `implementar-desde-boveda` · `codigo-limpio` · `back-spring` · `web-backoffice` ·
 `docs/Arquitectura/ADR-009 Composición atómica.md` · `docs/Arquitectura/Método de arquitectura.md`

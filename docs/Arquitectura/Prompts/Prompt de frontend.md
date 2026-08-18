@@ -130,4 +130,4 @@ un efecto.
 
 ## Ver también
 
-[[Prompt general de desarrollo]] · [[Prompt de backend]] · [[ADR-009 Composición atómica]]
+[[Prompt general de desarrollo]] · [[Prompt de backend]] · [[ADR-023 Composición atómica en Java]]

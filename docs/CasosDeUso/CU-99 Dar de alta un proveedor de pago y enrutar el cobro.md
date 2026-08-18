@@ -73,7 +73,7 @@ normas: [ASFI tercerización, BCB pagos, continuidad operativa, ASFI Res. 540/20
 - Todo cobro sale por un proveedor elegido con criterio registrado y reversible.
 - Ninguna caída de un proveedor deja a la plataforma sin poder cobrar.
 
-## Contrato · `packages/contratos/CU-99.ts`
+## Contrato · `openapi/aportes.yaml`
 
 ```ts
 export const EntradaCU99 = z.object({
@@ -160,7 +160,7 @@ export const ErroresCU99 = {
 
 [[proveedor_pago]] · [[enlace_pago_rapido]] · [[intento_pago]] · [[orden_cobro]] ·
 [[qr_cobro]] · [[webhook_pasarela]] · [[costo_proveedor_operacion]] ·
-[[contrato_tercero]] · [[evaluacion_tercero]] · [[evento_dominio]]
+[[contrato_tercero]] · [[evaluacion_tercero]] · `evento_dominio`
 
 ## Criterios de aceptación
 

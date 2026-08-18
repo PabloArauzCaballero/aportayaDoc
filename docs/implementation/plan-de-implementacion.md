@@ -1,19 +1,16 @@
 # Plan de implementación — Portal Administrativo, Contabilidad ERP y Publicidad
 
-Fase actual: 4 de 12
-Fases completadas: 1, 2, 3
-Fases restantes: 4-12
-Objetivo de la fase 3 (cerrada): extender el modelo de datos (bóveda) con los
-módulos 13 y 14, con sus casos de uso mínimos, verificado end-to-end.
-Entradas verificadas: bóveda antes de este cambio en 275 tablas / 12 módulos,
-`generar_boveda.py`/`generar_ddl.py`/`verificar_boveda.py` en verde.
-Gate de entrada (fase 4): aprobado — `verificar_boveda.py` → `TODO OK` con
-307 tablas y 99 casos de uso (2026-08-14).
-Gate de salida (fase 3): **aprobado**, con una excepción declarada: la prueba
-de humo contra Postgres real no corrió (sin `docker`/`psql` en este entorno).
-Queda como el primer punto a verificar antes de empezar la fase 4 en un
-entorno con Docker disponible — no bloquea el diseño, sí bloquea la confianza
-de que el DDL generado aplica limpio.
+Fase actual: 5 de 12
+Fases completadas: 1, 2, 3, 4
+Fases restantes: 5-12
+Objetivo de la fase 4 (cerrada): restricciones de base de datos, roles, permisos
+y catálogos mínimos de los módulos 13 y 14, todo verificado contra PostgreSQL real.
+Gate de salida (fase 3): **aprobado sin excepciones.** La prueba de humo que
+había quedado pendiente corrió el 2026-08-16 contra `postgres:16` en Docker:
+`aplicar.sql` termina en `COMMIT` sobre base recién creada y la prueba da
+**151 `OK`, 0 `FALLA`**.
+Gate de salida (fase 4): **aprobado.** Ver §2.2.
+Gate de entrada (fase 5): aprobado.
 
 ## 0. Alcance decidido con el usuario
 
@@ -166,14 +163,79 @@ implementación real de base de datos detrás; agregar los `CHECK`/trigger que
 las hagan cumplir en las tablas nuevas queda para la skill `restriccion` en la
 fase 4.
 
+## 2.2 Fase 4 — restricciones, roles y catálogos (2026-08-16)
+
+### Restricciones nuevas
+
+Dos familias nuevas en `docs/Restricciones.md`, 124 → **138 restricciones**:
+
+| Familia | Qué garantiza |
+| --- | --- |
+| `R-CTB-01`..`R-CTB-08` | Un período por ejercicio y mes y **nada se asienta en uno cerrado** (trigger); una cuenta sumarizadora no recibe movimientos; un presupuesto por centro de costo y ejercicio; una factura por proveedor y número con saldo acotado; **quien aprueba una factura no autoriza su pago** (trigger); no se cobra más de lo que se debe; una depreciación por activo y período; un estado financiero por período y tipo. |
+| `R-PUB-01`..`R-PUB-06` | Un anunciante es organizador **o** socio comercial, nunca ambos ni ninguno; una cuenta publicitaria por anunciante con gasto acotado al límite; consumo de campaña ≤ presupuesto y aprobación con responsable; **ninguna pieza creativa sin revisión aprobada llega a un anuncio** (trigger); quien sube no modera; un período de facturación por cuenta publicitaria. |
+
+Cada restricción se probó **por su rechazo**, como exige la skill `restriccion`:
+22 casos nuevos en `sql/50_verificacion/prueba_humo.sql`, más casos positivos
+donde el lado feliz también importa (un pagador distinto sí puede pagar; un
+movimiento contra una cuenta de movimiento sí entra).
+
+### Roles, permisos y segregación
+
+`seeders/minimos/10-roles-y-permisos.json`: 3 roles nuevos
+(`OPERADOR_PUBLICIDAD`, `MODERADOR_CONTENIDO`, `ANUNCIANTE`), 13 permisos
+(`CONTABILIDAD_ERP_*` ×8, `PUBLICIDAD_*` ×5) y 14 asignaciones. La segregación
+se sostiene en el reparto, no solo en el trigger: `CONTABILIDAD` aprueba la
+factura y `TESORERIA` autoriza el pago, y **ningún rol acumula los dos
+permisos** (verificado por consulta contra la base). Los dos pares nuevos se
+agregaron a la tabla explícita de la skill `roles-y-accesos`.
+
+### Catálogos
+
+- `seeders/minimos/21-contabilidad-y-publicidad.json` (nuevo): 5 centros de
+  costo, 3 categorías de activo fijo con sus tres cuentas contables, y los 4
+  espacios publicitarios del inventario de la app.
+- `01-plan-de-cuentas.json`: 19 → **33 cuentas**. Se agregaron las 14 cuentas
+  mayores (niveles 1 y 2) y se marcó la jerarquía completa.
+
+### Dos defectos encontrados y corregidos en esta fase
+
+1. **Todas las cuentas del plan quedaban como sumarizadoras.**
+   `es_cuenta_de_movimiento` es `BOOLEAN NOT NULL` y el generador de DDL le
+   asigna `DEFAULT FALSE`; el seeder no traía la columna, así que las 19
+   cuentas se sembraban con `false` y `R-CTB-02` habría bloqueado **todo
+   asiento contable del sistema**. Se corrigió marcando explícitamente las
+   cuentas hoja como cuentas de movimiento.
+2. **`$ref` a la propia tabla no resolvía** (`scripts/generar_semillas.py`).
+   El generador emitía un único `INSERT` multi-fila, y los subselects de
+   `$ref` se evalúan contra el estado previo a la sentencia: ninguna fila veía
+   a las anteriores, así que `cuenta_padre_id` quedaba en `NULL` en toda la
+   jerarquía **sin que nada fallara**. Ahora, cuando un bloque se
+   autorreferencia, se emite una sentencia por fila. Verificado: cero cuentas
+   de nivel > 1 sin padre.
+
+Ambos son del tipo que no rompe nada al aplicar y aparece meses después: por
+eso la verificación de esta fase no se quedó en "el DDL aplica".
+
+### Evidencia (corrida limpia, 2026-08-16)
+
+| Paso | Resultado |
+| --- | --- |
+| `generar_boveda.py` | 307 entidades · 633 FK · `sin_resolver: []` |
+| `generar_ddl.py` | 307 tablas · 633 FK · 701 índices · 425 CHECK · `Sin pendientes a nivel de datos.` · 1183 filas de semilla validadas |
+| `verificar_boveda.py` | **`TODO OK`** — 99 casos de uso, 138 restricciones todas citadas, cero wikilinks rotos |
+| `aplicar.sql` sobre `postgres:16` recién creada | `COMMIT` |
+| 21 archivos de semillas mínimas | cargados sin error |
+| `prueba_humo.sql` | **151 `OK`, 0 `FALLA`** |
+| `verificaciones.sql` (consultas de control) | las 11 devuelven **cero filas** |
+
 ## 3. Fases restantes
 
 | # | Fase | Cierra cuando |
 | --- | --- | --- |
 | 3 | **(esta fase)** Esquema: `.puml` de M13/M14, extensión de `cuenta_contable`, registro en `scripts/modelo.py`, semillas mínimas | `verificar_boveda.py` → `TODO OK`, `generar_ddl.py` → `Sin pendientes`, prueba de humo en verde |
-| 4 | Roles, permisos y catálogos | Permisos `CONTABILIDAD_ERP_*`/`PUBLICIDAD_*` en seeders, segregación de funciones (quien aprueba factura de proveedor no la paga; quien aprueba pieza creativa no es el anunciante) |
-| 5 | Contratos por caso de uso (Zod), derivados de los CU escritos en el cierre de la fase 3 | `EntradaCUNN`/`SalidaCUNN`/`ErroresCUNN` con códigos `AP-CU<NN>-<nn>` para cada CU nuevo de M13/M14 |
-| 6 | Persistencia (Kysely) | Repositorios + pruebas de molécula contra Postgres real |
+| ~~4~~ | ~~Roles, permisos y catálogos~~ | **Cerrada** (2026-08-16). Ver §2.2 |
+| 5 | Contratos por caso de uso (OpenAPI), derivados de los CU escritos en el cierre de la fase 3 | `EntradaCUNN`/`SalidaCUNN`/`ErroresCUNN` con códigos `AP-CU<NN>-<nn>` para cada CU nuevo de M13/M14 |
+| 6 | Persistencia (jOOQ) | Repositorios + pruebas de molécula contra Postgres real |
 | 7 | Casos de uso y reglas de negocio | Criterios de aceptación como pruebas (`pruebas-cu`) |
 | 8 | API, permisos y OpenAPI | Pruebas negativas de permisos en verde |
 | 9 | Worker/outbox: cierre de período automático, liquidación de publicidad periódica, depreciación mensual | Reintento/duplicado probados (`trabajos-outbox`) |

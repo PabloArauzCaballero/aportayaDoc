@@ -63,7 +63,7 @@ normas: [Consumidor financiero, protección de datos]
 - Cada respuesta tiene una acción o un ticket: ninguna queda sin destino.
 - Las bajas se respetan de inmediato.
 
-## Contrato · `packages/contratos/CU-82.ts`
+## Contrato · `openapi/notificaciones.yaml`
 
 ```ts
 export const EntradaCU82 = z.object({

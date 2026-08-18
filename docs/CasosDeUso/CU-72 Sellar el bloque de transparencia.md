@@ -37,7 +37,7 @@ normas: [Transparencia, integridad de la evidencia, ISO 27001 A.5.33]
    `hash_contenido` y `hash_bloque = SHA256(numero || hash_anterior || hash_contenido)`.
 4. Se registran los [[registro_sellado]] de las entidades incluidas, para poder ir
    del bloque al hecho y del hecho al bloque.
-5. Se publica el bloque en la vista del grupo y se emite [[evento_dominio]]
+5. Se publica el bloque en la vista del grupo y se emite `evento_dominio`
    `bloque.sellado`.
 
 ## Flujos alternativos
@@ -54,7 +54,7 @@ normas: [Transparencia, integridad de la evidencia, ISO 27001 A.5.33]
 - La historia del grupo queda encadenada y verificable por cualquiera.
 - Ningún bloque se emitió sobre datos sin cuadrar.
 
-## Contrato · `packages/contratos/CU-72.ts`
+## Contrato · `openapi/transparencia.yaml`
 
 ```ts
 export const EntradaCU72 = z.object({
@@ -116,7 +116,7 @@ export const ErroresCU72 = {
 ## Evidencia que deja
 
 [[bloque_transparencia]] (*append-only*) · [[registro_sellado]] ·
-[[evento_dominio]]
+`evento_dominio`
 
 ## Criterios de aceptación
 

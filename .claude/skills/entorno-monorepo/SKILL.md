@@ -1,6 +1,6 @@
 ---
 name: entorno-monorepo
-description: "Trabajar en el monorepo de AportaYa: estructura de apps y packages, comandos de yarn, orden de arranque local, regeneración del esquema y de los tipos, variables de entorno y qué hace el CI. Úsala al montar el entorno, al agregar un paquete o app, cuando algo no compila tras cambiar el modelo, o antes de abrir un PR."
+description: "Trabajar en el monorepo Gradle de AportaYa: estructura de servicios/ y plataforma/, tareas de Gradle, orden de arranque local con perfiles de compose, regeneración del esquema y de las clases de jOOQ, configuración por servicio y qué hace el CI. Úsala al montar el entorno, al agregar un servicio, cuando algo no compila tras cambiar el modelo, o antes de abrir un PR."
 ---
 
 # Trabajar en el monorepo
@@ -20,7 +20,7 @@ Qué va en cada paquete compartido:
 
 | Paquete | Contiene | No contiene |
 | --- | --- | --- |
-| `contratos` | Un archivo Zod por caso de uso + errores | Lógica, acceso a datos |
+| `openapi/` de cada servicio | Una operación por caso de uso + sus errores | Lógica, acceso a datos |
 | `dominio` | Átomos puros: `Dinero`, `Periodo`, cálculos | IO, tipos de base |
 | `ui` | Tokens y átomos/moléculas visuales comunes | Nada que dependa de APIs nativas |
 | `datos` | Tipos introspectados + fábrica de conexión | Consultas de negocio |
@@ -30,7 +30,7 @@ Un archivo nuevo se ubica por **nivel**, no por conveniencia: `arquitectura-atom
 ## Arranque local, en orden
 
 ```bash
-yarn install
+./gradlew build
 
 docker compose up -d db                       # PostgreSQL 16
 python3 scripts/generar_ddl.py                # el esquema sale de la bóveda
@@ -39,9 +39,9 @@ psql -d aportaya -v ON_ERROR_STOP=1 -f sql/60_semillas/sembrar.sql
 psql -d aportaya -f sql/60_semillas/99_desarrollo.sql   # solo local
 psql -d aportaya -f sql/50_verificacion/prueba_humo.sql # 69 comprobaciones
 
-yarn datos:tipos                              # introspección → tipos de Kysely
-yarn dev                                      # api + worker + backoffice
-yarn workspace movil start                    # Expo aparte
+./gradlew generateJooq                              # introspección → tipos de jOOQ
+./gradlew bootRun                                      # api + worker + backoffice
+yarn --cwd apps/movil start                  # el FRONTEND sigue en yarn
 ```
 
 Si te salteás las semillas, **nada funciona**: *denegar por omisión* rechaza toda
@@ -51,13 +51,13 @@ operación sin límite, tarifario y licencia vigentes. Es el comportamiento corr
 
 | Comando | Qué hace |
 | --- | --- |
-| `yarn dev` | Levanta api, worker y backoffice con recarga |
-| `yarn test` | Suite completa: contenedor, esquema, semillas, pruebas |
-| `yarn test:atomos` | Solo pruebas puras, sin contenedor (para guardar seguido) |
-| `yarn lint` · `yarn typecheck` | Estilo y tipos; ambos bloquean el PR |
-| `yarn datos:tipos` | Regenera los tipos desde la base viva |
-| `yarn contratos:openapi` | Deriva el OpenAPI desde los esquemas Zod |
-| `yarn workspace <app> <script>` | Ejecuta en un solo workspace |
+| `./gradlew bootRun` | Levanta api, worker y backoffice con recarga |
+| `./gradlew test` | Suite completa: contenedor, esquema, semillas, pruebas |
+| `./gradlew test` | Solo pruebas puras, sin contenedor (para guardar seguido) |
+| `./gradlew check` · `./gradlew compileJava` | Estilo y tipos; ambos bloquean el PR |
+| `./gradlew generateJooq` | Regenera los tipos desde la base viva |
+| `./gradlew generateOpenApiClients` | Genera la interfaz del servidor y los clientes Java y TypeScript desde el OpenAPI |
+| `yarn --cwd apps/<x> <script>` | Solo para `apps/movil` y `apps/backoffice`: el frontend sigue en TypeScript |
 
 ## Cuando cambia el modelo
 
@@ -68,7 +68,7 @@ Cambiar una tabla o una columna es un procedimiento, no una edición:
 2. skill restriccion      → si hay regla nueva que garantizar
 3. python3 scripts/generar_ddl.py
 4. aplicar sql/ en la base local
-5. yarn datos:tipos       → el compilador señala cada lugar a revisar
+5. ./gradlew generateJooq       → el compilador señala cada lugar a revisar
 6. actualizar contratos y pruebas
 ```
 

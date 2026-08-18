@@ -4,7 +4,7 @@ tags:
   - arquitectura
   - prompts
 titulo: "Prompts generalistas de desarrollo"
-fecha_revision: 2026-08-12
+fecha_revision: 2026-08-18
 ---
 
 # Prompts generalistas
@@ -14,22 +14,35 @@ fecha_revision: 2026-08-12
 > **todo se divide siempre en átomos, moléculas y organismos**, en el frontend y en
 > el backend.
 
-## Cómo se usan
+> [!important] En Pasanaku no se usan estos prompts: se usan las skills
+> Desde el 2026-08-18, lo que una máquina de carril carga es **`arrancar-carril`**, y
+> lo que decide antes de escribir es **`frontera-transaccional`**. Estos tres
+> documentos quedan como la **destilación portable** —lo que uno se llevaría a otro
+> proyecto— y **no se leen al programar acá**.
+>
+> El motivo es de economía, no de estilo: un prompt pegado a mano se copia mal, se
+> recorta y envejece distinto en cada máquina. Una skill viaja con el clon, se
+> versiona y tiene una sola versión.
 
-```
-1. Prompt general de desarrollo   ← siempre, primero. Nunca se omite
-2. Prompt de backend  ó  Prompt de frontend   ← especializa
-3. Contexto del proyecto (en Pasanaku: la bóveda docs/ y .claude/skills/)
-```
+## Qué usa cada quién
 
-El general manda. El especializado **añade**; si alguna vez contradice al general,
-gana el general.
-
-| Prompt | Cuándo | Qué garantiza |
+| Si sos… | Cargá | No leas |
 | --- | --- | --- |
-| [[Prompt general de desarrollo]] | Siempre | Temperatura 0, KISS, composición atómica, nombres, errores, pruebas, seguridad |
-| [[Prompt de backend]] | API, workers, datos | Frontera transaccional, garantías en la base, idempotencia, bordes externos |
-| [[Prompt de frontend]] | App y web | Átomos visuales, tokens, estados obligatorios, dominio separado de la vista |
+| Una máquina que toma un carril de Pasanaku | `arrancar-carril`, y lo que ella mande | Estos tres documentos |
+| Quien decide la frontera de un caso de uso | `frontera-transaccional` | [[Prompt de backend]] |
+| Quien lleva estas ideas a otro proyecto | Estos tres, completos | Las skills: son de este repositorio |
+
+## Los tres, y su equivalente acá
+
+| Prompt | Qué garantiza | Su equivalente en Pasanaku |
+| --- | --- | --- |
+| [[Prompt general de desarrollo]] | Temperatura 0, KISS, composición atómica, nombres, errores, pruebas, seguridad | `codigo-limpio` · `arquitectura-atomica` · `glosario-dominio` |
+| [[Prompt de backend]] | Frontera transaccional, garantías en la base, idempotencia, bordes externos | `frontera-transaccional` · `back-spring` · `datos-jooq` · `servicios-y-sagas` |
+| [[Prompt de frontend]] | Átomos visuales, tokens, estados obligatorios, dominio separado de la vista | `disenar-frontend` · `movil-expo` · `web-backoffice` |
+
+**El general manda.** El especializado añade; si alguna vez contradice al general,
+gana el general. Y si cualquiera de los tres contradice un ADR vigente de este
+repositorio, **gana el ADR**.
 
 ## Por qué existen
 
@@ -41,4 +54,4 @@ en el lugar equivocado**.
 
 ## Ver también
 
-[[Método de arquitectura]] · [[ADR-009 Composición atómica]] · [[_Arquitectura]]
+[[Método de arquitectura]] · [[ADR-023 Composición atómica en Java]] · [[_Arquitectura]]

@@ -35,7 +35,7 @@ normas: [Transparencia, no discriminación arbitraria]
 4. **En la misma transacción** se cierra la vigencia del [[puntaje_reputacion]]
    anterior y se inserta el nuevo con `modelo_id`, `total`, `nivel` y
    `calculado_en` (`R-REP-02`: un solo puntaje vigente por usuario).
-5. Si el nivel cambió, se emite [[evento_dominio]] `reputacion.nivel_cambiado` y se
+5. Si el nivel cambió, se emite `evento_dominio` `reputacion.nivel_cambiado` y se
    notifica con el motivo concreto, no con el número pelado.
 6. Periódicamente se congela un [[snapshot_reputacion]] para poder responder
    "cuánto tenía en marzo".
@@ -54,7 +54,7 @@ normas: [Transparencia, no discriminación arbitraria]
 - Un solo puntaje vigente por usuario, con sus componentes y su modelo.
 - El histórico permite reconstruir cualquier fecha.
 
-## Contrato · `packages/contratos/CU-71.ts`
+## Contrato · `openapi/transparencia.yaml`
 
 ```ts
 export const EntradaCU71 = z.object({
@@ -115,7 +115,7 @@ export const ErroresCU71 = {
 ## Evidencia que deja
 
 [[puntaje_reputacion]] · [[componente_score]] · [[snapshot_reputacion]] ·
-[[evento_dominio]]
+`evento_dominio`
 
 ## Criterios de aceptación
 

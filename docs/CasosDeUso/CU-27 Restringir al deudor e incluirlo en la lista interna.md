@@ -53,7 +53,7 @@ normas: [ASFI Consumidor Financiero, protección de datos, debido proceso]
 6. **Al saldarse la deuda**, en la misma transacción que acredita el último pago:
    - se escribe `retirado_en`, `retirado_por` y `motivo_retiro` en la lista;
    - se cierra la vigencia de las restricciones asociadas;
-   - se emite [[evento_dominio]] `restriccion.levantada` y se notifica.
+   - se emite `evento_dominio` `restriccion.levantada` y se notifica.
 7. La fila **no se borra nunca** (`R-AUD-01`): queda el histórico de que estuvo
    restringido, cuánto y por qué, con su fecha de salida.
 
@@ -76,7 +76,7 @@ normas: [ASFI Consumidor Financiero, protección de datos, debido proceso]
 - Ningún usuario queda restringido después de pagar, sin que nadie tenga que
   acordarse de sacarlo.
 
-## Contrato · `packages/contratos/CU-27.ts`
+## Contrato · `openapi/garantia.yaml`
 
 ```ts
 export const EntradaCU27 = z.object({
@@ -156,7 +156,7 @@ export const ErroresCU27 = {
 
 [[lista_restriccion_interna]] · [[restriccion_usuario]] ·
 [[registro_incumplimiento]] · [[deuda_participante]] · [[bitacora_evento]] ·
-[[evento_dominio]]
+`evento_dominio`
 
 ## Criterios de aceptación
 

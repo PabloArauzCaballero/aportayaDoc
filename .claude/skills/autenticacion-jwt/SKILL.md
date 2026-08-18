@@ -25,11 +25,11 @@ El token no protege datos por sí solo. Lo que protege es la política de fila, 
 eso el borde traduce:
 
 ```
-JWT válido → { usuarioId, rol, dispositivoId } → conTransaccion → SET LOCAL app.usuario_id / app.rol
+JWT válido → { usuarioId, rol, dispositivoId } → conContexto → SET LOCAL app.usuario_id / app.rol
 ```
 
 Sin esa traducción, la consulta corre sin contexto y las políticas no aplican
-([[ADR-007 Sesión, RLS y pooling]]). Un endpoint que consulta sin `conTransaccion` es
+([[ADR-021 Sesión, RLS y pooling]]). Un endpoint que consulta sin `conContexto` es
 un defecto de seguridad, no de estilo.
 
 ## JWT
@@ -101,5 +101,5 @@ token del cliente.
 ## Ver también
 
 `seguridad-sesion-rls` · `roles-y-accesos` · `kyc-onboarding` · `errores-api` ·
-`contratos-api` · `back-nestjs` · `observabilidad` ·
+`contratos-api` · `back-spring` · `observabilidad` ·
 `docs/Arquitectura/ADR-010 Autenticación y sesión.md`

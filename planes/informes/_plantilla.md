@@ -64,7 +64,7 @@ real del comando, no un adjetivo.
 
 | Área | Gate | Evidencia | Estado |
 | --- | --- | --- | --- |
-| Especificación | Criterios de aceptación cubiertos | `CU<NN>.spec.ts`, n/n | ⬜ |
+| Especificación | Criterios de aceptación cubiertos | `CU<NN>Test.java`, n/n | ⬜ |
 | Datos | Restricciones citadas con prueba de rechazo | n/n rechazos verificados | ⬜ |
 | Seguridad | Prueba negativa de RLS | contexto ajeno ⇒ 0 filas | ⬜ |
 | Plazos | Vencimiento y aviso previo | — | ⬜ |

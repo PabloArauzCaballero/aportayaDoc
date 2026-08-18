@@ -74,7 +74,7 @@ normas: [ASFI Consumidor Financiero, contratos de adhesión, Código de Comercio
 - Todo organizador activo tiene contrato firmado, con el hash de lo que firmó.
 - Ninguna rescisión deja grupos sin administrador ni comisiones sin liquidar.
 
-## Contrato · `packages/contratos/CU-91.ts`
+## Contrato · `openapi/organizador.yaml`
 
 ```ts
 export const EntradaFirmaCU91 = z.object({
@@ -155,7 +155,7 @@ export const ErroresCU91 = {
 
 [[contrato_organizador]] · [[token_verificacion]] · [[organizador]] ·
 [[asignacion_rol]] · [[devengo_comision]] · [[bitacora_evento]] ·
-[[evento_dominio]]
+`evento_dominio`
 
 ## Criterios de aceptación
 

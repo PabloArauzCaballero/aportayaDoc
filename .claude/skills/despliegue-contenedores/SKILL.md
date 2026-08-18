@@ -9,8 +9,8 @@ Procesos que se despliegan, con su rol de base ([[Entornos y despliegue]]):
 
 | Proceso | Qué corre | Rol |
 | --- | --- | --- |
-| `api` | NestJS | `rol_aplicacion` |
-| `worker` | Graphile Worker: outbox y trabajos con fecha | `rol_aplicacion` (o rol propio, si se acota) |
+| Cada uno de los catorce servicios | Spring Boot | `svc_<servicio>` |
+| `worker` | outbox + Kafka: outbox y trabajos con fecha | `rol_aplicacion` (o rol propio, si se acota) |
 | `reportes` | Consultas pesadas y exportes | `rol_auditor` (solo lectura) |
 | `migrador` | Aplica `sql/` una vez por despliegue | `rol_migracion` |
 

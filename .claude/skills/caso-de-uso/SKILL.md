@@ -62,7 +62,7 @@ normas: [..]
 ## Flujo principal         ← pasos numerados, con tabla.columna concretas
 ## Flujos alternativos     ← tabla: # | Situación | Resultado
 ## Postcondiciones
-## Contrato · `packages/contratos/CU-NN.ts`  ← Zod: entrada, salida y códigos de error
+## Contrato · `openapi/<servicio>.yaml`  ← operación OpenAPI: entrada, salida y códigos de error
 ## Descomposición atómica  ← tabla: Nivel | Pieza | Responsabilidad
 ## Eventos, trabajos y permisos ← tabla: Emite | Dispara | Exige
 ## Interfaz                ← una línea para la app y una para el backoffice
@@ -77,7 +77,7 @@ programable sin volver a preguntar. Se escriben así:
 
 | Sección | Qué contiene | Regla |
 | --- | --- | --- |
-| **Contrato** | `EntradaCUNN`, `SalidaCUNN` y `ErroresCUNN` en Zod, más una tabla que explica cuándo se devuelve cada error | Códigos `AP-CU<NN>-<nn>`; importes como *string*; `.strict()`. Ver `contratos-api` |
+| **Contrato** | La operación del OpenAPI del servicio —entrada, salida y respuestas de error— más una tabla que explica cuándo se devuelve cada una | Códigos `AP-CU<NN>-<nn>`; importes como **cadena decimal**; `additionalProperties: false`. Ver `contratos-api` |
 | **Descomposición atómica** | Átomos, moléculas, el organismo y la página | El organismo es **el único** que abre transacción; si no hay endpoint, la fila Página dice qué lo dispara. Ver `arquitectura-atomica` |
 | **Eventos, trabajos y permisos** | Qué evento de dominio emite, qué trabajo dispara y qué permiso exige | El evento se escribe en la misma transacción (*outbox*). Ver `trabajos-outbox` |
 | **Interfaz** | Qué ve el usuario en la app y qué ve el operador en el backoffice | Una línea cada uno. "Sin pantalla en la app" es una respuesta válida y frecuente |

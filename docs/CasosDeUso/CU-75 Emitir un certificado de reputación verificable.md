@@ -69,7 +69,7 @@ normas: [Protección de datos, transparencia, no discriminación arbitraria]
 - Todo certificado es verificable por cualquiera y reproducible desde su snapshot.
 - El titular controla qué se publica, por cuánto tiempo, y puede cortarlo.
 
-## Contrato · `packages/contratos/CU-75.ts`
+## Contrato · `openapi/transparencia.yaml`
 
 ```ts
 export const EntradaCU75 = z.object({
@@ -152,7 +152,7 @@ export const ErroresCU75 = {
 ## Evidencia que deja
 
 [[certificado_reputacion]] · [[snapshot_reputacion]] · [[puntaje_reputacion]] ·
-[[reputacion_usuario]] · [[verificacion_publica]] · [[evento_dominio]]
+[[reputacion_usuario]] · [[verificacion_publica]] · `evento_dominio`
 
 ## Criterios de aceptación
 

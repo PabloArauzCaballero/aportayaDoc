@@ -50,7 +50,7 @@ normas: [Política comercial interna, protección de datos]
 - Toda pieza creativa que aparece en algún [[anuncio]] tiene una
   `revision_creativa` con `decision = 'APROBADA'` que la respalda.
 
-## Contrato · `packages/contratos/CU-112.ts`
+## Contrato · `openapi/publicidad.yaml`
 
 ```ts
 export const EntradaCU112 = z.object({
@@ -102,6 +102,8 @@ export const ErroresCU112 = {
   motivo obligatorio.
 
 ## Restricciones aplicables
+
+`R-PUB-04` · `R-PUB-05`
 
 Mismo principio de segregación que `R-SEG-04` (quien ejecuta no autoriza),
 aplicado aquí a quien sube y quien modera.

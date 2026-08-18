@@ -34,7 +34,7 @@ normas: [Ley 393 (libros y conservación), Código de Comercio, NIIF]
    cuyo `asiento_contable.periodo_contable_id` sea ese período.
 4. **En la misma transacción**: se crea [[cierre_periodo_contable]] con esos
    totales, se marca `periodo_contable.estado = 'CERRADO'`, y se emite
-   [[evento_dominio]].
+   `evento_dominio`.
 5. Si el período cerrado era el último del ejercicio, `ejercicio_fiscal.estado`
    pasa a `CERRADO`.
 
@@ -53,7 +53,7 @@ normas: [Ley 393 (libros y conservación), Código de Comercio, NIIF]
 - `cierre_periodo_contable` prueba, con fecha y responsable, que el período cuadraba
   al momento del cierre.
 
-## Contrato · `packages/contratos/CU-100.ts`
+## Contrato · `openapi/erp.yaml`
 
 ```ts
 export const EntradaCU100 = z.object({
@@ -105,7 +105,7 @@ export const ErroresCU100 = {
 
 ## Restricciones aplicables
 
-`R-AUD-01` · `R-AUD-05` · `R-AUD-06`
+`R-AUD-01` · `R-AUD-05` · `R-AUD-06` · `R-CTB-01`
 
 ## Evidencia que deja
 

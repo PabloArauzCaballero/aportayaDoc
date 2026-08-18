@@ -51,7 +51,7 @@ normas: [SIN — facturación en línea (CUF, CUFD, código de control, eventos 
 - Toda comisión cobrada tiene documento fiscal o un evento de contingencia abierto
   que lo justifica y un plazo corriendo.
 
-## Contrato · `packages/contratos/CU-32.ts`
+## Contrato · `openapi/tarifas.yaml`
 
 ```ts
 export const EntradaCU32 = z.object({

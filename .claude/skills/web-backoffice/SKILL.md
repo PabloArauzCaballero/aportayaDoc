@@ -20,7 +20,7 @@ apps/backoffice/src/
 ├── moleculas/    FiltroDeRango, FilaDeAlerta, CeldaDeMonto, useAlertas
 ├── organismos/   TablaDeAlertas, PanelDeReclamo, FormularioDeReporte
 ├── pantallas/    ruta + composición, sin lógica
-├── dominio/      un cliente por caso de uso, tipado desde packages/contratos
+├── dominio/      un cliente por caso de uso, tipado desde openapi/ del servicio
 └── tokens/       único lugar con valores literales de diseño
 ```
 
@@ -75,7 +75,7 @@ devolvió nada" son mensajes distintos y se distinguen.
 
 ## Formularios
 
-- Validación con el **mismo esquema Zod del contrato**; nunca reglas reescritas.
+- Validación con los **tipos generados desde el OpenAPI del servicio**; nunca reglas reescritas a mano.
 - Errores por campo, en el campo, diciendo cómo corregir.
 - Clave de idempotencia en toda operación con efecto.
 - Los formularios largos (reportes, expedientes) guardan borrador local para no

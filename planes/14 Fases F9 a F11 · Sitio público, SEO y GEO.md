@@ -92,7 +92,7 @@ legible por máquina. Es exactamente lo que este proyecto prohíbe.
 
 Los documentos regulatorios van en **content collections** de Astro
 (`src/content/legal/`, `src/content/faq/`, `src/content/tarifas/`), en Markdown con
-frontmatter validado por Zod:
+frontmatter validado por esquema:
 
 ```yaml
 ---
@@ -124,7 +124,7 @@ Solo cuatro fragmentos necesitan JavaScript. Todo lo demás es HTML estático:
 > **Los verificadores recomputan en el cliente, no le creen al servidor.** Ese es el
 > punto entero de CU-61 y CU-73: un tercero tiene que poder auditar *sin depender de
 > nosotros*. Los átomos `barajarDeterminista`, `verificarCompromiso`,
-> `serializarCanonico` y `hashDeBloque` se importan de `packages/dominio` — **los
+> `serializarCanonico` y `hashDeBloque` se importan de `plataforma/comun-dominio` — **los
 > mismos** que usa el backend.
 
 ## Gate de salida F9

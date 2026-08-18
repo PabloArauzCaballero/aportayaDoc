@@ -42,7 +42,7 @@ normas: [ASFI Seguridad de la Información, ASFI control interno, segregación d
      `otorgada_por` y `otorgada_en`;
    - se registra en [[bitacora_evento]] quién otorgó qué a quién y con qué
      justificación;
-   - se emite [[evento_dominio]] `rol.asignado`.
+   - se emite `evento_dominio` `rol.asignado`.
 4. El permiso efectivo se calcula como la unión de los [[permiso]] de los roles
    **vigentes** del usuario: ni revocados, ni vencidos. La aplicación no cachea ese
    cálculo más allá de la vida del token de sesión.
@@ -69,7 +69,7 @@ normas: [ASFI Seguridad de la Información, ASFI control interno, segregación d
   pasada a partir de las asignaciones y sus vigencias.
 - Ningún acceso queda vivo sin alguien que lo haya otorgado con nombre y fecha.
 
-## Contrato · `packages/contratos/CU-08.ts`
+## Contrato · `openapi/identidad.yaml`
 
 ```ts
 export const EntradaCU08 = z.object({
@@ -145,7 +145,7 @@ export const ErroresCU08 = {
 ## Evidencia que deja
 
 [[asignacion_rol]] · [[rol]] · [[permiso]] · [[rol_permiso]] · [[bitacora_evento]] ·
-[[evento_dominio]] · [[sesion]]
+`evento_dominio` · [[sesion]]
 
 ## Criterios de aceptación
 

@@ -72,7 +72,7 @@ normas: [ASFI Seguridad de la Información, UIF titularidad, PCI-DSS por analog�
 - Todo destino de dinero externo tiene titularidad verificada, con método y fecha.
 - Ningún número de cuenta existe en claro en base, registro ni respaldo.
 
-## Contrato · `packages/contratos/CU-18.ts`
+## Contrato · `openapi/entregas.yaml`
 
 ```ts
 export const EntradaCU18 = z.object({
@@ -154,7 +154,7 @@ export const ErroresCU18 = {
 ## Evidencia que deja
 
 [[cuenta_bancaria_beneficiario]] · [[bitacora_evento]] · [[registro_acceso_datos]] ·
-[[evento_dominio]] · [[instrumento_fondeo]]
+`evento_dominio` · [[instrumento_fondeo]]
 
 ## Criterios de aceptación
 

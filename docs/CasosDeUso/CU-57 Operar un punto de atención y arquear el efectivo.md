@@ -49,7 +49,7 @@ normas: [ASFI puntos de atención y corresponsalía, BCB efectivo, UIF]
 5. **En la misma transacción** que cierra:
    - se fija `estado` según la diferencia: `CUADRADO`, `SOBRANTE` o `FALTANTE`;
    - toda diferencia distinta de cero exige `observaciones`;
-   - se escribe `cerrado_en` y se emite [[evento_dominio]] `arqueo.cerrado`.
+   - se escribe `cerrado_en` y se emite `evento_dominio` `arqueo.cerrado`.
 6. Un faltante por encima del umbral de política abre
    [[evento_riesgo_operativo]] ([[CU-54 Registrar un evento de riesgo operativo]]) y,
    si hay indicio de apropiación, [[incidente_seguridad]].
@@ -77,7 +77,7 @@ normas: [ASFI puntos de atención y corresponsalía, BCB efectivo, UIF]
   derivada y justificada.
 - El efectivo en puntos está incluido en la custodia conciliada del día.
 
-## Contrato · `packages/contratos/CU-57.ts`
+## Contrato · `openapi/nucleo-financiero.yaml`
 
 ```ts
 export const EntradaAbrirCU57 = z.object({
@@ -159,7 +159,7 @@ export const ErroresCU57 = {
 
 [[punto_atencion]] · [[arqueo_punto_atencion]] · [[constancia_pago]] ·
 [[movimiento_custodia]] · [[evento_riesgo_operativo]] · [[bitacora_evento]] ·
-[[evento_dominio]]
+`evento_dominio`
 
 ## Criterios de aceptación
 

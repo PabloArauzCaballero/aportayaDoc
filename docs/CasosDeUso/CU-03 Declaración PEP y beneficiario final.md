@@ -57,7 +57,7 @@ normas: [UIF EBR]
 - Existe una declaración PEP fechada por usuario, con su histórico completo.
 - Un PEP nunca queda con debida diligencia menor a reforzada.
 
-## Contrato · `packages/contratos/CU-03.ts`
+## Contrato · `openapi/cumplimiento.yaml`
 
 ```ts
 export const EntradaCU03 = z.object({

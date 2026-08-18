@@ -65,7 +65,7 @@ normas: [UIF — Instructivo EIF, art. 52 (modificado por R.A. UIF/050/2026)]
   cambio que se usaron.
 - El cálculo es reproducible dos años después sin recalcular nada.
 
-## Contrato · `packages/contratos/CU-41.ts`
+## Contrato · `openapi/cumplimiento.yaml`
 
 ```ts
 export const EntradaCU41 = z.object({

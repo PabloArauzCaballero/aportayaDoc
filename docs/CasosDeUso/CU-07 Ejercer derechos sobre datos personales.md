@@ -63,7 +63,7 @@ normas: [Protección de datos, ISO/IEC 27701, ASFI ETF]
 - Toda solicitud tiene fecha límite guardada, respuesta y trazabilidad.
 - Nunca se destruye información que la ley obliga a conservar.
 
-## Contrato · `packages/contratos/CU-07.ts`
+## Contrato · `openapi/auditoria.yaml`
 
 ```ts
 export const EntradaCU07 = z.object({

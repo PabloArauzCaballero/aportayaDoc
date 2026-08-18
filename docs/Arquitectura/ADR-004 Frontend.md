@@ -25,12 +25,13 @@ para cobro; el backoffice necesita tablas grandes, filtros, exportación y traza
 ## Decisión
 
 **Expo / React Native** para la app y **React + Vite** para el backoffice, ambos en
-TypeScript, consumiendo el mismo paquete de contratos.
+TypeScript, consumiendo el **cliente generado** desde la especificación OpenAPI de
+cada servicio ([[ADR-020 Contratos OpenAPI primero]]).
 
 - App: `expo-camera` (QR), `expo-secure-store` (credenciales), `expo-local-authentication`
   (biometría), notificaciones vía FCM/APNs, actualizaciones OTA con EAS Update.
 - Backoffice: TanStack Router + TanStack Query, tablas virtualizadas, exportación.
-- Ambos: **composición atómica obligatoria** ([[ADR-009 Composición atómica]]) y el
+- Ambos: **composición atómica obligatoria** ([[ADR-023 Composición atómica en Java]], en su versión de frontend) y el
   sistema de diseño de la skill `disenar-frontend`.
 
 ## Motivo
@@ -45,9 +46,18 @@ texto obligatorio del contrato de adhesión (CU-05), la corrección tiene que ll
 en horas. EAS Update entrega JavaScript sin revisión de tienda; una app nativa pura
 espera días.
 
-**El mismo lenguaje que el backend es el desempate.** Un límite operativo, el estado
-de una obligación o el formato de un importe se definen una vez y los tres
-artefactos los importan ([[ADR-006 Contratos y validación]]).
+**Un solo lenguaje entre los dos productos de frontend.** Un límite operativo, el
+estado de una obligación o el formato de un importe se definen una vez en la
+especificación del servicio, y la app y el backoffice consumen el **mismo cliente
+generado** ([[ADR-020 Contratos OpenAPI primero]]).
+
+> **Esto cambió el 2026-08-16.** Cuando se tomó esta decisión, el desempate era
+> compartir lenguaje **con el backend**. Con el backend en Java
+> ([[ADR-015 Lenguaje, runtime y framework]]) ese argumento ya no aplica, y la
+> decisión se sostiene igual por los otros tres: la app tiene que ser app, las
+> correcciones tienen que llegar sin pasar por tienda, y el backoffice no es la app
+> estirada. El tipo compartido a mano se reemplaza por el generado, que es menos
+> cómodo y más fiable.
 
 **El backoffice no debe ser la app estirada.** Sus pantallas son densas y su usuario
 es experto; compartir componentes de dominio sí, compartir layout no.
@@ -79,7 +89,7 @@ es experto; compartir componentes de dominio sí, compartir layout no.
 
 | Regla | Por qué |
 | --- | --- |
-| Ningún importe se formatea a mano en la vista | Un solo formateador, desde el contrato ([[ADR-005 Dinero y decimales]]) |
+| Ningún importe se formatea a mano en la vista | Un solo formateador, desde el contrato ([[ADR-019 Dinero con BigDecimal]]) |
 | Ninguna regla de negocio vive solo en el cliente | El cliente da buen mensaje; la base garantiza |
 | Toda operación de dinero envía clave de idempotencia | El reintento del usuario no puede duplicar un aporte |
 | La app asume red intermitente | Estados de carga, error y reintento explícitos en cada pantalla de dinero |
@@ -96,4 +106,4 @@ es experto; compartir componentes de dominio sí, compartir layout no.
 
 ## Ver también
 
-[[ADR-009 Composición atómica]] · [[ADR-006 Contratos y validación]] · [[Stack]] · [[_CasosDeUso]]
+[[ADR-023 Composición atómica en Java]] · [[ADR-020 Contratos OpenAPI primero]] · [[Stack]] · [[_CasosDeUso]]

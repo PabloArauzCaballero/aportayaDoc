@@ -72,7 +72,7 @@ normas: [Protección de datos, ASFI conservación de información, segregación 
 - Ningún archivo con datos personales queda accesible sin cifrado ni sin fecha de
   caducidad.
 
-## Contrato · `packages/contratos/CU-58.ts`
+## Contrato · `openapi/auditoria.yaml`
 
 ```ts
 export const EntradaCU58 = z.object({
@@ -157,7 +157,7 @@ export const ErroresCU58 = {
 
 [[definicion_reporte]] · [[ejecucion_reporte]] · [[exportacion_reporte]] ·
 [[programacion_reporte]] · [[registro_acceso_datos]] · [[bitacora_evento]] ·
-[[evento_dominio]]
+`evento_dominio`
 
 ## Criterios de aceptación
 

@@ -1,113 +1,143 @@
 ---
-name: back-nestjs
-description: "Escribir el backend de AportaYa en NestJS: módulo por módulo de la bóveda, un caso de uso por archivo, la transacción en el organismo, contexto de RLS, controladores sin lógica, adaptadores externos e inyección de dependencias. Úsala al crear un endpoint, un caso de uso, un módulo nuevo o al tocar cualquier código de apps/api."
+name: back-spring
+description: "Escribir el backend de AportaYa en Java 21 con Spring Boot: un servicio por módulo de la bóveda, un caso de uso por clase, la transacción en el organismo, contexto de RLS, controladores que implementan la interfaz generada, adaptadores externos e inyección de dependencias. Úsala al crear un endpoint, un caso de uso, un servicio nuevo o al tocar cualquier código de servicios/."
 ---
 
-# Backend con NestJS
+# Backend con Spring Boot
 
-Un módulo de NestJS por módulo de la bóveda; dentro, la
-[[ADR-009 Composición atómica|composición atómica]] hecha carpetas.
+Un **servicio desplegable** por módulo de la bóveda; dentro, la
+[[ADR-023 Composición atómica en Java|composición atómica]] hecha paquetes.
 
 ```
-modulos/03_aportes_pagos_qr/
-├── aportes.module.ts
-├── aplicacion/      ORGANISMOS  · CU21CobrarAporte.ts       ← abre la transacción
-├── dominio/         ÁTOMOS      · CalculoDeAporte.ts        ← puro, sin IO
-├── infraestructura/ MOLÉCULAS   · ObligacionRepositorio.ts  ← SQL, sin lógica
-├── http/            PÁGINA      · aportes.controller.ts     ← HTTP ⇄ caso de uso
-└── pruebas/                     · CU21.spec.ts
+servicios/aportes/
+├── build.gradle.kts
+├── src/main/resources/
+│   ├── application.yml
+│   └── openapi/aportes.yaml                  ← el contrato, SE ESCRIBE PRIMERO
+└── src/main/java/bo/aportaya/aportes/
+    ├── aplicacion/       ORGANISMOS  · CU21CobrarAporte.java      ← abre la transacción
+    ├── dominio/          ÁTOMOS      · CalculoDeAporte.java       ← puro, sin Spring
+    ├── infraestructura/  MOLÉCULAS   · ObligacionRepositorio.java ← SQL, sin lógica
+    │                                 · NucleoFinancieroCliente.java ← otro servicio
+    │                                 · PasarelaQrAdapter.java     ← proveedor externo
+    ├── web/              PÁGINA      · AportesController.java     ← implementa lo generado
+    └── trabajos/                     · cron con ShedLock, consumidores de Kafka
 ```
 
-## El controlador no piensa
+## El orden en que se escribe
 
-```ts
-@Post('aportes')
-async cobrar(@Body() body: unknown, @Ctx() ctx: Contexto) {
-  const entrada = EntradaCU21.parse(body)          // contrato estricto
-  return this.cu21.ejecutar(ctx, entrada)          // y nada más
+**El contrato primero, siempre.** Un caso de uso empieza por su operación en
+`openapi/<servicio>.yaml`, derivada de la sección **Contrato** del `CU-NN`. No es
+formalismo: es lo que permite que otro carril genere el cliente y programe contra vos
+sin esperar a que termines ([[ADR-020 Contratos OpenAPI primero]]).
+
+```
+1  openapi/<servicio>.yaml        la operación, con sus códigos de error
+2  dominio/                       los átomos que el cálculo necesita
+3  infraestructura/               repositorios y clientes, sin lógica
+4  aplicacion/CU<NN>*.java        el organismo: orquesta y abre la transacción
+5  web/<X>Controller.java         implementa la interfaz generada
+6  pruebas                        las siete obligatorias
+```
+
+## El organismo — un caso de uso, una clase, una transacción
+
+```java
+@Service
+public class CU21CobrarAporte {
+
+    private final ObligacionRepositorio obligaciones;
+    private final NucleoFinancieroCliente nucleo;
+    private final Outbox outbox;
+
+    @Transactional
+    public ResultadoCobro ejecutar(EntradaCobro entrada, ContextoSesion ctx) {
+        return datos.conContexto(ctx, dsl -> {
+            var obligacion = obligaciones.tomarParaActualizar(dsl, entrada.obligacionId());
+            var calculo    = CalculoDeAporte.de(obligacion, entrada.fecha());   // átomo puro
+            obligaciones.marcarEnCobro(dsl, obligacion, calculo);
+            outbox.emitir(dsl, "aportes.aporte_en_cobro", carga(obligacion));
+            return ResultadoCobro.de(obligacion, calculo);
+        });
+    }
 }
 ```
 
-Sin `if` de negocio, sin cálculos, sin SQL, sin transacción. Traduce y delega.
-
-## El caso de uso es el único que abre transacción
-
-```ts
-export class CU21CobrarAporte {
-  async ejecutar(ctx: Contexto, entrada: EntradaCU21): Promise<SalidaCU21> {
-    return conTransaccion(ctx, async (tx) => {          // BEGIN + SET LOCAL
-      await this.idempotencia.exigirNueva(tx, entrada.claveIdempotencia)
-
-      const obligacion = await this.obligaciones.tomarParaActualizar(tx, entrada.obligacionId)
-      const calculo    = calcularAporte(obligacion, entrada.monto)   // átomo puro
-
-      await this.movimientos.insertarPar(tx, calculo)                 // molécula
-      await this.eventos.registrarYEncolar(tx, 'aporte.confirmado', calculo)
-
-      return calculo.aSalida()
-    })
-  }
-}
-```
-
-Reglas visibles en ese fragmento, todas obligatorias:
-
-| Regla | Dónde se ve |
+| Regla | Por qué |
 | --- | --- |
-| Idempotencia **antes** de escribir | `exigirNueva` es la primera línea |
-| Contexto de RLS dentro de la transacción | `conTransaccion` hace el `SET LOCAL` |
-| El cálculo es un átomo puro | `calcularAporte` no recibe la conexión |
-| El saldo se deriva, no se actualiza | `insertarPar` inserta movimiento y contrapartida |
-| El efecto externo va por outbox | `registrarYEncolar`, dentro del `COMMIT` |
-| Nada de proveedores acá | Ningún `await pasarela.*` dentro de la transacción |
+| **`@Transactional` solo en `aplicacion/`** | Un repositorio transaccional elige la frontera por su cuenta, y deja de haber una transacción por caso de uso. ArchUnit lo verifica |
+| **Ninguna llamada de red dentro** | Ni a un proveedor ni a otro servicio. Lo que haya que preguntar se pregunta **antes** del `BEGIN` |
+| **El cálculo va en un átomo** | Si el organismo tiene un `if` de negocio, ese `if` pertenece a `dominio/` |
+| **El outbox se escribe en la misma transacción** | O están el hecho y el aviso, o ninguno |
+
+## El controlador no decide nada
+
+```java
+@RestController
+public class AportesController implements AportesApi {   // ← interfaz GENERADA
+
+    @Override
+    public ResponseEntity<RespuestaCobro> cobrarAporte(SolicitudCobro cuerpo,
+                                                       String idempotencyKey) {
+        var salida = cu21.ejecutar(mapear(cuerpo), contexto.actual());
+        return ResponseEntity.ok(mapear(salida));
+    }
+}
+```
+
+- **Implementa la interfaz generada del OpenAPI.** Si el contrato cambia y el
+  controlador no, **no compila**: la divergencia deja de ser posible en vez de ser
+  detectada.
+- Ningún `@GetMapping` suelto. Si aparece uno, la ruta no está en el contrato.
+- Cero reglas de negocio, cero cálculos, cero condiciones. Traduce y delega.
+- El permiso se declara por endpoint. **Sin permiso declarado, el servicio no arranca.**
 
 ## Inyección de dependencias
 
-- Todo borde externo entra por una **interfaz de dominio** (`PasarelaQr`,
-  `ServicioFiscal`, `Mensajeria`), con su adaptador registrado por token.
-- Los repositorios reciben `tx`; **no** crean conexiones.
-- El reloj y el generador de identificadores se inyectan (`Reloj`, `Ids`): son lo que
-  vuelve determinista una prueba de plazos.
-- Nada de servicios genéricos tipo `CrudService`: cada caso de uso es explícito.
+Por **constructor**, siempre. Nada de `@Autowired` en campos: un campo inyectado
+esconde la dependencia y hace imposible construir la clase en una prueba unitaria.
 
-## Piezas transversales de `comun/`
+Los adaptadores externos y los clientes de otros servicios entran **detrás de una
+interfaz del dominio**, para poder sustituirlos por un doble sin tocar el organismo.
 
-| Pieza | Qué hace |
+## Lo que este servicio no puede hacer
+
+| Prohibido | Por qué |
 | --- | --- |
-| `conTransaccion(ctx, fn)` | Abre transacción, fija `app.usuario_id` y `app.rol` con `SET LOCAL`, revierte ante error |
-| `Idempotencia` | Busca la clave; si existe, devuelve la respuesta original sin escribir |
-| `FiltroDeErrores` | Traduce el rechazo de la base al código `R-XXX-nn` documentado; nunca filtra SQL al cliente |
-| `Traza` | Propaga el identificador de traza hasta el worker; toda línea de log lleva `cu` y `usuario_id` |
-| `ConfigSchema` | Valida las variables de entorno al arrancar; si falta una, el proceso no levanta |
+| Importar `bo.aportaya.<otro-servicio>` | Solo `plataforma/*` y el cliente generado del otro. ArchUnit lo verifica |
+| Consultar el esquema de otro servicio | No tiene `GRANT`, y jOOQ no le generó las clases ([[ADR-017 Propiedad de datos por servicio]]) |
+| Escribir el libro contable | Solo `nucleo-financiero`. Los demás se lo piden con clave de idempotencia |
+| Usar JPA o Hibernate | Prohibido por [[ADR-016 Acceso a datos con jOOQ]], no desaconsejado |
+| Confiar en una cabecera que diga quién es el usuario | Cada servicio valida la firma del JWT él mismo ([[ADR-024 Autenticación y sesión distribuida]]) |
+| `double` o `float` en cualquier cosa que sea dinero | [[ADR-019 Dinero con BigDecimal]] |
 
-## Guardas y permisos
+## Configuración
 
-- Autenticación resuelve usuario, rol y **dispositivo de confianza** (CU-04).
-- La autorización se verifica en el servidor **contra el recurso concreto**, no solo
-  contra el rol.
-- La guarda es conveniencia; la protección real es la política de fila. Si una
-  consulta sin contexto devolvería datos ajenos, el problema no es la guarda: falta
-  RLS.
+Cada servicio trae su `application.yml` y **valida al arrancar**: si falta una clave,
+el proceso no levanta y dice cuál. No hay archivo de configuración compartido — es lo
+que elimina el conflicto que un `.env` común producía en cada PR.
 
-## Errores
+`spring.threads.virtual.enabled=true`. La carga es de entrada/salida; los hilos
+virtuales la resuelven sin pedir programación reactiva.
 
-| Situación | Qué lanza el caso de uso | Qué devuelve la API |
-| --- | --- | --- |
-| Regla de aplicación | `ErrorDeNegocio('AP-CU21-02')` | `422` con código y mensaje humano |
-| Restricción de base | Error de PostgreSQL | `409` traducido a `R-XXX-nn` |
-| Sin permiso | `ErrorDeAutorizacion` | `403` sin detalles |
-| Proveedor caído | No aplica: va por cola | `202` aceptado |
+## Cuando hay que llamar a otro servicio
 
-## Antipatrones que se rechazan en revisión
+Sincrónico solo si la respuesta hace falta para responder; si no, evento por outbox.
+Toda llamada lleva timeout, reintento y cortacircuitos, y **nunca ocurre dentro de una
+transacción abierta**. Si la operación cruza servicios y mueve dinero, es una saga:
+está en la skill `servicios-y-sagas`.
 
-- Lógica de negocio en el controlador o en el repositorio.
-- Transacción abierta dentro de una molécula.
-- `await` a un proveedor externo dentro de `conTransaccion`.
-- Servicio que atiende cuatro casos de uso "porque se parecen".
-- Consulta fuera de `conTransaccion` sobre tablas con RLS.
-- `any` para esquivar el tipo introspectado de una tabla.
+## Antes de dar por terminado
+
+- [ ] La operación está en el OpenAPI y el controlador implementa la interfaz generada
+- [ ] `@Transactional` solo en `aplicacion/`
+- [ ] Ninguna llamada de red dentro de la transacción
+- [ ] El átomo del cálculo no depende de Spring ni de jOOQ
+- [ ] Permiso declarado por endpoint
+- [ ] Las siete pruebas obligatorias (`pruebas-cu`)
+- [ ] ArchUnit en verde
 
 ## Ver también
 
-`errores-api` · `seguridad-sesion-rls` · `idempotencia-reintentos` · `implementar-desde-boveda` · `arquitectura-atomica` · `datos-kysely` · `contratos-api` ·
-`trabajos-outbox` · `docs/Arquitectura/Flujo de una transacción.md`
+`arquitectura-atomica` · `datos-jooq` · `contratos-api` · `servicios-y-sagas` ·
+`dinero-decimal` · `errores-api` · `seguridad-sesion-rls` · `pruebas-cu`

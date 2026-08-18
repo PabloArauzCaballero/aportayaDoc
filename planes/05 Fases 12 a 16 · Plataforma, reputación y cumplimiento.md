@@ -516,14 +516,15 @@ efectos del acta se aplican en su misma transacción.
 - [ ] Un reclamo vencido dispara alerta **antes** del vencimiento, con el plazo guardado
 - [ ] `compilarExpresion` es una sola implementación compartida con la Fase 14
 - [ ] Toda alerta de monitoreo termina con conclusión escrita
-- [ ] Los 87 casos de uso están implementados. **Ninguno queda pendiente**
+- [ ] Los 87 casos de uso **del núcleo** están implementados. **Ninguno queda pendiente**
+      (los 12 de contabilidad ERP y publicidad son de las fases 18 y 19)
 
 ---
 
 ## 🏁 Hito: el sistema está completo
 
-Al cerrar la Fase 16, los **87 casos de uso** de la bóveda están implementados, las
-**274 tablas** tienen código que las escribe y las **124 restricciones** tienen prueba
+Al cerrar la Fase 16, los **87 casos de uso del núcleo** están implementados, las
+**306 tablas** tienen código que las escribe y las **138 restricciones** tienen prueba
 de rechazo. Falta endurecerlo y desplegarlo: [[06 Fase 17 · Endurecimiento, E2E y despliegue]].
 
 ## Ver también

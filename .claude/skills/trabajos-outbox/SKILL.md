@@ -1,6 +1,6 @@
 ---
 name: trabajos-outbox
-description: "Programar efectos externos y trabajos con fecha en AportaYa con Graphile Worker: patrón outbox, idempotencia del consumidor, reintentos, trabajos cron con bloqueo entre réplicas y adaptadores de proveedores. Úsala al enviar una notificación, llamar a una pasarela, emitir una factura, remitir un reporte o programar un cierre."
+description: "Programar efectos externos y trabajos con fecha en AportaYa: patrón outbox en PostgreSQL con relevo a Kafka y cron con ShedLock, idempotencia del consumidor, reintentos, trabajos cron con bloqueo entre réplicas y adaptadores de proveedores. Úsala al enviar una notificación, llamar a una pasarela, emitir una factura, remitir un reporte o programar un cierre."
 ---
 
 # Trabajos, outbox y proveedores externos
@@ -38,7 +38,7 @@ await this.eventos.registrarYEncolar(tx, {
 
 ```ts
 export const enviarAvisoDeAporte = async ({ pagoId }, helpers) => {
-  await conTransaccion(ctxSistema, async (tx) => {
+  await conContexto(ctxSistema, async (tx) => {
     if (await yaEnviado(tx, pagoId)) return          // al menos una vez ⇒ idempotente
     const aviso = await construirAviso(tx, pagoId)
     const res   = await mensajeria.enviar(aviso)     // borde externo
@@ -113,5 +113,5 @@ Solo alerta lo que requiere que alguien actúe. El resto es panel.
 
 ## Ver también
 
-`idempotencia-reintentos` · `notificaciones-consentimiento` · `reportes-regulatorios` · `observabilidad` · `back-nestjs` · `pruebas-cu` · `implementar-desde-boveda` ·
+`idempotencia-reintentos` · `notificaciones-consentimiento` · `reportes-regulatorios` · `observabilidad` · `back-spring` · `pruebas-cu` · `implementar-desde-boveda` ·
 `docs/Arquitectura/ADR-003 Trabajos, outbox y planificador.md`

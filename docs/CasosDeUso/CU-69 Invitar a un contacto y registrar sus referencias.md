@@ -73,7 +73,7 @@ normas: [Protección de datos, ASFI Consumidor Financiero, antifraude]
   sola vez.
 - Ninguna referencia figura como respaldo sin haberlo confirmado ella misma.
 
-## Contrato · `packages/contratos/CU-69.ts`
+## Contrato · `openapi/grupos.yaml`
 
 ```ts
 export const EntradaCU69 = z.object({
@@ -156,7 +156,7 @@ export const ErroresCU69 = {
 
 [[invitacion]] · [[referencia_personal]] · [[token_verificacion]] ·
 [[intento_validacion_token]] · [[envio_notificacion]] · [[aval_participante]] ·
-[[evento_dominio]]
+`evento_dominio`
 
 ## Criterios de aceptación
 

@@ -60,7 +60,7 @@ normas: [ASFI Gestión de Seguridad de la Información, ISO/IEC 27001 A.5.24-A.5
 - Existe línea de tiempo completa: detección, contención, reporte y notificación,
   con los plazos que regían ese día.
 
-## Contrato · `packages/contratos/CU-55.ts`
+## Contrato · `openapi/auditoria.yaml`
 
 ```ts
 export const EntradaCU55 = z.object({

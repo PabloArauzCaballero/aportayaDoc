@@ -36,8 +36,8 @@ Norma (docs/Cumplimiento.md)  →  Caso de uso (esta carpeta)  →  Restricción
 | **Postcondiciones** | Estado final garantizado |
 | **Restricciones aplicables** | Códigos `R-XXX-nn` de [[Restricciones]] que el motor de base de datos hace cumplir |
 | **Evidencia que deja** | Qué filas quedan escritas para poder demostrarlo después |
-| **Contrato** | El esquema Zod de entrada, salida y códigos de error, en `packages/contratos/CU-NN.ts` |
-| **Descomposición atómica** | Qué es átomo, molécula, organismo y página ([[ADR-009 Composición atómica]]) |
+| **Contrato** | El esquema de entrada, salida y códigos de error, como operación del OpenAPI de su servicio: `openapi/<servicio>.yaml` ([[ADR-020 Contratos OpenAPI primero]]) |
+| **Descomposición atómica** | Qué es átomo, molécula, organismo y página ([[ADR-023 Composición atómica en Java]]) |
 | **Eventos, trabajos y permisos** | Qué evento emite, qué trabajo dispara y qué permiso exige |
 | **Interfaz** | Qué pantalla de la app o del backoffice lo consume |
 | **Criterios de aceptación** | Pruebas verificables, en formato dado/cuando/entonces |
@@ -50,7 +50,7 @@ Norma (docs/Cumplimiento.md)  →  Caso de uso (esta carpeta)  →  Restricción
   obligatorio; partirlo introduce estados intermedios inconsistentes con dinero.
 - **Idempotencia**: todo caso que mueve dinero recibe `clave_idempotencia` del
   cliente y la valida antes de cualquier escritura.
-- **Evento de dominio**: todo caso relevante escribe en [[evento_dominio]] dentro de
+- **Evento de dominio**: todo caso relevante escribe en `evento_dominio` dentro de
   la misma transacción (patrón *outbox*), nunca por fuera.
 - **Reloj**: los plazos legales se **calculan al inicio y se guardan**; jamás se
   recalculan al consultar.

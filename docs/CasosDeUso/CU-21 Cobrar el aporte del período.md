@@ -59,7 +59,7 @@ normas: [ASFI conciliación y contabilidad, UIF]
 - La obligación refleja exactamente lo pagado, lo condonado y lo cubierto.
 - La bolsa del grupo creció en el importe acreditado, con asiento espejo.
 
-## Contrato · `packages/contratos/CU-21.ts`
+## Contrato · `openapi/aportes.yaml`
 
 ```ts
 export const EntradaCU21 = z.object({

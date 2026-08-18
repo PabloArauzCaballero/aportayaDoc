@@ -59,7 +59,7 @@ normas: [ASFI RNSF Libro 3 Título V — base de datos de eventos y central de r
 - Existe una base de pérdidas consultable que permite decidir inversiones en
   control con números y no con opiniones.
 
-## Contrato · `packages/contratos/CU-54.ts`
+## Contrato · `openapi/auditoria.yaml`
 
 ```ts
 export const EntradaCU54 = z.object({

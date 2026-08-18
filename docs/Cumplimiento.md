@@ -386,7 +386,7 @@ contingencia para registrar inicio y fin.
 | A.8.2 Derechos de acceso privilegiado | ✅ | [[asignacion_rol]] + [[registro_acceso_datos]] |
 | A.8.10 Borrado de información / A.8.11 Enmascaramiento | ✅ | [[proceso_anonimizacion]], `numero_enmascarado` |
 | A.8.12 Prevención de fuga de datos | 🟡 | Detectable vía `registro_acceso_datos` masivo → alerta; la herramienta DLP es externa |
-| A.8.15 Registro de eventos (logging) | ✅ | [[bitacora_evento]], [[evento_dominio]], [[intento_autenticacion]] |
+| A.8.15 Registro de eventos (logging) | ✅ | [[bitacora_evento]], `evento_dominio`, [[intento_autenticacion]] |
 | A.8.16 Actividades de monitoreo | ✅ | [[alerta_cumplimiento]], [[evaluacion_antifraude]], [[alerta_monitoreo_lft]] |
 | A.8.24 Uso de criptografía | 🟡 | Señalado en el modelo (`*_cifrado`, hashes con pepper); gestión de llaves es infraestructura |
 | A.8.32 Gestión de cambios | 🔵 | Proceso de ingeniería: fuera del modelo |
@@ -424,7 +424,7 @@ Si hubiera que defender el diseño en una inspección con siete frases:
 4. **Nada se acredita dos veces.** `clave_idempotencia` UNIQUE en webhooks, órdenes,
    transacciones, devengos y desembolsos.
 5. **Todo lo que pasó tiene autor, hora y hash.** [[bitacora_evento]] encadenada,
-   [[registro_acceso_datos]] para lecturas y [[evento_dominio]] como outbox
+   [[registro_acceso_datos]] para lecturas y `evento_dominio` como outbox
    transaccional.
 6. **Los plazos se guardan, no se calculan.** Reclamos, casos, requerimientos e
    incidentes almacenan el plazo que regía el día del hecho.

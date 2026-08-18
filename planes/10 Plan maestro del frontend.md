@@ -17,7 +17,7 @@ alcance: apps/movil · apps/backoffice · apps/web · packages/ui
 > en [[16 Carriles de frontend]].
 
 > [!important] Se apoya en el backend, pero no lo espera
-> El frontend arranca cuando existe el **contrato Zod** de un caso de uso, no cuando
+> El frontend arranca cuando existe el **contrato OpenAPI** de un caso de uso, no cuando
 > existe su implementación. Los contratos se escriben **antes** que el código (skill
 > `contratos-api`), así que las olas del frontend van **una ola detrás** de las del
 > backend, programando contra el contrato y un servidor simulado. Ver §9.
@@ -64,7 +64,7 @@ Espejo de los diez del backend. Ninguna fase los suspende.
 | # | Invariante | De dónde sale | Cómo se verifica |
 | :-: | --- | --- | --- |
 | 1 | **La vista no llama a la red.** Todo pasa por la capa de dominio | [[Prompt de frontend]] §2 | Lint: sin `fetch`/`axios` fuera de `dominio/` |
-| 2 | **Los tipos vienen del contrato**, nunca se reescriben a mano | [[ADR-006 Contratos y validación]] | Lint: sin `interface` que duplique un esquema de `@aportaya/contratos` |
+| 2 | **Los tipos vienen del contrato**, nunca se reescriben a mano | [[ADR-006 Contratos y validación]] | Lint: sin `interface` que duplique un esquema de `clientes/typescript` (generado del OpenAPI) |
 | 3 | **Ningún valor de diseño literal** fuera del archivo de tokens | skill `disenar-frontend` | Lint: sin hex, sin px sueltos en componentes |
 | 4 | **Los cuatro estados, siempre**: cargando, vacío, error, éxito | [[Prompt de frontend]] §3 | Prueba por pantalla con datos |
 | 5 | **Ningún importe se formatea a mano.** Solo el átomo `Monto` | [[ADR-005 Dinero y decimales]] | Lint: sin `toFixed`, sin `Intl.NumberFormat` fuera de `Monto` |
@@ -92,11 +92,11 @@ Espejo de los diez del backend. Ninguna fase los suspende.
 | Sitio público | **Astro 5** + islas React, adaptador Node | Estático por defecto; SSR solo en verificación |
 | Diseño | **`packages/ui`** — tokens, átomos, moléculas, organismos | skill `disenar-frontend` · `docs/Views/Sistema-Diseno/` |
 | Estado servidor | **TanStack Query** en los tres | Caché con invalidación explícita |
-| Formularios | **React Hook Form + los Zod de `@aportaya/contratos`** | Invariante 2: el esquema no se reescribe |
+| Formularios | **React Hook Form + los tipos generados del OpenAPI** | Invariante 2: el esquema no se reescribe |
 | Cliente de API | Generado desde los contratos, un archivo por CU | `packages/cliente-api` |
 | Logs de cliente | Sin PII, con `traza` propagada al backend | Cabecera `x-request-id` |
 | Pruebas unitarias | **Jest + Testing Library** | Se prueba lo que el usuario ve |
-| Pruebas de componente | **Jest + RTL**, con **MSW** para la API | Mocks derivados del contrato Zod |
+| Pruebas de componente | **Jest + RTL**, con **MSW** para la API | Mocks derivados del contrato OpenAPI |
 | Pruebas E2E web | **Playwright + Chromium** | Backoffice y sitio público |
 | Pruebas E2E móvil | **Maestro** sobre build de desarrollo | Playwright no maneja React Native |
 | Accesibilidad | `jest-axe` + `@axe-core/playwright` | Bloqueante en CI |
@@ -108,7 +108,7 @@ Espejo de los diez del backend. Ninguna fase los suspende.
 - `fetch` dentro de un componente.
 - Un hex, un `px` o una fuente literal fuera de `tokens.ts`.
 - `toFixed` o aritmética sobre importes en el cliente.
-- Reescribir a mano un tipo que ya está en `@aportaya/contratos`.
+- Reescribir a mano un tipo que ya está en `clientes/typescript` (generado del OpenAPI).
 - Una pantalla de datos sin sus cuatro estados.
 - Un `div` que hace de botón.
 - Datos sensibles en la URL, en el estado global o en `AsyncStorage` plano.
@@ -138,7 +138,7 @@ tokens/                       único lugar con valores literales
 | `moleculas/` | `atomos/`, `dominio/` | Orquestar la pantalla, decidir navegación | Comportamiento: escribe, valida, emite |
 | `organismos/` | `moleculas/`, `atomos/`, `dominio/` | HTTP directo | Flujo completo con API simulada, con error y reintento |
 | `pantallas/` | `organismos/` | Cálculos, reglas | E2E |
-| `dominio/` | `@aportaya/contratos` | Renderizar | Contrato: la respuesta simulada valida contra el Zod |
+| `dominio/` | `clientes/typescript` (generado del OpenAPI) | Renderizar | Contrato: la respuesta simulada valida contra el Zod |
 
 **Lo que sirve a dos productos sube a `packages/ui`.** Lo que depende de una API
 nativa (cámara, biometría) se queda en `apps/movil`.
@@ -170,7 +170,7 @@ nativa (cámara, biometría) se queda en `apps/movil`.
 | Regla | Qué prohíbe | Invariante |
 | --- | --- | :-: |
 | `aportaya/sin-red-en-vista` | `fetch`, `axios`, `XMLHttpRequest` fuera de `dominio/` | 1 |
-| `aportaya/tipos-del-contrato` | Declarar un tipo que ya exporta `@aportaya/contratos` | 2 |
+| `aportaya/tipos-del-contrato` | Declarar un tipo que ya exporta `clientes/typescript` (generado del OpenAPI) | 2 |
 | `aportaya/sin-literal-de-diseno` | Hex, `rgb()`, `px` y familias tipográficas fuera de `tokens/` | 3 |
 | `aportaya/sin-formato-de-dinero` | `toFixed`, `Intl.NumberFormat` y concatenar `'Bs '` fuera del átomo `Monto` | 5 |
 | `aportaya/capas-front` | `atomos/` importando de `dominio/` u `organismos/` | — |
@@ -187,7 +187,7 @@ nativa (cámara, biometría) se queda en `apps/movil`.
 | **Átomo** | Jest + RTL | Variantes y estados | `<Atomo>.spec.tsx` |
 | **Molécula** | Jest + RTL | Comportamiento observable | `<Molecula>.spec.tsx` |
 | **Organismo** | Jest + RTL + **MSW** | Flujo con API simulada, **incluidos error y reintento** | `<Organismo>.spec.tsx` |
-| **Contrato** | Jest + Zod | La respuesta simulada **valida contra el Zod real** | `CU<NN>.contrato.spec.ts` |
+| **Contrato** | Vitest + validación contra el OpenAPI | La respuesta simulada **valida contra el Zod real** | `CU<NN>.contrato.spec.ts` |
 | **Accesibilidad** | `jest-axe` | Cero violaciones serias por pantalla | `<Pantalla>.a11y.spec.tsx` |
 | **E2E web** | Playwright + Chromium | Backoffice y sitio público | `<flujo>.e2e.spec.ts` |
 | **E2E móvil** | Maestro | App en build de desarrollo | `<flujo>.maestro.yaml` |
@@ -201,8 +201,8 @@ nativa (cámara, biometría) se queda en `apps/movil`.
 3. **Sin conexión**: muestra el último estado y no permite operar.
 4. **Accesibilidad**: `jest-axe` sin violaciones serias; foco visible; navegable por
    teclado.
-5. **Contrato**: la respuesta que usa el mock valida contra el Zod de
-   `@aportaya/contratos`. Un mock que no valida es una pantalla que ya está rota.
+5. **Contrato**: la respuesta que usa el mock valida contra el esquema OpenAPI de
+   `clientes/typescript` (generado del OpenAPI). Un mock que no valida es una pantalla que ya está rota.
 
 > **La prueba 5 es la que evita el desastre clásico del frontend**: pantallas verdes
 > contra mocks inventados que no se parecen a lo que la API devuelve.
@@ -239,8 +239,8 @@ frontend            Ola F0 ─── Ola F1 ─── Ola F2 ─── Ola F3 �
 
 | Qué necesita el frontend | Cuándo está |
 | --- | --- |
-| `packages/contratos/src/CU<NN>.ts` | Lo escribe el carril de backend **antes** de implementar |
-| Un servidor simulado | **MSW**, con las respuestas derivadas del Zod. No espera a nadie |
+| `openapi/<servicio>.yaml` | Lo escribe el carril de backend **antes** de implementar |
+| Un servidor simulado | **MSW**, con las respuestas derivadas del OpenAPI. No espera a nadie |
 | La API real | Solo para el E2E de la Fase F12 y para las pruebas de integración de cada ola |
 
 **Regla dura:** si el contrato de un CU todavía no existe, **el frontend no lo
@@ -257,7 +257,7 @@ mientras tanto.
 - [ ] **Los cuatro estados** implementados y probados en cada pantalla con datos
 - [ ] **Cero literales de diseño** fuera de tokens (verificado por lint)
 - [ ] Ningún componente sobre el límite sin justificación escrita
-- [ ] Los tipos vienen del contrato; ningún mock que no valide contra su Zod
+- [ ] Los tipos vienen del contrato; ningún mock que no valide contra su esquema OpenAPI
 - [ ] Claro y oscuro probados; `prefers-reduced-motion` respetado
 - [ ] Contraste AA (≥ 4.5:1), foco visible, navegación completa por teclado
 - [ ] El checklist de §6 de la skill `disenar-frontend`, ejecutado

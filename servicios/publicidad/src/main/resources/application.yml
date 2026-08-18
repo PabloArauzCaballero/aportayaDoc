@@ -1,0 +1,32 @@
+# publicidad — generado por scripts/nuevo_servicio.py
+# Si falta una clave, el proceso NO levanta y dice cual.
+spring:
+  application:
+    name: publicidad
+  threads:
+    virtual:
+      enabled: true                 # ADR-015: la carga es de E/S, no reactiva
+  datasource:
+    url: ${BD_URL}                  # por PgBouncer, modo transaccion
+    username: svc_publicidad
+    password: ${BD_CLAVE}
+    hikari:
+      maximum-pool-size: 5     # la SUMA de los catorce no supera max_connections
+      data-source-properties:
+        prepareThreshold: 0         # PgBouncer en modo transaccion
+  kafka:
+    bootstrap-servers: ${KAFKA_URL}
+
+aportaya:
+  esquema: publicidad
+  outbox:
+    intervalo: PT1S                 # relevo: lee el outbox y publica DESPUES del commit
+  jwt:
+    jwks-uri: ${JWKS_URI}           # ADR-024: cada servicio valida la firma el mismo
+  zona-horaria: America/La_Paz      # plazos habiles
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true               # readiness mira base y Kafka; liveness solo el proceso

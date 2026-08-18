@@ -70,7 +70,7 @@ normas: [Protección de datos, no discriminación arbitraria, ASFI Consumidor Fi
 - Ninguna reseña individual sale del grupo, y ninguna borra la posibilidad de
   respuesta del evaluado.
 
-## Contrato · `packages/contratos/CU-76.ts`
+## Contrato · `openapi/transparencia.yaml`
 
 ```ts
 export const EntradaCU76 = z.object({
@@ -149,7 +149,7 @@ export const ErroresCU76 = {
 ## Evidencia que deja
 
 [[resena_participante]] · [[evento_reputacion]] · [[componente_score]] ·
-[[bitacora_evento]] · [[evento_dominio]]
+[[bitacora_evento]] · `evento_dominio`
 
 ## Criterios de aceptación
 

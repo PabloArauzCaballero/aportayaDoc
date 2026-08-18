@@ -71,7 +71,7 @@ normas: [ASFI gobierno corporativo, control interno, protección de datos]
 - Cada período tiene su juego de indicadores, con meta, variación y dueño.
 - Todo número del tablero es reproducible desde su definición y su período.
 
-## Contrato · `packages/contratos/CU-98.ts`
+## Contrato · `openapi/auditoria.yaml`
 
 ```ts
 export const EntradaCU98 = z.object({
@@ -149,7 +149,7 @@ export const ErroresCU98 = {
 ## Evidencia que deja
 
 [[indicador_kpi]] · [[metrica_grupo]] · [[metrica_organizador]] ·
-[[cierre_diario]] · [[liquidacion_ingresos]] · [[evento_dominio]]
+[[cierre_diario]] · [[liquidacion_ingresos]] · `evento_dominio`
 
 ## Criterios de aceptación
 

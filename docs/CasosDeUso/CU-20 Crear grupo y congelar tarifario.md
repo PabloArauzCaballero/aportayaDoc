@@ -42,7 +42,7 @@ normas: [ASFI transparencia y consumidor financiero]
 4. Se redacta el [[reglamento_grupo]] y cada participante lo firma
    ([[aceptacion_reglamento]]), viendo el costo que le corresponde.
 5. Se crean [[participante]] y [[cupo]]; se generan [[periodo]] y [[turno]].
-6. Se emite [[evento_dominio]] `GRUPO_CREADO`.
+6. Se emite `evento_dominio` `GRUPO_CREADO`.
 
 ## Flujos alternativos
 
@@ -58,7 +58,7 @@ normas: [ASFI transparencia y consumidor financiero]
 - El grupo tiene cuenta propia y precio congelado con hash verificable.
 - Cada participante aceptó el reglamento y conoce el costo.
 
-## Contrato · `packages/contratos/CU-20.ts`
+## Contrato · `openapi/grupos.yaml`
 
 ```ts
 export const EntradaCU20 = z.object({

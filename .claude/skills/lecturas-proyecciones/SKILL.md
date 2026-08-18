@@ -96,6 +96,6 @@ Controlador → Servicio de consulta → Repositorio de lectura → vista o cons
 
 ## Ver también
 
-`datos-kysely` · `seguridad-sesion-rls` · `extraccion-de-datos` · `indicadores-tablero` ·
+`datos-jooq` · `seguridad-sesion-rls` · `extraccion-de-datos` · `indicadores-tablero` ·
 `resiliencia-rendimiento` · `reportes-regulatorios` · `boveda-modelo` ·
 `docs/Arquitectura/ADR-011 Lecturas y réplica.md`

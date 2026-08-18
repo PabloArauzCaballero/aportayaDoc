@@ -56,7 +56,7 @@ normas: [Debido proceso, ASFI Consumidor Financiero, gobernanza del grupo]
    `es_automatico`. Esa tabla es el expediente: sin ella no hay debido proceso que
    demostrar.
 7. Confirmado, se registra [[evento_reputacion]] negativo y se emite
-   [[evento_dominio]] `incumplimiento.confirmado`.
+   `evento_dominio` `incumplimiento.confirmado`.
 
 ## Flujos alternativos
 
@@ -77,7 +77,7 @@ normas: [Debido proceso, ASFI Consumidor Financiero, gobernanza del grupo]
   archivada y decisión motivada.
 - El expediente completo se puede exhibir sin reconstruir nada.
 
-## Contrato · `packages/contratos/CU-25.ts`
+## Contrato · `openapi/garantia.yaml`
 
 ```ts
 export const EntradaCU25 = z.object({
@@ -159,7 +159,7 @@ export const ErroresCU25 = {
 
 [[registro_incumplimiento]] · [[evidencia_incumplimiento]] ·
 [[historial_estado_incumplimiento]] · [[descargo_participante]] ·
-[[politica_sancion]] · [[evento_reputacion]] · [[evento_dominio]]
+[[politica_sancion]] · [[evento_reputacion]] · `evento_dominio`
 
 ## Criterios de aceptación
 

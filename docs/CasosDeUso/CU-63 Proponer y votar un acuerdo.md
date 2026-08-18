@@ -42,7 +42,7 @@ normas: [Gobernanza del grupo, debido proceso]
    - se computa el resultado sobre los votos emitidos;
    - el acuerdo pasa a `APROBADO` o `RECHAZADO` con `fecha_resolucion`;
    - si fue aprobado, se ejecuta el efecto asociado a su tipo;
-   - se emite [[evento_dominio]] `acuerdo.resuelto`.
+   - se emite `evento_dominio` `acuerdo.resuelto`.
 6. Se notifica el resultado con el detalle de la votación, visible para el grupo.
 
 ## Flujos alternativos
@@ -60,7 +60,7 @@ normas: [Gobernanza del grupo, debido proceso]
 - Toda decisión colectiva tiene proponente, votos individuales y resultado.
 - Ningún efecto colectivo se ejecutó sin acuerdo aprobado.
 
-## Contrato · `packages/contratos/CU-63.ts`
+## Contrato · `openapi/grupos.yaml`
 
 ```ts
 export const EntradaCU63 = z.object({
@@ -135,7 +135,7 @@ export const ErroresCU63 = {
 ## Evidencia que deja
 
 [[acuerdo]] · [[voto_participante]] · [[descargo_participante]] (en expulsiones) ·
-[[evento_dominio]] · [[bitacora_evento]]
+`evento_dominio` · [[bitacora_evento]]
 
 ## Criterios de aceptación
 

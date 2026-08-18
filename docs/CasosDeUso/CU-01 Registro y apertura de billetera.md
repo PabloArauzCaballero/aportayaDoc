@@ -57,7 +57,7 @@ normas: [ASFI Res. 540/2025, UIF EBR, ASFI Consumidor Financiero]
 9. Se crea [[cuenta_billetera]] con `tipo='USUARIO'`, `estado='ACTIVA'`,
    `nivel_debida_diligencia='SIMPLIFICADA'`, saldos en cero, y su
    [[cuenta_contable]] espejo.
-10. Se escribe [[evento_dominio]] `USUARIO_REGISTRADO` y `BILLETERA_ABIERTA` en la
+10. Se escribe `evento_dominio` `USUARIO_REGISTRADO` y `BILLETERA_ABIERTA` en la
     misma transacción.
 
 ## Flujos alternativos
@@ -76,7 +76,7 @@ normas: [ASFI Res. 540/2025, UIF EBR, ASFI Consumidor Financiero]
 - El usuario tiene calificación de riesgo vigente y límites aplicables resueltos.
 - El expediente del cliente queda abierto con su fecha de conservación.
 
-## Contrato · `packages/contratos/CU-01.ts`
+## Contrato · `openapi/identidad.yaml`
 
 ```ts
 export const EntradaCU01 = z.object({

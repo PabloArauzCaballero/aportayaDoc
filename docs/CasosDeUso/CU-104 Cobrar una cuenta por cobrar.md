@@ -52,7 +52,7 @@ normas: [Ley 393 (libros y conservación), NIIF]
   verificable: pendiente, cobrada parcial, cobrada, o declarada incobrable con
   motivo — nunca "se perdió de vista".
 
-## Contrato · `packages/contratos/CU-104.ts`
+## Contrato · `openapi/erp.yaml`
 
 ```ts
 export const EntradaCU104 = z.object({
@@ -106,7 +106,7 @@ export const ErroresCU104 = {
 
 ## Restricciones aplicables
 
-`R-AUD-01` · `R-AUD-05` · `R-AUD-06`
+`R-AUD-01` · `R-AUD-05` · `R-AUD-06` · `R-CTB-06`
 
 ## Evidencia que deja
 

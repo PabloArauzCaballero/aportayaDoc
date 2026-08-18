@@ -39,7 +39,7 @@ normas: [ASFI Consumidor Financiero (RNSF Libro 4 Título I)]
    `token_firma_id` y `hash_evidencia` (hash del documento + datos del acto).
 4. Se registra [[consentimiento]] por finalidad (tratamiento de datos,
    comunicaciones comerciales) de forma separada del contrato.
-5. Se emite [[evento_dominio]] `CONTRATO_ACEPTADO`.
+5. Se emite `evento_dominio` `CONTRATO_ACEPTADO`.
 
 ## Flujos alternativos
 
@@ -55,7 +55,7 @@ normas: [ASFI Consumidor Financiero (RNSF Libro 4 Título I)]
 - Existe una aceptación por (usuario, contrato, versión), con evidencia verificable.
 - El usuario puede reimprimir en cualquier momento la versión que aceptó.
 
-## Contrato · `packages/contratos/CU-05.ts`
+## Contrato · `openapi/identidad.yaml`
 
 ```ts
 export const EntradaCU05 = z.object({

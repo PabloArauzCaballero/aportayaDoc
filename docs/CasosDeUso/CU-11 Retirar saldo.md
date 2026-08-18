@@ -50,7 +50,7 @@ normas: [BCB, UIF art. 52 inc. i, antifraude]
      crédito a `PUENTE_CUSTODIA`;
    - se registra el [[cargo_comision]] del costo de retiro si el tarifario lo
      define;
-   - se genera el asiento contable y el [[evento_dominio]] `RETIRO_PAGADO`.
+   - se genera el asiento contable y el `evento_dominio` `RETIRO_PAGADO`.
 8. Se evalúan umbrales UIF (retiro de billetera acumulado) →
    [[CU-41 Detectar umbral y registrar formulario PCC-01]].
 
@@ -70,7 +70,7 @@ normas: [BCB, UIF art. 52 inc. i, antifraude]
 - O el usuario recibió el dinero y su saldo bajó, o el saldo volvió íntegro a
   disponible. No hay tercer estado.
 
-## Contrato · `packages/contratos/CU-11.ts`
+## Contrato · `openapi/nucleo-financiero.yaml`
 
 ```ts
 export const EntradaCU11 = z.object({

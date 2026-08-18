@@ -71,7 +71,7 @@ normas: [Gobernanza, ASFI Consumidor Financiero, no discriminación arbitraria]
 - Cada organizador y período tiene una evaluación con métricas desglosadas.
 - Ninguna acción sobre un organizador se toma sin una evaluación que la respalde.
 
-## Contrato · `packages/contratos/CU-92.ts`
+## Contrato · `openapi/organizador.yaml`
 
 ```ts
 export const EntradaCU92 = z.object({
@@ -146,7 +146,7 @@ export const ErroresCU92 = {
 ## Evidencia que deja
 
 [[evaluacion_desempeno]] · [[metrica_organizador]] · [[organizador]] ·
-[[metrica_grupo]] · [[evento_dominio]]
+[[metrica_grupo]] · `evento_dominio`
 
 ## Criterios de aceptación
 

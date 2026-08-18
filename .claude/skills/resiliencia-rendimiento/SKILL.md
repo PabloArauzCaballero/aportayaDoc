@@ -93,4 +93,4 @@ equipo a ignorar las alertas.
 ## Ver también
 
 `observabilidad` · `idempotencia-reintentos` · `lecturas-proyecciones` ·
-`proveedores-externos` · `trabajos-outbox` · `datos-kysely` · `despliegue-contenedores`
+`proveedores-externos` · `trabajos-outbox` · `datos-jooq` · `despliegue-contenedores`

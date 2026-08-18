@@ -3,11 +3,18 @@ tags:
   - arquitectura
   - adr
 titulo: "ADR-006 — Contratos y validación"
-estado: aceptada
+estado: superada por ADR-020
 fecha: 2026-08-12
 ---
 
 # ADR-006 — Contratos y validación
+
+> [!warning] Decisión superada el 2026-08-16
+> La reemplaza [[ADR-020 Contratos OpenAPI primero]], al pasar el backend a Spring Boot con
+> arquitectura de microservicios ([[ADR-014 Arquitectura de servicios]]).
+> Se conserva porque el motivo por el que se decidió lo que se decidió es
+> parte del expediente: quien lea el ADR nuevo tiene que poder ver qué
+> cambió y por qué.
 
 ## Contexto
 

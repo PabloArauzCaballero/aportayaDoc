@@ -8,10 +8,22 @@
 <meta name="theme-color" content="#1C5A3A">
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
 
+<!-- URL pública del sitio. GitHub Pages sirve este repo como *project page*, así que
+     la ruta incluye el nombre del repositorio: /aportayaDoc/.
+     El repo se renombró (aportaya → aportayaDoc) y Pages NO redirige las URLs viejas
+     de project page: https://pabloarauzcaballero.github.io/aportaya/ da 404.
+     Si el repo vuelve a renombrarse, hay que actualizar canonical, og:url y og:image
+     de este archivo — son absolutas a propósito. -->
+<link rel="canonical" href="https://pabloarauzcaballero.github.io/aportayaDoc/">
+
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="AportaYa">
 <meta property="og:title" content="AportaYa — El pasanaku, en tu bolsillo">
 <meta property="og:description" content="Ahorro rotativo comunitario con la calidez de la comunidad y el rigor de una fintech. Tu plata, tu grupo, tu confianza.">
-<meta property="og:image" content="assets/img/og.png">
+<meta property="og:url" content="https://pabloarauzcaballero.github.io/aportayaDoc/">
+<!-- og:image y twitter:image DEBEN ser absolutas: Facebook, WhatsApp, LinkedIn y X
+     no resuelven rutas relativas y muestran la tarjeta sin imagen. -->
+<meta property="og:image" content="https://pabloarauzcaballero.github.io/aportayaDoc/assets/img/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="AportaYa — El pasanaku, en tu bolsillo. Aportá hoy, recibí tu turno, retirá cuando quieras.">
@@ -19,7 +31,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="AportaYa — El pasanaku, en tu bolsillo">
 <meta name="twitter:description" content="Ahorro rotativo comunitario con la calidez de la comunidad y el rigor de una fintech. Tu plata, tu grupo, tu confianza.">
-<meta name="twitter:image" content="assets/img/og.png">
+<meta name="twitter:image" content="https://pabloarauzcaballero.github.io/aportayaDoc/assets/img/og.png">
 
 <!-- Fuentes vendorizadas: sin CDN en runtime. Se precargan solo los dos
      archivos que la primera pantalla usa de verdad. -->

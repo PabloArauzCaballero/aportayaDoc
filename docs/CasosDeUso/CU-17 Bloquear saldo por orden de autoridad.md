@@ -39,7 +39,7 @@ normas: [UIF, requerimientos judiciales y fiscales]
 4. El saldo sigue figurando como del titular: la app muestra el monto no disponible
    con una explicación y una referencia de contacto.
 5. Se responde a la autoridad dentro del plazo y se guarda `respuesta_url`.
-6. Se emiten [[evento_dominio]] y entrada en [[bitacora_evento]]; toda consulta de
+6. Se emiten `evento_dominio` y entrada en [[bitacora_evento]]; toda consulta de
    datos del afectado queda en [[registro_acceso_datos]].
 
 ## Flujos alternativos
@@ -57,7 +57,7 @@ normas: [UIF, requerimientos judiciales y fiscales]
 - El importe ordenado está indisponible y trazado a un oficio con hash.
 - Ninguna orden se ejecuta sin documento de respaldo registrado.
 
-## Contrato · `packages/contratos/CU-17.ts`
+## Contrato · `openapi/nucleo-financiero.yaml`
 
 ```ts
 export const EntradaCU17 = z.object({

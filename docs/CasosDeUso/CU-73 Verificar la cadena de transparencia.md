@@ -51,7 +51,7 @@ normas: [Transparencia, evidencia auditable]
 - Queda constancia de quién verificó, cuándo y con qué resultado.
 - Ninguna cadena rota queda sin incidente.
 
-## Contrato · `packages/contratos/CU-73.ts`
+## Contrato · `openapi/transparencia.yaml`
 
 ```ts
 export const EntradaCU73 = z.object({

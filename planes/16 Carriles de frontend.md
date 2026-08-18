@@ -15,6 +15,15 @@ fecha: 2026-08-14
 > un directorio = una rama = una máquina = un chat**, con propiedad exclusiva de
 > archivos para que el conflicto de merge sea imposible por diseño.
 
+> [!important] Tres correcciones desde el plan secuencial
+> [[17 Plan de acción secuencial · coordinación de cinco máquinas]] manda en **quién,
+> en qué máquina y en qué tramo**, porque este documento y el del backend cuentan
+> máquinas por separado y sumados piden ocho. Tres cambios concretos a lo que sigue:
+> **la Ola F0 se parte en tres andamiajes concurrentes** (delta 2), **la rama es
+> `<usuario>/feature/carril-<id>`** como manda `git-flujo` y no `carril/f…` (delta 3),
+> y **la unidad de planificación es el tramo, no la ola** (delta 4). Lo demás de este
+> documento —qué archivos posee cada carril— sigue vigente sin cambios.
+
 ---
 
 ## 1 · Por qué esto se paraleliza todavía mejor que el backend
@@ -24,7 +33,7 @@ Por tres razones, y las tres son decisiones de la Fase F0:
 | Razón | Consecuencia |
 | --- | --- |
 | **Enrutamiento por sistema de archivos** en los tres productos (Expo Router, TanStack Router, Astro) | Una pantalla nueva es **un archivo nuevo**. No existe un `routes.tsx` central que todos editen |
-| **El contrato Zod existe antes que la implementación** | El frontend nunca espera al backend: programa contra el contrato y MSW |
+| **El contrato OpenAPI existe antes que la implementación** | El frontend nunca espera al backend: programa contra el contrato y MSW |
 | **`packages/ui` se congela al cerrar F1** | Los carriles **componen**, no diseñan. Nadie edita tokens ni átomos |
 
 > **La consecuencia práctica:** el frontend no espera a que el backend termine un caso
@@ -34,13 +43,22 @@ Por tres razones, y las tres son decisiones de la Fase F0:
 
 ## 2 · Mapa de olas
 
-### Ola F0 · Troncal — **una sola máquina, nadie más trabaja**
+### Ola F0 · Andamiajes y sistema de diseño — **tres máquinas en paralelo** (delta 2)
 
-| Carril | Fases | Posee |
-| --- | --- | --- |
-| **T** | F0, F1 | Todo: `packages/ui`, `packages/cliente-api`, los tres andamiajes, MSW, lint, CI, ADR-018 y ADR-019 |
+La fase F0 se parte en **tres andamiajes concurrentes**: son tres directorios
+nuevos, colisión cero. Lo único compartido —lint, CI, `package.json`— lo toca
+**solo P1**, por micro-PR. El cliente de API es **generado**
+(`clientes/typescript/`) y no tiene dueño. `packages/ui` (F1) sigue siendo de
+**un solo puesto**: partirlo es partir el sistema de diseño.
 
-Bloquea las once fases restantes. **`packages/ui` queda congelado al cerrar F1**: a
+| Carril | Fase | Puesto | Posee |
+| --- | :-: | :-: | --- |
+| **F0-M** | F0 | P3 | andamiaje móvil (`apps/movil/**`) + MSW |
+| **F0-B** | F0 | P4 | andamiaje backoffice (`apps/backoffice/**`) |
+| **F0-W** | F0 | P5 | andamiaje web (`apps/web/**`, Astro) + ADR-037 y ADR-038 |
+| **F1** | F1 | P3 | `packages/ui` — el sistema de diseño entero |
+
+Bloquea las trece fases restantes. **`packages/ui` queda congelado al cerrar F1**: a
 partir de ahí, un átomo nuevo se pide por micro-PR.
 
 ### Ola F1 · 3 carriles — los tres shells
@@ -74,21 +92,26 @@ partir de ahí, un átomo nuevo se pide por micro-PR.
 | **M3** | F5 | `apps/movil/src/pantallas/pasanaku/` | 20–29, 52, 53, 59–76 |
 | **B2** | F8 | `apps/backoffice/src/rutas/cumplimiento/` | 38 CU de cumplimiento y gobierno |
 
-### Ola F4 · 1 carril
+### Ola F4 · 3 carriles — publicación y los carriles nuevos
 
 | Carril | Fase | Alcance |
 | --- | :-: | --- |
 | **T** | F12 | E2E, accesibilidad, rendimiento, seguridad, publicación |
+| **B3** | F13 | `apps/backoffice/src/rutas/contabilidad/` — ERP (CU-100–106) |
+| **B4** | F14 | `apps/backoffice/src/rutas/publicidad/` — publicidad (CU-110–114) |
 
 ### Resumen
 
 ```
-Ola F0 ──► 1 máquina   (troncal, bloqueante)
+Ola F0 ──► 3 máquinas   (andamiajes · delta 2) + 1 (F1, sistema de diseño)
 Ola F1 ──► 3 máquinas
 Ola F2 ──► 5 máquinas   ← pico
 Ola F3 ──► 2 máquinas
-Ola F4 ──► 1 máquina
+Ola F4 ──► 3 máquinas   (F12 + los carriles nuevos F13 y F14)
 ```
+
+**17 carriles en total** — eran 12: el delta 2 parte la troncal en cuatro y los
+módulos 13 y 14 suman dos ([[18 Fichas de carril · las 38 unidades de trabajo]]).
 
 ---
 
@@ -132,12 +155,13 @@ carril de backend y trabaja en otra pantalla mientras tanto (regla cero).
 | Ruta | Quién la cambia |
 | --- | --- |
 | **`packages/ui/**`** | Ola F0. **Congelado al cerrar F1.** Un átomo nuevo = micro-PR |
-| `packages/contratos/**` | Los carriles de **backend** |
+| El `openapi/` de cada servicio | Los carriles de **backend** |
 | `apps/*/src/tokens/**` | Ola F0. Jamás durante un carril |
 | `apps/movil/src/{navegacion,proveedores}/` | Carril M (F2), luego congelado |
 | `apps/backoffice/src/{layout,proveedores}/` | Carril B (F6), luego congelado |
 | `apps/web/src/seo/<Meta>` | Carril W1 (F10) |
 | `package.json`, `yarn.lock`, configs, `docker/`, `.github/` | Micro-PR |
+| **`.claude/skills/**`** | **Micro-PR.** Las 65 skills son de todos ([[19 Contrato de carril · conflicto cero, skills y calidad verificada]] §1) |
 
 ---
 
@@ -177,8 +201,9 @@ acá: **un carril necesita un átomo que `packages/ui` no tiene.**
 
 ## 7 · Puntos de sincronización entre olas
 
-- [ ] Todos los carriles de la ola fusionaron a `main`
-- [ ] `main` pasa el CI completo, incluidos `test:a11y` y Lighthouse CI
+- [ ] Todos los carriles del tramo fusionaron a `dev` (`git-flujo`: los PR apuntan a
+      `dev`; `dev → main` solo cuando el tramo cierra entero y en verde)
+- [ ] `dev` pasa el CI completo, incluidos `test:a11y` y Lighthouse CI
 - [ ] Cada carril ejecutó su gate y lo registró en su informe
 - [ ] Micro-PR pendientes, fusionados
 - [ ] Cada máquina hace `git pull`; **nadie regenera nada**: `packages/ui` está congelado
@@ -192,9 +217,14 @@ acá: **un carril necesita un átomo que `packages/ui` no tiene.**
 
 ```bash
 git clone <repo> && cd Pasanaku
-git checkout -b carril/f<ola>-<id>-<dominio> origin/main
+git checkout -b <usuario>/feature/carril-<id> origin/dev    # git-flujo · delta 3
 
 yarn install --immutable          # sin yarn add
+
+# las skills llegaron completas y la sesión las ve  (19 §1)
+ls .claude/skills | grep -v README | wc -l        # 65
+python3 scripts/verificar_boveda.py               # "índice de skills completo"
+
 yarn dev:mock                     # MSW: no necesita el backend levantado
 
 # según el carril:
@@ -231,7 +261,7 @@ TU ALCANCE
   Fase:        F<N>
   Producto:    <movil | backoffice | web>
   Casos de uso: <lista>
-  Rama:        carril/f<ola>-<id>-<dominio>
+  Rama:        <usuario>/feature/carril-<id>          (PR hacia dev)
 
 POSEÉS EN EXCLUSIVA
   <su directorio de pantallas o rutas>
@@ -240,7 +270,7 @@ POSEÉS EN EXCLUSIVA
   planes/informes/carril-<id>.md
 
 NO TOCÁS (solo lectura)
-  packages/ui/   packages/contratos/   apps/*/src/tokens/
+  packages/ui/   clientes/typescript/   apps/*/src/tokens/
   los shells (navegacion/, proveedores/, layout/)   apps/web/src/seo/
   package.json  yarn.lock  docker/  .github/
   ¿Necesitás un átomo nuevo? Micro-PR. NO lo crees en tu rama.
@@ -289,4 +319,4 @@ Empezá listando los componentes que vas a crear, por nivel, y esperá mi visto 
 
 ## Ver también
 
-[[10 Plan maestro del frontend]] · [[10b Estándar de ejecución del frontend]] · [[07 Carriles de trabajo concurrente]] · [[informe]] · [[disenar-frontend]]
+[[19 Contrato de carril · conflicto cero, skills y calidad verificada]] · [[18 Fichas de carril · las 38 unidades de trabajo]] · [[17 Plan de acción secuencial · coordinación de cinco máquinas]] · [[10 Plan maestro del frontend]] · [[10b Estándar de ejecución del frontend]] · [[07 Carriles de trabajo concurrente]] · [[informe]] · [[disenar-frontend]]

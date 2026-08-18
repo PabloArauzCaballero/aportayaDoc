@@ -47,7 +47,7 @@ normas: [UIF (alta del entrante), gobernanza del grupo]
    - el [[turno]] no se toca: **la posición en el calendario es del cupo, no de la
      persona**;
    - se registra [[evento_reputacion]] para ambos;
-   - se emite [[evento_dominio]] `cupo.traspasado`.
+   - se emite `evento_dominio` `cupo.traspasado`.
 5. Se notifica al grupo con el cambio de integrante.
 
 ## Flujos alternativos
@@ -66,7 +66,7 @@ normas: [UIF (alta del entrante), gobernanza del grupo]
   reasignadas.
 - La deuda del saliente sigue siendo del saliente.
 
-## Contrato · `packages/contratos/CU-64.ts`
+## Contrato · `openapi/grupos.yaml`
 
 ```ts
 export const EntradaCU64 = z.object({

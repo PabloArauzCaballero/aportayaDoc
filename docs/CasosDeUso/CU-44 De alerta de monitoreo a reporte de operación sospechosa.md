@@ -61,7 +61,7 @@ normas: [UIF — enfoque basado en riesgo, ROS sin límite de monto]
 
 - Cada alerta tiene destino y justificación escrita; cada reporte, su expediente.
 
-## Contrato · `packages/contratos/CU-44.ts`
+## Contrato · `openapi/cumplimiento.yaml`
 
 ```ts
 export const EntradaCU44 = z.object({

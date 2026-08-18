@@ -23,7 +23,7 @@ sirve a ninguno.
 
 | Campo | Para quién | Regla |
 | --- | --- | --- |
-| `codigo` | Soporte y auditoría | `AP-CU<NN>-<nn>`, definido en `packages/contratos/CU-NN.ts` |
+| `codigo` | Soporte y auditoría | `AP-CU<NN>-<nn>`, definido en `openapi/<servicio>.yaml` |
 | `mensaje` | Usuario | En español, sin jerga, dice **qué hacer** cuando hay algo que hacer |
 | `detalle` | App | Datos para armar un mensaje mejor; opcional |
 | `trazaId` | Soporte | Correlaciona con la bitácora. Es lo único que el usuario le dicta al soporte |
@@ -32,7 +32,7 @@ sirve a ninguno.
 
 | Situación | HTTP | Cuerpo |
 | --- | --- | --- |
-| Entrada inválida por esquema Zod | `400` | Lista de campos con mensaje |
+| Entrada inválida por el contrato | `400` | Lista de campos con mensaje |
 | Regla de negocio de la aplicación | `422` | `{ codigo: 'AP-CU21-02', … }` |
 | Sin permiso o fuera de política de fila | `403` o resultado vacío | Sin detalles internos |
 | Restricción de la base rechaza | `409` | `{ codigo: 'R-LIM-02', … }` traducido |

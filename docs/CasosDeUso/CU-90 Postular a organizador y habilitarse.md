@@ -51,7 +51,7 @@ normas: [UIF debida diligencia reforzada, ASFI Consumidor Financiero, gobernanza
    - se encadena la firma del contrato
      ([[CU-91 Firmar y rescindir el contrato de organizador]]), sin la cual **no
      puede crear grupos**;
-   - se emite [[evento_dominio]] `organizador.habilitado`.
+   - se emite `evento_dominio` `organizador.habilitado`.
 6. Si se rechaza, `motivo_rechazo` explica exactamente qué faltó y **cuándo puede
    volver a postular**. Un rechazo sin camino de vuelta es una expulsión encubierta.
 
@@ -74,7 +74,7 @@ normas: [UIF debida diligencia reforzada, ASFI Consumidor Financiero, gobernanza
   contrato.
 - Se puede reconstruir, para cualquier fecha, con qué requisitos se lo habilitó.
 
-## Contrato · `packages/contratos/CU-90.ts`
+## Contrato · `openapi/organizador.yaml`
 
 ```ts
 export const EntradaCU90 = z.object({
@@ -152,7 +152,7 @@ export const ErroresCU90 = {
 
 [[solicitud_organizador]] · [[requisito_habilitacion]] ·
 [[capacitacion_organizador]] · [[organizador]] · [[asignacion_rol]] ·
-[[evento_dominio]]
+`evento_dominio`
 
 ## Criterios de aceptación
 

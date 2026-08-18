@@ -38,7 +38,7 @@ normas: [ASFI Seguridad de la Información, ASFI Consumidor Financiero, Protecci
      `reemplazada_en`;
    - se actualiza [[credencial_acceso]] con el hash nuevo;
    - se cierran **todas** las [[sesion]] salvo la que hizo el cambio;
-   - se registra en [[bitacora_evento]] y se emite [[evento_dominio]]
+   - se registra en [[bitacora_evento]] y se emite `evento_dominio`
      `credencial.cambiada`.
 3. Se notifica al usuario por **todos** sus canales verificados, con el aparato y la
    hora: si no fue él, tiene que enterarse por una vía que el atacante no controle.
@@ -79,7 +79,7 @@ normas: [ASFI Seguridad de la Información, ASFI Consumidor Financiero, Protecci
 - Ninguna baja deja obligaciones huérfanas ni destruye información con retención
   legal vigente.
 
-## Contrato · `packages/contratos/CU-09.ts`
+## Contrato · `openapi/identidad.yaml`
 
 ```ts
 export const EntradaCambioCU09 = z.object({
@@ -169,7 +169,7 @@ export const ErroresCU09 = {
 
 [[credencial_acceso]] · [[historial_credencial]] · [[solicitud_baja]] ·
 [[token_verificacion]] · [[intento_validacion_token]] · [[intento_autenticacion]] ·
-[[sesion]] · [[bitacora_evento]] · [[evento_dominio]]
+[[sesion]] · [[bitacora_evento]] · `evento_dominio`
 
 ## Criterios de aceptación
 

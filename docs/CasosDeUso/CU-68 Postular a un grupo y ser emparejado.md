@@ -46,7 +46,7 @@ normas: [UIF conocimiento del cliente, no discriminación, gobernanza del grupo]
    - se exige la [[aceptacion_reglamento]] antes de que el cupo quede firme;
    - se registra [[historial_estado_grupo]] si el grupo cambia de estado por
      completarse;
-   - se emite [[evento_dominio]] `ingreso.aceptado`.
+   - se emite `evento_dominio` `ingreso.aceptado`.
 5. **Emparejamiento sin grupo.** El usuario crea una
    [[postulacion_emparejamiento]] con lo que busca: monto, periodicidad y cuándo
    podría cobrar. El motor arma [[propuesta_grupo]] con `puntaje_cohesion`,
@@ -79,7 +79,7 @@ normas: [UIF conocimiento del cliente, no discriminación, gobernanza del grupo]
 - Ningún grupo queda armado con una concentración de riesgo mayor a la que su
   criterio permite.
 
-## Contrato · `packages/contratos/CU-68.ts`
+## Contrato · `openapi/grupos.yaml`
 
 ```ts
 export const EntradaCU68 = z.object({
@@ -166,7 +166,7 @@ export const ErroresCU68 = {
 [[propuesta_postulacion]] · [[criterio_emparejamiento]] ·
 [[score_riesgo_incumplimiento]] · [[perfil_financiero]] · [[cupo]] ·
 [[participante]] · [[aceptacion_reglamento]] · [[historial_estado_grupo]] ·
-[[evento_dominio]]
+`evento_dominio`
 
 ## Criterios de aceptación
 

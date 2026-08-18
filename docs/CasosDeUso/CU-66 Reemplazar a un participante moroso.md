@@ -49,7 +49,7 @@ normas: [Debido proceso, gobernanza del grupo]
    - la [[gestion_cobranza]] continúa: **expulsar no es perdonar**;
    - se registra [[evento_reputacion]] negativo y entra a
      [[historial_incumplimiento_usuario]];
-   - se emite [[evento_dominio]] `participante.reemplazado`.
+   - se emite `evento_dominio` `participante.reemplazado`.
 5. El grupo recibe el aviso con el nuevo integrante y su turno.
 
 ## Flujos alternativos
@@ -67,7 +67,7 @@ normas: [Debido proceso, gobernanza del grupo]
 - El cupo tiene titular nuevo y el grupo puede completar el ciclo.
 - La deuda del expulsado sigue viva, exigible y en gestión.
 
-## Contrato · `packages/contratos/CU-66.ts`
+## Contrato · `openapi/garantia.yaml`
 
 ```ts
 export const EntradaCU66 = z.object({

@@ -67,7 +67,7 @@ normas: [ASFI Consumidor Financiero, transparencia de precios, no discriminació
   cada uno con su identificador.
 - Ningún beneficio se otorga ni se quita sin regla y sin registro.
 
-## Contrato · `packages/contratos/CU-36.ts`
+## Contrato · `openapi/tarifas.yaml`
 
 ```ts
 export const EntradaCU36 = z.object({
@@ -138,7 +138,7 @@ export const ErroresCU36 = {
 
 [[segmento_comercial]] · [[regla_tarifa]] · [[cotizacion_comision]] ·
 [[tarifa_congelada_grupo]] · [[campana_promocional]] · [[aplicacion_promocion]] ·
-[[exencion_comision]] · [[evento_dominio]]
+[[exencion_comision]] · `evento_dominio`
 
 ## Criterios de aceptación
 

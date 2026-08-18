@@ -71,7 +71,7 @@ normas: [Gobernanza del grupo, ASFI Consumidor Financiero, control interno]
   humana.
 - Toda acción automática es atribuible a una regla identificable y vigente.
 
-## Contrato · `packages/contratos/CU-95.ts`
+## Contrato · `openapi/organizador.yaml`
 
 ```ts
 export const EntradaCU95 = z.object({
@@ -156,7 +156,7 @@ export const ErroresCU95 = {
 ## Evidencia que deja
 
 [[regla_automatizacion]] · [[tarea_automatizada]] · [[bitacora_evento]] ·
-[[evento_dominio]]
+`evento_dominio`
 
 ## Criterios de aceptación
 

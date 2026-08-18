@@ -52,7 +52,7 @@ normas: [Integridad de saldo, ASFI Consumidor Financiero]
 - `saldo_retenido` es siempre igual a la suma de retenciones vigentes (`R-BIL-07`).
 - Toda retención tiene un final registrado.
 
-## Contrato · `packages/contratos/CU-13.ts`
+## Contrato · `openapi/nucleo-financiero.yaml`
 
 ```ts
 export const EntradaCU13 = z.object({

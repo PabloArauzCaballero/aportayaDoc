@@ -70,7 +70,7 @@ normas: [ASFI Consumidor Financiero, protección de datos, continuidad operativa
 - Todo envío tiene proveedor, intentos y desenlace registrados.
 - Ningún mensaje se duplica al conmutar y ningún obligatorio muere en silencio.
 
-## Contrato · `packages/contratos/CU-83.ts`
+## Contrato · `openapi/notificaciones.yaml`
 
 ```ts
 export const EntradaCU83 = z.object({
@@ -142,7 +142,7 @@ export const ErroresCU83 = {
 
 [[cola_envio]] · [[envio_notificacion]] · [[proveedor_mensajeria]] ·
 [[evento_entrega_mensaje]] · [[cola_muerta]] · [[costo_proveedor_operacion]] ·
-[[evento_dominio]]
+`evento_dominio`
 
 ## Criterios de aceptación
 

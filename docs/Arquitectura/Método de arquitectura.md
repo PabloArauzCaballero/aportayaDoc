@@ -50,7 +50,7 @@ responde por escrito:
 
 ### 3 · Descomponer en átomos, moléculas y organismos
 
-Obligatorio, en frontend y en backend ([[ADR-009 Composición atómica]]). Para cada
+Obligatorio, en frontend y en backend ([[ADR-023 Composición atómica en Java]]). Para cada
 pieza que aparezca en el diseño, tres preguntas:
 
 | Pregunta | Si la respuesta es… | Entonces la pieza es |
@@ -87,14 +87,17 @@ orden, y qué queda como evidencia de cada intento.
 
 ### 6 · Escribir el contrato antes que la implementación
 
-El esquema de entrada y salida del caso de uso, con sus códigos de error, en
-`packages/contratos/CU<NN>.ts` ([[ADR-006 Contratos y validación]]). Escribirlo
-primero obliga a cerrar preguntas que de otro modo aparecen a mitad del código.
+El esquema de entrada y salida del caso de uso, con sus códigos de error, como
+operación en `servicios/<servicio>/src/main/resources/openapi/<servicio>.yaml`
+([[ADR-020 Contratos OpenAPI primero]]). Escribirlo primero obliga a cerrar preguntas
+que de otro modo aparecen a mitad del código — y además **desbloquea al carril que
+necesita este servicio y todavía no lo tiene**: puede generar el cliente y programar
+contra un doble.
 
 ### 7 · Traducir los criterios de aceptación a pruebas
 
 Uno a uno, más la prueba de rechazo de cada restricción citada, la de reintento y —si
-hay dinero— la de cuadre ([[ADR-008 Pruebas]]). Las pruebas se escriben con el
+hay dinero— la de cuadre ([[ADR-026 Pruebas de un sistema distribuido]]). Las pruebas se escriben con el
 diseño, no después: son la definición de terminado, no un trámite.
 
 ### 8 · ¿Es una decisión cara de revertir?
@@ -141,4 +144,4 @@ este proyecto se combinan con las skills de `.claude/skills/`.
 
 ## Ver también
 
-[[_Arquitectura]] · [[ADR-009 Composición atómica]] · [[Estructura del repositorio]] · [[Restricciones]]
+[[_Arquitectura]] · [[ADR-023 Composición atómica en Java]] · [[Estructura del repositorio]] · [[Restricciones]]

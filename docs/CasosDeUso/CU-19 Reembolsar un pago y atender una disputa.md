@@ -41,7 +41,7 @@ normas: [ASFI Consumidor Financiero, reglas de marca y contracargo, contabilidad
    - si el pago saldaba una [[obligacion_aporte]], la obligación **vuelve a quedar
      pendiente** por ese importe: reembolsar no es condonar;
    - se registra el [[asiento_contable]] espejo;
-   - se emite [[evento_dominio]] `pago.reembolsado`.
+   - se emite `evento_dominio` `pago.reembolsado`.
 4. Se llama al proveedor con la referencia original. La respuesta queda en
    `referencia_proveedor` y `fecha_ejecucion`. El estado sigue el ciclo
    `SOLICITADO → APROBADO → ENVIADO → ACREDITADO`, y **el dinero no se da por
@@ -79,7 +79,7 @@ normas: [ASFI Consumidor Financiero, reglas de marca y contracargo, contabilidad
 - Todo reembolso tiene solicitante, aprobador, asiento y acuse del proveedor.
 - Toda disputa tiene plazo guardado, descargo enviado y veredicto registrado.
 
-## Contrato · `packages/contratos/CU-19.ts`
+## Contrato · `openapi/aportes.yaml`
 
 ```ts
 export const EntradaCU19 = z.object({
@@ -160,7 +160,7 @@ export const ErroresCU19 = {
 ## Evidencia que deja
 
 [[reembolso]] · [[disputa_pago]] · [[intento_pago]] · [[transaccion_billetera]] ·
-[[asiento_contable]] · [[excepcion_conciliacion]] · [[evento_dominio]] ·
+[[asiento_contable]] · [[excepcion_conciliacion]] · `evento_dominio` ·
 [[bitacora_evento]]
 
 ## Criterios de aceptación

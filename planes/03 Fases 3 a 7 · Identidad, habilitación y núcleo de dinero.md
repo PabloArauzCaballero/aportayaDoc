@@ -21,7 +21,8 @@ habilita: [8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
 > [!important] Antes de escribir la primera línea
 > [[00b Estándar de ejecución · código limpio, pruebas y calidad]] aplica en
 > esta fase entera: regla cero de no inventar, composición atómica, KISS,
-> nombres del dominio, las seis pruebas obligatorias por caso de uso y el
+> nombres del dominio, las siete pruebas obligatorias por caso de uso —la séptima
+> es la compensación de saga— y el
 > checklist de PR. **Se declara cada pieza por nivel antes de crearla.**
 
 > **Receta exacta:** [[00c Recetario · implementar un caso de uso]] fija el orden de
@@ -34,8 +35,10 @@ atómica (los nombres de las piezas ya están decididos), los códigos de error,
 restricciones aplicables y los criterios de aceptación. Este plan dice el orden y las
 fronteras; el caso de uso dice el contenido.
 
-Y antes de escribir el organismo se responden por escrito las **cinco preguntas de
-frontera transaccional** de [[Prompt de backend]].
+Y antes de escribir el organismo se responden por escrito las **seis preguntas de
+frontera transaccional** de [[Prompt de backend]] — la sexta, restaurada por
+[[20 Saneamiento del plan · huecos de la migración a microservicios]] §2: *¿esto
+cruza a otro servicio y qué pasa si el otro falla?*
 
 ---
 
@@ -45,8 +48,8 @@ frontera transaccional** de [[Prompt de backend]].
 **Casos de uso:** CU-01, CU-04, CU-05, CU-08, CU-09
 
 > **Objetivo.** Que exista un usuario real con credenciales, MFA, dispositivo,
-> sesión, roles y permisos — y que el `SesionGuard` global de la Fase 2 deje de
-> apoyarse en un token de mentira.
+> sesión, roles y permisos — y que el filtro de sesión global (default-deny) de la
+> Fase 2 deje de apoyarse en un token de mentira.
 
 ## Gate de entrada
 
@@ -56,7 +59,7 @@ frontera transaccional** de [[Prompt de backend]].
 ## Leer antes
 
 `docs/CasosDeUso/CU-01`, `CU-04`, `CU-05`, `CU-08`, `CU-09` ·
-`docs/Arquitectura/ADR-010 Autenticación y sesión.md` ·
+`docs/Arquitectura/ADR-024 Autenticación y sesión distribuida.md` ·
 `docs/Restricciones.md` § **R-SEG** (8 restricciones) ·
 skills `autenticacion-jwt`, `kyc-onboarding`, `roles-y-accesos`, `seguridad-sesion-rls`
 
@@ -79,9 +82,8 @@ skills `autenticacion-jwt`, `kyc-onboarding`, `roles-y-accesos`, `seguridad-sesi
 ### `infraestructura/` — moléculas
 
 `VerificacionKycAdaptador` (proveedor de identidad, tras interfaz) ·
-`ListaRestrictivaRepositorio` · `CuentaBilleteraRepositorio` (alta de cuenta y su
-espejo contable) · `CredencialRepositorio` (Argon2id **con pepper**, nunca la clave
-en claro, con historial) · `SesionRepositorio` · `TokenAdaptador` ·
+`ListaRestrictivaRepositorio` · `CredencialRepositorio` (Argon2id **con pepper**,
+nunca la clave en claro, con historial) · `SesionRepositorio` · `TokenAdaptador` ·
 `TokenRecuperacionRepositorio` · `ContratoRepositorio` · `AceptacionRepositorio` ·
 `RolRepositorio` · `AsignacionRolRepositorio` · `InvalidadorDeSesiones` ·
 `EvaluadorDeObligaciones` (enumera lo que impide la baja, **con detalle legible**).
@@ -95,24 +97,33 @@ en claro, con historial) · `SesionRepositorio` · `TokenAdaptador` ·
 
 | CU | Todo-junto-o-nada | Fuera del commit |
 | :-: | --- | --- |
-| 01 | usuario + KYC + diligencia + calificación + expediente + **cuenta de billetera** | Notificación de bienvenida, alta en bandeja |
+| 01 | usuario + KYC + diligencia + calificación + expediente + evento `identidad.usuario_creado` | Notificación de bienvenida, alta en bandeja, **apertura de la cuenta de billetera** |
 | 04 | intento registrado + validación + apertura de sesión | Aviso de acceso desde dispositivo nuevo |
 | 08 | validación de segregación + escritura + bitácora + evento + **invalidación de sesiones** | — |
 | 09 | escritura + cierre de sesiones + bitácora + evento | Correo de confirmación |
 
-### `http/` — páginas
+> [!important] La cuenta de billetera ya no está en la transacción de CU-01
+> La cuenta la abre `nucleo-financiero` al **consumir** `identidad.usuario_creado`
+> (S4 de [[20 Saneamiento del plan · huecos de la migración a microservicios]] §2),
+> con reintento idempotente ante consumo duplicado o fuera de orden. `identidad` no
+> toca `cuenta_billetera`; la pantalla puede mostrar "billetera en apertura" hasta
+> que llegue el evento de vuelta.
 
-`POST /v1/usuarios` (**pública**, marcada `@Publico()`) · `POST /v1/sesiones` ·
+### `web/` — páginas
+
+`POST /v1/usuarios` (**pública**: marcada en el contrato OpenAPI y en la lista de
+rutas públicas de `SecurityConfig` — [[00c Recetario · implementar un caso de uso]]) · `POST /v1/sesiones` ·
 `POST /v1/contratos/:id/aceptaciones` · `POST /v1/accesos/asignaciones` ·
 `DELETE /v1/accesos/asignaciones/:id` · `POST /v1/cuenta/clave` ·
 `POST /v1/cuenta/recuperacion` · `POST /v1/cuenta/baja`
 
 **Rate limit obligatorio** en `/sesiones`, `/cuenta/recuperacion` y `/usuarios`.
 
-### Trabajos del worker
+### Trabajos programados del servicio
 
-`usuario.registrado` → notificación (stub hasta F12) · `billetera.abierta` → cálculo
-inicial de límites (F4) · `sesion.sospechosa` → aviso.
+`identidad.usuario_creado` → notificación (stub hasta F12) y apertura de cuenta en
+`nucleo-financiero` (S4) · `billetera.abierta` → cálculo inicial de límites (F4) ·
+`sesion.sospechosa` → aviso.
 
 ## Restricciones que exigen prueba de rechazo
 
@@ -125,11 +136,11 @@ inicial de límites (F4) · `sesion.sospechosa` → aviso.
 
 - [ ] Gate común (§9 del plan maestro)
 - [ ] **`CU-00` se elimina** y sus diez pruebas de pipeline apuntan a CU-01 y CU-04
-- [ ] El `SesionGuard` global funciona con JWT real; un endpoint nuevo sin `@Publico()` exige sesión
+- [ ] El filtro de sesión global (default-deny) funciona con JWT real; un endpoint nuevo exige sesión salvo que esté marcado público en el contrato **y** en `SecurityConfig`
 - [ ] Prueba de RLS con usuario real: el usuario A no ve una fila del usuario B — **cero filas**, no `403`
 - [ ] `R-SEG-07` (segregación de funciones) probada con un par autorizar/ejecutar real
 - [ ] **`R-SEG-09`: reusar un token de refresco revoca la familia entera y sus sesiones** (probado)
-- [ ] Ninguna clave, PIN ni token aparece en un log (revisión del `redact` de Pino con un caso real)
+- [ ] Ninguna clave, PIN ni token aparece en un log (revisión de la redacción de PII en Logback con un caso real)
 
 ---
 
@@ -147,7 +158,7 @@ después, cada caso de uso de dinero nacería sin control y habría que retrofit
 
 ## Gate de entrada
 
-- [ ] Fase 3 cerrada
+- [ ] Contrato de `identidad` publicado en `dev` (T1) — gate en artefactos, no en "fase cerrada" ([[20 Saneamiento del plan · huecos de la migración a microservicios]] §5)
 - [ ] Semillas `03-limites-operativos.json` (40 límites), `06-umbrales-uif.json` (18), `08-gobierno-y-licencia.json` aplicadas
 
 ## Leer antes
@@ -188,13 +199,17 @@ anterior e inserta la nueva) · `DeclaracionPepRepositorio` ·
 programado, **idempotente por usuario y período**) · `CU40EvaluarLimites` ·
 `CU46VerificarAlcance`
 
-**CU-40 y CU-46 no abren transacción propia:** se ejecutan **dentro** de la
-transacción de la operación que los invoca. Se implementan como servicios de
-aplicación que reciben el `tx`. Es la única excepción a "el organismo abre la
-transacción", y está en la bóveda: *"se ejecuta dentro de la transacción de la
-operación"*.
+**CU-40 y CU-46 son una verificación por lectura local, no una llamada** (S8 de
+[[20 Saneamiento del plan · huecos de la migración a microservicios]] §2,
+[[ADR-029 Catálogo legible por todos los servicios|ADR-029]]): el servicio que va a
+mover dinero lee límites, licencia y tarifario **del esquema `catalogo` de su propia
+base, antes de abrir la transacción** de la operación. No hay HTTP a `cumplimiento`
+ni a `tarifas` dentro de ninguna transacción. Sin dato vigente en `catalogo` ⇒ la
+operación se **rechaza** (denegar por omisión, `R-LIM-01`). Y el registro PCC-01/ROG
+que la evaluación pueda disparar va por **evento post-commit** que `cumplimiento`
+consume (S9) — nunca dentro de la transacción de la operación.
 
-### `http/`
+### `web/`
 
 `POST /v1/usuarios/:id/diligencia` · `POST /v1/usuarios/:id/pep` ·
 CU-06, CU-40 y CU-46 **no tienen endpoint**.
@@ -248,15 +263,16 @@ que nadie descubra en una inspección que el umbral era un borrador.
 **Módulo:** `03_aportes_pagos_qr` (subconjunto contable: `cuenta_contable`, `asiento_contable`, `movimiento_contable`)
 **Caso de uso:** CU-24
 
-> **Objetivo.** Que exista el libro antes que el dinero. Toda fase siguiente que
-> mueva un centavo escribe su asiento en la misma transacción; si el libro llega
+> **Objetivo.** Que exista el libro antes que el dinero. Todo hecho económico de
+> `nucleo-financiero` escribe su asiento en la misma transacción; los hechos que
+> nacen en otro servicio llegan como paso de saga o como evento. Si el libro llega
 > después, hay que reescribir cada flujo.
 
 Es la fase más chica del plan y una de las dos más importantes.
 
 ## Gate de entrada
 
-- [ ] Fase 4 cerrada
+- [ ] Fases 1 y 2 cerradas; nada más — el libro no depende de habilitación ([[20 Saneamiento del plan · huecos de la migración a microservicios]] §5)
 - [ ] Semilla `01-plan-de-cuentas.json` (19 cuentas) aplicada
 
 ## Leer antes
@@ -270,30 +286,41 @@ Es la fase más chica del plan y una de las dos más importantes.
 | Átomo | `cuadrarPartidas` | Verifica la igualdad y normaliza signos. **Puro, con pruebas de propiedad** |
 | Molécula | `AsientoRepositorio` | Alta del asiento y sus movimientos, **append-only** |
 | Molécula | `CuentaContableRepositorio` | Resuelve el código a la cuenta |
-| Organismo | `CU24RegistrarAsiento` | **Se ejecuta dentro de la transacción del hecho económico** |
+| Organismo | `CU24RegistrarAsiento` | **Se ejecuta dentro de la transacción del hecho económico — solo dentro de `nucleo-financiero`** |
 | Página | — | Sin endpoint |
 
-### Cómo lo consumen las otras fases
+### Cómo lo consumen los otros casos de uso
 
-```ts
-// dentro de conTransaccion, en el organismo del hecho económico
-await registrarAsiento(tx, {
-  hecho: 'RECARGA_ACREDITADA',
-  referencia: ordenRecargaId,
-  partidas: [ debe(cuenta('1101'), monto), haber(cuenta('2101'), monto) ],
-})
+Dentro de `nucleo-financiero`, en la misma transacción del hecho:
+
+```java
+// dentro de la transacción, en el organismo del hecho económico
+registrarAsiento(dsl, new Asiento(
+    "RECARGA_ACREDITADA",
+    ordenRecargaId,
+    List.of(debe(cuenta("1101"), monto), haber(cuenta("2101"), monto))
+));
 ```
 
-`registrarAsiento` **exige** el `tx`: no compila sin él. Es la garantía de que no
-existe un asiento fuera de la transacción de su hecho.
+`registrarAsiento` **exige** el `DSLContext` transaccional: no compila sin él. Es la
+garantía de que no existe un asiento fuera de la transacción de su hecho.
+
+**Y esa garantía no cruza servicios.** El asiento va en la misma transacción **solo**
+para hechos que nacen en `nucleo-financiero` (recarga, retiro, transferencia). Para
+hechos que nacen en otro servicio —cobrar un aporte, liquidar una entrega, cubrir un
+incumplimiento— el asiento es el paso de `nucleo-financiero` dentro de la saga
+correspondiente (S1–S3), o el consumo de un evento para hechos sin movimiento de
+dinero (S6 de [[20 Saneamiento del plan · huecos de la migración a microservicios]]
+§2). Nadie llama a `registrarAsiento` por HTTP desde adentro de su propia
+transacción.
 
 ### Pruebas de propiedad para `cuadrarPartidas`
 
-Con `fast-check`, no con ejemplos sueltos:
+Con jqwik, no con ejemplos sueltos:
 
-- Para cualquier conjunto de partidas, `suma(debe) === suma(haber)` o **lanza**.
+- Para cualquier conjunto de partidas, `suma(debe)` igual a `suma(haber)` o **lanza**.
 - Un asiento de una sola partida siempre lanza.
-- Redondeo: 1000 partidas de dos decimales cuadran al centavo con `Decimal`.
+- Redondeo: 1000 partidas de dos decimales cuadran al centavo con `BigDecimal`.
 - Signos normalizados: el orden de las partidas no cambia el resultado.
 
 ## Restricciones con prueba de rechazo
@@ -307,7 +334,7 @@ Con `fast-check`, no con ejemplos sueltos:
 - [ ] `UPDATE` sobre `asiento_contable` y `movimiento_contable` **rechazado por la base** (`REVOKE`), probado
 - [ ] Asiento descuadrado ⇒ rechazado por `R-AUD-05`, probado
 - [ ] Pruebas de propiedad de `cuadrarPartidas` en verde
-- [ ] `registrarAsiento` no compila sin `tx` (verificado por tipos)
+- [ ] `registrarAsiento` no compila sin el `DSLContext` transaccional (verificado por el compilador)
 
 ---
 
@@ -324,7 +351,7 @@ intermedia, aunque el gate sea uno solo.
 
 ## Gate de entrada
 
-- [ ] Fases 4 y 5 cerradas
+- [ ] Fase 5 cerrada · CU-40 y CU-46 disponibles (F4 cerró en T2 — [[20 Saneamiento del plan · huecos de la migración a microservicios]] §5)
 - [ ] `02-politicas.json` (billetera, redondeo) y `14-proveedores-externos.json` aplicadas
 
 ## Leer antes
@@ -373,10 +400,11 @@ importa que las pruebas pasen.
 | Páginas | `GET /v1/billetera/extractos` · `POST /v1/billetera/cierre` · `POST /v1/cumplimiento/bloqueos` |
 
 `DocumentoAdaptador` genera el PDF y lo guarda **por el puerto `AlmacenArchivos`**
-(Multer local, ADR-017), con SHA-256 en base. La bóveda pide *object lock*: queda
+de `plataforma/comun-dominio` ([[20 Saneamiento del plan · huecos de la migración a microservicios]] §3),
+con SHA-256 en base. La bóveda pide *object lock*: queda
 como deuda declarada, no como omisión silenciosa.
 
-`CU15EmitirExtracto` usa la **conexión de lectura** contra la réplica (ADR-011).
+`CU15EmitirExtracto` usa la **conexión de lectura** contra la réplica (ADR-031).
 
 ## Bloque 6.D — Custodia y efectivo (CU-50, CU-57)
 
@@ -401,7 +429,7 @@ Las 20 de la familia **R-BIL** (`R-BIL-01` … `R-BIL-20`) más
 ## Gate de salida F6
 
 - [ ] Gate común
-- [ ] **Ninguna sentencia escribe `cuenta_billetera.saldo` directamente** (revisión + grep en CI)
+- [ ] **Ninguna sentencia escribe `cuenta_billetera.saldo` directamente** — regla de ArchUnit: solo el módulo de saldo de `nucleo-financiero` referencia la columna generada `CUENTA_BILLETERA.SALDO` ([[20 Saneamiento del plan · huecos de la migración a microservicios]] §7.2)
 - [ ] Cuadre: para 1000 operaciones aleatorias, `SUM(movimiento)` = saldo derivado, al centavo
 - [ ] Webhook de pasarela duplicado ⇒ **un solo** pago acreditado (`R-BIL-06`)
 - [ ] **`R-BIL-19`: el reintento devuelve la primera respuesta, no un error** (probado)
@@ -432,11 +460,12 @@ se hace la evaluación explícita:
 > incluida la de rechazo de cada restricción citada, sostiene el resto del sistema.
 > Si no, **se detiene el avance** y se revisa ADR-014 antes de la Fase 8.
 
-Esa evaluación se escribe en `planes/informe.md`, con evidencia, no como opinión.
+Esa evaluación se escribe en `planes/informes/carril-P<N>.md` del carril que cierra
+la fase, con evidencia, no como opinión.
 
 ## Gate de entrada
 
-- [ ] Fases 5 y 6 cerradas
+- [ ] Fase 5 cerrada · contrato de billetera (`nucleo-financiero`) publicado en `dev` — el cargo real de S7 se prueba al cerrar T3 ([[20 Saneamiento del plan · huecos de la migración a microservicios]] §5)
 - [ ] Semillas `04-tarifario.json` y `05-impuestos.json` (IVA, IT) aplicadas
 
 ## Leer antes
@@ -474,12 +503,21 @@ idempotencia) · `CargoRepositorio` · `ImpuestoRepositorio` · `FacturaReposito
 
 ### `aplicacion/` — organismos
 
-`CU30CotizarComision` · `CU31DevengarComision` (dentro de la transacción del hecho
-económico) · `CU32EmitirFactura` (**disparado por evento**, nunca por HTTP) ·
-`CU33DevolverComision` (doble firma) · `CU34PublicarTarifario` ·
-`CU35CerrarLiquidacion` · `CU36AplicarSegmento`
+`CU30CotizarComision` · `CU31DevengarComision` · `CU32EmitirFactura` (**disparado
+por evento**, nunca por HTTP) · `CU33DevolverComision` (doble firma) ·
+`CU34PublicarTarifario` · `CU35CerrarLiquidacion` · `CU36AplicarSegmento`
 
-### `http/`
+**Frontera transaccional de CU-31 (S7 de
+[[20 Saneamiento del plan · huecos de la migración a microservicios]] §2).**
+`tarifas` **consume** los eventos del hecho — `aportes.aporte_pagado` y
+`entregas.entrega_liquidada` — y devenga en su propia transacción local, idempotente
+por `id_evento`. El devengo **no** corre "dentro de la transacción del hecho
+económico": ese hecho vive en otro servicio. El **cargo** posterior es una saga corta
+`tarifas` → `nucleo-financiero` (débito + asiento), orquestada por `tarifas` según
+[[ADR-028 Mecánica de saga|ADR-028]]; su compensación es el reverso del cargo más la
+nota de crédito. Prueba obligatoria: `CU31DevengoSagaTest`.
+
+### `web/`
 
 `POST /v1/comisiones/cotizaciones` · `POST /v1/tarifarios` ·
 `POST /v1/contabilidad/liquidaciones/:periodo/cierre` · CU-31, CU-32: **sin endpoint**.
@@ -510,7 +548,8 @@ sigue cotizando al precio congelado.
 
 - [ ] Gate común
 - [ ] **CU-31 de punta a punta con todos sus criterios de aceptación en verde** ← hito de validación
-- [ ] Evaluación del stack escrita en `planes/informe.md` con evidencia
+- [ ] **`CU31DevengoSagaTest` en verde**: devengo idempotente al consumir el evento duplicado; compensación del cargo probada (reverso + nota de crédito)
+- [ ] Evaluación del stack escrita en `planes/informes/carril-P<N>.md` con evidencia
 - [ ] Tarifario nuevo **no** altera el precio congelado de un grupo existente (probado)
 - [ ] Preaviso: un cambio sin los días de preaviso es rechazado (`R-TAR-08`)
 - [ ] Devengo duplicado por la misma clave ⇒ un solo devengo (`R-TAR-04`)

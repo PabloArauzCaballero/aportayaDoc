@@ -68,7 +68,7 @@ normas: [ASFI plazos en días hábiles, Consumidor Financiero, Ley 393]
 - Todo plazo hábil del sistema se calcula contra un calendario único y auditable.
 - Ningún plazo guardado cambia por una carga posterior de calendario.
 
-## Contrato · `packages/contratos/CU-59.ts`
+## Contrato · `openapi/grupos.yaml`
 
 ```ts
 export const EntradaCU59 = z.object({
@@ -142,7 +142,7 @@ export const ErroresCU59 = {
 
 ## Evidencia que deja
 
-[[dia_no_habil]] · [[bitacora_evento]] · [[evento_dominio]] ·
+[[dia_no_habil]] · [[bitacora_evento]] · `evento_dominio` ·
 [[reclamo_cliente]] (en el plazo que guarda) · [[registro_incumplimiento]]
 
 ## Criterios de aceptación

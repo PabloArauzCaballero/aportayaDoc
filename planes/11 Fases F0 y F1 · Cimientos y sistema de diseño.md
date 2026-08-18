@@ -33,7 +33,15 @@ habilita: [F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12]
 
 - [ ] Fase 0 del backend cerrada: el monorepo yarn, el `tsconfig.base.json`, el lint y
       el CI ya existen
-- [ ] `packages/contratos` existe con al menos `CU-01` escrito
+- [ ] el `openapi/identidad.yaml` existe con al menos la operación de CU-01 escrita — lo entrega la **Fase
+      0 §0.6b** del backend, no la Fase 2 (delta 1 de
+      [[17 Plan de acción secuencial · coordinación de cinco máquinas]])
+
+> [!note] Esta fase se ejecuta en tres puestos a la vez
+> Los tres andamiajes de F0.1 son **tres directorios nuevos**: móvil, backoffice y
+> web se reparten entre tres máquinas sin colisión (delta 2). Lo único compartido son
+> el lint y el CI, y eso lo toca **solo el puesto del troncal**, por micro-PR.
+> **F1 no se parte**: `packages/ui` es de un solo puesto.
 
 ## Leer antes
 
@@ -53,7 +61,7 @@ apps/
     └── src/{content,pages,componentes,seo,estilos}/
 packages/
 ├── ui/             tokens + átomos + moléculas + organismos compartidos
-└── cliente-api/    un cliente por CU, tipado desde @aportaya/contratos
+└── cliente-api/    un cliente por CU, tipado desde clientes/typescript
 ```
 
 > **Los tres usan enrutamiento por sistema de archivos.** No es un detalle: es lo que
@@ -67,15 +75,15 @@ Un archivo por caso de uso, generado y tipado desde el contrato:
 
 ```ts
 // packages/cliente-api/src/CU21.ts
-import { EntradaCU21, SalidaCU21, ErroresCU21 } from '@aportaya/contratos/CU21'
+import { EntradaCU21, SalidaCU21, ErroresCU21 } from 'clientes/typescript/CU21'
 
 export function usarCobrarAporte() { /* TanStack Query mutation */ }
 ```
 
 Reglas:
-- **Los tipos se infieren del Zod.** Nunca se declaran a mano (invariante 2).
+- **Los tipos vienen del cliente generado.** Nunca se declaran a mano (invariante 2).
 - Cada mutación acepta y reenvía la **clave de idempotencia**.
-- La respuesta se **valida** contra el Zod de salida en desarrollo y en pruebas: si la
+- La respuesta se **valida** contra el esquema OpenAPI de salida en desarrollo y en pruebas: si la
   API devuelve algo que no encaja, se descubre acá y no en la pantalla.
 - Errores traducidos: `AP-CU<NN>-<nn>` → mensaje en voz de marca, en un catálogo
   versionado.
@@ -85,7 +93,7 @@ Reglas:
 ## F0.3 · Servidor simulado con MSW
 
 Los *handlers* se generan **desde los contratos**: la respuesta simulada se construye
-con el esquema Zod de salida, no a mano.
+con el esquema OpenAPI de salida, no a mano.
 
 > **Un mock escrito a mano diverge del contrato en la segunda semana y deja la
 > pantalla verde mientras ya está rota.** Por eso la prueba de contrato
@@ -222,4 +230,4 @@ comportamiento por molécula, `jest-axe` limpio y captura visual en ambos temas.
 
 ## Ver también
 
-[[00c Recetario · implementar un caso de uso]] · [[16 Carriles de frontend]] · [[10 Plan maestro del frontend]] · [[10b Estándar de ejecución del frontend]] · [[12 Fases F2 a F5 · App móvil]] · [[AportaYa-Identidad]]
+[[17 Plan de acción secuencial · coordinación de cinco máquinas]] · [[00c Recetario · implementar un caso de uso]] · [[16 Carriles de frontend]] · [[10 Plan maestro del frontend]] · [[10b Estándar de ejecución del frontend]] · [[12 Fases F2 a F5 · App móvil]] · [[AportaYa-Identidad]]

@@ -35,7 +35,7 @@ normas: [Contabilidad, ASFI conciliación]
 5. Se crea [[cierre_diario]] con `cuadrado = (no hay excepciones abiertas) AND
    (conciliación de custodia CUADRADA)` (`R-BIL-12`).
 6. Se cierra el día: se generan los [[saldo_diario_billetera]] y se emite
-   [[evento_dominio]] `DIA_CERRADO`.
+   `evento_dominio` `DIA_CERRADO`.
 
 ## Flujos alternativos
 
@@ -51,7 +51,7 @@ normas: [Contabilidad, ASFI conciliación]
 - Un día cerrado y cuadrado es un punto de control confiable para auditoría.
 - Los saldos diarios quedan sellados y encadenados.
 
-## Contrato · `packages/contratos/CU-51.ts`
+## Contrato · `openapi/aportes.yaml`
 
 ```ts
 export const EntradaCU51 = z.object({

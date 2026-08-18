@@ -59,7 +59,7 @@ normas: [ASFI Consumidor Financiero]
 
 - Existe el documento archivado con su hash: se puede probar qué se entregó.
 
-## Contrato · `packages/contratos/CU-15.ts`
+## Contrato · `openapi/nucleo-financiero.yaml`
 
 ```ts
 export const EntradaCU15 = z.object({

@@ -71,7 +71,7 @@ normas: [Control interno, ASFI Consumidor Financiero, continuidad operativa]
   ejecuciones.
 - Ninguna acción sensible se ejecuta sin confirmación registrada.
 
-## Contrato · `packages/contratos/CU-96.ts`
+## Contrato · `openapi/organizador.yaml`
 
 ```ts
 export const EntradaCU96 = z.object({
@@ -155,7 +155,7 @@ export const ErroresCU96 = {
 ## Evidencia que deja
 
 [[tarea_automatizada]] · [[ejecucion_tarea]] · [[regla_automatizacion]] ·
-[[bitacora_evento]] · [[evento_dominio]] · [[cola_muerta]]
+[[bitacora_evento]] · `evento_dominio` · [[cola_muerta]]
 
 ## Criterios de aceptación
 

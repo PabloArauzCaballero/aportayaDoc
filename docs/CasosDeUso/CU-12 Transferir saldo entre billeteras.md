@@ -41,7 +41,7 @@ normas: [UIF art. 53 inc. g, límites BCB]
      `obligacion_id` apuntando a la [[obligacion_aporte]] que salda;
    - si es aporte, se actualiza la obligación y se registra el
      [[asiento_contable]] correspondiente;
-   - se emite [[evento_dominio]] `TRANSFERENCIA_EJECUTADA`.
+   - se emite `evento_dominio` `TRANSFERENCIA_EJECUTADA`.
 4. El motor de umbrales evalúa acumulados de transferencia desde billetera →
    [[CU-42 Detectar umbral y registrar ROG]].
 5. Se notifica a ambas partes.
@@ -61,7 +61,7 @@ normas: [UIF art. 53 inc. g, límites BCB]
 - La suma de saldos del sistema no cambió: el dinero cambió de cuenta.
 - Si era aporte, la obligación quedó saldada o parcialmente pagada, con traza.
 
-## Contrato · `packages/contratos/CU-12.ts`
+## Contrato · `openapi/nucleo-financiero.yaml`
 
 ```ts
 export const EntradaCU12 = z.object({

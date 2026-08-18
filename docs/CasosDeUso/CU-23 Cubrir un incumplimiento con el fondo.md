@@ -56,7 +56,7 @@ normas: [Contabilidad, debido proceso, ASFI riesgo]
 - La bolsa quedó completa sin que nadie pusiera plata de su bolsillo fuera del fondo.
 - Existe deuda exigible con expediente, no una pérdida silenciosa.
 
-## Contrato · `packages/contratos/CU-23.ts`
+## Contrato · `openapi/garantia.yaml`
 
 ```ts
 export const EntradaCU23 = z.object({

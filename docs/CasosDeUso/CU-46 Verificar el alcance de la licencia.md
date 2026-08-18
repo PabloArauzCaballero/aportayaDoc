@@ -54,7 +54,7 @@ normas: [ASFI Res. 540/2025 — Reglamento para Empresas de Tecnología Financie
 - Todo servicio activo está respaldado por una autorización vigente y verificable
   en el propio sistema.
 
-## Contrato · `packages/contratos/CU-46.ts`
+## Contrato · `openapi/cumplimiento.yaml`
 
 ```ts
 export const EntradaCU46 = z.object({

@@ -21,7 +21,8 @@ habilita: [12, 13, 14, 15, 16, 17]
 > [!important] Antes de escribir la primera línea
 > [[00b Estándar de ejecución · código limpio, pruebas y calidad]] aplica en
 > esta fase entera: regla cero de no inventar, composición atómica, KISS,
-> nombres del dominio, las seis pruebas obligatorias por caso de uso y el
+> nombres del dominio, las siete pruebas obligatorias por caso de uso —la séptima
+> es la compensación de saga— y el
 > checklist de PR. **Se declara cada pieza por nivel antes de crearla.**
 
 > **Receta exacta:** [[00c Recetario · implementar un caso de uso]] fija el orden de
@@ -34,8 +35,10 @@ incumplió, que solo se sabe con F9 cerrada.
 
 **Regla de lectura obligatoria.** Antes de cada CU: leer `docs/CasosDeUso/CU-NN *.md`
 completo y copiar de ahí la descomposición atómica, los errores, las restricciones y
-los criterios de aceptación. Y responder por escrito las cinco preguntas de frontera
-transaccional.
+los criterios de aceptación. Y responder por escrito las **seis preguntas de frontera
+transaccional** — la sexta, restaurada por
+[[20 Saneamiento del plan · huecos de la migración a microservicios]] §2: *¿esto
+cruza a otro servicio y qué pasa si el otro falla?*
 
 ---
 
@@ -56,7 +59,8 @@ transaccional.
 
 ## Gate de entrada
 
-- [ ] Fase 7 cerrada, incluido el hito de validación de CU-31
+- [ ] Contratos de billetera (`nucleo-financiero`) y de `tarifas` publicados en `dev` ([[20 Saneamiento del plan · huecos de la migración a microservicios]] §5)
+- [ ] **Riesgo aceptado y anotado:** F8 corre antes del hito de validación de CU-31; si ese hito falla, F8 retrabaja. Mitigación: el hito CU-24 al cierre de T2 ya validó el stack
 - [ ] Semillas `11-contratos-de-adhesion.json` y `12-calendario-habil.json` aplicadas
 
 ## Leer antes
@@ -268,7 +272,7 @@ Fase 2.
 | Página | `POST /v1/contabilidad/cierres/:fecha` |
 
 **Riesgo 9 del plan maestro.** El cierre no puede correr dos veces: `job_key` de
-Graphile Worker **más** bloqueo consultivo. La prueba obligatoria levanta **dos
+ShedLock **más** bloqueo consultivo. La prueba obligatoria levanta **dos
 réplicas del worker** y verifica que el cierre se ejecute una sola vez.
 
 Y el cierre **no cuadra** si hay una `excepcion_conciliacion` abierta o un descuadre
@@ -532,7 +536,7 @@ incumplimiento declarado con descargo → fondo de garantía cubre → deuda sub
 cierre diario cuadrado
 ```
 
-**Este recorrido tiene que existir como una prueba E2E** (`pasanaku-completo.e2e.spec.ts`)
+**Este recorrido tiene que existir como una prueba E2E** (`PasanakuCompletoE2ETest.java`)
 antes de pasar a la Fase 12. Es la prueba que demuestra que el producto existe.
 
 ## Ver también

@@ -17,10 +17,10 @@ Regla que evita el 90 % del problema:
 | Qué obliga la norma | `docs/Cumplimiento.md` | — |
 | Cómo se ejecuta el flujo | `docs/CasosDeUso/CU-NN` | Pruebas, códigos de error |
 | Qué impide la violación | `docs/Restricciones.md` | `sql/40_reglas/` |
-| Dónde vive cada dato | `docs/entidades/*.puml` | `docs/Modelos/`, `sql/`, tipos de Kysely |
+| Dónde vive cada dato | `docs/entidades/*.puml` | `docs/Modelos/`, `sql/`, tipos de jOOQ |
 | Qué catálogos existen | `seeders/*.json` | `sql/60_semillas/` |
 | Con qué se implementa y por qué | `docs/Arquitectura/` | — |
-| Qué acepta y devuelve la API | `packages/contratos/CU<NN>.ts` | OpenAPI, cliente tipado |
+| Qué acepta y devuelve la API | `openapi/<servicio>.yaml` | OpenAPI, cliente tipado |
 | Cómo se trabaja | `.claude/skills/` | — |
 
 **Nada de lo derivado se edita a mano.** Si hay que cambiarlo, se cambia la fuente y
@@ -28,7 +28,7 @@ se regenera; si el CI detecta diferencia, alguien rompió esa regla (`ci-calidad
 
 ## OpenAPI
 
-- Se **genera** desde los esquemas Zod; no se escribe.
+- La especificación OpenAPI **se escribe primero y es la fuente**; lo que se genera de ella es el servidor y los clientes, y eso no se edita a mano.
 - Incluye rutas reales, parámetros, esquemas, seguridad, errores, ejemplos sintéticos
   y versión.
 - El CI compara el generado con el publicado: si difiere, falla.

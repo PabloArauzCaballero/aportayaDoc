@@ -76,7 +76,7 @@ normas: [ASFI gestión de riesgo, buenas prácticas de cobranza, no discriminaci
 - Todo riesgo detectado a tiempo genera una acción de acompañamiento registrada.
 - Ninguna alerta temprana produce por sí sola una restricción sobre una persona.
 
-## Contrato · `packages/contratos/CU-97.ts`
+## Contrato · `openapi/transparencia.yaml`
 
 ```ts
 export const EntradaCU97 = z.object({
@@ -160,7 +160,7 @@ export const ErroresCU97 = {
 
 [[alerta_temprana]] · [[alerta_riesgo]] · [[metrica_grupo]] ·
 [[score_riesgo_incumplimiento]] · [[modelo_scoring]] · [[plan_regularizacion]] ·
-[[promesa_pago]] · [[plan_contingencia]] · [[evento_dominio]]
+[[promesa_pago]] · [[plan_contingencia]] · `evento_dominio`
 
 ## Criterios de aceptación
 

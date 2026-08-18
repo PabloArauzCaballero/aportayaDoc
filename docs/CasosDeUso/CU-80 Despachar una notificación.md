@@ -18,7 +18,7 @@ normas: [Consumidor financiero, protección de datos, deber de reserva]
 
 - **Actor principal:** el trabajador del outbox.
 - **Actor secundario:** proveedor de mensajería (WhatsApp, push, SMS, correo).
-- **Disparador:** un [[evento_dominio]] pendiente con una
+- **Disparador:** un `evento_dominio` pendiente con una
   [[evento_notificable]] configurada.
 
 ## Precondiciones
@@ -66,7 +66,7 @@ normas: [Consumidor financiero, protección de datos, deber de reserva]
 - Un hecho, un mensaje; con su acuse o su motivo de no envío.
 - Ningún dato sensible viajó por el canal.
 
-## Contrato · `packages/contratos/CU-80.ts`
+## Contrato · `openapi/notificaciones.yaml`
 
 ```ts
 export const EntradaCU80 = z.object({

@@ -17,3 +17,11 @@ __pycache__/
 # Andamio vacío: apps/ se quitó del repo (commit 63ec074) y se reintroduce
 # cuando exista código de verdad, no como carpeta con solo un .gitignore
 apps/
+
+# --- generado por el build: el gate es la compilacion, no un diff (ADR-016) ---
+build/
+.gradle/
+servicios/*/build/
+plataforma/*/build/
+clientes/typescript/
+despliegue/k8s/generado/

@@ -69,7 +69,7 @@ normas: [ASFI transparencia, SIN facturación, contabilidad]
 - Un turno = una entrega. El beneficiario puede explicar cada deducción.
 - El ingreso de la plataforma quedó devengado, cobrado y contabilizado.
 
-## Contrato · `packages/contratos/CU-22.ts`
+## Contrato · `openapi/entregas.yaml`
 
 ```ts
 export const EntradaCU22 = z.object({

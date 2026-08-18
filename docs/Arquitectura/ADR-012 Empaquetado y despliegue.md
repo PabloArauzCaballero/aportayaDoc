@@ -3,11 +3,18 @@ tags:
   - arquitectura
   - adr
 titulo: "ADR-012 — Empaquetado y despliegue"
-estado: aceptada
+estado: superada por ADR-025
 fecha: 2026-08-13
 ---
 
 # ADR-012 — Empaquetado y despliegue
+
+> [!warning] Decisión superada el 2026-08-16
+> La reemplaza [[ADR-025 Empaquetado y despliegue de los servicios]], al pasar el backend a Spring Boot con
+> arquitectura de microservicios ([[ADR-014 Arquitectura de servicios]]).
+> Se conserva porque el motivo por el que se decidió lo que se decidió es
+> parte del expediente: quien lea el ADR nuevo tiene que poder ver qué
+> cambió y por qué.
 
 ## Contexto
 

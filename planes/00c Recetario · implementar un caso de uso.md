@@ -5,7 +5,7 @@ tags:
   - recetario
 titulo: "Recetario — implementar un caso de uso, paso a paso"
 fecha: 2026-08-14
-aplica_a: los 87 casos de uso, sin excepción
+aplica_a: los 99 casos de uso, sin excepción
 ---
 
 # Recetario — implementar un caso de uso
@@ -16,7 +16,7 @@ aplica_a: los 87 casos de uso, sin excepción
 > distintos, los archivos tienen que parecerse tanto que se puedan revisar igual.
 >
 > **Nada de lo que hay acá es invención de este plan.** Todo sale de las skills
-> `implementar-desde-boveda`, `back-nestjs`, `arquitectura-atomica`, `contratos-api`,
+> `implementar-desde-boveda`, `back-spring`, `arquitectura-atomica`, `contratos-api`,
 > `errores-api`, `idempotencia-reintentos`, `trabajos-outbox`, `dinero-decimal`,
 > `seguridad-sesion-rls`, `entorno-monorepo`, `git-flujo` y `definicion-de-terminado`.
 
@@ -53,12 +53,12 @@ Antes de crear el primer archivo, en el PR o en el mensaje, con **este formato e
 
 ```
 CU-21 Cobrar el aporte del período
-  Organismo  CU21CobrarAporte.ts             abre la transacción
-  Moléculas  ObligacionRepositorio.ts        lee y marca la obligación
-             MovimientoRepositorio.ts        inserta la contrapartida
-             PasarelaQrAdapter.ts            (borde, se invoca desde el worker)
-  Átomos     CalculoDeAporte.ts              monto + recargo, puro
-             Dinero.ts                       ya existe en packages/dominio
+  Organismo  CU21CobrarAporte.java           abre la transacción
+  Moléculas  ObligacionRepositorio.java      lee y marca la obligación
+             MovimientoRepositorio.java      inserta la contrapartida
+             PasarelaQrAdapter.java          (borde, se invoca desde el consumidor del evento)
+  Átomos     CalculoDeAporte.java            monto + recargo, puro
+             Dinero.java                     ya existe en plataforma/comun-dominio
 ```
 
 **Si no se puede escribir esa lista, todavía no se entendió el caso de uso.**
@@ -75,15 +75,18 @@ CU-21 Cobrar el aporte del período
                   └── No → está haciendo de más: partila
 ```
 
-### Las cinco preguntas de frontera transaccional
+### Las seis preguntas de frontera transaccional
 
-También por escrito, antes de implementar ([[Prompt de backend]] §2):
+También por escrito, antes de implementar ([[Prompt de backend]] §2 y
+[[20 Saneamiento del plan · huecos de la migración a microservicios]] §2):
 
 1. ¿Qué tiene que ocurrir **todo junto o nada**?
 2. ¿Qué queda **fuera** del commit?
 3. ¿Cuál es la **clave de idempotencia** y de dónde viene: cliente o proveedor?
 4. ¿Qué se **bloquea** si dos usuarios hacen esto a la vez, y a qué granularidad?
 5. ¿Qué pasa si el proceso **muere justo después del commit**?
+6. ¿Esto **cruza a otro servicio** y qué pasa si el otro falla? ¿Cuál es la
+   **compensación**? (si hay dinero en vuelo: receta de saga, §8b)
 
 ---
 
@@ -95,7 +98,7 @@ De `implementar-desde-boveda`. **No se saltea ninguno y no se cambia el orden.**
 | :-: | --- | --- |
 | **1** | **Restricciones primero** — aplicar las del caso (`sql/40_reglas/restricciones.sql`) | Escribir la lógica antes que la barrera es la forma habitual de descubrir en producción que la barrera no existía |
 | **2** | **Semillas de catálogo** — umbrales, límites, tarifario, impuestos, licencia | Sin catálogo, *denegar por omisión* bloquea todo. Y eso es correcto |
-| **3** | **Contrato** en `packages/contratos/src/CU<NN>.ts` | Cierra preguntas que si no aparecen a mitad del código |
+| **3** | **Contrato** como operación en `openapi/<servicio>.yaml` | Cierra preguntas que si no aparecen a mitad del código |
 | **4** | **Átomos** puros, con pruebas en milisegundos | Son la parte que se puede probar rápido y mil veces |
 | **5** | **Moléculas** — repositorios y adaptadores, uno por colaborador, sin abrir transacción | |
 | **6** | **Organismo** — el caso de uso, única frontera transaccional | |
@@ -105,29 +108,36 @@ De `implementar-desde-boveda`. **No se saltea ninguno y no se cambia el orden.**
 ### Estructura de archivos resultante
 
 ```
-packages/contratos/src/CU31.ts                    ← entrada, salida, códigos de error
-apps/api/src/modulos/11_tarifas_comisiones/
-  aplicacion/CU31DevengarComision.ts              ← ORGANISMO: orquesta la transacción
-  dominio/DevengoComision.ts                      ← ÁTOMO: invariantes, sin IO
-  infraestructura/DevengoRepositorio.ts           ← MOLÉCULA: SQL, sin lógica
-  infraestructura/PasarelaAdapter.ts              ← MOLÉCULA de borde, idempotente
-  http/comisiones.controller.ts                   ← PÁGINA: traduce y delega
-  pruebas/CU31.spec.ts                            ← criterios de aceptación
+servicios/tarifas/src/main/resources/openapi/tarifas.yaml   ← la operación CU-31
+servicios/tarifas/src/main/java/bo/aportaya/tarifas/
+  aplicacion/CU31DevengarComision.java            ← ORGANISMO: orquesta la transacción
+  dominio/DevengoComision.java                    ← ÁTOMO: invariantes, sin IO ni Spring
+  infraestructura/DevengoRepositorio.java         ← MOLÉCULA: SQL, sin lógica
+  infraestructura/PasarelaAdapter.java            ← MOLÉCULA de borde, idempotente
+  infraestructura/NucleoFinancieroCliente.java    ← MOLÉCULA: otro servicio
+  web/ComisionesController.java                   ← PÁGINA: implementa lo generado
+servicios/tarifas/src/test/java/bo/aportaya/tarifas/
+  CU31Test.java                                   ← criterios de aceptación
 ```
 
 ---
 
 ## 4 · Las firmas exactas
 
-Estas son las formas canónicas. **Se copian, no se reinventan** (`back-nestjs`).
+Estas son las formas canónicas. **Se copian, no se reinventan** (`back-spring`).
 
 ### El controlador no piensa
 
-```ts
-@Post('aportes')
-async cobrar(@Body() body: unknown, @Ctx() ctx: Contexto) {
-  const entrada = EntradaCU21.parse(body)          // contrato estricto
-  return this.cu21.ejecutar(ctx, entrada)          // y nada más
+```java
+@RestController
+public class AportesController implements AportesApi {   // ← interfaz GENERADA del OpenAPI
+
+    @Override
+    public ResponseEntity<RespuestaCobro> cobrarAporte(SolicitudCobro cuerpo,
+                                                        String idempotencyKey) {
+        var salida = cu21.ejecutar(mapear(cuerpo, idempotencyKey), contexto.actual());
+        return ResponseEntity.ok(mapear(salida));            // y nada más
+    }
 }
 ```
 
@@ -135,66 +145,75 @@ Sin `if` de negocio, sin cálculos, sin SQL, sin transacción.
 
 ### El caso de uso es el único que abre transacción
 
-```ts
-export class CU21CobrarAporte {
-  async ejecutar(ctx: Contexto, entrada: EntradaCU21): Promise<SalidaCU21> {
-    return conTransaccion(ctx, async (tx) => {          // BEGIN + SET LOCAL
-      await this.idempotencia.exigirNueva(tx, entrada.claveIdempotencia)
+```java
+@Service
+public class CU21CobrarAporte {
 
-      const obligacion = await this.obligaciones.tomarParaActualizar(tx, entrada.obligacionId)
-      const calculo    = calcularAporte(obligacion, entrada.monto)   // átomo puro
+    @Transactional                                        // ← BEGIN. Solo en aplicacion/
+    public SalidaCobro ejecutar(EntradaCobro entrada, ContextoSesion ctx) {
+        return datos.conContexto(ctx, dsl -> {            // ← SET LOCAL, misma conexión
+            idempotencia.exigirNueva(dsl, entrada.clave());
 
-      await this.movimientos.insertarPar(tx, calculo)                 // molécula
-      await this.eventos.registrarYEncolar(tx, 'aporte.confirmado', calculo)
+            var obligacion = obligaciones.tomarParaActualizar(dsl, entrada.obligacionId());
+            var calculo    = CalculoDeAporte.de(obligacion, entrada.monto());   // átomo puro
 
-      return calculo.aSalida()
-    })
-  }
+            movimientos.insertarPar(dsl, calculo);                              // molécula
+            outbox.emitir(dsl, "aportes.aporte_confirmado", calculo.aEvento());
+
+            return calculo.aSalida();
+        });
+    }
 }
 ```
 
 | Regla | Dónde se ve |
 | --- | --- |
 | Idempotencia **antes** de escribir | `exigirNueva` es la primera línea |
-| Contexto de RLS dentro de la transacción | `conTransaccion` hace el `SET LOCAL` |
-| El cálculo es un átomo puro | `calcularAporte` no recibe la conexión |
+| Contexto de RLS dentro de la transacción | `conContexto` hace el `SET LOCAL` |
+| El cálculo es un átomo puro | `CalculoDeAporte` no recibe el `DSLContext` |
 | El saldo se deriva, no se actualiza | `insertarPar` inserta movimiento y contrapartida |
-| El efecto externo va por outbox | `registrarYEncolar`, dentro del `COMMIT` |
-| Nada de proveedores acá | Ningún `await pasarela.*` dentro de la transacción |
+| El efecto externo va por outbox | `outbox.emitir`, dentro del `COMMIT` |
+| Nada de red acá | Ni un proveedor ni **otro servicio** dentro de la transacción |
 
 ### Encolar un efecto
 
-```ts
-await this.eventos.registrarYEncolar(tx, {
-  tipo: 'aporte.confirmado',
-  agregadoId: pago.id,
-  clave: `aporte:${pago.id}`,        // clave de idempotencia del efecto
-  cargaUtil: { pagoId: pago.id },    // identificadores, NO datos derivados
-})
+```java
+outbox.emitir(dsl, new EventoDominio(
+    "aportes.aporte_confirmado",              // <modulo>.<evento> — prefijo obligatorio
+    pago.id(),                                 // clave de partición: el agregado
+    "aporte:" + pago.id(),                     // clave de idempotencia del efecto
+    Map.of("pagoId", pago.id())                // identificadores, NO datos derivados
+));
 ```
+
+El relevo lo publica en Kafka **después** del `COMMIT`. Publicar desde acá anunciaría
+un hecho que puede no haber ocurrido.
 
 ### Consumir un trabajo
 
-```ts
-export const enviarAvisoDeAporte = async ({ pagoId }, helpers) => {
-  await conTransaccion(ctxSistema, async (tx) => {
-    if (await yaEnviado(tx, pagoId)) return          // al menos una vez ⇒ idempotente
-    const aviso = await construirAviso(tx, pagoId)
-    const res   = await mensajeria.enviar(aviso)     // borde externo
-    await registrarIntento(tx, pagoId, res)          // evidencia de cada intento
-  })
+```java
+@KafkaListener(topics = "aportaya.aportes.aporte_confirmado")
+public void alConfirmarse(EventoAporte e) {
+    if (!consumidos.registrar(e.id(), "notificaciones")) return;  // al menos una vez ⇒ idempotente
+    var aviso = construirAviso(e.pagoId());
+    var res   = mensajeria.enviar(aviso);                         // borde externo, FUERA de la tx
+    registrarIntento(e.pagoId(), res);                            // evidencia de cada intento
 }
 ```
 
+`consumidos.registrar` inserta en `evento_consumido` con clave única: si el evento ya
+se procesó, devuelve `false` y no se hace nada. **Todo consumidor es idempotente, sin
+excepción**, porque el transporte es *al menos una vez*.
+
 ### Contexto de sesión
 
-```ts
-await conTransaccion(ctx, async (tx) => {
-  // dentro ya corrieron:
-  //   SET LOCAL app.usuario_id
-  //   SET LOCAL app.rol
-  return organismo.ejecutar(tx, entrada)
-})
+```java
+datos.conContexto(ctx, dsl -> {
+    // dentro ya corrieron:
+    //   select set_config('app.usuario_id', …, true)
+    //   select set_config('app.rol',        …, true)
+    return organismo.ejecutar(dsl, entrada);
+});
 ```
 
 `SET` sin `LOCAL` **persiste en la conexión del pool**: el siguiente request hereda la
@@ -205,14 +224,14 @@ sistema, y no deja rastro.
 
 ## 5 · Las piezas de `comun/` — nombres canónicos
 
-De `back-nestjs`. **Estos son los nombres; no se inventan sinónimos.**
+De `back-spring`. **Estos son los nombres; no se inventan sinónimos.**
 
 | Pieza | Qué hace |
 | --- | --- |
-| `conTransaccion(ctx, fn)` | Abre transacción, fija `app.usuario_id` y `app.rol` con `SET LOCAL`, revierte ante error |
+| `conContexto(ctx, fn)` | Abre transacción, fija `app.usuario_id` y `app.rol` con `SET LOCAL`, revierte ante error |
 | `Idempotencia` | Busca la clave; si existe, devuelve **la respuesta original** sin escribir |
 | `FiltroDeErrores` | Traduce el rechazo de la base al código `R-XXX-nn`; nunca filtra SQL al cliente |
-| `Traza` | Propaga el identificador hasta el worker; toda línea de log lleva `cu` y `usuario_id` |
+| `Traza` | Propaga el identificador hasta el consumidor de Kafka del servicio; toda línea de log lleva `cu` y `usuario_id` |
 | `ConfigSchema` | Valida las variables de entorno al arrancar; si falta una, el proceso no levanta |
 
 Y las interfaces de dominio para los bordes: `PasarelaQr`, `ServicioFiscal`,
@@ -231,31 +250,35 @@ De `dinero-decimal`.
 
 ### El driver, una sola vez, al crear el pool
 
-```ts
-import { types } from 'pg'
-types.setTypeParser(1700, (v) => v)   // numeric  → string
-types.setTypeParser(20,   (v) => v)   // int8     → string
+```java
+// jOOQ mapea numeric(14,2) → BigDecimal de forma nativa: no hay parser que configurar.
+// Lo que SÍ hay que sostener es la frontera de salida:
+@JsonComponent
+public class DineroSerializer extends JsonSerializer<Dinero> { … }   // → "150.00", cadena
 ```
 
-**Si esto falta, todo lo demás es decorativo.**
+**Si el serializador falta, todo lo demás es decorativo:** el cliente es JavaScript y
+un `number` de JSON llega como doble del otro lado.
 
 ### `Dinero`, con moneda
 
-```ts
-const cuota   = Dinero.de('150.00', 'BOB')
-const recargo = Dinero.de('7.50', 'BOB')
-const total   = cuota.mas(recargo)            // 157.50 BOB
-cuota.mas(Dinero.de('10.00', 'USD'))          // ⇒ error, no conversión silenciosa
+```java
+var cuota   = Dinero.de("150.00", BOB);
+var recargo = Dinero.de("7.50",  BOB);
+var total   = cuota.mas(recargo);              // 157.50 BOB
+cuota.mas(Dinero.de("10.00", USD));            // ⇒ error del dominio, no conversión silenciosa
 ```
 
-Nada de `+`, `-`, `*`, `/` sobre importes. Nunca `parseFloat`, nunca `Number()`.
+Nada de aritmética sobre el `BigDecimal` desnudo. `divide` **siempre** con
+`RoundingMode` explícito.
 
-### La lista exacta que prohíbe el lint
+### La lista exacta que prohíbe el análisis estático
 
-`number` queda prohibido en cualquier tipo, campo o parámetro cuyo nombre denote
-dinero: **`monto`, `importe`, `saldo`, `comision`, `impuesto`, `total`, `deuda`,
-`aporte`, `cuota`, `recargo`, `mora`**. Un `eslint-disable` sobre esta regla se
-rechaza en revisión.
+`double` y `float` quedan prohibidos en cualquier tipo, campo o parámetro cuyo nombre
+denote dinero: **`monto`, `importe`, `saldo`, `comision`, `impuesto`, `total`,
+`deuda`, `aporte`, `cuota`, `recargo`, `mora`**. Y `equals` sobre `BigDecimal`, en
+cualquier caso: `1.10` y `1.1` son iguales en valor y distintos en `equals`. Una
+supresión sobre estas reglas se rechaza en revisión.
 
 ### Redondeo
 
@@ -271,7 +294,7 @@ rechaza en revisión.
 | --- | --- |
 | Base ⇄ backend | `numeric` ⇄ *string* |
 | Backend ⇄ cliente | `{"monto": "150.00", "moneda": "BOB"}` |
-| Contrato Zod | `z.string().regex(/^-?\d+\.\d{2}$/)` + `z.enum(['BOB','USD'])` |
+| Contrato OpenAPI | `type: string, pattern: '^-?\d+\.\d{2}$'` + `enum: [BOB, USD]` |
 | Vista | El átomo `Monto` formatea; **nunca** calcula |
 
 En la base: `DECIMAL(14,2)`, o **`(16,2)` para acumulados**, siempre con
@@ -296,7 +319,7 @@ De `errores-api`.
 
 | Situación | HTTP | Cuerpo |
 | --- | :-: | --- |
-| Entrada inválida por esquema Zod | `400` | Lista de campos con mensaje |
+| Entrada inválida por el contrato | `400` | Lista de campos con mensaje |
 | **Regla de negocio de la aplicación** | **`422`** | `{ codigo: 'AP-CU21-02', … }` |
 | Sin permiso o fuera de política de fila | `403` o resultado vacío | Sin detalles internos |
 | Restricción de la base rechaza | `409` | `{ codigo: 'R-LIM-02', … }` traducido |
@@ -310,12 +333,12 @@ De `errores-api`.
 
 ### Traducir el rechazo de PostgreSQL
 
-```ts
-const TRADUCCION: Record<string, { codigo: string; mensaje: string; http: number }> = {
-  uq_transaccion_clave_idempotencia: { codigo: 'AP-CU21-00', mensaje: 'Operación ya registrada.', http: 200 },
-  ck_movimiento_monto_positivo:      { codigo: 'R-BIL-03',   mensaje: 'El importe debe ser mayor a cero.', http: 409 },
-  ex_puntaje_vigente:                { codigo: 'R-REP-02',   mensaje: 'Ya hay un puntaje vigente para ese período.', http: 409 },
-}
+```java
+static final Map<String, Traduccion> TRADUCCION = Map.of(
+  "uq_transaccion_clave_idempotencia", new Traduccion("AP-CU21-00", "Operación ya registrada.", 200),
+  "ck_movimiento_monto_positivo",      new Traduccion("R-BIL-03",   "El importe debe ser mayor a cero.", 409),
+  "ex_puntaje_vigente",                new Traduccion("R-REP-02",   "Ya hay un puntaje vigente para ese período.", 409)
+);
 ```
 
 1. **Nunca dejar pasar el error crudo.**
@@ -358,7 +381,7 @@ correcto es **intentar escribir y manejar el conflicto**.
 | --- | --- |
 | Cliente | UUID que el cliente genera y **reenvía igual** en el reintento |
 | Webhook | Identificador del evento del proveedor + su tipo |
-| Trabajo del worker | Identificador del evento de dominio |
+| Consumidor de evento | Identificador del evento de dominio (`id_evento`) |
 | Proceso periódico | Clave natural del período (`grupo_id + periodo`) |
 
 > **Una clave generada por el servidor en cada request no sirve para nada**: cada
@@ -409,6 +432,34 @@ pendiente → confirmado → reversado
 
 ---
 
+## 8b · Receta de saga
+
+De [[ADR-028 Mecánica de saga]] y del inventario S1–S9 de
+[[20 Saneamiento del plan · huecos de la migración a microservicios]] (§1.2 y §2).
+Aplica cuando la sexta pregunta de §2 se responde con sí **y hay dinero en vuelo**:
+cobrar aporte (S1), liquidar entrega (S2), cobertura de garantía (S3), cargo de
+comisión (S7). Lo que es evento o lectura de catálogo **no es saga**: se resuelve
+con §4 y §8.
+
+| Regla | Cómo se ve |
+| --- | --- |
+| **El orquestador es el servicio donde nace el hecho** | CU-21 lo orquesta `aportes`; el inventario de planes/20 §2 dice quién orquesta cada saga |
+| El organismo de saga **persiste el estado** | `CU21CobrarAporteSaga.java` escribe en `estado_saga` el paso actual **en la misma transacción** que el efecto local de ese paso |
+| Pasos remotos: **HTTP idempotente** | La `Idempotency-Key` se **deriva**: `id_saga + numero_de_paso`. El reintento no puede duplicar |
+| Recuperación: **el barredor** | Un `@Scheduled` + ShedLock por servicio orquestador toma las sagas con `edad > timeout_de_paso` (30 s por omisión) y decide: reintentar el paso o **compensar** |
+| **Compensación = movimiento inverso** | Nunca un `UPDATE` del libro: el reverso es su propio asiento, referido al original. El **estado** de la saga y de la obligación sí avanza por `UPDATE` |
+| Saga sin compensar = **incidente** | Se abre incidente operativo y **se avisa a una persona**; el usuario ve «en revisión», nunca un éxito ni un fallo silencioso |
+
+### La prueba de la saga
+
+El `*SagaTest` — la séptima obligatoria de
+[[00b Estándar de ejecución · código limpio, pruebas y calidad]] §9 — fuerza la
+compensación **paso a paso**: mata al orquestador después de cada paso, verifica que
+el barredor retoma o compensa, y que el dinero cuadra al centavo en ambos
+desenlaces.
+
+---
+
 ## 9 · Adaptadores de proveedores — los cinco obligatorios
 
 De `trabajos-outbox`. Todo borde externo tiene:
@@ -423,11 +474,13 @@ De `trabajos-outbox`. Todo borde externo tiene:
 
 ### Trabajos con fecha
 
-```
-'0 1 * * *  cierre_diario   ?jobKey=cierre:diario&jobKeyMode=preserve_run_at'
+```java
+@Scheduled(cron = "0 0 1 * * *")
+@SchedulerLock(name = "nucleo_financiero.cierre_diario")
+public void cierreDiario() { … }
 ```
 
-- **Bloqueo por identificador**: con varias réplicas corre **una sola vez**.
+- **Bloqueo por identificador** (ShedLock): con varias réplicas corre **una sola vez**.
 - El trabajo **verifica su propia precondición**: si el día ya está sellado, termina
   sin hacer nada.
 - Los plazos **ya están persistidos** (`vence_en`, `plazo_respuesta`): el trabajo los
@@ -452,37 +505,38 @@ De `trabajos-outbox`. Todo borde externo tiene:
 Ninguno es superusuario. **Si un proceso necesita más permisos de los que tiene, la
 respuesta por defecto es que el diseño está mal, no que falta un `GRANT`.**
 
-El worker corre con `rol_aplicacion` y **fija su propio contexto**: actúa como
-sistema, con su identificador. Cuando el evento trae el actor original, se propaga.
+No hay worker central: los trabajos programados y los consumidores de eventos corren
+en el propio servicio, con su rol `svc_*`, y **fijan su propio contexto**: actúan
+como sistema, con su identificador. Cuando el evento trae el actor original, se propaga.
 **Un efecto sin actor identificable es un agujero de auditoría.**
 
 ---
 
 ## 11 · Comandos — el mapa exacto
 
-`entorno-monorepo` define los comandos con Kysely; este proyecto usa MikroORM
-(ADR-014). **La equivalencia es esta**, y es la que vale:
+`entorno-monorepo` define los comandos de Gradle; este proyecto usa jOOQ
+(ADR-014). **Los comandos son estos**, y son los que valen:
 
-| Skill dice | En este proyecto | Qué hace |
-| --- | --- | --- |
-| `yarn datos:tipos` | **`yarn datos:entidades`** | Regenera desde la base viva |
-| `yarn test:atomos` | **`yarn test:unit`** | Solo puras, sin contenedor |
-| `yarn test` | `yarn test:integracion` + `test:api` | Con Testcontainers |
-| `yarn contratos:openapi` | igual | Deriva el OpenAPI |
-| `yarn lint` · `yarn typecheck` | igual | Ambos bloquean el PR |
+| Comando | Qué hace |
+| --- | --- |
+| `./gradlew generateJooq` | Regenera las clases desde la base viva, por esquema |
+| `./gradlew test` | Solo puras, sin contenedor |
+| `./gradlew integrationTest` | Con Testcontainers, PostgreSQL real |
+| `./gradlew generateOpenApiClients` | Genera servidor y clientes desde el OpenAPI |
+| `./gradlew spotlessCheck check` | Formato y análisis estático; bloquean el PR |
 
 ### Arranque local, en orden
 
 ```bash
-yarn install --immutable
+./gradlew build
 docker compose up -d postgres pgbouncer
 python3 scripts/generar_ddl.py
 psql -d aportaya -v ON_ERROR_STOP=1 -f sql/aplicar.sql
 psql -d aportaya -v ON_ERROR_STOP=1 -f sql/60_semillas/sembrar.sql        # 20 catálogos
 psql -d aportaya -f sql/61_prueba/sembrar_prueba.sql                       # 14, solo local
 psql -d aportaya -f sql/50_verificacion/prueba_humo.sql                    # todo OK, cero FALLA
-yarn datos:entidades
-yarn dev
+./gradlew generateJooq
+./gradlew bootRun
 ```
 
 > **Si te salteás las semillas, nada funciona**, y es el comportamiento correcto:
@@ -496,7 +550,7 @@ yarn dev
 2. skill restriccion      → si hay regla nueva que garantizar
 3. python3 scripts/generar_ddl.py
 4. aplicar sql/ en la base local
-5. yarn datos:entidades   → el compilador señala cada lugar a revisar
+5. ./gradlew generateJooq compileJava  → el compilador señala cada lugar a revisar
 6. actualizar contratos y pruebas
 ```
 
@@ -538,7 +592,7 @@ con confianza.
 | Un caso de uso | Sus restricciones citadas, si son nuevas |
 | Una restricción | Su prueba de rechazo y su consulta de verificación |
 | Un catálogo | El JSON en `seeders/`, el manifiesto y el README |
-| Código de un caso de uso | Su contrato en `packages/contratos/` y sus pruebas |
+| Código de un caso de uso | Su operación en el `openapi/` del servicio y sus pruebas |
 
 > **Un PR que cambia el código y deja la bóveda vieja crea dos verdades. Si divergen,
 > gana la bóveda y el código está mal.**
@@ -564,10 +618,10 @@ De `definicion-de-terminado`. **Se reporta con esta matriz, no en prosa:**
 
 | Área | Gate | Evidencia | Estado |
 | --- | --- | --- | --- |
-| Especificación | Criterios de aceptación cubiertos | `CU21.spec.ts`, 14/14 | Pass |
+| Especificación | Criterios de aceptación cubiertos | `CU21Test.java`, 14/14 | Pass |
 | Datos | Restricciones citadas con prueba de rechazo | 6/6 rechazos verificados | Pass |
 | Seguridad | Prueba negativa de RLS | contexto ajeno ⇒ 0 filas | Pass |
-| Plazos | Vencimiento y aviso previo | `CU52.spec.ts` 3/3 | Pass |
+| Plazos | Vencimiento y aviso previo | `CU52Test.java` 3/3 | Pass |
 | Arquitectura | Piezas por nivel, sin saltos | `aportaya/capas` en verde | Pass |
 | Operación | Health, readiness, trazas | `curl /salud/listo` → 200 | Pass |
 | Entrega | Lint, tipos, pruebas, build | salida citada | Pass |
@@ -579,7 +633,7 @@ De `definicion-de-terminado`. **Se reporta con esta matriz, no en prosa:**
 | --- | --- |
 | «Está listo para producción» | «Pasan 7 de los 8 gates; el de restauración quedó pendiente» |
 | «Debería funcionar» | «No lo pude ejecutar porque falta X; queda sin verificar» |
-| «Ya está probado» | «14 criterios como pruebas, 6 rechazos de restricción, `yarn test` en verde» |
+| «Ya está probado» | «14 criterios como pruebas, 6 rechazos de restricción, `./gradlew test` en verde» |
 | «Es seguro» | «Prueba negativa de RLS y de permisos en verde; sin escaneo de imagen todavía» |
 
 ---
@@ -594,22 +648,22 @@ De `definicion-de-terminado`. **Se reporta con esta matriz, no en prosa:**
 | El flujo real difiere del caso de uso | Se actualiza el caso, **no se deja divergir** |
 | Un archivo pasa de ~200 líneas (backend) o ~150 (componente) | Varios niveles mezclados |
 | Hay que leer tres archivos para entender uno | Las dependencias no van en una dirección |
-| Aparece `utils.ts`, `helpers.ts`, `common.ts` | Átomos sin nombre |
-| El mismo cálculo aparece en la app y en la API | Falta un átomo en `packages/dominio` |
+| Aparece `Utils.java`, `Helpers.java`, `Common.java` | Átomos sin nombre |
+| El mismo cálculo aparece en la app y en el servicio | Falta un átomo en `plataforma/comun-dominio` |
 | Un componente hace `fetch` | Falta la capa de dominio del cliente |
 
 ---
 
 ## 15 · Antipatrones que se rechazan en revisión
 
-De `back-nestjs`, sin discusión:
+De `back-spring`, sin discusión:
 
 - Lógica de negocio en el controlador o en el repositorio.
 - Transacción abierta dentro de una molécula.
-- `await` a un proveedor externo dentro de `conTransaccion`.
+- Llamada bloqueante a un proveedor externo dentro de `conContexto`.
 - Servicio que atiende cuatro casos de uso «porque se parecen».
-- Consulta fuera de `conTransaccion` sobre tablas con RLS.
-- `any` para esquivar el tipo generado de una tabla.
+- Consulta fuera de `conContexto` sobre tablas con RLS.
+- Un cast crudo u `Object` para esquivar el tipo generado de una tabla.
 
 ## Ver también
 

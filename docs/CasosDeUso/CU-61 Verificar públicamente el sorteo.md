@@ -49,7 +49,7 @@ normas: [Transparencia con el consumidor]
 - Queda registro de cada verificación, con quién y cuándo.
 - Un resultado negativo nunca queda silencioso.
 
-## Contrato · `packages/contratos/CU-61.ts`
+## Contrato · `openapi/transparencia.yaml`
 
 ```ts
 export const EntradaCU61 = z.object({

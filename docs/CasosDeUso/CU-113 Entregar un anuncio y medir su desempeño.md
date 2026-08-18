@@ -60,7 +60,7 @@ normas: [Política comercial interna]
 - Cada impresión, clic y conversión queda como evento append-only, base para la
   liquidación del período (ver [[CU-114 Liquidar y facturar el gasto publicitario]]).
 
-## Contrato · `packages/contratos/CU-113.ts`
+## Contrato · `openapi/publicidad.yaml`
 
 ```ts
 export const EntradaCU113 = z.object({
@@ -110,7 +110,7 @@ export const ErroresCU113 = {
 
 ## Restricciones aplicables
 
-`R-AUD-01` (impresión, clic y conversión son append-only).
+`R-AUD-01` (impresión, clic y conversión son append-only) · `R-PUB-04`.
 
 ## Evidencia que deja
 

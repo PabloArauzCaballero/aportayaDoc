@@ -56,7 +56,7 @@ normas: [NIIF, Código de Comercio]
 - `valor_en_libros` de cada activo refleja su valor contable real en todo
   momento, sin recalcularlo a mano.
 
-## Contrato · `packages/contratos/CU-105.ts`
+## Contrato · `openapi/erp.yaml`
 
 ```ts
 export const EntradaCU105 = z.object({
@@ -108,7 +108,7 @@ export const ErroresCU105 = {
 
 ## Restricciones aplicables
 
-`R-AUD-01` · `R-AUD-05` · `R-AUD-06`
+`R-AUD-01` · `R-AUD-05` · `R-AUD-06` · `R-CTB-07`
 
 ## Evidencia que deja
 

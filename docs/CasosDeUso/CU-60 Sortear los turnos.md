@@ -53,7 +53,7 @@ normas: [Transparencia con el consumidor, RF-19]
    - se crean los [[turno]] con `orden_asignado` y
      `criterio_asignacion = 'SORTEO'`;
    - el sorteo pasa a `REVELADO` y se registra `ejecutado_por`;
-   - se emite [[evento_dominio]] `sorteo.revelado`.
+   - se emite `evento_dominio` `sorteo.revelado`.
 5. Se publica el resultado con la semilla y el procedimiento, para que cualquiera
    lo recompute → [[CU-61 Verificar públicamente el sorteo]].
 6. El grupo pasa a `EN_CURSO` y se abre el primer [[periodo]].
@@ -73,7 +73,7 @@ normas: [Transparencia con el consumidor, RF-19]
 - Cada cupo tiene exactamente un turno y cada turno un orden único (`R-GRP-06`).
 - El resultado es reproducible por terceros con los datos publicados.
 
-## Contrato · `packages/contratos/CU-60.ts`
+## Contrato · `openapi/grupos.yaml`
 
 ```ts
 export const EntradaCU60 = z.object({
@@ -141,7 +141,7 @@ export const ErroresCU60 = {
 ## Evidencia que deja
 
 [[sorteo_turnos]] (*append-only*) · [[turno]] · [[bloque_transparencia]] ·
-[[evento_dominio]] · [[bitacora_evento]]
+`evento_dominio` · [[bitacora_evento]]
 
 ## Criterios de aceptación
 

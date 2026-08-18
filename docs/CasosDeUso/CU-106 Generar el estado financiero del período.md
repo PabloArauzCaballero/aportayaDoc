@@ -54,7 +54,7 @@ normas: [NIIF, Código de Comercio, Ley 393]
 - Cada estado financiero generado es inmutable y verificable después con su
   `hash_contenido`, igual que [[registro_sellado]] en el módulo 09.
 
-## Contrato · `packages/contratos/CU-106.ts`
+## Contrato · `openapi/erp.yaml`
 
 ```ts
 export const EntradaCU106 = z.object({
@@ -104,7 +104,7 @@ export const ErroresCU106 = {
 
 ## Restricciones aplicables
 
-`R-AUD-01` · `R-AUD-05`
+`R-AUD-01` · `R-AUD-05` · `R-CTB-02` · `R-CTB-08`
 
 ## Evidencia que deja
 

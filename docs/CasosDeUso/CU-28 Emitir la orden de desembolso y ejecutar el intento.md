@@ -55,7 +55,7 @@ normas: [ASFI conciliación, BCB pagos, contabilidad]
    - la orden pasa a `ACREDITADA` con `acreditada_en`;
    - se libera la retención y se debita efectivamente el saldo;
    - se registra el [[movimiento_custodia]] y el [[asiento_contable]];
-   - se emite [[evento_dominio]] `desembolso.acreditado`.
+   - se emite `evento_dominio` `desembolso.acreditado`.
 5. **Cada transición escribe [[historial_estado_entrega]]** con estado anterior,
    nuevo, motivo y quién la ejecutó. El participante ve esa misma línea de tiempo,
    sin traducciones piadosas.
@@ -84,7 +84,7 @@ normas: [ASFI conciliación, BCB pagos, contabilidad]
   intentos completa.
 - Ningún saldo queda debitado sin acuse ni acreditado sin conciliar.
 
-## Contrato · `packages/contratos/CU-28.ts`
+## Contrato · `openapi/entregas.yaml`
 
 ```ts
 export const EntradaCU28 = z.object({
@@ -160,7 +160,7 @@ export const ErroresCU28 = {
 
 [[orden_desembolso]] · [[intento_desembolso]] · [[historial_estado_entrega]] ·
 [[incidencia_entrega]] · [[movimiento_custodia]] · [[asiento_contable]] ·
-[[excepcion_conciliacion]] · [[evento_dominio]]
+[[excepcion_conciliacion]] · `evento_dominio`
 
 ## Criterios de aceptación
 

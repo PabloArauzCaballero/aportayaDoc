@@ -4,8 +4,8 @@ tags:
   - restricciones
 titulo: "Catálogo de restricciones — AportaYa"
 motor: PostgreSQL 15+
-total_restricciones: 124
-fecha: 2026-08-11
+total_restricciones: 138
+fecha: 2026-08-16
 ---
 
 # Catálogo de restricciones
@@ -61,6 +61,8 @@ fn_<dominio>_<accion>  función
 | `R-GAR` | Garantía, incumplimiento y cobranza | 7 |
 | `R-DES` | Desembolsos y entregas | 2 |
 | `R-ORG` | Organizador y automatización | 7 |
+| `R-CTB` | Contabilidad financiera y ERP | 8 |
+| `R-PUB` | Publicidad y campañas | 6 |
 
 ---
 
@@ -1251,7 +1253,7 @@ ALTER TABLE registro_acceso_datos
 -- `app.usuario_id` y `app.rol` los fija la aplicación con SET LOCAL dentro de la
 -- transacción. SET LOCAL y no SET: con pooling, un SET a secas sobrevive a la
 -- devolución de la conexión y el siguiente request hereda la identidad del
--- anterior. Ver [[ADR-007 Sesión, RLS y pooling]].
+-- anterior. Ver [[ADR-021 Sesión, RLS y pooling]].
 CREATE OR REPLACE FUNCTION fn_seg_usuario_actual() RETURNS UUID AS $$
   SELECT NULLIF(current_setting('app.usuario_id', true), '')::uuid;
 $$ LANGUAGE sql STABLE;
@@ -2230,6 +2232,264 @@ ALTER TABLE ejecucion_tarea
         resultado <> 'FALLO' OR mensaje_error IS NOT NULL),
   ADD CONSTRAINT ck_ejecucion_tarea_fin CHECK (
         finalizada_en IS NULL OR finalizada_en >= iniciada_en);
+```
+
+---
+
+## R-CTB — Contabilidad financiera y ERP
+
+| Código | Regla | Obliga | Se verifica en |
+| --- | --- | --- | --- |
+| R-CTB-01 | Un período contable por ejercicio y mes; no se asienta en uno cerrado | Ley 393 · Código de Comercio | [[CU-100 Abrir y cerrar el período contable]] |
+| R-CTB-02 | Solo las cuentas de movimiento reciben asientos; una sumarizadora no | NIIF · plan de cuentas | [[CU-106 Generar el estado financiero del período]] |
+| R-CTB-03 | Un presupuesto por centro de costo y ejercicio | Control interno | [[CU-101 Presupuestar por centro de costo]] |
+| R-CTB-04 | Una factura por proveedor y número; el saldo nunca queda negativo | Código de Comercio | [[CU-103 Registrar y pagar una factura de proveedor]] |
+| R-CTB-05 | Quien aprueba una factura de proveedor no autoriza su pago | Control interno · segregación | [[CU-103 Registrar y pagar una factura de proveedor]] |
+| R-CTB-06 | Una cuenta por cobrar no se cobra por encima de su saldo | NIIF | [[CU-104 Cobrar una cuenta por cobrar]] |
+| R-CTB-07 | Una depreciación por activo y período | NIIF | [[CU-105 Depreciar un activo fijo]] |
+| R-CTB-08 | Un estado financiero por período y tipo | NIIF · Ley 393 | [[CU-106 Generar el estado financiero del período]] |
+
+```sql
+-- R-CTB-01 · un período por ejercicio y mes, y nada se asienta en uno cerrado
+ALTER TABLE ejercicio_fiscal
+  ADD CONSTRAINT ck_ejercicio_fiscal_rango CHECK (fecha_fin > fecha_inicio),
+  ADD CONSTRAINT ck_ejercicio_fiscal_cierre CHECK (
+        estado <> 'CERRADO' OR (cerrado_en IS NOT NULL AND cerrado_por IS NOT NULL));
+
+ALTER TABLE periodo_contable
+  ADD CONSTRAINT uq_periodo_contable_ejercicio_mes
+    UNIQUE (ejercicio_fiscal_id, mes),
+  ADD CONSTRAINT ck_periodo_contable_rango CHECK (fecha_fin > fecha_inicio);
+
+-- El cierre guarda el cuadre del momento: si no cuadra, no es un cierre.
+ALTER TABLE cierre_periodo_contable
+  ADD CONSTRAINT ck_cierre_periodo_cuadrado CHECK (total_debe = total_haber);
+
+CREATE OR REPLACE FUNCTION fn_ctb_periodo_abierto() RETURNS trigger AS $$
+DECLARE
+  v_estado TEXT;
+BEGIN
+  IF NEW.periodo_contable_id IS NULL THEN
+    -- Asientos anteriores a M13 no llevan período: se aceptan sin validar.
+    RETURN NEW;
+  END IF;
+  SELECT estado INTO v_estado
+    FROM periodo_contable WHERE id = NEW.periodo_contable_id;
+  IF v_estado IS NULL THEN
+    RAISE EXCEPTION 'R-CTB-01: el período contable % no existe',
+                    NEW.periodo_contable_id;
+  END IF;
+  IF v_estado <> 'ABIERTO' THEN
+    RAISE EXCEPTION 'R-CTB-01: el período contable % está %; no admite asientos',
+                    NEW.periodo_contable_id, v_estado;
+  END IF;
+  RETURN NEW;
+END $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER tg_asiento_periodo_abierto
+  BEFORE INSERT ON asiento_contable
+  FOR EACH ROW EXECUTE FUNCTION fn_ctb_periodo_abierto();
+
+-- R-CTB-02 · una cuenta sumarizadora es un total, no un destino de asiento
+CREATE OR REPLACE FUNCTION fn_ctb_cuenta_de_movimiento() RETURNS trigger AS $$
+DECLARE
+  v_movimiento BOOLEAN;
+BEGIN
+  SELECT es_cuenta_de_movimiento INTO v_movimiento
+    FROM cuenta_contable WHERE id = NEW.cuenta_id;
+  IF v_movimiento IS DISTINCT FROM TRUE THEN
+    RAISE EXCEPTION
+      'R-CTB-02: la cuenta % es sumarizadora; no recibe movimientos directos',
+      NEW.cuenta_id;
+  END IF;
+  RETURN NEW;
+END $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER tg_movimiento_cuenta_de_movimiento
+  BEFORE INSERT ON movimiento_contable
+  FOR EACH ROW EXECUTE FUNCTION fn_ctb_cuenta_de_movimiento();
+
+-- Una cuenta no puede ser su propio padre.
+ALTER TABLE cuenta_contable
+  ADD CONSTRAINT ck_cuenta_contable_padre_distinto CHECK (
+        cuenta_padre_id IS NULL OR cuenta_padre_id <> id),
+  ADD CONSTRAINT ck_cuenta_contable_nivel CHECK (nivel >= 1);
+
+-- R-CTB-03 · un presupuesto por centro de costo y ejercicio
+ALTER TABLE presupuesto
+  ADD CONSTRAINT uq_presupuesto_centro_ejercicio
+    UNIQUE (centro_costo_id, ejercicio_fiscal_id),
+  ADD CONSTRAINT ck_presupuesto_aprobacion CHECK (
+        estado <> 'APROBADO' OR (aprobado_por IS NOT NULL AND aprobado_en IS NOT NULL));
+
+ALTER TABLE partida_presupuestaria
+  ADD CONSTRAINT uq_partida_presupuesto_cuenta_periodo
+    UNIQUE (presupuesto_id, cuenta_contable_id, periodo_contable_id);
+
+-- R-CTB-04 · una factura por proveedor y número, con saldo coherente
+ALTER TABLE factura_proveedor
+  ADD CONSTRAINT uq_factura_proveedor_numero
+    UNIQUE (tercero_comercial_id, numero_factura),
+  ADD CONSTRAINT ck_factura_proveedor_pagado CHECK (
+        monto_pagado >= 0 AND monto_pagado <= monto),
+  ADD CONSTRAINT ck_factura_proveedor_vencimiento CHECK (
+        fecha_vencimiento >= fecha_emision),
+  ADD CONSTRAINT ck_factura_proveedor_aprobacion CHECK (
+        estado = 'REGISTRADA' OR estado = 'ANULADA' OR aprobada_por IS NOT NULL);
+
+ALTER TABLE orden_compra
+  ADD CONSTRAINT ck_orden_compra_aprobacion CHECK (
+        estado = 'BORRADOR' OR estado = 'CANCELADA' OR aprobada_por IS NOT NULL);
+
+-- R-CTB-05 · cuatro ojos sobre el egreso: quien aprueba no paga
+CREATE OR REPLACE FUNCTION fn_ctb_segregacion_pago() RETURNS trigger AS $$
+DECLARE
+  v_aprobador UUID;
+BEGIN
+  SELECT aprobada_por INTO v_aprobador
+    FROM factura_proveedor WHERE id = NEW.factura_proveedor_id;
+  IF v_aprobador IS NULL THEN
+    RAISE EXCEPTION
+      'R-CTB-05: la factura % no está aprobada; no se puede pagar',
+      NEW.factura_proveedor_id;
+  END IF;
+  IF v_aprobador = NEW.autorizado_por THEN
+    RAISE EXCEPTION
+      'R-CTB-05: % aprobó la factura %; no puede además autorizar su pago',
+      NEW.autorizado_por, NEW.factura_proveedor_id;
+  END IF;
+  RETURN NEW;
+END $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER tg_pago_proveedor_segregacion
+  BEFORE INSERT ON pago_a_proveedor
+  FOR EACH ROW EXECUTE FUNCTION fn_ctb_segregacion_pago();
+
+-- R-CTB-06 · no se cobra más de lo que se debe
+ALTER TABLE cuenta_por_cobrar
+  ADD CONSTRAINT ck_cxc_cobrado CHECK (
+        monto_cobrado >= 0 AND monto_cobrado <= monto);
+
+-- R-CTB-07 · una corrida de depreciación por activo y período
+ALTER TABLE depreciacion_activo
+  ADD CONSTRAINT uq_depreciacion_activo_periodo
+    UNIQUE (activo_fijo_id, periodo_contable_id);
+
+ALTER TABLE activo_fijo
+  ADD CONSTRAINT ck_activo_fijo_depreciacion CHECK (
+        depreciacion_acumulada >= 0
+    AND depreciacion_acumulada <= costo_adquisicion - valor_residual),
+  ADD CONSTRAINT ck_activo_fijo_residual CHECK (
+        valor_residual >= 0 AND valor_residual <= costo_adquisicion);
+
+-- R-CTB-08 · un estado financiero por período y tipo
+ALTER TABLE estado_financiero_generado
+  ADD CONSTRAINT uq_estado_financiero_periodo_tipo
+    UNIQUE (periodo_contable_id, tipo);
+
+ALTER TABLE linea_plantilla_asiento
+  ADD CONSTRAINT uq_linea_plantilla_orden UNIQUE (plantilla_id, orden);
+```
+
+---
+
+## R-PUB — Publicidad y campañas
+
+| Código | Regla | Obliga | Se verifica en |
+| --- | --- | --- | --- |
+| R-PUB-01 | Un anunciante es organizador o socio comercial, nunca ambos ni ninguno | Integridad del modelo · RN-18 | [[CU-110 Dar de alta un anunciante y su cuenta publicitaria]] |
+| R-PUB-02 | Una cuenta publicitaria por anunciante, y su gasto no supera el límite | Política comercial | [[CU-110 Dar de alta un anunciante y su cuenta publicitaria]] |
+| R-PUB-03 | Una campaña aprobada tiene aprobador; el consumo no excede el presupuesto | Control interno | [[CU-111 Crear y aprobar una campaña publicitaria]] |
+| R-PUB-04 | Ninguna pieza creativa se entrega sin revisión aprobada | Moderación previa | [[CU-112 Moderar una pieza creativa]] |
+| R-PUB-05 | Quien sube una pieza creativa no la modera | Segregación de funciones | [[CU-112 Moderar una pieza creativa]] |
+| R-PUB-06 | Un período de facturación por cuenta publicitaria | Trazabilidad del ingreso | [[CU-114 Liquidar y facturar el gasto publicitario]] |
+
+```sql
+-- R-PUB-01 · exactamente una referencia según el tipo de anunciante
+ALTER TABLE anunciante
+  ADD CONSTRAINT ck_anunciante_tipo_exclusivo CHECK (
+        (tipo = 'ORGANIZADOR'
+           AND organizador_id IS NOT NULL AND socio_comercial_id IS NULL)
+     OR (tipo = 'SOCIO_COMERCIAL'
+           AND socio_comercial_id IS NOT NULL AND organizador_id IS NULL));
+
+-- R-PUB-02 · una cuenta publicitaria por anunciante
+ALTER TABLE cuenta_publicitaria
+  ADD CONSTRAINT uq_cuenta_publicitaria_anunciante UNIQUE (anunciante_id),
+  ADD CONSTRAINT ck_cuenta_publicitaria_consumo CHECK (
+        saldo_consumido_mes >= 0
+    AND (limite_gasto_mensual IS NULL
+         OR saldo_consumido_mes <= limite_gasto_mensual));
+
+-- R-PUB-03 · presupuesto consumido acotado, y aprobación con responsable
+ALTER TABLE campana_publicitaria
+  ADD CONSTRAINT ck_campana_pub_consumo CHECK (
+        presupuesto_consumido >= 0
+    AND presupuesto_consumido <= presupuesto_total),
+  ADD CONSTRAINT ck_campana_pub_aprobacion CHECK (
+        estado IN ('BORRADOR', 'EN_REVISION', 'RECHAZADA')
+     OR aprobada_por IS NOT NULL),
+  ADD CONSTRAINT ck_campana_pub_vigencia CHECK (
+        fecha_fin IS NULL OR fecha_fin > fecha_inicio);
+
+-- R-PUB-04 · moderación previa: sin pieza aprobada no hay anuncio
+CREATE OR REPLACE FUNCTION fn_pub_creativa_aprobada() RETURNS trigger AS $$
+DECLARE
+  v_estado TEXT;
+BEGIN
+  SELECT estado_moderacion INTO v_estado
+    FROM pieza_creativa WHERE id = NEW.pieza_creativa_id;
+  IF v_estado IS DISTINCT FROM 'APROBADA' THEN
+    RAISE EXCEPTION
+      'R-PUB-04: la pieza creativa % está %; no puede entregarse',
+      NEW.pieza_creativa_id, coalesce(v_estado, 'inexistente');
+  END IF;
+  RETURN NEW;
+END $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER tg_anuncio_creativa_aprobada
+  BEFORE INSERT ON anuncio
+  FOR EACH ROW EXECUTE FUNCTION fn_pub_creativa_aprobada();
+
+-- R-PUB-05 · quien sube no se autoaprueba
+ALTER TABLE revision_creativa
+  ADD CONSTRAINT ck_revision_creativa_motivo CHECK (
+        decision <> 'RECHAZADA' OR motivo IS NOT NULL);
+
+CREATE OR REPLACE FUNCTION fn_pub_moderador_distinto() RETURNS trigger AS $$
+DECLARE
+  v_anunciante UUID;
+  v_organizador_usuario UUID;
+BEGIN
+  SELECT p.anunciante_id INTO v_anunciante
+    FROM pieza_creativa p WHERE p.id = NEW.pieza_creativa_id;
+
+  -- Si el anunciante es un organizador, su usuario no puede moderar su pieza.
+  SELECT o.usuario_id INTO v_organizador_usuario
+    FROM anunciante a
+    JOIN organizador o ON o.id = a.organizador_id
+   WHERE a.id = v_anunciante;
+
+  IF v_organizador_usuario IS NOT NULL
+     AND v_organizador_usuario = NEW.revisada_por THEN
+    RAISE EXCEPTION
+      'R-PUB-05: % es el anunciante de la pieza %; no puede moderarla',
+      NEW.revisada_por, NEW.pieza_creativa_id;
+  END IF;
+  RETURN NEW;
+END $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER tg_revision_creativa_moderador
+  BEFORE INSERT ON revision_creativa
+  FOR EACH ROW EXECUTE FUNCTION fn_pub_moderador_distinto();
+
+-- R-PUB-06 · un período de facturación por cuenta publicitaria
+ALTER TABLE factura_publicidad
+  ADD CONSTRAINT uq_factura_publicidad_cuenta_periodo
+    UNIQUE (cuenta_publicitaria_id, periodo);
+
+ALTER TABLE espacio_publicitario
+  ADD CONSTRAINT ck_espacio_pub_capacidad CHECK (capacidad_maxima_simultanea > 0);
 ```
 
 ---

@@ -46,7 +46,7 @@ normas: [Consumidor financiero, gobernanza del grupo]
    - el cupo queda `LIBRE` o se traspasa;
    - se crea [[liquidacion_participante]] con el detalle;
    - se registra [[evento_reputacion]] según cómo se fue;
-   - se emite [[evento_dominio]] `participante.retirado`.
+   - se emite `evento_dominio` `participante.retirado`.
 
 ## Flujos alternativos
 
@@ -63,7 +63,7 @@ normas: [Consumidor financiero, gobernanza del grupo]
 - La posición económica quedó liquidada o formalizada como deuda con plan.
 - El cupo está libre, traspasado o en reemplazo: el grupo puede continuar.
 
-## Contrato · `packages/contratos/CU-65.ts`
+## Contrato · `openapi/grupos.yaml`
 
 ```ts
 export const EntradaCU65 = z.object({

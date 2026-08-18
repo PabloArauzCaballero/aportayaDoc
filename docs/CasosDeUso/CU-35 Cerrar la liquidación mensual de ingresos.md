@@ -52,7 +52,7 @@ normas: [Contabilidad, tributario]
 - Existe un resultado mensual reproducible desde los devengos, no desde una
   planilla aparte.
 
-## Contrato · `packages/contratos/CU-35.ts`
+## Contrato · `openapi/tarifas.yaml`
 
 ```ts
 export const EntradaCU35 = z.object({

@@ -54,7 +54,7 @@ normas: [Política comercial interna]
 
 - Ninguna campaña entrega anuncios sin haber pasado por aprobación explícita.
 
-## Contrato · `packages/contratos/CU-111.ts`
+## Contrato · `openapi/publicidad.yaml`
 
 ```ts
 export const EntradaCU111 = z.object({
@@ -117,7 +117,8 @@ export const ErroresCU111 = {
 
 ## Restricciones aplicables
 
-Ninguna restricción de dinero regulatorio del pasanaku aplica directamente;
+`R-PUB-02` · `R-PUB-03`
+
 `limite_gasto_mensual` es un control comercial, no un tope legal.
 
 ## Evidencia que deja

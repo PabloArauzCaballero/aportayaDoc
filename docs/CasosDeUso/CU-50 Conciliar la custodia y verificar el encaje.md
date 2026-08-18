@@ -55,7 +55,7 @@ normas: [Respaldo de fondos de clientes, ASFI riesgo operativo]
 - Existe una fila por día y por cuenta de custodia que responde "¿está la plata?".
 - Ningún descuadre queda sin expediente ni sin plan de acción.
 
-## Contrato · `packages/contratos/CU-50.ts`
+## Contrato · `openapi/nucleo-financiero.yaml`
 
 ```ts
 export const EntradaCU50 = z.object({

@@ -2,12 +2,12 @@
 tags:
   - moc
   - indice
-entidades: 307
+entidades: 306
 ---
 
 # Índice de entidades
 
-Las **307 tablas** del modelo, agrupadas por módulo. «Sal.» y «Ent.» son claves foráneas salientes y entrantes.
+Las **306 tablas** del modelo, agrupadas por módulo. «Sal.» y «Ent.» son claves foráneas salientes y entrantes.
 
 [[Index|← Índice general]] · [[_Relaciones|Relaciones →]]
 
@@ -230,7 +230,6 @@ Las **307 tablas** del modelo, agrupadas por módulo. «Sal.» y «Ent.» son cl
 | Tabla | Columnas | Sal. | Ent. | Notas |
 | --- | --: | --: | --: | --- |
 | [[bitacora_evento]] | 21 | 3 | 0 | append-only |
-| [[evento_dominio]] | 13 | 0 | 0 | append-only |
 | [[registro_acceso_datos]] | 10 | 2 | 0 | append-only |
 | [[politica_retencion]] | 7 | 0 | 0 | — |
 | [[definicion_reporte]] | 11 | 0 | 2 | — |
@@ -420,5 +419,5 @@ Las **307 tablas** del modelo, agrupadas por módulo. «Sal.» y «Ent.» son cl
 
 No admiten `UPDATE` ni `DELETE`; se corrigen con el movimiento inverso:
 
-[[abono_recuperacion]] · [[acta_comite]] · [[asiento_contable]] · [[bitacora_evento]] · [[cierre_periodo_contable]] · [[clic_anuncio]] · [[cobro_cuenta_por_cobrar]] · [[conversion_anuncio]] · [[cuenta_por_cobrar]] · [[depreciacion_activo]] · [[devengo_comision]] · [[estado_financiero_generado]] · [[evento_dominio]] · [[evento_reputacion]] · [[evento_riesgo_operativo]] · [[factura_proveedor]] · [[factura_publicidad]] · [[historial_estado_incumplimiento]] · [[impresion_anuncio]] · [[movimiento_billetera]] · [[movimiento_contable]] · [[movimiento_custodia]] · [[movimiento_fondo]] · [[pago_a_proveedor]] · [[registro_acceso_datos]] · [[registro_incumplimiento]] · [[registro_operacion_relevante]] · [[registro_sellado]] · [[saldo_diario_billetera]] · [[transaccion_billetera]]
+[[abono_recuperacion]] · [[acta_comite]] · [[asiento_contable]] · [[bitacora_evento]] · [[cierre_periodo_contable]] · [[clic_anuncio]] · [[cobro_cuenta_por_cobrar]] · [[conversion_anuncio]] · [[cuenta_por_cobrar]] · [[depreciacion_activo]] · [[devengo_comision]] · [[estado_financiero_generado]] · [[evento_reputacion]] · [[evento_riesgo_operativo]] · [[factura_proveedor]] · [[factura_publicidad]] · [[historial_estado_incumplimiento]] · [[impresion_anuncio]] · [[movimiento_billetera]] · [[movimiento_contable]] · [[movimiento_custodia]] · [[movimiento_fondo]] · [[pago_a_proveedor]] · [[registro_acceso_datos]] · [[registro_incumplimiento]] · [[registro_operacion_relevante]] · [[registro_sellado]] · [[saldo_diario_billetera]] · [[transaccion_billetera]]
 

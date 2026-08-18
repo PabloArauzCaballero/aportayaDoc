@@ -49,7 +49,7 @@ normas: [ASFI RNSF Libro 3 Título V (continuidad probada y documentada), ISO 22
 
 - Cada proceso crítico tiene evidencia fechada de su última prueba y su resultado.
 
-## Contrato · `packages/contratos/CU-56.ts`
+## Contrato · `openapi/cumplimiento.yaml`
 
 ```ts
 export const EntradaCU56 = z.object({

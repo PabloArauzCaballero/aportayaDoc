@@ -55,7 +55,7 @@ normas: [Límites BCB para dinero electrónico, UIF enfoque basado en riesgo]
 - Ninguna operación aplicada excede el límite vigente al momento de aplicarse.
 - El consumo por ventana es reconstruible y auditable.
 
-## Contrato · `packages/contratos/CU-40.ts`
+## Contrato · `openapi/cumplimiento.yaml`
 
 ```ts
 export const EntradaCU40 = z.object({

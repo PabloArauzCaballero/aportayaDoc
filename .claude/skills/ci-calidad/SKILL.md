@@ -71,7 +71,7 @@ Además del estándar:
 
 - Prohibido `number` en tipos, campos o parámetros que denoten dinero.
 - Prohibido `parseFloat` / `Number()` sobre importes.
-- Prohibida cualquier consulta fuera de `conTransaccion`.
+- Prohibida cualquier consulta fuera de `conContexto`.
 - Prohibido `await` a un adaptador externo dentro de un bloque transaccional.
 - Límite de dependencias entre niveles: `dominio/` no importa infraestructura.
 - Prohibido `console.log` en código de runtime.

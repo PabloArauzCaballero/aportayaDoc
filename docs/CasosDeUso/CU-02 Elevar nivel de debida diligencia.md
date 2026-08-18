@@ -42,7 +42,7 @@ normas: [UIF EBR, límites BCB]
 5. Se actualiza `cuenta_billetera.nivel_debida_diligencia`. **Los límites no se
    copian**: se resuelven al evaluar, leyendo [[limite_operativo_billetera]] por
    nivel.
-6. Se emite [[evento_dominio]] `NIVEL_DDD_ELEVADO` y se notifica al usuario los
+6. Se emite `evento_dominio` `NIVEL_DDD_ELEVADO` y se notifica al usuario los
    nuevos topes.
 
 ## Flujos alternativos
@@ -59,7 +59,7 @@ normas: [UIF EBR, límites BCB]
 - Una sola calificación vigente por usuario (`R-UIF-11`).
 - El histórico de calificaciones y diligencias queda intacto y consultable.
 
-## Contrato · `packages/contratos/CU-02.ts`
+## Contrato · `openapi/cumplimiento.yaml`
 
 ```ts
 export const EntradaCU02 = z.object({

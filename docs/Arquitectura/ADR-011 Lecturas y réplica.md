@@ -3,11 +3,18 @@ tags:
   - arquitectura
   - adr
 titulo: "ADR-011 — Lecturas, réplica y proyecciones"
-estado: aceptada
+estado: superada por ADR-031
 fecha: 2026-08-13
 ---
 
 # ADR-011 — Lecturas, réplica y proyecciones
+
+> [!warning] Superada el 2026-08-18 por [[ADR-031 Lecturas, réplica y rol auditor]]
+> Escrita para el monolito: habla del worker (eliminado por ADR-018), cuenta 274
+> tablas (son 307) y reparte la réplica sin decidir los permisos de `rol_auditor`.
+> La separación por credencial y la regla "lo que lee lo que acaba de escribir va a
+> la primaria" siguen vigentes, re-declaradas en ADR-031. Se conserva como
+> expediente.
 
 ## Contexto
 
@@ -62,7 +69,7 @@ materializada, la edad de los datos es un control, no un detalle de rendimiento.
 | **Enrutar por tipo de sentencia automáticamente** | Adivina mal justo en el caso peligroso: lectura inmediata después de escribir. |
 | **Caché de aplicación como primera respuesta** | Sin estrategia de invalidación, muestra dinero desactualizado. Último recurso. |
 | **Redirigir todo a la primaria si la réplica falla, sin límite** | Convierte una degradación en una caída completa. Permitido solo con tope y alerta. |
-| **Proyecciones creadas por la aplicación al arrancar** | Rompe el dueño único del esquema ([[ADR-002 Acceso a datos]]). |
+| **Proyecciones creadas por la aplicación al arrancar** | Rompe el dueño único del esquema ([[ADR-016 Acceso a datos con jOOQ]]). |
 
 ## Consecuencias
 
@@ -90,5 +97,5 @@ materializada, la edad de los datos es un control, no un detalle de rendimiento.
 
 ## Ver también
 
-[[ADR-002 Acceso a datos]] · [[ADR-007 Sesión, RLS y pooling]] · `lecturas-proyecciones` ·
+[[ADR-016 Acceso a datos con jOOQ]] · [[ADR-021 Sesión, RLS y pooling]] · `lecturas-proyecciones` ·
 `extraccion-de-datos` · `indicadores-tablero` · `resiliencia-rendimiento`

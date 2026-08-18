@@ -47,7 +47,7 @@ normas: [ASFI gobierno corporativo, ASFI Res. 540/2025, UIF, Libro 3 Título V]
      sanción revocada—;
    - se crean los [[plan_accion_riesgo]] de los compromisos, con responsable y
      fecha;
-   - se emite [[evento_dominio]] `comite.sesionado`.
+   - se emite `evento_dominio` `comite.sesionado`.
 6. Un control verifica que cada comité haya sesionado dentro de su
    `periodicidad_minima`. **No sesionar es un hallazgo**, y aparece como tal.
 7. Los compromisos se siguen sesión a sesión: el primer punto del orden del día es
@@ -71,7 +71,7 @@ normas: [ASFI gobierno corporativo, ASFI Res. 540/2025, UIF, Libro 3 Título V]
 - Toda decisión de gobierno tiene acta con quórum, votos y fundamentos.
 - Ningún efecto de una decisión se aplica sin el acta que lo respalda.
 
-## Contrato · `packages/contratos/CU-94.ts`
+## Contrato · `openapi/cumplimiento.yaml`
 
 ```ts
 export const EntradaCU94 = z.object({
@@ -164,7 +164,7 @@ export const ErroresCU94 = {
 
 [[comite_gobierno]] · [[acta_comite]] · [[plan_accion_riesgo]] ·
 [[politica_interna]] · [[evaluacion_riesgo_producto]] · [[apelacion_sancion_org]] ·
-[[hallazgo_auditoria]] · [[evento_dominio]]
+[[hallazgo_auditoria]] · `evento_dominio`
 
 ## Criterios de aceptación
 

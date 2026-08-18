@@ -10,23 +10,25 @@ habilita: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
 
 # Fase 0 — Cimientos del repositorio
 
-> **Objetivo.** Que `git clone && yarn install && yarn bd:levantar && yarn dev`
-> deje corriendo una API que responde `/salud`, contra una PostgreSQL 16 con las 274
-> tablas aplicadas y los 20 catálogos mínimos sembrados. Sin un solo caso de uso
-> todavía: esta fase construye el piso sobre el que se paran las otras 17.
+> **Objetivo.** Que `git clone && docker compose --profile base up -d && ./gradlew
+> bd:reset && ./gradlew :servicios:ejemplo:bootRun` deje corriendo un servicio Spring
+> Boot que responde `/actuator/health`, contra una PostgreSQL 16 con las 306 tablas
+> aplicadas, los catorce esquemas creados y los 20 catálogos mínimos sembrados. Sin un
+> solo caso de uso todavía: esta fase construye el piso sobre el que se paran las
+> otras 17.
 
-> **Se ejecuta en:** Ola 0 · carril T (troncal, máquina única). **Ningún otro carril trabaja hasta que su gate esté ejecutado.**
-> Ver [[07 Carriles de trabajo concurrente]].
+> **Se ejecuta en:** Ola 0 · carril T (troncal, máquina única). **Ningún otro carril
+> trabaja hasta que su gate esté ejecutado.** Ver [[07 Carriles de trabajo concurrente]].
 
 > [!important] Antes de escribir la primera línea
-> [[00b Estándar de ejecución · código limpio, pruebas y calidad]] aplica en
-> esta fase entera: regla cero de no inventar, composición atómica, KISS,
-> nombres del dominio, las seis pruebas obligatorias por caso de uso y el
-> checklist de PR. **Se declara cada pieza por nivel antes de crearla.**
+> [[00b Estándar de ejecución · código limpio, pruebas y calidad]] aplica en esta fase
+> entera: regla cero de no inventar, composición atómica, KISS, nombres del dominio,
+> las siete pruebas obligatorias por caso de uso y el checklist de PR. **Se declara
+> cada pieza por nivel antes de crearla.**
 
 > **Receta exacta:** [[00c Recetario · implementar un caso de uso]] fija el orden de
-> lectura, el orden de construcción en ocho pasos, las firmas canónicas y los
-> nombres de las piezas de `comun/`. **Se copian, no se reinventan.**
+> lectura, el orden de construcción, las firmas canónicas y los nombres de las piezas
+> de `plataforma/`. **Se copian, no se reinventan.**
 
 **Nada de lógica de negocio en esta fase.** Si aparece un `if` sobre una regla del
 pasanaku, está mal ubicado.
@@ -35,240 +37,345 @@ pasanaku, está mal ubicado.
 
 - [ ] `psql -v ON_ERROR_STOP=1 -f sql/aplicar.sql` corre sin error sobre una base vacía
 - [ ] `python3 scripts/verificar_boveda.py` en verde
-- [ ] Node 22 LTS, yarn 4 (Berry) y Docker disponibles en la máquina
+- [ ] **JDK 21**, Docker y `docker compose` disponibles en la máquina
+- [ ] Node 22 disponible **solo** para `apps/movil` y `apps/backoffice`; el backend no
+      lo usa
 
 ## Leer antes de empezar
 
 | Archivo | Qué se saca de ahí |
 | --- | --- |
 | `docs/Arquitectura/Estructura del repositorio.md` | El árbol de carpetas, tal cual |
-| `docs/Arquitectura/ADR-012 Empaquetado y despliegue.md` | Dockerfile, NGINX, redes |
+| `docs/Arquitectura/ADR-014 Arquitectura de servicios.md` | Cuáles son los catorce y dónde está el límite de cada uno |
+| `docs/Arquitectura/ADR-017 Propiedad de datos por servicio.md` | Esquemas, roles y la excepción del libro contable |
+| `docs/Arquitectura/ADR-025 Empaquetado y despliegue de los servicios.md` | Dockerfile, compose por perfiles, NGINX |
 | `docs/Arquitectura/Entornos y despliegue.md` | Entornos y aplicación de `sql/` |
-| `docs/Stack.md` | Las siete exigencias que el stack tiene que sostener |
+| `docs/Stack.md` | Las ocho exigencias que el stack tiene que sostener |
 | `seeders/README.md` | Por qué los mínimos también van a producción |
 
 ---
 
-## 0.1 · Monorepo con yarn workspaces
+## 0.1 · Monorepo Gradle multiproyecto
 
 ### Árbol a crear
 
 ```
 Pasanaku/
-├── package.json                 privado, workspaces, scripts raíz
-├── .yarnrc.yml                  nodeLinker: node-modules
-├── tsconfig.base.json           strict, composite, paths de @aportaya/*
-├── eslint.config.js             flat config raíz
-├── jest.config.ts               proyectos: unit | integracion | api
-├── .editorconfig · .gitignore · .dockerignore · .nvmrc
-├── .env.example                 versionado y COMPLETO; .env jamás se commitea
-├── apps/
-│   ├── api/                     NestJS
-│   └── worker/                  Graphile Worker
-├── packages/
-│   ├── contratos/               Zod por CU + OpenAPI derivado
-│   ├── dominio/                 Dinero, Periodo, PlazoHabil, cálculos puros
-│   ├── datos/                   entidades generadas + config de MikroORM
-│   └── eslint-config-aportaya/  las nueve reglas propias
-├── docker/
-│   ├── Dockerfile.api · Dockerfile.worker
-│   ├── postgres/init.sql        extensiones antes de aplicar.sql
-│   ├── pgbouncer/pgbouncer.ini  modo transaction
-│   └── nginx/nginx.conf         única entrada pública
-├── docker-compose.yml           local
-├── docker-compose.test.yml      e2e
+├── settings.gradle.kts          descubre servicios/ por BARRIDO — no se edita al agregar uno
+├── build.gradle.kts             convenciones comunes: toolchain 21, spotless, test
+├── gradle/libs.versions.toml    catálogo de versiones — micro-PR
+├── buildSrc/                    plugins de convención: servicio, jooq, openapi
+├── .editorconfig · .gitignore · .dockerignore
+├── plataforma/
+│   ├── comun-dominio/           Dinero, Periodo, PlazoHabil — sin Spring
+│   ├── comun-datos/             conContexto(), SET LOCAL, DataSource, jOOQ base
+│   ├── comun-web/               manejador de errores, idempotencia, guardia, traza
+│   ├── comun-mensajeria/        outbox, relevo a Kafka, consumidor idempotente
+│   ├── comun-pruebas/           Testcontainers, fixtures, ArchUnit, barridos
+│   └── gateway/                 Spring Cloud Gateway
+├── servicios/                   ← vacío en la Fase 0, salvo el de ejemplo
+├── clientes/typescript/         generado — no se edita
+├── apps/movil · apps/backoffice
+├── despliegue/
+│   ├── Dockerfile               plantilla ÚNICA, parametrizada por servicio
+│   ├── compose/base.yml         postgres, pgbouncer, kafka
+│   ├── compose/<servicio>.yml   uno por servicio, propiedad del carril
+│   └── k8s/                     GENERADO desde descriptor.yml
 ├── planes/                      este plan
-│   └── informes/                un informe por carril, sin conflicto entre máquinas
+│   └── informes/                un informe por carril
 ├── sql/ · seeders/ · scripts/ · docs/     (ya existen — no se tocan)
 └── .github/workflows/ci.yml
 ```
 
-### `package.json` raíz — scripts obligatorios
+> **`settings.gradle.kts` descubre por barrido.** Es la diferencia entre un archivo
+> que catorce carriles editan y uno que nadie vuelve a tocar. Agregar un servicio es
+> crear una carpeta.
 
-| Script | Qué hace |
+### Tareas de Gradle obligatorias
+
+| Tarea | Qué hace |
 | --- | --- |
-| `yarn dev` | api + worker en watch, contra el compose local |
-| `yarn build` | `tsc -b` de todos los workspaces |
-| `yarn lint` / `yarn lint:fix` | ESLint 9 sobre todo el repo |
-| `yarn typecheck` | `tsc -b --noEmit` |
-| `yarn bd:levantar` | `docker compose up -d postgres pgbouncer` |
-| `yarn bd:aplicar` | `psql -v ON_ERROR_STOP=1 -f sql/aplicar.sql` |
-| `yarn bd:semillas` | `python3 scripts/generar_semillas.py && psql -f sql/60_semillas/sembrar.sql` (**20 catálogos**) |
-| `yarn bd:prueba` | `psql -f sql/61_prueba/sembrar_prueba.sql` (**14 archivos, nunca** en producción) |
-| `yarn bd:reset` | volumen limpio → aplicar → semillas → prueba |
-| `yarn datos:entidades` | genera `packages/datos/src/entidades/` desde la base viva |
-| `yarn contratos:openapi` | deriva `packages/contratos/openapi.json` desde los Zod |
-| `yarn test:unit` · `test:integracion` · `test:api` · `test:e2e` | los cuatro corredores. `test:unit` es el `test:atomos` de `entorno-monorepo` |
-| `yarn errores:catalogo` | genera el catálogo `constraint_name → R-XXX-nn` desde `docs/Restricciones.md` |
-| `yarn verificar` | lint + typecheck + los cuatro tests + diffs de generados |
+| `./gradlew bd:levantar` | `docker compose --profile base up -d --wait` |
+| `./gradlew bd:aplicar` | `psql -v ON_ERROR_STOP=1 -f sql/aplicar.sql` |
+| `./gradlew bd:semillas` | `python3 scripts/generar_semillas.py` + `sembrar.sql` (**20 catálogos**) |
+| `./gradlew bd:prueba` | `sembrar_prueba.sql` (**14 archivos, nunca** en producción) |
+| `./gradlew bd:reset` | volumen limpio → esquemas y roles → aplicar → semillas → prueba |
+| `./gradlew generateJooq` | genera las clases desde la base viva, **por esquema** |
+| `./gradlew generateOpenApiClients` | interfaces de servidor + cliente Java + cliente TypeScript |
+| `./gradlew nuevoServicio -Pnombre=<x>` | crea el servicio entero: las 4 capas, build, `application.yml`, `openapi/`, `descriptor.yml`, README, fixtures |
+| `./gradlew nuevoCu -Pcu=<NN>` | desde `docs/CasosDeUso/CU-<NN>*.md`: contrato, esqueleto, controlador y **las pruebas fallando** |
+| `./gradlew test integrationTest contractTest sagaTest e2eTest` | los cinco corredores |
+| `./gradlew erroresCatalogo` | genera `constraint_name → R-XXX-nn` desde `docs/Restricciones.md` |
+| `./gradlew verificar` | spotless + check + los corredores + los diffs de generados |
 
 > **Regla:** todo lo que el CI ejecuta tiene que poder ejecutarse igual en local con
-> un solo `yarn <script>`. Un paso de CI que no existe como script es un paso que
-> nadie puede reproducir.
+> una sola tarea. Un paso de CI que no existe como tarea es un paso que nadie puede
+> reproducir.
 
-> [!warning] Todas las dependencias del proyecto se instalan **acá**
-> Los carriles concurrentes **no corren `yarn add`**: una dependencia nueva en una
-> rama de carril produce conflicto de `yarn.lock` con las otras cuatro máquinas. Se
-> instala ahora todo lo que las 18 fases van a necesitar (Nest, MikroORM, Zod, Pino,
-> Graphile Worker, Multer, Jest, Supertest, Testcontainers, Playwright, decimal.js,
-> Argon2, fast-check). Lo que falte después entra por micro-PR
+> [!warning] Todas las dependencias comunes se declaran **acá**
+> Los carriles concurrentes **no agregan dependencias**: una versión nueva en una rama
+> de carril produce conflicto en el catálogo con las otras cuatro máquinas. Se declara
+> ahora todo lo que las 21 fases van a necesitar (Spring Boot, jOOQ, Flyway, Kafka,
+> ShedLock, Resilience4j, Micrometer, JUnit 5, Testcontainers, Spring Cloud Contract,
+> ArchUnit, AssertJ, jqwik, Argon2). Lo que falte después entra por micro-PR
 > ([[07 Carriles de trabajo concurrente]] §6).
 
-### `tsconfig.base.json` — no negociable
+### Convenciones de compilación — no negociables
 
-`strict: true`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`,
-`noImplicitOverride`, `composite: true`, `incremental: true`,
-`target: ES2023`, `module: NodeNext`. Alias: `@aportaya/contratos`,
-`@aportaya/dominio`, `@aportaya/datos`.
+`toolchain = 21`, `-Werror` con las advertencias de compilación activadas,
+`spring.threads.virtual.enabled=true`, Spotless con formato único, y los plugins de
+convención en `buildSrc/` para que un servicio nuevo herede todo sin copiar nada.
 
-**Entregable 0.1:** `yarn install` y `yarn typecheck` en verde con los cuatro
-paquetes y las dos apps vacíos pero compilando.
+**Entregable 0.1:** `./gradlew build` en verde con `plataforma/` y un servicio de
+ejemplo vacíos pero compilando.
 
 ---
 
-## 0.2 · Docker: la base, el pooler y la entrada
+## 0.2 · Esquemas, roles y permisos — **ya implementado**
 
-### `docker-compose.yml` — servicios
+Es lo que hace cumplir los invariantes 11 y 12. **Está hecho y verificado**: lo
+genera `scripts/generar_ddl.py` desde `scripts/modelo.py`, y
+`scripts/verificar_boveda.py` lo comprueba en cada corrida.
+
+| Paso | Qué hace | Estado |
+| --- | --- | :-: |
+| 1 | La **asignación de esquema** sale del `.puml` del módulo, sin decisión humana | ✅ |
+| 2 | **16 esquemas**: los catorce de servicio, más `catalogo` y `comun` | ✅ |
+| 3 | Un rol `svc_<esquema>` por servicio, y su `search_path` propio | ✅ |
+| 4 | `GRANT` solo sobre el esquema propio, `SELECT` sobre `catalogo`, `INSERT` sobre `comun` | ✅ |
+| 5 | `REVOKE UPDATE, DELETE` append-only, **también al rol dueño** | ✅ |
+| 6 | Las cuatro tablas del libro en `nucleo_financiero`, no en `aportes` | ✅ |
+| 7 | El outbox y las bitácoras en `comun`: todos insertan, **nadie lee lo ajeno** | ✅ |
+
+Lo que la corrida deja verificado hoy:
+
+```
+306 tablas con esquema asignado (modelo: 307)
+el libro contable entero en nucleo_financiero
+movimiento_billetera con el libro: partida doble en una transaccion
+325 claves foraneas cruzan esquemas y las verifica el motor
+14 roles de servicio creados · ningun servicio LEE el rastro ajeno
+```
+
+> **Las 325 FK cruzadas son el argumento entero a favor de un solo clúster.** Son
+> exactamente las que se habrían perdido con una base por servicio, y las sigue
+> verificando el motor.
+
+> **La excepción del libro está enumerada a propósito.** Una excepción con nombre y
+> motivo es preferible a una regla que se cumple a medias. Está en
+> [[ADR-017 Propiedad de datos por servicio]].
+
+**Entregable 0.2:** una prueba por par de servicios que comprueba que el `SELECT`
+cruzado devuelve **permiso denegado**, y una que comprueba que solo
+`svc_nucleo_financiero` escribe `asiento_contable`.
+
+---
+
+## 0.3 · Docker: la base, el pooler, la cola y la entrada
+
+### `despliegue/compose/base.yml`
 
 | Servicio | Imagen | Puerto expuesto | Notas |
 | --- | --- | :-: | --- |
 | `postgres` | `postgres:16` | **ninguno** (red interna) | `init.sql` crea `btree_gist`, `pgcrypto`; volumen `datos_pg` |
-| `pgbouncer` | `edoburu/pgbouncer` | ninguno | `pool_mode = transaction`, `max_client_conn`, `default_pool_size` |
-| `api` | `docker/Dockerfile.api` | ninguno | se conecta a `pgbouncer:6432` |
-| `worker` | `docker/Dockerfile.worker` | ninguno | se conecta a `postgres:5432` **directo** |
-| `nginx` | `nginx:alpine` | `80`, `443` | **única entrada pública**; `api` nunca publica puerto |
-| `archivos` | volumen `datos_archivos` | — | montado en `ARCHIVOS_RUTA` en api y worker |
+| `pgbouncer` | `edoburu/pgbouncer` | ninguno | `pool_mode = transaction` |
+| `kafka` | `confluentinc/cp-kafka` | ninguno | modo KRaft, sin ZooKeeper |
+| `nginx` | `nginx:alpine` | `80`, `443` | **única entrada pública** → gateway |
 
-`docker-compose.test.yml` sobreescribe con base efímera, `LOG_NIVEL=warn` y la semilla
-de prueba cargada.
+**Los perfiles son el punto de esta sección:** `base` (lo de arriba), `<servicio>`
+(uno), `dinero` (los necesarios para un flujo de dinero completo) y `todo`. Una
+máquina de carril levanta `base` y **su** servicio. Si trabajar exigiera quince
+contenedores, esta arquitectura costaría más de lo que rinde.
 
-### Dockerfile multietapa (api y worker, mismo patrón)
+### Dockerfile — uno solo, plantilla
 
 ```
-FROM node:22-alpine AS deps      → yarn install --immutable
-FROM node:22-alpine AS build     → yarn build
-FROM node:22-alpine AS runtime   → USER node (no root), solo dist + node_modules de prod,
-                                    HEALTHCHECK a /salud, dumb-init como PID 1
+FROM eclipse-temurin:21-jdk AS construccion  → ./gradlew :servicios:${SERVICIO}:bootJar
+FROM eclipse-temurin:21-jre-alpine           → USER app (no root), capas de Spring Boot,
+                                               HEALTHCHECK a /actuator/health/readiness
 ```
 
-**Reglas de ADR-012:** sin root, sin `latest`, sin secretos en la imagen, capas de
-dependencias separadas del código, `.dockerignore` que excluye `docs/`, `planes/`,
+**Reglas de [[ADR-025 Empaquetado y despliegue de los servicios]]:** sin root, sin
+`latest`, sin secretos en la imagen, **capas de Spring Boot** separadas para que un
+cambio de código no empuje 200 MB, y `.dockerignore` que excluye `docs/`, `planes/`,
 pruebas y `.git`.
 
-**Entregable 0.2:** `docker compose up -d` levanta postgres + pgbouncer; `yarn
-bd:aplicar && yarn bd:semillas && yarn bd:prueba` deja la base cargada;
-`psql -f sql/50_verificacion/verificaciones.sql` y `prueba_humo.sql` en verde.
+> **Un `Dockerfile` y no catorce.** Es la única excepción a «el servicio posee todos
+> sus archivos», y está justificada: no tiene contenido propio del servicio.
+
+**Entregable 0.3:** `docker compose --profile base up -d` levanta la infraestructura;
+`./gradlew bd:reset` deja la base cargada; `verificaciones.sql` y `prueba_humo.sql` en
+verde.
 
 ---
 
-## 0.3 · Los cuatro ADR de desviación
+## 0.4 · Los tres generadores
 
-El código no puede contradecir a la bóveda en silencio. Se escriben en
-`docs/Arquitectura/` con la plantilla de la skill `decisiones-adr`, y cada uno
-**supera explícitamente** al ADR anterior (que pasa a `estado: superada por ADR-0NN`).
+> [!note] Hoy son scripts de Python; la tarea de Gradle los envuelve
+> Los tres generadores **ya existen y funcionan** como `scripts/nuevo_servicio.py`,
+> `scripts/nuevo_cu.py` y `scripts/verificar_criterios.py` — no dependen de que el
+> monorepo Gradle esté montado, que es justo lo que hace falta para arrancar la
+> Fase 0. La tarea `./gradlew nuevoServicio` es un envoltorio de una línea sobre el
+> script, y se agrega con las convenciones de `buildSrc/`.
+>
+> Se hicieron en Python a propósito: es donde ya viven `generar_ddl.py` y
+> `verificar_boveda.py`, leen la misma `scripts/modelo.py` y por lo tanto **no
+> pueden divergir del modelo**.
 
-| ADR | Título | Supera a | Qué tiene que argumentar y qué mitigación fija |
-| --- | --- | --- | --- |
-| **ADR-014** | Acceso a datos: MikroORM con entidades generadas | ADR-002 | Que el esquema **sigue siendo de `sql/`**. Fija las seis reglas de §4 del plan maestro como condición de la decisión: entidades generadas, sin `SchemaGenerator`, `readonly` en append-only, `SET LOCAL` por `tx.execute`, `DineroType`, PgBouncer *transaction*. Sin las seis, la decisión no se sostiene |
-| **ADR-015** | Pruebas con Jest | ADR-008 | Que se conserva lo que ADR-008 protegía: **PostgreSQL 16 real** vía Testcontainers, un `it()` por criterio de aceptación, prueba de rechazo por restricción. Cambia el corredor, no el rigor. Suma Supertest (API) y Playwright/Chromium (E2E) |
-| **ADR-016** | yarn como gestor de paquetes | menciones de pnpm en `Stack.md` y ADR-002 | Workspaces, `--immutable` en CI, lockfile único versionado |
-| **ADR-017** | Almacenamiento de archivos: Multer local tras un puerto | menciones de object storage en `Stack.md` | Que es **transitorio**. El puerto `AlmacenArchivos` y el hash SHA-256 en base existen desde el día 1; el *object lock* que exige la evidencia regulatoria (reportes UIF, respaldos de reclamo) queda como deuda declarada con fecha de revisión |
+**El código más limpio es el que nadie escribió dos veces de dos maneras.** Con
+catorce servicios esto pasa de conveniente a indispensable.
 
-También se corrige la mención a Fastify de ADR-001 (nota de enmienda, no ADR nuevo:
-cambia el adaptador, no el runtime ni el framework).
+### `./gradlew nuevoServicio -Pnombre=<x>` · hoy `python3 scripts/nuevo_servicio.py <x>`
 
-**Entregable 0.3:** cuatro ADR nuevos, `docs/Arquitectura/_Arquitectura.md`
-actualizado, ADR-002 y ADR-008 marcados como superados, `python3
-scripts/verificar_boveda.py` en verde.
+Crea el servicio entero: las cuatro capas, `build.gradle.kts` con los plugins de
+convención, `application.yml` con la configuración validada, `openapi/<x>.yaml`
+esqueleto, `descriptor.yml`, el registro de métricas con el prefijo correcto, el
+`README.md` con su tabla de CU vacía, el directorio de fixtures y la clase de ArchUnit.
+
+**Nadie escribe la estructura de un servicio a mano.** Es la diferencia entre catorce
+servicios iguales y catorce servicios parecidos.
+
+### `./gradlew nuevoCu -Pcu=<NN>` · hoy `python3 scripts/nuevo_cu.py <NN>`
+
+Lee `docs/CasosDeUso/CU-<NN> *.md` y genera:
+
+| Genera | Desde |
+| --- | --- |
+| La operación en el `openapi/<servicio>.yaml`, con entrada, salida y códigos de error | sección **Contrato** |
+| El esqueleto de `aplicacion/` con `@Transactional` y `conContexto` ya puestos | sección **Descomposición atómica** |
+| El controlador que implementa la interfaz generada, con su permiso declarado | sección **Eventos, trabajos y permisos** |
+| **Una prueba por cada bloque `gherkin`, con el mismo nombre, fallando** | sección **Criterios de aceptación** |
+| **Una prueba de rechazo por cada `R-XXX-nn` citada, fallando** | sección **Restricciones aplicables** |
+
+> **Las pruebas nacen fallando, y eso es el punto.** Un criterio de aceptación
+> olvidado no es una prueba ausente que nadie nota: es **el build en rojo**.
+
+### `python3 scripts/verificar_criterios.py`
+
+Extiende `verificar_boveda.py`. Compara, para cada CU, los bloques `gherkin` de la
+bóveda contra las pruebas del archivo, y falla si hay un criterio sin prueba, una
+prueba que no corresponde a ningún criterio, o un `R-XXX-nn` citado sin prueba de
+rechazo.
+
+**Entregable 0.4:** los tres generadores funcionando, y el servicio de ejemplo
+producido por `nuevoServicio` sin edición manual.
 
 ---
 
-## 0.4 · Lint, formato y las reglas propias
+## 0.5 · Análisis estático y las reglas propias
 
-`packages/eslint-config-aportaya` exporta la flat config compartida:
-`@typescript-eslint` (typed rules), `eslint-plugin-import` con
-`no-restricted-paths` para las capas, y **las nueve reglas propias** de §6 del plan
-maestro.
+Las doce reglas de §6 del [[00 Plan maestro]], implementadas como reglas de análisis
+estático y pruebas de ArchUnit en `plataforma/comun-pruebas`. **Ningún servicio puede
+desactivarlas.**
 
-En esta fase se implementan **cuatro** (las que no dependen de código que aún no
-existe); las cinco restantes se activan en la Fase 1 y 2, cuando existen
-`conTransaccion`, `Dinero` y las entidades:
+En esta fase se implementan **cinco** (las que no dependen de código que aún no
+existe); las siete restantes se activan en las Fases 1 y 2:
 
 | Ahora (Fase 0) | Después |
 | --- | --- |
-| `aportaya/capas` | `aportaya/sin-number-monetario` → Fase 1 |
-| `aportaya/tamano-archivo` | `aportaya/sin-schema-generator` → Fase 1 |
-| `aportaya/sin-umbral-literal` | `aportaya/sin-update-append-only` → Fase 1 |
-| Prettier vía `eslint-config-prettier` | `aportaya/consulta-en-transaccion` → Fase 2 |
-| | `aportaya/transaccion-solo-en-organismo` → Fase 2 |
-| | `aportaya/sin-red-en-transaccion` → Fase 2 |
+| `capas` (ArchUnit) | `sin-punto-flotante-monetario` → Fase 1 |
+| `sin-import-cruzado` (ArchUnit) | `sin-equals-bigdecimal` → Fase 1 |
+| `tamano-archivo` | `sin-update-append-only` → Fase 1 |
+| `sin-umbral-literal` | `consulta-en-contexto` → Fase 2 |
+| `sin-jpa` | `transaccion-solo-en-organismo` → Fase 2 |
+| | `sin-red-en-transaccion` → Fase 2 |
+| | `sin-system-out` → Fase 2 |
 
-Cada regla propia lleva su propia prueba unitaria con `RuleTester`: una regla de lint
-sin prueba se desactiva sola en el primer refactor.
+> **`sin-jpa` se implementa ya, en la Fase 0.** Es la regla que protege el invariante
+> 1, y la tentación de agregar `spring-boot-starter-data-jpa` aparece el primer día.
 
-**Entregable 0.4:** `yarn lint` en verde; las cuatro reglas con `RuleTester` pasando.
+Cada regla propia lleva su propia prueba: una regla sin prueba se desactiva sola en el
+primer refactor.
+
+**Entregable 0.5:** `./gradlew check` en verde; las cinco reglas con su prueba pasando.
 
 ---
 
-## 0.5 · Los cuatro corredores de Jest
+## 0.6 · Los cinco corredores de pruebas
 
-`jest.config.ts` raíz con `projects`, `ts-jest` (o `@swc/jest` por velocidad) y
-`testTimeout` distinto por proyecto:
-
-| Proyecto | `testMatch` | `globalSetup` | Timeout |
+| Corredor | Qué corre | Preparación | Timeout |
 | --- | --- | --- | :-: |
-| `unit` | `**/*.spec.ts` **excluyendo** `CU*` y `*Repositorio.spec.ts` | ninguno | 5 s |
-| `integracion` | `**/CU*.spec.ts`, `**/*Repositorio.spec.ts` | Testcontainers: levanta Postgres 16, aplica `sql/aplicar.sql` + semillas mínimas, exporta `BD_URL` | 120 s |
-| `api` | `**/CU*.http.spec.ts` | igual que `integracion` + arranca la app Nest | 120 s |
-| `e2e` | `**/*.e2e.spec.ts` | `docker compose -f docker-compose.test.yml up -d --wait` | 300 s |
+| `test` | `*Test` de `dominio/` | ninguna | 5 s |
+| `integrationTest` | `CU*Test`, `*RepositorioTest` | Testcontainers: PostgreSQL 16, `sql/aplicar.sql` + semillas mínimas | 120 s |
+| `contractTest` | `*ContratoTest` | Spring Cloud Contract, por par de servicios | 60 s |
+| `sagaTest` | `*SagaTest` | Testcontainers + dobles de los servicios participantes | 120 s |
+| `e2eTest` | `*E2ETest` | `docker compose --profile todo up -d --wait` | 300 s |
 
-**Detalle que ahorra horas:** el contenedor de Postgres se levanta **una vez** por
-corrida (`globalSetup`), no por archivo. Cada archivo de prueba corre dentro de una
-transacción que se revierte al terminar, salvo las pruebas de concurrencia y de
-worker, que necesitan commits reales y usan un esquema propio.
+**Detalle que ahorra horas:** el contenedor de PostgreSQL se levanta **una vez** por
+corrida y se reutiliza por clase, no por archivo. Cada prueba corre dentro de una
+transacción que se revierte al terminar, salvo las de concurrencia, las de trabajos
+programados y las de consumidor, que necesitan confirmaciones reales.
 
-**Entregable 0.5:** los cuatro proyectos configurados; una prueba de humo por
-proyecto pasando (`suma.spec.ts`, `conexion.spec.ts`, `salud.http.spec.ts`,
-`salud.e2e.spec.ts`).
-
----
-
-## 0.6 · Esqueleto de `apps/api` y `apps/worker`
-
-Solo el arranque. Sin módulos de negocio.
-
-```
-apps/api/src/
-├── main.ts                  bootstrap, Pino, apagado controlado, puerto
-├── app.module.ts            importa ConfiguracionModule, DatosModule, SaludModule
-└── comun/
-    ├── configuracion/       esquema Zod del entorno, validado al arrancar
-    └── salud/               GET /salud (proceso) · GET /salud/listo (base + cola)
-```
-
-- `/salud` responde sin tocar la base (*liveness*).
-- `/salud/listo` verifica base y cola (*readiness*). Si la base no responde, `503`.
-- **Apagado controlado**: `SIGTERM` → deja de aceptar conexiones → termina el request
-  en curso → cierra el pool. El worker termina el trabajo en curso antes de morir.
-- Si falta una variable de entorno, el proceso **no levanta** y lo dice con el nombre
-  de la variable.
-
-**Entregable 0.6:** `curl localhost/salud` responde `200` a través de NGINX, con el
-contenedor de la API sin puerto publicado.
+**Entregable 0.6:** los cinco corredores configurados; una prueba de humo por corredor
+pasando.
 
 ---
 
-## 0.7 · CI
+## 0.7 · `plataforma/` y el gateway
 
-`.github/workflows/ci.yml` con los 12 pasos de §6 del plan maestro, en ese orden y
-todos bloqueantes. En la Fase 0 los pasos 5–11 corren sobre lo que existe (poco) pero
-**tienen que existir en el archivo desde ahora**: un paso que se agrega "después"
-nunca se agrega.
+Solo el piso. Sin lógica de negocio.
 
-Además: escaneo de secretos en cada push, y `yarn install --immutable` (falla si el
-lockfile no está al día).
+```
+plataforma/comun-datos/     conContexto() con SET LOCAL · DataSource · pool declarado
+plataforma/comun-web/       manejador global de errores · idempotencia · guardia · traza
+plataforma/comun-mensajeria/ outbox · relevo a Kafka · consumidor idempotente
+plataforma/gateway/         enrutado por prefijo · TLS · límite de tasa · x-request-id
+```
 
-**Entregable 0.7:** CI en verde sobre la rama de la fase.
+- `/actuator/health/liveness` responde sin tocar la base.
+- `/actuator/health/readiness` verifica base **y** Kafka. Si alguno no responde, `503`.
+- **Apagado controlado**: `SIGTERM` → deja de aceptar peticiones → termina la que está
+  en curso → cierra el pool y el consumidor.
+- Si falta una clave de configuración, el proceso **no levanta** y lo dice con el
+  nombre de la clave.
+- **El gateway no tiene lógica de negocio.** No compone respuestas, no traduce errores
+  y no consulta la base. Un gateway con lógica es el monolito volviendo por la puerta
+  de atrás, y además compartido por catorce carriles.
+
+**Entregable 0.7:** `curl localhost/actuator/health` responde `200` a través de NGINX,
+con el servicio sin puerto publicado.
+
+---
+
+## 0.8 · Los tres contratos que desbloquean la Ola 1
+
+> **Reemplaza al «0.6b» del plan anterior**, que adelantaba `packages/contratos` con
+> `CU-01` para desbloquear el frontend. La necesidad es la misma; el artefacto cambia.
+
+Se escriben **los borradores de OpenAPI** de los tres servicios que todos consumen,
+derivados de la sección **Contrato** de sus casos de uso:
+
+| Contrato | Por qué acá | Quién lo consume |
+| --- | --- | --- |
+| `openapi/identidad.yaml` | Emite el token: sin él nadie autentica | Los trece, y los dos frontends |
+| `openapi/nucleo-financiero.yaml` | Es el único que escribe dinero | `tarifas`, `aportes`, `entregas`, `garantia` |
+| `openapi/notificaciones.yaml` | Todos emiten avisos | Todos |
+
+- **Son borradores, no implementaciones.** El carril dueño los amplía; **no puede
+  romperlos** sin avisar, y la prueba de contrato falla en el CI del que rompe.
+- Con estos tres publicados, la Ola 1 arranca sin esperar a nadie, y el frontend
+  genera su cliente TypeScript.
+
+**Entregable 0.8:** `./gradlew generateOpenApiClients` produce el cliente TypeScript, y
+`apps/backoffice` compila importándolo. Es lo que desbloquea la Fase F0 del frontend.
+
+---
+
+## 0.9 · CI
+
+`.github/workflows/ci.yml` con los 19 pasos de §6 del [[00 Plan maestro]], en ese orden
+y todos bloqueantes. En la Fase 0 varios corren sobre lo que existe (poco) pero
+**tienen que existir en el archivo desde ahora**: un paso que se agrega "después" nunca
+se agrega.
+
+**El CI construye solo los servicios afectados** por el cambio, más los que dependen de
+`plataforma/`. Un cambio en plataforma construye los catorce: es correcto, es lento, y
+es la razón de que plataforma se congele acá.
+
+Además: escaneo de secretos en cada push, y verificación de que el catálogo de
+versiones no cambió en una rama de carril.
+
+**Entregable 0.9:** CI en verde sobre la rama de la fase.
 
 ---
 
@@ -277,28 +384,35 @@ lockfile no está al día).
 Ejecutar, no suponer:
 
 ```bash
-yarn install --immutable
-yarn lint && yarn typecheck
-yarn bd:reset                          # aplicar + semillas mínimas + prueba
-psql -d aportaya -v ON_ERROR_STOP=1 -f sql/60_semillas/sembrar.sql
-psql -d aportaya -f sql/61_prueba/sembrar_prueba.sql
+./gradlew spotlessCheck check
+docker compose --profile base up -d --wait
+./gradlew bd:reset                          # esquemas + roles + aplicar + semillas + prueba
 psql -f sql/50_verificacion/verificaciones.sql
 psql -f sql/50_verificacion/prueba_humo.sql        # todo OK, cero FALLA
-yarn test:unit && yarn test:integracion && yarn test:api
-docker compose up -d --wait && curl -f http://localhost/salud
-yarn test:e2e
+./gradlew generateJooq compileJava
+./gradlew generateOpenApiClients
+./gradlew test integrationTest
+./gradlew nuevoServicio -Pnombre=ejemplo && ./gradlew :servicios:ejemplo:build
+curl -f http://localhost/actuator/health
+./gradlew e2eTest
 python3 scripts/verificar_boveda.py
 ```
 
-- [ ] Los nueve puntos del gate común (§9 del plan maestro)
-- [ ] Las 274 tablas existen en la base y las 12 verificaciones de `sql/50_verificacion/` pasan
+- [ ] Los trece puntos del gate común (§9 del [[00 Plan maestro]])
+- [ ] Las 306 tablas existen y las verificaciones de `sql/50_verificacion/` pasan
+- [ ] **Los catorce esquemas y los catorce roles existen**, y el `SELECT` cruzado entre
+      cualquier par devuelve permiso denegado ← invariante 11
+- [ ] **Solo `svc_nucleo_financiero` escribe `asiento_contable`** ← invariante 12
 - [ ] Los **20** catálogos mínimos están sembrados y la licencia figura `EN_TRAMITE`
 - [ ] `prueba_humo.sql` da **todo OK, cero FALLA** sobre base recién creada
-- [ ] `.env.example` completo y versionado; el proceso no levanta sin una variable
-- [ ] Los cuatro ADR nuevos están escritos y los superados, marcados
-- [ ] La API no publica puerto: solo NGINX
-- [ ] El proceso no levanta si falta una variable de entorno (probado a propósito)
+- [ ] Los tres generadores producen un servicio y un caso de uso sin edición manual
+- [ ] **Los tres contratos de 0.8 están publicados** y el cliente TypeScript compila:
+      es lo que desbloquea la Ola 1 y la Fase F0 del frontend
+- [ ] Ningún servicio publica puerto: solo NGINX
+- [ ] Ningún `build.gradle.kts` declara JPA y ningún `application.yml` tiene `spring.jpa`
+- [ ] El proceso no levanta si falta una clave de configuración (probado a propósito)
+- [ ] La suma de los pools declarados es menor que `max_connections`
 
 ## Ver también
 
-[[00c Recetario · implementar un caso de uso]] · [[00b Estándar de ejecución · código limpio, pruebas y calidad]] · [[00 Plan maestro]] · [[02 Fases 1 y 2 · Capa de datos y núcleo transversal]] · [[Estructura del repositorio]] · [[ADR-012 Empaquetado y despliegue]]
+[[17 Plan de acción secuencial · coordinación de cinco máquinas]] · [[00c Recetario · implementar un caso de uso]] · [[00b Estándar de ejecución · código limpio, pruebas y calidad]] · [[00 Plan maestro]] · [[02 Fases 1 y 2 · Capa de datos y núcleo transversal]] · [[Estructura del repositorio]] · [[ADR-025 Empaquetado y despliegue de los servicios]] · [[ADR-017 Propiedad de datos por servicio]]

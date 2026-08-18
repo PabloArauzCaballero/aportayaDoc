@@ -163,5 +163,5 @@ se revisa el `.puml` tocado antes de commitear.
 ## Ver también
 
 - Skills relacionadas: `caso-de-uso`, `restriccion`, `norma-nueva`,
-  `semillas-catalogos`, `datos-kysely`, `glosario-dominio`.
+  `semillas-catalogos`, `datos-jooq`, `glosario-dominio`.
 - `docs/Index.md` · `docs/entidades/README.md` · `docs/Cumplimiento.md`

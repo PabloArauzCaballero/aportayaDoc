@@ -32,7 +32,7 @@ normas: [Ley 393 (libros y conservación), plan de cuentas, NIIF]
    [[asiento_contable]] con `origen_tipo` / `origen_id` apuntando al hecho, y sus
    [[movimiento_contable]].
 3. Un trigger valida `SUM(debe) = SUM(haber)` al confirmar el asiento (`R-AUD-05`).
-4. Se actualizan los saldos de cuenta y se emite [[evento_dominio]].
+4. Se actualizan los saldos de cuenta y se emite `evento_dominio`.
 5. El asiento entra al [[cierre_diario]] de su fecha ([[CU-51 Ejecutar el cierre diario]]).
 
 ## Flujos alternativos
@@ -49,7 +49,7 @@ normas: [Ley 393 (libros y conservación), plan de cuentas, NIIF]
 - El mayor refleja exactamente la posición de dinero del sistema.
 - La suma de saldos de billetera reconcilia contra las cuentas del mayor.
 
-## Contrato · `packages/contratos/CU-24.ts`
+## Contrato · `openapi/nucleo-financiero.yaml`
 
 ```ts
 export const EntradaCU24 = z.object({

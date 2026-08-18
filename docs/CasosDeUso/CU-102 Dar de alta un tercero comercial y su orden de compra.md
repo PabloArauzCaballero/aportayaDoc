@@ -49,7 +49,7 @@ normas: [Código de Comercio, control interno]
 - Toda compra a un tercero externo tiene una orden autorizada antes de que exista
   la obligación de pagarla.
 
-## Contrato · `packages/contratos/CU-102.ts`
+## Contrato · `openapi/erp.yaml`
 
 ```ts
 export const EntradaCU102 = z.object({
@@ -108,8 +108,10 @@ export const ErroresCU102 = {
 
 ## Restricciones aplicables
 
-Ninguna restricción de dinero regulatorio del pasanaku aplica: es compra
-administrativa de la empresa a un tercero, fuera del circuito de custodia.
+`R-CTB-04`
+
+Es compra administrativa de la empresa a un tercero, fuera del circuito de
+custodia del pasanaku: no aplican las restricciones de billetera.
 
 ## Evidencia que deja
 

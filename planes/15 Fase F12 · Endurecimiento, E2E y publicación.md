@@ -144,7 +144,7 @@ Es la contraparte del SEO para la app, y no la cubre la Fase F10:
 
 ### Los diez invariantes del frontend, uno por uno
 - [ ] 1 · Ninguna llamada de red fuera de `dominio/` (lint)
-- [ ] 2 · Ningún tipo reescrito; todos los mocks validan contra su Zod
+- [ ] 2 · Ningún tipo reescrito; todos los mocks validan contra su esquema OpenAPI
 - [ ] 3 · Cero literales de diseño fuera de tokens (lint)
 - [ ] 4 · Los cuatro estados, probados
 - [ ] 5 · Ningún importe formateado fuera de `Monto` (lint)

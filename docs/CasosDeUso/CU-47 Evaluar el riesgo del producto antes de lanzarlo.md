@@ -71,7 +71,7 @@ normas: [UIF enfoque basado en riesgo, ASFI Res. 540/2025, ASFI no objeción]
 - Se puede mostrar al supervisor, para cualquier fecha, con qué evaluación operaba
   cada producto.
 
-## Contrato · `packages/contratos/CU-47.ts`
+## Contrato · `openapi/cumplimiento.yaml`
 
 ```ts
 export const EntradaCU47 = z.object({
@@ -154,7 +154,7 @@ export const ErroresCU47 = {
 ## Evidencia que deja
 
 [[evaluacion_riesgo_producto]] · [[acta_comite]] · [[licencia_regulatoria]] ·
-[[plan_accion_riesgo]] · [[observacion_regulatoria]] · [[evento_dominio]]
+[[plan_accion_riesgo]] · [[observacion_regulatoria]] · `evento_dominio`
 
 ## Criterios de aceptación
 

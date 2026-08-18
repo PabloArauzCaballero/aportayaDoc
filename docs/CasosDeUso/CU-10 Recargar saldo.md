@@ -44,7 +44,7 @@ normas: [BCB RD 079/2022, UIF art. 52 inc. i, encaje 100%]
      débito a la cuenta técnica `PUENTE_CUSTODIA` (suma cero, `R-BIL-01`);
    - se actualiza `consumo_limite`;
    - se genera el [[asiento_contable]] espejo ([[CU-24 Registrar el asiento contable de una operación]]);
-   - se emite [[evento_dominio]] `RECARGA_ACREDITADA`.
+   - se emite `evento_dominio` `RECARGA_ACREDITADA`.
 5. El motor de umbrales evalúa la operación → [[CU-41 Detectar umbral y registrar formulario PCC-01]]
    (carga de billetera acumulada) y [[CU-42 Detectar umbral y registrar ROG]].
 6. Cuando el dinero llega efectivamente al banco, se registra
@@ -66,7 +66,7 @@ normas: [BCB RD 079/2022, UIF art. 52 inc. i, encaje 100%]
 - El saldo del usuario aumentó exactamente en `monto_acreditado`.
 - Existe contrapartida contable y de custodia por el mismo importe.
 
-## Contrato · `packages/contratos/CU-10.ts`
+## Contrato · `openapi/nucleo-financiero.yaml`
 
 ```ts
 export const EntradaCU10 = z.object({

@@ -54,7 +54,7 @@ normas: [ASFI — central de reclamos / segunda instancia]
 
 - Cada elevación tiene expediente, resolución y, si aplica, resarcimiento.
 
-## Contrato · `packages/contratos/CU-53.ts`
+## Contrato · `openapi/cumplimiento.yaml`
 
 ```ts
 export const EntradaCU53 = z.object({

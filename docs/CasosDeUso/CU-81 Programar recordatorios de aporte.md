@@ -59,7 +59,7 @@ normas: [Consumidor financiero, buenas prácticas de cobranza]
 - Nadie recibe más mensajes de los que el tope permite.
 - A nadie se le reclama un aporte ya acreditado.
 
-## Contrato · `packages/contratos/CU-81.ts`
+## Contrato · `openapi/notificaciones.yaml`
 
 ```ts
 export const EntradaCU81 = z.object({

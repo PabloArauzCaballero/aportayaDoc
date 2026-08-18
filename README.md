@@ -38,7 +38,7 @@ del sistema, en cuatro capas encadenadas.
 | Capa | Dónde | Responde |
 | --- | --- | --- |
 | Norma | [`docs/Cumplimiento.md`](docs/Cumplimiento.md) | qué obliga ASFI, UIF, BCB, el SIN y las ISO |
-| Caso de uso | [`docs/CasosDeUso/`](docs/CasosDeUso/_CasosDeUso.md) | cómo se ejecuta cada flujo, paso a paso — 87 casos |
+| Caso de uso | [`docs/CasosDeUso/`](docs/CasosDeUso/_CasosDeUso.md) | cómo se ejecuta cada flujo, paso a paso — 99 casos |
 | Restricción | [`docs/Restricciones.md`](docs/Restricciones.md) | qué impide, en la base, que se viole — 119 reglas |
 | Modelo | [`docs/Modelos/`](docs/Modelos/Entidades/_Entidades.md) | dónde vive cada dato |
 | Esquema | [`sql/`](sql/README.md) | el DDL ejecutable, generado desde las tres capas anteriores |
@@ -53,7 +53,7 @@ psql -d aportaya -v ON_ERROR_STOP=1 -f sql/60_semillas/sembrar.sql
 psql -d aportaya -f sql/50_verificacion/prueba_humo.sql   # 69 comprobaciones
 ```
 
-El esquema son **274 tablas en un archivo cada una**, con las claves foráneas y los
+El esquema son **306 tablas en un archivo cada una**, con las claves foráneas y los
 índices en pasadas aparte —el orden que necesita la introspección de tipos— más el
 sellado de las tablas append-only y el catálogo de restricciones. Verificado sobre
 PostgreSQL 16: aplica sin errores y la prueba de humo confirma que las restricciones

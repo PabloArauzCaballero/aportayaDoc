@@ -54,7 +54,7 @@ normas: [UIF — Instructivo EIF, art. 53 (modificado por R.A. UIF/050/2026)]
 
 - Cada obligación de reporte tiene su propio registro, clasificado por formulario.
 
-## Contrato · `packages/contratos/CU-42.ts`
+## Contrato · `openapi/cumplimiento.yaml`
 
 ```ts
 export const EntradaCU42 = z.object({

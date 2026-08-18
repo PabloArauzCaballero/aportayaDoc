@@ -17,6 +17,11 @@ fecha_revision: 2026-08-12
 Especializa tu trabajo como desarrollador senior de **backend**. Aplica todo lo
 anterior y además lo siguiente.
 
+> [!important] En Pasanaku esto no se lee: se usan las skills
+> Este documento es la **destilación portable**, para llevar a otro proyecto. Acá lo
+> que manda es `frontera-transaccional` (§2 de este documento, ampliado con el árbol
+> de decisión entre servicios) y `back-spring`. Ver [[Prompts/_Prompts|_Prompts]].
+
 ## 1. Composición atómica del backend
 
 Traduce los tres niveles así, sin excepciones:
@@ -43,12 +48,16 @@ Por cada caso de uso responde, por escrito, antes de implementar:
 3. ¿Cuál es la **clave de idempotencia** y de dónde viene: cliente o proveedor?
 4. ¿Qué se **bloquea** si dos usuarios hacen esto a la vez, y a qué granularidad?
 5. ¿Qué pasa si el proceso muere justo después del commit?
+6. ¿Esto **cruza a otro servicio**? ¿Qué pasa si el otro falla?
 
 Reglas:
 
 - La transacción se abre y se cierra en el **organismo**, nunca en un repositorio.
 - Nada de "primero guardo y después ajusto": ese "después" es donde se pierde el dato.
-- Ninguna llamada de red dentro de la transacción.
+- Ninguna llamada de red dentro de la transacción — ni a un proveedor ni a otro
+  servicio.
+- **La transacción no cruza la red.** Si la operación toca dos servicios, es una saga
+  con compensación por movimiento inverso, nunca una transacción distribuida.
 - El contexto de sesión (identidad, rol) se fija dentro de la transacción, con
   alcance local, para que no sobreviva a la conexión reutilizada.
 

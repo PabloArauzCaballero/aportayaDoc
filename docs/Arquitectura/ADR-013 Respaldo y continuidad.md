@@ -86,5 +86,5 @@ que el ensayo no alcanza es peor que no tenerlo: da falsa tranquilidad.
 
 ## Ver también
 
-[[ADR-012 Empaquetado y despliegue]] · `respaldos-restauracion` · `observabilidad` ·
+[[ADR-025 Empaquetado y despliegue de los servicios]] · `respaldos-restauracion` · `observabilidad` ·
 [[Entornos y despliegue]] · [[Cumplimiento]]

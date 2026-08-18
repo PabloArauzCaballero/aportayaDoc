@@ -105,7 +105,7 @@ Lo mecánico no se discute en revisión: lo resuelve la herramienta.
 - Prettier y ESLint con la configuración del repo; el CI falla si no pasa.
 - TypeScript en modo estricto; `any` requiere justificación escrita.
 - Reglas de lint propias del proyecto: prohibición de `number` en dinero
-  (`dinero-decimal`), prohibición de consultas fuera de `conTransaccion`, límite de
+  (`dinero-decimal`), prohibición de consultas fuera de `conContexto`, límite de
   dependencias entre niveles.
 - Un `eslint-disable` sin comentario que explique el porqué se rechaza en revisión.
 

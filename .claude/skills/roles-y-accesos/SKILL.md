@@ -57,6 +57,8 @@ cabeza de nadie:
 | autorizar entrega · ejecutar desembolso | quien autoriza no ejecuta (`R-SEG-04`) |
 | aplicar sanción · resolver su apelación | debido proceso (`R-ORG-05`) |
 | solicitar reembolso · aprobarlo | doble firma sobre dinero |
+| aprobar factura de proveedor · autorizar su pago | cuatro ojos sobre el egreso (`R-CTB-05`) |
+| ser anunciante · moderar piezas creativas | quien publica no se autoaprueba (`R-PUB-05`) |
 | administrar accesos · ser oficial de cumplimiento | quien vigila no se amplía permisos |
 | operar tesorería · designarse oficial de cumplimiento | `R-UIF-12` y control interno |
 
@@ -114,4 +116,4 @@ adentro es una revocación que tarda una hora.
 - [[CU-08 Asignar y revocar roles de operador]] · [[CU-09 Cambiar credenciales y solicitar la baja]] ·
   [[CU-49 Designar al oficial de cumplimiento y capacitar]]
 - `R-SEG-04` · `R-SEG-07` · `R-SEG-08` en [[Restricciones]]
-- Skills: `autenticacion-jwt`, `seguridad-sesion-rls`, `back-nestjs`, `semillas-catalogos`
+- Skills: `autenticacion-jwt`, `seguridad-sesion-rls`, `back-spring`, `semillas-catalogos`

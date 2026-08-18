@@ -1,0 +1,61 @@
+# Contrato de entregas — OpenAPI 3.1
+# SE ESCRIBE PRIMERO, antes que la implementacion (ADR-020). Es lo que permite que
+# otro carril genere el cliente y programe contra vos sin esperar a que termines.
+#
+# Prefijos reservados de este servicio: /entregas, /desembolsos, /cuentas-bancarias
+#   Una ruta fuera de ellos es un rechazo automatico, no una discusion de diseno.
+#   Toda ruta exige sesion: 401 sin token, 403 con rol insuficiente.
+openapi: 3.1.0
+info:
+  title: entregas
+  version: 1.0.0
+  description: >-
+    Servicio entregas. Un caso de uso = una operacion, con el codigo CU en el
+    operationId. Los importes viajan como CADENA decimal, nunca como number.
+
+servers:
+  - url: /api/v1
+
+paths: {}
+  # Una operacion por caso de uso. Plantilla:
+  #
+  #   /entregas/…:
+  #     post:
+  #       operationId: <verboObjeto>          # CU-NN
+  #       parameters:
+  #         - name: Idempotency-Key
+  #           in: header
+  #           required: true                   # toda operacion con efecto
+  #           schema: { type: string, format: uuid }
+  #       responses:
+  #         '200': …
+  #         '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+components:
+  schemas:
+    Dinero:
+      type: object
+      additionalProperties: false
+      required: [monto, moneda]
+      properties:
+        monto:
+          type: string
+          pattern: '^-?\d+\.\d{2}$'     # CADENA: un number JSON es un doble
+        moneda:
+          type: string
+          enum: [BOB, USD]
+    Error:
+      type: object
+      additionalProperties: false
+      required: [codigo, mensaje, trazaId]
+      properties:
+        codigo:   { type: string, pattern: '^AP-CU\d+-\d{2}$' }
+        mensaje:  { type: string }
+        detalle:  { type: object }
+        trazaId:  { type: string }
+  responses:
+    ReglaDeNegocio:
+      description: Regla de negocio de la aplicacion (422, no 400)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }

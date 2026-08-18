@@ -39,10 +39,10 @@ PR**.
 2. **Semillas de catálogo.** Umbrales, límites, tarifario, impuestos, catálogo de
    reportes y licencia. Sin catálogo sembrado, la regla de *denegar por omisión*
    bloquea todo, y eso es correcto.
-3. **Contrato** en `packages/contratos/CU-NN.ts`, copiado del caso de uso
+3. **Contrato** en `openapi/<servicio>.yaml`, copiado del caso de uso
    (skill `contratos-api`). Se escribe antes que la implementación.
 4. **Átomos** puros del dominio, con sus pruebas en milisegundos.
-5. **Moléculas**: repositorios Kysely y adaptadores externos, cada uno contra un
+5. **Moléculas**: repositorios jOOQ y adaptadores externos, cada uno contra un
    solo colaborador y sin abrir transacción.
 6. **Organismo**: el caso de uso, única frontera transaccional.
 7. **Página**: el controlador, que traduce y delega, sin lógica.
@@ -64,14 +64,14 @@ PR**.
 ## Estructura sugerida por caso de uso
 
 ```
-packages/contratos/CU-31.ts               ← entrada, salida, códigos de error
-apps/api/src/<modulo>/
-  aplicacion/CU31DevengarComision.ts      ← ORGANISMO: orquesta la transacción
-  dominio/DevengoComision.ts              ← ÁTOMO: invariantes, sin IO
-  infraestructura/DevengoRepositorio.ts   ← MOLÉCULA: SQL, sin lógica
-  infraestructura/PasarelaAdapter.ts      ← MOLÉCULA de borde, idempotente
-  comisiones.controller.ts                ← PÁGINA: traduce y delega
-  pruebas/CU31.spec.ts                    ← criterios de aceptación del caso
+openapi/tarifas.yaml               ← entrada, salida, códigos de error
+servicios/<servicio>/
+  aplicacion/CU31DevengarComision.java      ← ORGANISMO: orquesta la transacción
+  dominio/DevengoComision.java              ← ÁTOMO: invariantes, sin IO
+  infraestructura/DevengoRepositorio.java   ← MOLÉCULA: SQL, sin lógica
+  infraestructura/PasarelaAdapter.java      ← MOLÉCULA de borde, idempotente
+  ComisionesController.java                ← PÁGINA: traduce y delega
+  pruebas/CU31Test.java                    ← criterios de aceptación del caso
 ```
 
 Un archivo de aplicación por caso de uso, con el código `CU-NN` en el nombre: hace
@@ -104,6 +104,6 @@ tabla de descomposición.
 ## Ver también
 
 `docs/CasosDeUso/_CasosDeUso.md` · `docs/Restricciones.md` · `docs/Cumplimiento.md` ·
-`docs/Stack.md` · skills `arquitectura-atomica`, `contratos-api`, `datos-kysely`,
+`docs/Stack.md` · skills `arquitectura-atomica`, `contratos-api`, `datos-jooq`,
 `dinero-decimal`, `trabajos-outbox`, `pruebas-cu`, `errores-api`,
 `idempotencia-reintentos`.

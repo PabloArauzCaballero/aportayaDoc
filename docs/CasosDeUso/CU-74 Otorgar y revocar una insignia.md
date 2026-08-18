@@ -65,7 +65,7 @@ normas: [Transparencia, no discriminación arbitraria]
 - Toda insignia otorgada tiene un hecho verificable detrás y una fecha.
 - Ninguna revocación borra el registro de que alguna vez se otorgó.
 
-## Contrato · `packages/contratos/CU-74.ts`
+## Contrato · `openapi/transparencia.yaml`
 
 ```ts
 export const EntradaCU74 = z.object({
@@ -115,7 +115,7 @@ export const ErroresCU74 = {
 | Átomo | `insigniasAfectadasPor(evento)` | Filtra el catálogo por el hecho ocurrido; puro |
 | Molécula | `InsigniaRepositorio` | Catálogo y otorgadas, con unicidad |
 | Organismo | `CU74EvaluarInsignias` | Transacción: otorga, notifica y emite evento |
-| Página | Consumidor de [[evento_dominio]] · `GET /perfil/insignias` | Sin endpoint de otorgamiento manual |
+| Página | Consumidor de `evento_dominio` · `GET /perfil/insignias` | Sin endpoint de otorgamiento manual |
 
 ## Eventos, trabajos y permisos
 
@@ -140,7 +140,7 @@ export const ErroresCU74 = {
 ## Evidencia que deja
 
 [[insignia_logro]] · [[insignia_otorgada]] · [[evento_reputacion]] ·
-[[evento_dominio]]
+`evento_dominio`
 
 ## Criterios de aceptación
 

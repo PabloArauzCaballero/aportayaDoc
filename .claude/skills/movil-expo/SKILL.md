@@ -19,7 +19,7 @@ apps/movil/src/
 ├── moleculas/    CampoMonto, FilaAporte, SelectorDeGrupo, useAporte
 ├── organismos/   FormularioDeAporte, ResumenDeBilletera, ListaDeMovimientos
 ├── pantallas/    composición de organismos + ruta, sin lógica
-├── dominio/      un cliente por caso de uso, tipado desde packages/contratos
+├── dominio/      un cliente por caso de uso, tipado desde openapi/ del servicio
 └── tokens/       único lugar con valores de color, espacio y tipografía
 ```
 

@@ -8,6 +8,29 @@ open index.html                 # así, tal cual
 python3 -m http.server 8899     # o servido, si querés medir con el navegador
 ```
 
+## Dónde está publicado
+
+> **https://pabloarauzcaballero.github.io/aportayaDoc/**
+
+Esa es la única URL válida. Anotala: el repositorio se renombró de `aportaya` a
+`aportayaDoc`, y **GitHub Pages no redirige las URLs viejas de *project page***. La
+anterior devuelve 404 para siempre:
+
+| URL | Resultado |
+| --- | :-: |
+| `https://pabloarauzcaballero.github.io/aportayaDoc/` | **200** ✅ |
+| `https://pabloarauzcaballero.github.io/aportaya/` | 404 — nombre viejo |
+| `https://pabloarauzcaballero.github.io/` | 404 — es la página de *usuario*, que no existe |
+
+Como este repo se sirve bajo un subdirectorio (`/aportayaDoc/`), **todas las rutas del
+HTML son relativas** (`assets/…`, `verificar/…`). Una ruta absoluta tipo `/assets/…`
+apuntaría a la raíz del dominio y daría 404. La excepción son `canonical`, `og:url`,
+`og:image` y `twitter:image`, que **deben** ser absolutas porque los rastreadores
+sociales no resuelven rutas relativas.
+
+> **Si el repositorio se vuelve a renombrar**, hay que actualizar esas cuatro etiquetas
+> en `index.html` y esta sección. Es el único lugar donde el nombre está cableado.
+
 ## Despliegue en GitHub Pages
 
 `.github/workflows/pages-landing.yml` publica esta carpeta (y nada más — es el artefacto

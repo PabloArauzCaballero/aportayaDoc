@@ -5,12 +5,12 @@ tags:
   - estandar
 titulo: "Estándar de ejecución — código limpio, pruebas y calidad"
 fecha: 2026-08-13
-aplica_a: las 18 fases, sin excepción
+aplica_a: las 21 fases, sin excepción
 ---
 
 # Estándar de ejecución
 
-> **Este documento se aplica en las 18 fases, en cada archivo y en cada PR.** El
+> **Este documento se aplica en las 21 fases, en cada archivo y en cada PR.** El
 > [[00 Plan maestro]] dice *qué* construir y *en qué orden*; los documentos de fase
 > dicen *qué piezas*; **este dice cómo se escribe**. Si un documento de fase y este
 > se contradicen, gana este.
@@ -99,7 +99,7 @@ Si el modelo dice `obligacion_aporte`, el código **no** inventa `Payment`. La
 trazabilidad especificación → código depende de que el nombre sea el mismo
 (skill `glosario-dominio`).
 
-Prohibido un archivo `utils.ts`: es el síntoma de una función sin dueño. Cada función
+Prohibido un archivo `Utils.java`: es el síntoma de una función sin dueño. Cada función
 pertenece a un átomo con nombre.
 
 ---
@@ -118,8 +118,8 @@ pertenece a un átomo con nombre.
 **Condicionales**
 - Nada de números mágicos. Un umbral regulatorio dentro de un `if` es un **defecto de
   cumplimiento**, no de estilo: va a catálogo (invariante 10).
-- Las condiciones complejas se nombran: `const superaUmbralUif = …` antes del `if`.
-- Estados como **tipos**, no como cadenas comparadas con `===`.
+- Las condiciones complejas se nombran: `boolean superaUmbralUif = …` antes del `if`.
+- Estados como **tipos** (`enum`), no como cadenas comparadas con `equals`.
 - Sin `else` cuando el `if` retorna.
 
 ---
@@ -129,7 +129,7 @@ pertenece a un átomo con nombre.
 El código dice **qué**; el comentario dice **por qué**, y solo cuando el porqué no es
 evidente. En este proyecto los que valen la pena son casi siempre uno de estos tres:
 
-```ts
+```java
 // R-BIL-04: el saldo se deriva; nunca se actualiza en su lugar.
 // CU-31 paso 4: el tarifario se congela al crear el grupo, no al cobrar.
 // UIF: el umbral llega del catálogo con vigencia; no se compara contra constante.
@@ -163,7 +163,8 @@ El mapeo completo a HTTP está en §5 del plan maestro.
 - Sin `import` que crucen niveles hacia arriba.
 - **Sin dependencias nuevas sin necesidad real y sin declararlo en el PR.** Cada una
   se justifica; nada de alpha/beta en producción sin ADR y plan de reversión;
-  actualizaciones mayores por decisión consciente, no por rango `^`.
+  actualizaciones mayores por decisión consciente: toda versión vive **exacta** en el
+  catálogo de Gradle (`gradle/libs.versions.toml`), nunca como rango.
 
 ---
 
@@ -171,50 +172,57 @@ El mapeo completo a HTTP está en §5 del plan maestro.
 
 Lo que hay que tener presente al escribir cada archivo, por tecnología.
 
-### MikroORM
+### jOOQ y acceso a datos
 
 | Sí | No |
 | --- | --- |
-| `em.fork({ clear: true })` por request | Compartir el `EntityManager` entre requests |
-| `tx.execute(…)` para el `SET LOCAL` | `getConnection().execute()` suelto — pierde el contexto **en silencio** |
-| `em.insert()` o `INSERT` explícito en append-only | `em.persist` + `flush` sobre una entidad leída |
-| Columnas listadas | `SELECT *` en flujos de dinero |
+| `conContexto(ctx, dsl -> …)` para toda consulta con RLS | Consultar fuera del contexto — la política no filtra |
+| `set_config(…, true)` para el `SET LOCAL` | `SET` plano — sobrevive a la petición y contamina la siguiente |
+| El `DSLContext` de la transacción en curso | Tomar otra conexión: pierde el contexto **en silencio** |
+| `insertInto` explícito en append-only | Cualquier `update` sobre una tabla sellada |
+| Columnas listadas | `select *` en flujos de dinero |
 | Paginación y orden por **lista blanca** | Ordenar por un campo que llega del cliente |
-| Regenerar entidades tras cambiar el modelo | Editar a mano un archivo generado |
-| `resultCache` desactivado en lo que toca dinero o RLS | Cachear resultados con contexto de sesión |
+| Regenerar tras cambiar el modelo | Editar a mano una clase generada |
+| Un solo esquema: el propio | `SELECT` sobre el esquema de otro servicio |
 
-### Zod y contratos
+**JPA está prohibido**, no desaconsejado: `spring-boot-starter-data-jpa` en un
+`build.gradle.kts` es un rechazo automático.
+
+### Contratos OpenAPI
 
 - **El contrato se escribe antes que la implementación**, en
-  `packages/contratos/src/CU<NN>.ts`.
-- `.strict()` siempre: campo desconocido = error, no se ignora.
-- El tipo se **infiere** del esquema (`z.infer`); no se declara dos veces.
-- `MontoSchema` es *string* con dos decimales. **Nunca `z.number()` para dinero.**
+  `servicios/<servicio>/src/main/resources/openapi/<servicio>.yaml`.
+- `additionalProperties: false` siempre: campo desconocido = error, no se ignora.
+- El controlador **implementa la interfaz generada**. Si el contrato cambia y el
+  controlador no, no compila.
+- Los importes son **cadena** con dos decimales. **Nunca `type: number` para dinero.**
 - Versión explícita en la ruta (`/v1/…`). Los cambios incompatibles no se hacen en
-  silencio.
+  silencio, y la prueba de contrato falla en el CI **del que rompe**.
 - La documentación se **deriva** del contrato; no se escribe a mano.
 
-### Pino
+### Registro estructurado
 
-- Logs estructurados. **Toda línea de un caso de uso lleva `cu`, `usuario_id` y
-  `traza`.**
-- `redact` obligatorio: `authorization`, `cookie`, `password`, `pin`,
+- **Toda línea de un caso de uso lleva `cu`, `usuario_id`, `traza` y `servicio`.**
+- Redacción obligatoria: `authorization`, `cookie`, `password`, `pin`,
   `numero_documento`, `numero_cuenta`, `telefono`, `correo`, `token`, `clave_*`.
-- La traza se propaga **hasta el worker** por la carga del trabajo.
-- **Prohibido `console.log`** en runtime (regla de lint).
+- La traza (`x-request-id`) se propaga **a los otros servicios y al consumidor de
+  eventos**. Con catorce procesos, es la única forma de reconstruir una operación.
+- **Prohibido `System.out`/`System.err`** en runtime (regla de análisis estático).
 - Nivel `error` solo para lo que requiere que alguien actúe; lo demás, `warn`/`info`.
 
-### Multer
+### Archivos y evidencia
 
-- Siempre detrás del puerto `AlmacenArchivos`. **Ningún caso de uso conoce a Multer.**
-- Tipo MIME y tamaño validados **por Zod antes** de escribir a disco.
+- Siempre detrás del puerto `AlmacenArchivos`. **Ningún caso de uso conoce al
+  proveedor de almacenamiento.**
+- Tipo MIME y tamaño validados **por el contrato antes** de escribir.
 - Rutas `AAAA/MM/<uuid>`, **nunca** derivadas del nombre del archivo del usuario.
 - **SHA-256 guardado en la base**: la evidencia es el hash, no el archivo.
 - Los archivos **no se borran**: se marca la baja (retención regulatoria).
 
-### Jest
+### JUnit 5
 
-- Nombre del `it()` = el criterio de aceptación, citado tal cual está en el CU.
+- Cada prueba es un `@Test` con `@DisplayName` = el criterio de aceptación, citado
+  tal cual está en el CU.
 - **Sin `sleep`** para sincronizar: se coordina con promesas y bloqueos reales.
 - Sin orden entre pruebas; cada una monta lo suyo.
 - El reloj se **adelanta inyectado**, nunca se espera al real.
@@ -223,26 +231,28 @@ Lo que hay que tener presente al escribir cada archivo, por tecnología.
 
 ### Docker
 
-- Multietapa, `USER node` (**nunca root**), sin `latest`, sin secretos en la imagen.
+- Multietapa sobre `eclipse-temurin`, `USER app` (**nunca root**), sin `latest`, sin
+  secretos en la imagen.
 - `HEALTHCHECK` a `/salud`; `dumb-init` como PID 1; apagado controlado con `SIGTERM`.
 - La API **no publica puerto**: la única entrada pública es NGINX.
 - `.dockerignore` excluye `docs/`, `planes/`, pruebas y `.git`.
 
 ---
 
-## 9 · Pruebas — las seis obligatorias por caso de uso
+## 9 · Pruebas — las siete obligatorias por caso de uso
 
-Los cinco niveles y las herramientas están en §7 del plan maestro. Lo que **cada CU**
+Los seis niveles y las herramientas están en §7 del plan maestro. Lo que **cada CU**
 tiene que tener, sin excepción (skill `pruebas-cu`):
 
 | # | Prueba | Qué verifica |
 | :-: | --- | --- |
-| **1** | Un `it()` **por criterio de aceptación**, citando su texto | `it('CU-21 · CA-3: un aporte por debajo del monto de la obligación se rechaza', …)` |
+| **1** | Un `@Test` **por criterio de aceptación**, con `@DisplayName` citando su texto | `@DisplayName("CU-21 · CA-3: un aporte por debajo del monto de la obligación se rechaza")` |
 | **2** | **Rechazo de cada restricción citada** | Se provoca la violación y se espera **el error de la base**, no un `if` de la aplicación |
 | **3** | **Reintento** | Misma clave de idempotencia ⇒ misma respuesta y **cero efectos nuevos**, contando filas antes y después |
 | **4** | **Concurrencia** | Dos ejecuciones simultáneas: una gana, la otra falla claro, **el saldo queda correcto** |
 | **5** | **Plazo**, si hay consecuencia legal | Se adelanta el reloj **inyectado** y se verifica vencimiento, alerta previa y estado |
 | **6** | **Cuadre**, si mueve dinero | `SUM(monto) = 0.00` en la transacción, asiento equilibrado, y **prueba de propiedad** sobre el átomo de cálculo |
+| **7** | **Compensación de saga**, si cruza a otro servicio | El `*SagaTest` fuerza el fallo de **cada paso remoto, uno por uno**, y verifica el reverso (movimiento inverso, nunca `UPDATE` del libro) y el estado final coherente — receta en [[00c Recetario · implementar un caso de uso]] §8b, mecánica en ADR-028 |
 
 > **La prueba 2 es la que más se hace mal.** Si pasa porque la aplicación validó
 > antes, **no probó la restricción**: hay que ejercerla saltándose la capa de
@@ -278,9 +288,6 @@ clasificado. Nunca se prueba contra el proveedor real en CI.
 ## 11 · Qué nunca se versiona
 
 ```gitignore
-.env
-.env.*
-!.env.example
 *.log
 logs/
 backups/
@@ -294,6 +301,10 @@ artifacts/
 La evidencia (pruebas, carga, restauración) se publica como **artefacto del CI** —
 `artifacts/pruebas/`, `artifacts/carga/`, `artifacts/restauracion/` — no se commitea.
 
+La configuración vive en `application.yml` por servicio, con los secretos inyectados
+por el entorno de despliegue: no hay archivos `.env` que ignorar ni `.env.example`
+que mantener.
+
 ---
 
 ## 12 · Antes de abrir el PR
@@ -306,8 +317,8 @@ supone.**
 - [ ] Ningún nombre genérico sin contexto (`data`, `Manager`, `utils`, `helper`)
 - [ ] Ninguna función con dos responsabilidades
 - [ ] Ningún número regulatorio en el código
-- [ ] Sin `TODO` huérfanos, sin código comentado, sin `console.log`
-- [ ] Sin `any` ni `eslint-disable` sin justificación escrita
+- [ ] Sin `TODO` huérfanos, sin código comentado, sin `System.out` ni logs fuera de Logback
+- [ ] Sin `@SuppressWarnings` sin justificación escrita, sin casts crudos
 
 ### Frontera transaccional (respondida **por escrito** en el PR)
 - [ ] ¿Qué ocurre todo junto o nada?
@@ -315,16 +326,17 @@ supone.**
 - [ ] ¿Cuál es la clave de idempotencia y de dónde viene: cliente o proveedor?
 - [ ] ¿Qué se bloquea si dos usuarios hacen esto a la vez, y a qué granularidad?
 - [ ] ¿Qué pasa si el proceso muere justo después del commit?
+- [ ] ¿Esto cruza a otro servicio y qué pasa si el otro falla? ¿Cuál es la compensación?
 
 ### Pruebas
-- [ ] Cada criterio de aceptación tiene su `it()` nombrado igual
+- [ ] Cada criterio de aceptación tiene su `@Test` con `@DisplayName` idéntico
 - [ ] Cada restricción citada tiene su prueba de **rechazo**
 - [ ] Hay prueba de reintento, de concurrencia y de fallo del proveedor externo
 - [ ] Si mueve dinero: prueba de cuadre al centavo
 
 ### Verde local
-- [ ] `yarn lint && yarn typecheck && yarn test:unit && yarn test:integracion && yarn test:api`
-- [ ] `yarn datos:entidades && yarn contratos:openapi` con diff vacío
+- [ ] `./gradlew spotlessCheck check test integrationTest contractTest`
+- [ ] `./gradlew generateJooq compileJava generateOpenApiClients` — compila y el cliente no produce diff
 
 Y si el PR toca `docs/entidades/*.puml`, `docs/Restricciones.md` o `sql/`:
 `sql/` **regenerado** (no editado a mano) · prueba de humo en verde ·
@@ -353,7 +365,7 @@ riesgo** (skill `revision-codigo`).
 
 | Hallazgo | Por qué |
 | --- | --- |
-| Un importe tipado `number`, un `parseFloat` o aritmética suelta sobre dinero | Exactitud es cumplimiento |
+| Un importe tipado `double` o `float`, un `parseDouble` o aritmética suelta sobre dinero | Exactitud es cumplimiento |
 | `UPDATE` sobre tabla append-only, o "ajustar" un saldo en vez de insertar movimiento | Corrección = movimiento inverso |
 | Llamada a proveedor externo **dentro** de la transacción | Va por outbox |
 | Escritura **antes** de validar la clave de idempotencia | La bóveda lo exige explícitamente |
@@ -362,12 +374,12 @@ riesgo** (skill `revision-codigo`).
 | Regla que protege dinero "validada solo en el backend", sin su `R-XXX-nn` | La garantía está en el lugar equivocado |
 | Criterio de aceptación sin prueba, o restricción citada sin prueba de rechazo | **No está terminado** |
 | Migración escrita a mano fuera de `sql/` | El esquema se genera desde la bóveda |
-| `any` o `eslint-disable` sin justificación escrita | Silencia justo donde hay dudas |
+| `@SuppressWarnings` sin justificación escrita, o un cast crudo | Silencia justo donde hay dudas |
 
 ### Se comenta, no se bloquea
 
 Nombres mejorables que no inducen a error · una molécula que quizá suba a
-`packages/dominio` (recordar: **al tercer uso**) · consultas optimizables sin
+`plataforma/comun-dominio` (recordar: **al tercer uso**) · consultas optimizables sin
 evidencia de que sean un problema · preferencias dentro del mismo nivel.
 
 ### Las siete preguntas que sacan los defectos reales
@@ -429,4 +441,4 @@ algo quedó fuera, **se dice explícitamente**.
 ## Ver también
 
 [[00 Plan maestro]] · [[07 Carriles de trabajo concurrente]] · [[Prompt general de desarrollo]] · [[Prompt de backend]] ·
-[[Método de arquitectura]] · [[ADR-009 Composición atómica]] · [[Restricciones]]
+[[Método de arquitectura]] · [[ADR-023 Composición atómica en Java]] · [[Restricciones]]

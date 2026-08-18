@@ -40,7 +40,7 @@ primero**; estilo, al final y automatizado.
 ## Se comenta, no se bloquea
 
 - Nombres mejorables que no inducen a error.
-- Una molécula que podría subir a `packages/dominio` en el futuro (recordá: **al
+- Una molécula que podría subir a `plataforma/comun-dominio` en el futuro (recordá: **al
   tercer uso**, no al segundo).
 - Consultas correctas pero optimizables sin evidencia de que sean un problema.
 - Preferencias de composición dentro del mismo nivel.

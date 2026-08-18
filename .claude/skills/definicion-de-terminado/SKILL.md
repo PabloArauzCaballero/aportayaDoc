@@ -21,7 +21,7 @@ Se reporta así, no en prosa:
 
 | Área | Gate | Evidencia | Estado |
 | --- | --- | --- | --- |
-| Especificación | Criterios de aceptación cubiertos | `CU21.spec.ts`, 14/14 | Pass |
+| Especificación | Criterios de aceptación cubiertos | `CU21Test.java`, 14/14 | Pass |
 | Datos | Restricciones citadas con prueba de rechazo | 6/6 rechazos verificados | Pass |
 | … | … | … | Pass/Fail |
 
@@ -89,7 +89,7 @@ Se reporta así, no en prosa:
 | --- | --- |
 | "Está listo para producción" | "Pasan los 8 gates de la matriz; el de restore drill quedó pendiente" |
 | "Debería funcionar" | "No lo pude ejecutar porque falta X; queda sin verificar" |
-| "Ya está probado" | "14 criterios como pruebas, 6 rechazos de restricción, `yarn test` en verde" |
+| "Ya está probado" | "14 criterios como pruebas, 6 rechazos de restricción, `./gradlew test` en verde" |
 | "Es seguro" | "Prueba negativa de RLS y de permisos en verde; sin escaneo de imagen todavía" |
 
 ## Ver también

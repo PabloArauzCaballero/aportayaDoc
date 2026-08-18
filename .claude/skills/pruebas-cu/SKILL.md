@@ -1,6 +1,6 @@
 ---
 name: pruebas-cu
-description: "Escribir las pruebas de un caso de uso de AportaYa con Vitest y Testcontainers sobre PostgreSQL real: criterios de aceptación, pruebas de rechazo de restricciones, reintento, concurrencia, plazos y cuadre de dinero. Úsala al implementar cualquier caso de uso y antes de declarar algo terminado."
+description: "Escribir las pruebas de un caso de uso de AportaYa con JUnit 5 y Testcontainers sobre PostgreSQL real: criterios de aceptación, pruebas de rechazo de restricciones, reintento, concurrencia, plazos y cuadre de dinero. Úsala al implementar cualquier caso de uso y antes de declarar algo terminado."
 ---
 
 # Probar un caso de uso
@@ -13,9 +13,9 @@ real, con el esquema aplicado desde `sql/aplicar.sql` y los catálogos sembrados
 
 | Nivel | Qué prueba | Velocidad | Archivo |
 | --- | --- | --- | --- |
-| **Átomo** | Cálculo puro, objeto de valor | ms | `pruebas/<Atomo>.spec.ts` |
-| **Molécula** | Repositorio, adaptador — incluye el **rechazo** de la base | Contenedor | `pruebas/<Molecula>.spec.ts` |
-| **Organismo** | El caso de uso completo, en su transacción | Contenedor | `pruebas/CU<NN>.spec.ts` |
+| **Átomo** | Cálculo puro, objeto de valor | ms | `<Atomo>Test.java` |
+| **Molécula** | Repositorio, adaptador — incluye el **rechazo** de la base | Contenedor | `<Molecula>Test.java` |
+| **Organismo** | El caso de uso completo, en su transacción | Contenedor | `CU<NN>Test.java` |
 
 ## Entorno
 

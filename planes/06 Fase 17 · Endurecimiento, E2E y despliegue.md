@@ -34,13 +34,13 @@ implementar, pertenece a su fase, no a esta.
 ## Gate de entrada
 
 - [ ] Fases 12 a 16 cerradas con sus gates ejecutados
-- [ ] Los 87 casos de uso implementados
-- [ ] La prueba E2E `pasanaku-completo.e2e.spec.ts` (hito de la Fase 11) en verde
+- [ ] Los 87 casos de uso del núcleo implementados (las fases 18 y 19 van después)
+- [ ] La prueba E2E `PasanakuCompletoE2ETest.java` (hito de la Fase 11) en verde
 
 ## Leer antes
 
-`docs/Arquitectura/ADR-012 Empaquetado y despliegue.md` ·
-`docs/Arquitectura/ADR-013 Respaldo y continuidad.md` ·
+`docs/Arquitectura/ADR-025 Empaquetado y despliegue de los servicios.md` ·
+`docs/Arquitectura/ADR-013 Respaldo y continuidad.md` (vigente) ·
 `docs/Arquitectura/Entornos y despliegue.md` ·
 skills `resiliencia-rendimiento`, `respaldos-restauracion`, `despliegue-contenedores`,
 `ci-calidad`, `documentacion-entregables`, `definicion-de-terminado`
@@ -49,17 +49,17 @@ skills `resiliencia-rendimiento`, `respaldos-restauracion`, `despliegue-contened
 
 ## 17.1 · Suite E2E completa
 
-Playwright + Chromium contra el stack en `docker-compose.test.yml`, con el worker
-corriendo de verdad. Seis recorridos, no uno:
+Playwright + Chromium contra el stack levantado con `docker compose --profile todo`:
+los catorce servicios, el gateway y Kafka corriendo de verdad. Seis recorridos, no uno:
 
 | Recorrido | Qué ejercita | Por qué existe |
 | --- | --- | --- |
-| `pasanaku-completo.e2e.spec.ts` | Registro → billetera → grupo → sorteo → aportes → entrega → comisión → factura → cierre diario | El producto existe |
-| `incumplimiento.e2e.spec.ts` | Mora → declaración → descargo → fondo de garantía → subrogación → cobranza → reemplazo | El debido proceso funciona de punta a punta |
-| `disolucion.e2e.spec.ts` | Disolución con prelación y prorrata sobre saldo indivisible | **Ni un centavo perdido ni inventado** |
-| `cumplimiento.e2e.spec.ts` | Umbral cruzado → operación relevante → alerta → caso → ROS → reporte mensual remitido | La cadena regulatoria completa |
-| `reclamo.e2e.spec.ts` | Reclamo → plazo hábil → prórroga → resolución → reparación → segunda instancia | El consumidor financiero |
-| `degradacion.e2e.spec.ts` | Pasarela caída → conmutación · SIAT caído → contingencia · mensajería caída → reintento | El sistema con proveedores rotos |
+| `PasanakuCompletoE2ETest.java` | Registro → billetera → grupo → sorteo → aportes → entrega → comisión → factura → cierre diario | El producto existe |
+| `IncumplimientoE2ETest.java` | Mora → declaración → descargo → fondo de garantía → subrogación → cobranza → reemplazo | El debido proceso funciona de punta a punta |
+| `DisolucionE2ETest.java` | Disolución con prelación y prorrata sobre saldo indivisible | **Ni un centavo perdido ni inventado** |
+| `CumplimientoE2ETest.java` | Umbral cruzado → operación relevante → alerta → caso → ROS → reporte mensual remitido | La cadena regulatoria completa |
+| `ReclamoE2ETest.java` | Reclamo → plazo hábil → prórroga → resolución → reparación → segunda instancia | El consumidor financiero |
+| `DegradacionE2ETest.java` | Pasarela caída → conmutación · SIAT caído → contingencia · mensajería caída → reintento | El sistema con proveedores rotos |
 
 **Chromium** cubre además: `/docs` renderiza el OpenAPI, las rutas públicas de
 transparencia y verificación de certificados se ven correctamente, y —cuando exista
@@ -84,19 +84,19 @@ versionado (`scripts/generar_carga.py`), no a mano.
 
 | Métrica | Objetivo inicial | Cómo se mide |
 | --- | --- | --- |
-| Latencia p95 de `POST /v1/aportes` | < 400 ms | k6 o autocannon contra el compose |
+| Latencia p95 de `POST /v1/aportes` | < 400 ms | k6 contra el compose |
 | Latencia p95 de `GET /v1/billetera/extractos` | < 800 ms (réplica) | ídem |
 | Cierre diario con 100 000 movimientos | < 5 min | ejecución cronometrada |
-| Profundidad de cola en régimen | < 100 trabajos | métrica del worker |
-| Edad del trabajo más viejo | < 60 s | métrica del worker |
+| Pendiente del outbox en régimen | < 100 eventos | métrica por servicio |
+| Edad del evento más viejo sin relevar | < 60 s | métrica por servicio |
 
 > Los números son **punto de partida**, no compromiso: se ajustan con la primera
-> medición real y se registran en `planes/informe.md`. Un objetivo inventado sin
-> medir no sirve para nada.
+> medición real y se registran en `planes/informes/carril-P<N>.md`. Un objetivo
+> inventado sin medir no sirve para nada.
 
 ### Qué se busca y se corrige
 
-- **N+1**: consultas dentro de bucles. El *identity map* de MikroORM los oculta bien;
+- **N+1**: consultas dentro de bucles. El acceso por repositorio los oculta bien;
   se detectan con el log de consultas en las pruebas de integración, no leyendo código.
 - **Índices**: se revisan los planes de las 10 consultas más lentas con `EXPLAIN
   ANALYZE`. Si falta un índice, **se agrega al modelo** (`docs/`, `sql/30_indices/`),
@@ -105,8 +105,8 @@ versionado (`scripts/generar_carga.py`), no a mano.
   paginación es un incidente esperando fecha.
 - **Streaming**: extractos y exportaciones grandes se transmiten, no se arman en
   memoria.
-- **Pools**: dimensionados con medición, no con el valor por defecto. API y worker,
-  distintos.
+- **Pools**: dimensionados con medición, no con el valor por defecto. Por servicio,
+  cada uno el suyo; el de `nucleo-financiero` (dinero) aparte (ADR-021).
 
 **Entregable 17.2:** informe de rendimiento con medición antes y después, y los
 índices nuevos incorporados **al modelo**.
@@ -118,18 +118,20 @@ versionado (`scripts/generar_carga.py`), no a mano.
 | Mecanismo | Dónde | Verificación |
 | --- | --- | --- |
 | **Timeouts** en toda llamada externa | Cada `*Adapter` | Proveedor que no responde ⇒ falla en el timeout, no cuelga |
-| **Reintentos con retroceso y jitter** | Worker | Ya implementado en F2; se verifica bajo carga |
+| **Reintentos con retroceso y jitter** | Relevo del outbox y consumidores | Ya implementado en la Fase 2; se verifica bajo carga |
 | **Circuit breaker** por proveedor | `RegistroDeSalud` | Proveedor degradado ⇒ se abre el circuito y conmuta **con evento** |
-| **Backpressure** | Cola de envíos y de trabajos | Cola creciendo ⇒ se rechaza con `429`, no se acumula memoria |
-| **Apagado controlado** | api y worker | `SIGTERM` durante una transacción ⇒ termina, no corta |
+| **Backpressure** | Cola de envíos y rezago de consumo | Cola creciendo ⇒ se rechaza con `429`, no se acumula memoria |
+| **Apagado controlado** | Cada servicio y el gateway | `SIGTERM` durante una transacción ⇒ termina, no corta |
 | **Idempotencia bajo carga** | Todo endpoint con efecto | 100 requests concurrentes con la misma clave ⇒ **un** efecto |
 
 **Prueba de caos mínima:** matar el contenedor de Postgres durante una operación,
-matar el worker a mitad de un trabajo, y cortar la red al proveedor simulado.
-Después de cada una, el sistema tiene que quedar **consistente**: sin dinero
-duplicado, sin trabajos perdidos, sin transacciones a medias.
+matar un servicio a mitad del consumo de un evento (la re-entrega no duplica el
+efecto), matar al orquestador a mitad de una saga (el barredor la retoma o la
+compensa — ADR-028), y cortar la red al proveedor simulado. Después de cada una, el
+sistema tiene que quedar **consistente**: sin dinero duplicado, sin eventos
+perdidos, sin sagas a medias.
 
-**Entregable 17.3:** las seis verificaciones y las tres pruebas de caos documentadas
+**Entregable 17.3:** las seis verificaciones y las cuatro pruebas de caos documentadas
 con su resultado.
 
 ---
@@ -161,13 +163,13 @@ registrado en `prueba_continuidad` (CU-56 ejercitado con datos reales).
 | Control | Verificación |
 | --- | --- |
 | **RLS**: pruebas negativas por módulo | Contexto ajeno ⇒ cero filas, en las 12 familias de tablas |
-| **Roles de base**: mínimo privilegio | `rol_auditor` no escribe · el worker no toca append-only · ninguno es superusuario |
+| **Roles de base**: mínimo privilegio | `rol_auditor` no escribe · ningún servicio edita append-only · ninguno es superusuario |
 | **Rate limit** en bordes públicos y operaciones sensibles | Login, recuperación, registro, retiro |
 | **Secretos** | Ninguno en la imagen, en el repo ni en un log. Escaneo en CI |
-| **PII en logs** | Revisión del `redact` de Pino con un caso real por módulo |
-| **Cabeceras** | HSTS, CSP, `X-Content-Type-Options`, sin `X-Powered-By` |
-| **Dependencias** | `yarn npm audit` sin vulnerabilidades altas o críticas sin justificar |
-| **Multer** | Tipo MIME y tamaño validados antes de escribir; nada ejecutable; rutas no derivadas del nombre del usuario |
+| **PII en logs** | Revisión del enmascaramiento de Logback con un caso real por módulo |
+| **Cabeceras** | HSTS, CSP, `X-Content-Type-Options`, sin cabeceras que delaten el stack — verificado en el gateway |
+| **Dependencias** | `./gradlew dependencyCheckAnalyze` sin vulnerabilidades altas o críticas sin justificar |
+| **Archivos subidos** (puerto `AlmacenArchivos`) | Tipo MIME y tamaño validados antes de escribir; nada ejecutable; rutas no derivadas del nombre del usuario |
 | **Cifrado** | Números de cuenta bancaria cifrados; cada descifrado con registro y justificación |
 | **Segregación** | `R-SEG-07`: quien autoriza no ejecuta; quien decide no resuelve la apelación |
 
@@ -183,11 +185,11 @@ hallazgos resueltos o justificados.
 
 | Pieza | Qué tiene que existir |
 | --- | --- |
-| **Trazas** | OpenTelemetry desde el request hasta el trabajo del worker, correlacionadas por `traza` |
+| **Trazas** | OpenTelemetry desde el request en el gateway hasta el consumidor del evento, correlacionadas por `traza` |
 | **Métricas** | Latencia por operación · tasa de error · profundidad de cola · edad del trabajo más viejo · fallos por adaptador externo |
 | **Alertas** | **Solo lo que requiere que alguien actúe**: cierre diario no cuadrado, reporte regulatorio por vencer, descuadre de custodia, proveedor degradado, cola creciendo |
 | **Tableros** | Uno operativo (salud del sistema) y uno de cumplimiento (CU-98) |
-| **Salud** | `/salud` y `/salud/listo` conectados a las sondas del orquestador |
+| **Salud** | `/actuator/health/liveness` y `/actuator/health/readiness` conectados a las sondas del orquestador |
 
 > **Una alerta que nadie atiende se apaga sola en la cabeza de la gente.** Cada
 > alerta definida tiene un dueño y una acción esperada, escritos.
@@ -202,25 +204,31 @@ hallazgos resueltos o justificados.
 
 | Pieza | Estado esperado |
 | --- | --- |
-| **Dockerfile** multietapa, sin root, sin `latest`, sin secretos | ADR-012 |
-| **NGINX** como única entrada pública; api y worker sin puertos publicados | ADR-012 |
-| **Manifiestos** separados por entorno, con sondas, recursos y secretos externos | ADR-012 |
-| **Réplicas**: API escalable; **worker con bloqueo** para los trabajos únicos | ADR-003 |
-| **Migración**: `sql/aplicar.sql` + semillas mínimas como job previo, con `rol_migracion` | ADR-002 |
+| **Dockerfile** multietapa, sin root, sin `latest`, sin secretos | ADR-025 |
+| **El gateway** como única entrada pública; los catorce servicios sin puertos publicados | ADR-025 |
+| **Manifiestos** separados por entorno, con sondas, recursos y secretos externos | ADR-025 |
+| **Réplicas**: cada servicio escala por separado; **los trabajos programados con bloqueo** (ShedLock) entre réplicas | ADR-018 |
+| **Migración**: `Job` que ejecuta `psql -v ON_ERROR_STOP=1 -f sql/aplicar.sql` con `rol_migracion`; Flyway descartado | ADR-032 |
 | **Rollback** probado | Volver a la versión anterior sin perder datos |
-| **PgBouncer** en modo *transaction*; el worker conectado directo | ADR-007 |
+| **PgBouncer** en modo *transaction* para los catorce servicios | ADR-021 |
 
 ### Orden del despliegue, no negociable
 
 ```
-1  job de migración (rol_migracion) → sql/aplicar.sql
-2  job de semillas mínimas          → 15 catálogos
-3  despliegue de api                → sondas en verde
-4  despliegue de worker             → cron registrado
-5  verificación posterior           → sql/50_verificacion/verificaciones.sql
+1  job de migración (rol_migracion)   → psql -v ON_ERROR_STOP=1 -f sql/aplicar.sql (ADR-032)
+2  job de semillas                    → los 20 catálogos
+3  los catorce servicios              → en orden de dependencia: identidad → nucleo-financiero → resto
+4  el gateway                         → rutas compuestas, sondas en verde
+5  verificación posterior             → sql/50_verificacion/verificaciones.sql + humo: una operación real por servicio
 ```
 
-**Entregable 17.7:** un despliegue completo a un entorno de ensayo, con rollback
+> **Este despliegue es el «entorno de ensayo»** que exige el gate de entrada de F12
+> ([[15 Fase F12 · Endurecimiento, E2E y publicación]]): nombre `ensayo`, URL interna
+> del parque ([[20 Saneamiento del plan · huecos de la migración a microservicios]]
+> §6.8). Los E2E de frontend corren contra ese entorno remoto, no contra un compose
+> local.
+
+**Entregable 17.7:** un despliegue completo al entorno `ensayo`, con rollback
 probado.
 
 ---
@@ -232,12 +240,12 @@ Sin duplicar: lo que ya está en la bóveda **no se reescribe**, se enlaza (skil
 
 | Documento | Qué contiene | Dónde |
 | --- | --- | --- |
-| OpenAPI | **Derivado** de los Zod, publicado en `/docs` | generado |
+| OpenAPI | **Escrito primero** por servicio, publicado en `/docs` | generado |
 | `README.md` raíz | Arranque en 10 minutos, comandos, estructura | actualizado |
-| `apps/api/README.md` | Cómo agregar un módulo y un caso de uso nuevo | nuevo |
+| `servicios/<x>/README.md` | Cómo agregar un servicio y un caso de uso nuevo | nuevo |
 | Runbook operativo | Qué hacer cuando: el cierre no cuadra · un reporte está por vencer · un proveedor cae · la custodia no concilia | nuevo |
-| `planes/informe.md` | Avance de las 18 fases, riesgos, decisiones y desviaciones | actualizado |
-| Evidencia de pruebas | Salida de las cinco suites + cobertura + informes de rendimiento, seguridad y restauración | adjunta |
+| `planes/informes/carril-P<N>.md` | Avance, riesgos, decisiones y desviaciones del carril (`planes/informe.md` lo consolida solo el guardián) | actualizado |
+| Evidencia de pruebas | Salida de los seis corredores + cobertura + informes de rendimiento, seguridad y restauración | adjunta |
 | ADR nuevos | Los que hayan surgido durante la ejecución | `docs/Arquitectura/` |
 
 **Entregable 17.8:** la carpeta de entrega completa y `python3
@@ -252,22 +260,22 @@ exige un comando ejecutado o un informe con evidencia. La skill
 `definicion-de-terminado` prohíbe explícitamente marcarlas sin eso.
 
 ### Funcionalidad
-- [ ] Los **87 casos de uso** implementados, cada uno con sus criterios de aceptación como pruebas nombradas
-- [ ] Las **124 restricciones** con prueba de rechazo
-- [ ] Las **274 tablas** tienen código que las escribe (verificado contra el modelo)
+- [ ] Los **87 casos de uso del núcleo** implementados, cada uno con sus criterios de aceptación como pruebas nombradas
+- [ ] Las **138 restricciones** con prueba de rechazo
+- [ ] Las **306 tablas** tienen código que las escribe — verificable recién con las fases 18 y 19 cerradas; el verificador vive en `verificar_criterios.py` sobre las clases jOOQ usadas
 - [ ] Los seis recorridos E2E en verde
 
 ### Calidad
-- [ ] `yarn verificar` en verde de punta a punta
+- [ ] `./gradlew verificar` en verde de punta a punta
 - [ ] Cobertura sobre los pisos: 95 % en `dominio/`, 90 % en `aplicacion/`, 100 % de criterios y restricciones
-- [ ] `yarn datos:entidades` y `yarn contratos:openapi` con diff vacío
-- [ ] Sin `eslint-disable` sin comentario que cite el motivo
+- [ ] `./gradlew generateJooq compileJava` y `generateOpenApiClients` ejecutados: regenerar no modifica nada que esté versionado
+- [ ] Sin `@SuppressWarnings` sin comentario que cite el motivo
 
 ### Los diez invariantes, verificados uno por uno
 - [ ] 1 · El esquema sigue siendo de `sql/` (diff vacío en CI)
 - [ ] 2 · Una transacción por caso de uso (lint + revisión)
 - [ ] 3 · `SET LOCAL` dentro de la transacción (prueba de dos requests sobre la misma conexión)
-- [ ] 4 · Ningún importe pasa por `number` (lint + pruebas de cuadre)
+- [ ] 4 · Ningún importe pasa por `double` ni `float` (lint + pruebas de cuadre)
 - [ ] 5 · Append-only respetado (rechazo por `REVOKE`, probado)
 - [ ] 6 · Ninguna red dentro de la transacción (lint)
 - [ ] 7 · Idempotencia validada antes de escribir (prueba bajo concurrencia)
@@ -277,17 +285,17 @@ exige un comando ejecutado o un informe con evidencia. La skill
 
 ### Operación
 - [ ] Rendimiento medido, con informe antes/después
-- [ ] Las tres pruebas de caos con el sistema consistente al final
+- [ ] Las cuatro pruebas de caos con el sistema consistente al final
 - [ ] **Ensayo de restauración ejecutado**, con RTO y RPO medidos
 - [ ] Informe de seguridad con los diez controles verificados
-- [ ] Trazas correlacionadas hasta el worker, probadas con un caso real
+- [ ] Trazas correlacionadas hasta el consumidor, probadas con un caso real
 - [ ] Despliegue a ensayo completo, con rollback probado
 
 ### Cumplimiento
 - [ ] La licencia sigue `EN_TRAMITE` en producción y **ningún servicio financiero está habilitado** hasta que ASFI resuelva
 - [ ] Los catálogos `⚠ PROVISIONAL` (límites, impuestos, umbrales UIF) **confirmados con legal y tributaria**, o el despliegue queda limitado a entorno de prueba
 - [ ] Los contratos de adhesión redactados y registrados ante ASFI
-- [ ] La deuda de *object lock* (ADR-017) declarada con fecha de revisión
+- [ ] La deuda de *object lock* declarada con fecha de revisión
 
 ---
 

@@ -44,7 +44,7 @@ normas: [ASFI Consumidor Financiero, contabilidad, transparencia]
    - se acreditan las devoluciones en las [[cuenta_billetera]] de cada uno;
    - se registran los [[movimiento_fondo]] de salida y el [[asiento_contable]];
    - el fondo queda en cero y pasa a `CERRADO`;
-   - se emite [[evento_dominio]] `fondo.devuelto`.
+   - se emite `evento_dominio` `fondo.devuelto`.
 5. Cada participante recibe el desglose: cuánto puso período a período, qué
    cobertura consumió y por qué, qué se recuperó y qué le vuelve. **El número tiene
    que poder explicarse línea por línea o no se manda.**
@@ -69,7 +69,7 @@ normas: [ASFI Consumidor Financiero, contabilidad, transparencia]
 - Nadie recibe más de lo que puso ni menos de lo que le corresponde, y puede
   verificarlo con el desglose.
 
-## Contrato · `packages/contratos/CU-29.ts`
+## Contrato · `openapi/garantia.yaml`
 
 ```ts
 export const EntradaCU29 = z.object({
@@ -145,7 +145,7 @@ export const ErroresCU29 = {
 
 [[devolucion_fondo]] · [[fondo_garantia]] · [[movimiento_fondo]] ·
 [[cobertura_incumplimiento]] · [[subrogacion]] · [[transaccion_billetera]] ·
-[[asiento_contable]] · [[evento_dominio]]
+[[asiento_contable]] · `evento_dominio`
 
 ## Criterios de aceptación
 

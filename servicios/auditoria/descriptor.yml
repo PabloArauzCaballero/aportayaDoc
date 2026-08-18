@@ -1,0 +1,15 @@
+# Despliegue de auditoria — genera el manifiesto de Kubernetes.
+# Los manifiestos NO se escriben a mano: catorce copias divergen y la divergencia
+# se descubre en produccion (ADR-025).
+servicio: auditoria
+replicas: 1
+recursos:
+  memoria: 512Mi                 # presupuesto de ADR-025
+  cpu: 500m
+sondas:
+  readiness: /actuator/health/readiness   # mira base y Kafka
+  liveness:  /actuator/health/liveness    # solo el proceso
+despliegue:
+  estrategia: RollingUpdate
+  maxUnavailable: 1
+puerto_publicado: false          # solo el gateway publica puerto

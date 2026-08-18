@@ -58,7 +58,7 @@ normas: [SIN, ASFI atención de reclamos]
 
 - El dinero volvió y el documento fiscal quedó corregido, ambos trazables entre sí.
 
-## Contrato · `packages/contratos/CU-33.ts`
+## Contrato · `openapi/tarifas.yaml`
 
 ```ts
 export const EntradaCU33 = z.object({

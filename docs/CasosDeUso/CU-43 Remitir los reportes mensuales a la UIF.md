@@ -57,7 +57,7 @@ normas: [UIF — remisión hasta el día 15 del mes siguiente, informe en cero]
 - Cada obligación mensual tiene reporte, archivo con hash y constancia de envío o
   motivo documentado de por qué no salió.
 
-## Contrato · `packages/contratos/CU-43.ts`
+## Contrato · `openapi/cumplimiento.yaml`
 
 ```ts
 export const EntradaCU43 = z.object({

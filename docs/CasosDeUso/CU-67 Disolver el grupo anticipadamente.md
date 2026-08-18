@@ -50,7 +50,7 @@ normas: [Consumidor financiero, contabilidad]
    - se registran los [[asiento_contable]] correspondientes;
    - el grupo pasa a `DISUELTO_ANTICIPADAMENTE` y la cuenta de billetera del grupo
      queda en cero (`R-GRP-13`);
-   - se emite [[evento_dominio]] `grupo.disuelto`.
+   - se emite `evento_dominio` `grupo.disuelto`.
 5. Cada participante recibe su liquidación con el desglose completo y el saldo ya
    acreditado en su billetera.
 6. Las deudas que no se pudieron compensar siguen vivas: pasan a
@@ -71,7 +71,7 @@ normas: [Consumidor financiero, contabilidad]
 - La cuenta del grupo quedó en cero y cada peso tiene destino explicado.
 - Ninguna deuda desapareció por el solo hecho de disolver.
 
-## Contrato · `packages/contratos/CU-67.ts`
+## Contrato · `openapi/garantia.yaml`
 
 ```ts
 export const EntradaCU67 = z.object({

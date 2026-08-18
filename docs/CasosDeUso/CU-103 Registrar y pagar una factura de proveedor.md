@@ -57,7 +57,7 @@ normas: [Ley 393 (libros y conservación), Código de Comercio, SIN]
   el suyo: el saldo de cuentas por pagar del mayor coincide con la suma de
   `saldo_pendiente` de las facturas no anuladas.
 
-## Contrato · `packages/contratos/CU-103.ts`
+## Contrato · `openapi/erp.yaml`
 
 ```ts
 export const EntradaCU103 = z.object({
@@ -115,7 +115,7 @@ export const ErroresCU103 = {
 
 ## Restricciones aplicables
 
-`R-AUD-01` · `R-AUD-05` · `R-AUD-06` · `R-SEG-04`
+`R-AUD-01` · `R-AUD-05` · `R-AUD-06` · `R-CTB-01` · `R-CTB-04` · `R-CTB-05`
 
 ## Evidencia que deja
 

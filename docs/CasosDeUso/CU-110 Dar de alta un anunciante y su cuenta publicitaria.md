@@ -51,7 +51,7 @@ normas: [Política comercial interna, ASFI Consumidor Financiero]
 - Todo anunciante activo tiene una cuenta publicitaria con la que financiar
   campañas; ningún organizador queda con un ingreso por ser publicitado.
 
-## Contrato · `packages/contratos/CU-110.ts`
+## Contrato · `openapi/publicidad.yaml`
 
 ```ts
 export const EntradaCU110 = z.object({
@@ -108,8 +108,10 @@ export const ErroresCU110 = {
 
 ## Restricciones aplicables
 
-Ninguna restricción de dinero regulatorio del pasanaku aplica directamente: es
-alta administrativa de un servicio comercial nuevo.
+`R-PUB-01` · `R-PUB-02`
+
+Es alta administrativa de un servicio comercial nuevo; `R-PUB-01` es la que
+impide, a nivel de base, que un anunciante quede sin dueño o con dos.
 
 ## Evidencia que deja
 

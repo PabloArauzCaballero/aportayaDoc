@@ -67,7 +67,7 @@ Toda librería relevante se registra en `docs/decisions/matriz-de-librerias.md`:
 | Responsabilidad | Qué problema resuelve, en una línea |
 | Candidatas | Las que se miraron de verdad |
 | Versión evaluada | Y fecha |
-| Compatibilidad | Node, NestJS, PostgreSQL, tipos |
+| Compatibilidad | JDK 21, Spring Boot, PostgreSQL, jOOQ |
 | Mantenimiento | Última publicación, ritmo de correcciones, tamaño de la comunidad |
 | Seguridad | Vulnerabilidades conocidas, superficie que agrega |
 | Licencia | Y si es compatible con el producto |

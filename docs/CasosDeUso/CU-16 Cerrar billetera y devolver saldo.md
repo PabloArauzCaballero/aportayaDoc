@@ -38,7 +38,7 @@ normas: [ASFI Consumidor Financiero, Ley 393 (conservación)]
 4. Confirmado el pago, **en la misma transacción**:
    - `cuenta_billetera.estado='CERRADA'` y `fecha_cierre`;
    - `solicitud_cierre_billetera.estado='EJECUTADA'`;
-   - se emite [[evento_dominio]] `BILLETERA_CERRADA`.
+   - se emite `evento_dominio` `BILLETERA_CERRADA`.
 5. El [[expediente_cliente]] queda con `retencion_hasta` recalculada desde el
    **último asiento contable**, no desde la fecha de cierre.
 6. Se informa al titular que sus datos financieros se conservan por el plazo legal
@@ -59,7 +59,7 @@ normas: [ASFI Consumidor Financiero, Ley 393 (conservación)]
 - Saldo en cero y cuenta `CERRADA`, o solicitud rechazada con motivo escrito.
 - La historia contable permanece intacta y consultable.
 
-## Contrato · `packages/contratos/CU-16.ts`
+## Contrato · `openapi/nucleo-financiero.yaml`
 
 ```ts
 export const EntradaCU16 = z.object({

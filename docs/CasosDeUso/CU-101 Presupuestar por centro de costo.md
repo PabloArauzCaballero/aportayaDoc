@@ -51,7 +51,7 @@ normas: [Control interno, NIIF]
 - Cada centro de costo tiene, si Contabilidad decidió presupuestarlo, un
   registro comparable de lo autorizado contra lo ejecutado, por cuenta y por mes.
 
-## Contrato · `packages/contratos/CU-101.ts`
+## Contrato · `openapi/erp.yaml`
 
 ```ts
 export const EntradaCU101 = z.object({
@@ -108,8 +108,10 @@ export const ErroresCU101 = {
 
 ## Restricciones aplicables
 
-Ninguna restricción de dinero regulatorio aplica directamente; el presupuesto es
-un control administrativo interno, no un tope legal.
+`R-CTB-03`
+
+El presupuesto es un control administrativo interno, no un tope legal: la base
+garantiza unicidad y coherencia, no impide gastar de más.
 
 ## Evidencia que deja
 

@@ -49,7 +49,7 @@ normas: [Debido proceso, ASFI Consumidor Financiero, contabilidad]
    - si el [[fondo_garantia]] ya había cubierto, se reparte según prelación del
      reglamento y se repone lo que corresponda;
    - se registra el [[asiento_contable]];
-   - se emite [[evento_dominio]] `aval.ejecutado`.
+   - se emite `evento_dominio` `aval.ejecutado`.
 5. Se registra [[evento_reputacion]]: negativo para el incumplido, y **positivo para
    el avalista que respondió** — cumplir cuesta y tiene que valer.
 6. Si el avalista no paga, su propia obligación entra a [[gestion_cobranza]] y puede
@@ -73,7 +73,7 @@ normas: [Debido proceso, ASFI Consumidor Financiero, contabilidad]
 - Nadie paga como avalista más de lo que firmó ni por un hecho fuera del alcance.
 - Todo pago de avalista deja una acreencia registrada a su favor.
 
-## Contrato · `packages/contratos/CU-26.ts`
+## Contrato · `openapi/garantia.yaml`
 
 ```ts
 export const EntradaCU26 = z.object({
@@ -152,7 +152,7 @@ export const ErroresCU26 = {
 
 [[ejecucion_aval]] · [[aval_participante]] · [[subrogacion]] ·
 [[deuda_participante]] · [[transaccion_billetera]] · [[asiento_contable]] ·
-[[evento_reputacion]] · [[evento_dominio]]
+[[evento_reputacion]] · `evento_dominio`
 
 ## Criterios de aceptación
 

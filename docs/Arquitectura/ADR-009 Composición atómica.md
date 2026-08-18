@@ -3,11 +3,18 @@ tags:
   - arquitectura
   - adr
 titulo: "ADR-009 — Composición atómica en frontend y backend"
-estado: aceptada
+estado: superada por ADR-023
 fecha: 2026-08-12
 ---
 
 # ADR-009 — Composición atómica en frontend y backend
+
+> [!warning] Decisión superada el 2026-08-16
+> La reemplaza [[ADR-023 Composición atómica en Java]], al pasar el backend a Spring Boot con
+> arquitectura de microservicios ([[ADR-014 Arquitectura de servicios]]).
+> Se conserva porque el motivo por el que se decidió lo que se decidió es
+> parte del expediente: quien lea el ADR nuevo tiene que poder ver qué
+> cambió y por qué.
 
 ## Contexto
 

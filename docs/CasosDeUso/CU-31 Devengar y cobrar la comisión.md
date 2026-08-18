@@ -16,7 +16,7 @@ normas: [Contabilidad (devengado vs percibido), SIN, ASFI]
 
 ## Actores y disparador
 
-- **Actor principal:** el sistema, al consumir un [[evento_dominio]].
+- **Actor principal:** el sistema, al consumir un `evento_dominio`.
 - **Disparador:** ocurre un hecho listado en [[catalogo_hecho_generador]] y activo
   en el tarifario aplicable (por defecto: entrega de fondo acreditada).
 
@@ -60,7 +60,7 @@ normas: [Contabilidad (devengado vs percibido), SIN, ASFI]
 - Todo hecho generador tiene exactamente un devengo por concepto.
 - El estado del devengo dice la verdad sobre si el dinero entró.
 
-## Contrato · `packages/contratos/CU-31.ts`
+## Contrato · `openapi/tarifas.yaml`
 
 ```ts
 export const EntradaCU31 = z.object({

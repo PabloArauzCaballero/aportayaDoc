@@ -57,7 +57,7 @@ normas: [ASFI RNSF Libro 4 Título I — 5 días hábiles, prórroga a 10, conse
 - Todo reclamo tiene número, plazo guardado, respuesta y —si corresponde—
   reparación trazable.
 
-## Contrato · `packages/contratos/CU-52.ts`
+## Contrato · `openapi/cumplimiento.yaml`
 
 ```ts
 export const EntradaCU52 = z.object({

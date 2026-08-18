@@ -41,7 +41,7 @@ normas: [Transparencia, gobernanza del grupo]
    - cada turno registra `permutado_con_turno_id` apuntando al otro;
    - `criterio_asignacion` pasa a `PERMUTA` en ambos;
    - se recalculan las [[entrega_fondo]] programadas de los períodos afectados;
-   - se emite [[evento_dominio]] `turnos.permutados`.
+   - se emite `evento_dominio` `turnos.permutados`.
 5. Se notifica a **todo el grupo**, no solo a los dos implicados: el calendario es
    información común.
 
@@ -60,7 +60,7 @@ normas: [Transparencia, gobernanza del grupo]
 - Los dos turnos intercambiaron posición y cada uno apunta al otro.
 - La suma de turnos por período no cambió: sigue habiendo uno por período.
 
-## Contrato · `packages/contratos/CU-62.ts`
+## Contrato · `openapi/grupos.yaml`
 
 ```ts
 export const EntradaCU62 = z.object({
@@ -122,7 +122,7 @@ export const ErroresCU62 = {
 ## Evidencia que deja
 
 [[solicitud_permuta]] · [[turno]] (ambos, con `permutado_con_turno_id`) ·
-[[acuerdo]] y [[voto_participante]] si hubo votación · [[evento_dominio]]
+[[acuerdo]] y [[voto_participante]] si hubo votación · `evento_dominio`
 
 ## Criterios de aceptación
 

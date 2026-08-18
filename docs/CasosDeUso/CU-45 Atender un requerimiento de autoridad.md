@@ -52,7 +52,7 @@ normas: [UIF, requerimientos judiciales y fiscales, secreto financiero]
 - Existe trazabilidad completa: qué pidieron, qué se entregó, quién lo consultó y
   cuándo se respondió.
 
-## Contrato · `packages/contratos/CU-45.ts`
+## Contrato · `openapi/cumplimiento.yaml`
 
 ```ts
 export const EntradaCU45 = z.object({

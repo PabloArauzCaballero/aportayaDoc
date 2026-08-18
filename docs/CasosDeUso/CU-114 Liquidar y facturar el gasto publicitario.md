@@ -56,7 +56,7 @@ normas: [SIN facturación en línea, Ley 393]
   cobro, sin un sistema de facturación paralelo al que ya usa el resto de la
   empresa.
 
-## Contrato · `packages/contratos/CU-114.ts`
+## Contrato · `openapi/publicidad.yaml`
 
 ```ts
 export const EntradaCU114 = z.object({
@@ -109,7 +109,7 @@ export const ErroresCU114 = {
 
 ## Restricciones aplicables
 
-`R-AUD-01`
+`R-AUD-01` · `R-PUB-06`
 
 ## Evidencia que deja
 

@@ -77,7 +77,7 @@ normas: [UIF monitoreo, ASFI gestión de riesgo operativo, antifraude]
 - Toda regla vigente fue simulada, aprobada y versionada.
 - Toda alerta tiene analista, plazo y conclusión escrita.
 
-## Contrato · `packages/contratos/CU-48.ts`
+## Contrato · `openapi/cumplimiento.yaml`
 
 ```ts
 export const EntradaCU48 = z.object({
@@ -161,7 +161,7 @@ export const ErroresCU48 = {
 
 [[regla_cumplimiento]] · [[regla_antifraude]] · [[alerta_cumplimiento]] ·
 [[evaluacion_antifraude]] · [[alerta_monitoreo_lft]] · [[caso_investigacion_lft]] ·
-[[bitacora_evento]] · [[evento_dominio]]
+[[bitacora_evento]] · `evento_dominio`
 
 ## Criterios de aceptación
 

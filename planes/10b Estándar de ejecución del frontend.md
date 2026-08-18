@@ -182,7 +182,7 @@ Casi todo el backoffice es una tabla con filtros. Reglas fijas de `web-backoffic
 
 ## 6 · Formularios y efectos
 
-- Validación con **el mismo esquema Zod del contrato**. No se reescribe una regla.
+- Validación con **los tipos generados desde el OpenAPI del servicio**. No se reescribe una regla.
 - Error **por campo, en el campo**, diciendo cómo corregir.
 - **Clave de idempotencia**: se genera al abrir el formulario y se reenvía igual en el
   reintento. Nunca se regenera al reintentar.
@@ -242,7 +242,7 @@ Casi todo el backoffice es una tabla con filtros. Reglas fijas de `web-backoffic
 - [ ] Los cuatro estados existen en cada pantalla con datos
 - [ ] Cero literales de diseño fuera de tokens
 - [ ] Ninguna llamada de red dentro de un componente
-- [ ] Los tipos vienen del contrato; los mocks validan contra su Zod
+- [ ] Los tipos vienen del contrato; los mocks validan contra su esquema OpenAPI
 - [ ] Un solo botón naranja por pantalla
 - [ ] Dinero con `tabular-nums` y formato `Bs 1.240,00`
 - [ ] Teclado, foco y contraste verificados
@@ -279,7 +279,7 @@ Casi todo el backoffice es una tabla con filtros. Reglas fijas de `web-backoffic
 | Un flujo con efecto sin bloqueo de doble envío | Duplica dinero |
 | Un tipo reescrito a mano que ya está en el contrato | Diverge en la cuarta semana |
 | `div` con `onClick` | Inaccesible |
-| Un mock que no valida contra su Zod | La pantalla ya está rota y no lo sabe |
+| Un mock que no valida contra su esquema OpenAPI | La pantalla ya está rota y no lo sabe |
 | Traer diez mil filas para filtrar en el navegador | La tabla se pagina en el servidor |
 | Un botón «editar» sobre algo append-only | La interfaz miente sobre el modelo |
 | Acción masiva sin confirmación que enumere lo afectado | Irreversible a ciegas |

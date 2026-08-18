@@ -40,7 +40,7 @@ normas: [Ley 393 (conservación e integridad), ASFI riesgo operativo]
    - se genera el [[asiento_contable]] de reversa con `asiento_reversa_id`;
    - si el reverso afecta un devengo, se dispara
      [[CU-33 Devolver comisión y emitir nota de crédito]];
-   - se emite [[evento_dominio]] `TRANSACCION_REVERSADA`.
+   - se emite `evento_dominio` `TRANSACCION_REVERSADA`.
 4. Si el motivo es `ERROR_OPERATIVO`, se registra además
    [[CU-54 Registrar un evento de riesgo operativo]] con la pérdida asociada.
 5. Se notifica al titular con la explicación en lenguaje llano.
@@ -59,7 +59,7 @@ normas: [Ley 393 (conservación e integridad), ASFI riesgo operativo]
 - La transacción original sigue existiendo, íntegra y visible.
 - El extracto del usuario muestra el movimiento y su corrección.
 
-## Contrato · `packages/contratos/CU-14.ts`
+## Contrato · `openapi/nucleo-financiero.yaml`
 
 ```ts
 export const EntradaCU14 = z.object({

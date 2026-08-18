@@ -55,7 +55,7 @@ normas: [ASFI Seguridad de la Información, ISO/IEC 27001 A.5.15-A.5.18]
 - Toda operación sensible tiene sesión, dispositivo y factor identificables.
 - Los intentos fallidos son analizables sin depender de logs de aplicación.
 
-## Contrato · `packages/contratos/CU-04.ts`
+## Contrato · `openapi/identidad.yaml`
 
 ```ts
 export const EntradaCU04 = z.object({

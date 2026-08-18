@@ -10,6 +10,8 @@ La bóveda (`docs/`) dice **qué** hay que construir. Las skills dicen **cómo**
 
 | Skill | Cuándo |
 | --- | --- |
+| `arrancar-carril` | **Primera acción al abrir el chat de un carril**, antes de todo |
+| `frontera-transaccional` | Paso 0 de todo caso de uso: qué va todo-junto-o-nada |
 | `arquitectura-atomica` | Antes del primer archivo de cualquier funcionalidad |
 | `implementar-desde-boveda` | Al empezar a programar un caso de uso |
 | `plan-por-fases` | Cuando el alcance abarque varios módulos o infraestructura |
@@ -37,8 +39,9 @@ La bóveda (`docs/`) dice **qué** hay que construir. Las skills dicen **cómo**
 | Skill | Cuándo |
 | --- | --- |
 | `contratos-api` | Antes de implementar cualquier endpoint |
-| `back-nestjs` | Al escribir el backend |
-| `datos-kysely` | Al escribir consultas y repositorios |
+| `back-spring` | Al escribir el backend |
+| `datos-jooq` | Al escribir consultas y repositorios |
+| `servicios-y-sagas` | Al llamar a otro servicio, consumir un evento o cruzar una operación |
 | `dinero-decimal` | Cada vez que aparezca un importe |
 | `trabajos-outbox` | Al disparar efectos fuera de la transacción |
 | `errores-api` | Al devolver o traducir un error |
