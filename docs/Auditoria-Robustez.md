@@ -20,15 +20,54 @@ explícitamente diferidos con su motivo ([P1-8](#p1-8) y [P2-3](#p2-3)). Todo el
 esquema fue aplicado y ejercitado contra PostgreSQL 16 real; la evidencia está
 [al final](#evidencia-de-verificación).
 
-> [!warning] Instantánea del 2026-08-14 — pendiente de extender
-> Esta auditoría se corrió sobre el modelo de **274 tablas**, antes de M13
-> (contabilidad ERP) y M14 (publicidad) y antes de la migración a microservicios.
-> Las cifras "de 274" son de ese momento y no se reescriben. **Queda pendiente**:
-> (a) extender el conteo y la revisión de RLS a las **33 tablas nuevas de M13/M14**
-> —sus políticas de fila no fueron contadas ni escritas—; y (b) reconsiderar cada
-> hallazgo bajo el esquema **por servicio** (RLS con `svc_*`, catálogo de solo
-> lectura y outbox por esquema de [[ADR-027 Infraestructura de mensajería en el modelo]]),
-> no bajo el `rol_aplicacion` único del monolito original.
+> [!warning] Instantánea del 2026-08-14 — cuerpo P0–P2 sin reescribir
+> Los hallazgos P0–P2 de abajo se corrieron sobre el modelo de **274 tablas**, antes de
+> M13 (contabilidad ERP) y M14 (publicidad) y antes de la migración a microservicios.
+> Las cifras "de 274" son de ese momento y no se reescriben. La **extensión a M13/M14 y
+> al esquema por servicio** está resuelta en la sección de abajo (2026-08-19).
+
+## Extensión 2026-08-19 · M13/M14 bajo el esquema por servicio
+
+El pendiente que dejó la instantánea era doble: contar y escribir la RLS de las tablas
+nuevas, y reconsiderar los controles bajo el esquema **por servicio** (`svc_*`,
+[[ADR-017 Propiedad de datos por servicio]], [[ADR-031 Lecturas, réplica y rol auditor]])
+en vez del `rol_aplicacion` único del monolito. Revisadas las **32 tablas** de M13 (18) y
+M14 (14), el hallazgo es acotado:
+
+**Ninguna tabla de M13/M14 amerita RLS por titular.** La RLS de fila (`fn_seg_aplicar_rls`)
+protege tablas donde **un usuario final es dueño de filas concretas** (condición sobre
+`usuario_id` o `cuenta_billetera_id`). Ni la contabilidad/ERP ni la publicidad tienen ese
+patrón: son **datos administrativos de un servicio**, cuyas filas pertenecen a la empresa,
+no a un participante. El control correcto es la **frontera del GRANT** —`svc_erp` y
+`svc_publicidad` solo ven su propio esquema (ADR-017)—, no una política de fila. Escribir
+RLS "de titular" sobre una `factura_proveedor` o una `campana_publicitaria` sería inventar
+un dueño que no existe.
+
+| Grupo | Tablas | Control de acceso | RLS de titular |
+| --- | --- | --- | :-: |
+| M13 · contabilidad/ERP | las 18 (ejercicio, período, presupuesto, terceros, órdenes, facturas, activos, plantillas, estados) | GRANT: solo `svc_erp`; 7 son append-only y ya están selladas | **No aplica** |
+| M14 · publicidad (config y facturación) | anunciante, cuenta/campaña/conjunto, segmento, espacio, pieza, revisión, anuncio, factura, socio | GRANT: solo `svc_publicidad` | **No aplica** |
+| M14 · telemetría con dato personal | `impresion_anuncio`, `clic_anuncio` (`usuario_id` = quién vio/clicó) | GRANT: solo `svc_publicidad`; append-only | **No** (ver abajo) |
+
+**El hallazgo real, más chico que el temido: dos columnas de dato personal.**
+`impresion_anuncio.usuario_id` y `clic_anuncio.usuario_id` guardan **quién** vio o clicó un
+anuncio — dato personal de comportamiento. No pide RLS de titular (el acceso es del servicio
+de medición, no de la sesión del usuario, y la frontera del GRANT ya impide que otro servicio
+o participante las lea), sino **minimización y borrado**:
+
+- `usuario_id` es **anulable** (ya lo es) y debe poder **anonimizarse** sin perder la métrica
+  agregada; la medición no necesita la identidad, solo el conteo.
+- Falta una **política de retención/anonimización** para esas dos tablas y para
+  `tercero_comercial.numero_documento` (documento de una contraparte). Esto es exactamente el
+  tema abierto **«datos personales en eventos y copias»** de `planes/20` §8 (borrado del
+  titular vs. tablas retenidas); se resuelve con ese ADR, no acá.
+
+**Resto de controles bajo el esquema por servicio:** los invariantes de P0–P2 (append-only por
+disparador y por privilegio, denegación por omisión, claves foráneas sin `CASCADE`, dinero en
+`numeric`) siguen valiendo tabla por tabla; lo que cambió es que el `REVOKE`/`GRANT` ahora se
+emite **por rol de servicio** (`generar_ddl.py` → `03_permisos.sql`) y ya no por un
+`rol_aplicacion` único. La prueba de humo lo ejercita: 152 comprobaciones, incluidas las de
+frontera cruzada (un `svc_*` no lee el esquema ajeno) y el sellado append-only (29 tablas).
 
 ---
 
