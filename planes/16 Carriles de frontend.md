@@ -113,6 +113,25 @@ Ola F4 ──► 3 máquinas   (F12 + los carriles nuevos F13 y F14)
 **17 carriles en total** — eran 12: el delta 2 parte la troncal en cuatro y los
 módulos 13 y 14 suman dos ([[18 Fichas de carril · las 38 unidades de trabajo]]).
 
+### 2.6 · Las pantallas de cada carril móvil
+
+El recorrido del participante ([[Flujo funcional · recorrido del usuario]]) está desglosado
+pantalla por pantalla en [[Flujo de pantallas · app del participante]] — cada pantalla trae su
+ruta de Expo Router, los organismos que compone, los cuatro estados y su endpoint. El reparto
+por carril es directo (una pantalla = un archivo, sin router central):
+
+| Carril | Fase | Pantallas que posee (`apps/movil/src/…`) |
+| :-: | :-: | --- |
+| **M** | F2 | `navegacion/` (tab bar, `ProveedorSesion`, deep links) · `pantallas/notificaciones/bandeja` |
+| **M1** | F3 | `pantallas/identidad/`: bienvenida · registro · verificación básica · contrato · sesión · mfa · dispositivo · **verificación profunda** · perfil · contraseña · baja |
+| **M2** | F4 | `pantallas/billetera/`: inicio (saldo) · recargar · retirar · cuenta-bancaria · extracto · pagar-aporte (saga) · confirmación |
+| **M3** | F5 | `pantallas/pasanaku/`: unirse · postular · grupo/[codigo] · **organizador** · **crear** 🔒 · sorteo · reputación · reseñar |
+
+> **El gate básica/profunda es del shell, no de cada pantalla.** El `ProveedorSesion` de **M**
+> expone el nivel de verificación; las acciones de nivel profundo (crear grupo, habilitarse
+> como organizador) las pinta M3 **deshabilitadas con motivo**. Así el gate se prueba una vez,
+> en el shell, y no se repite en cada pantalla.
+
 ---
 
 ## 3 · Sincronía con el backend

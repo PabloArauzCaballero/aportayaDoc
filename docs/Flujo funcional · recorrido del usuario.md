@@ -219,8 +219,13 @@ flowchart TD
 > El camino rosado (RF-04 → RF-06) es el que exige **verificación profunda**. Todo lo demás
 > corre con verificación básica.
 
+> **El detalle de pantallas.** Cada RF de este recorrido se traduce a pantallas concretas de
+> la app móvil en [[Flujo de pantallas · app del participante]] — ruta de Expo Router,
+> organismos de `packages/ui`, los cuatro estados, navegación y el carril que la construye.
+
 ## Ver también
 
-[[_CasosDeUso]] · [[ADR-028 Mecánica de saga]] · [[ADR-029 Catálogo legible por todos los servicios]] ·
+[[_CasosDeUso]] · [[Flujo de pantallas · app del participante]] · [[ADR-028 Mecánica de saga]] ·
+[[ADR-029 Catálogo legible por todos los servicios]] ·
 [[ADR-024 Autenticación y sesión distribuida]] · `kyc-onboarding` · `gobernanza-grupo` ·
 `contabilidad-partida-doble`

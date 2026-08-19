@@ -230,6 +230,26 @@ Una ruta `/catalogo` en `apps/web`, **`noindex`**, que renderiza cada pieza en s
 variantes y estados, claro y oscuro. Es la referencia para revisión y la base de las
 pruebas visuales.
 
+## F1.7 · Los organismos que exige el recorrido del participante
+
+El recorrido de [[Flujo funcional · recorrido del usuario]], desglosado en
+[[Flujo de pantallas · app del participante]], fija **qué organismos concretos** tienen que
+existir para que M1/M2/M3 solo compongan. F1 los entrega; los transversales suben a
+`packages/ui`, los que dependen de una API nativa (cámara, biometría) se quedan en
+`apps/movil`:
+
+| Dominio de pantallas | Organismos (los construye F1, los compone el carril) | Dónde vive |
+| --- | --- | --- |
+| Identidad (M1) | `PanelBienvenida` · `FormularioRegistro` · `CapturaDocumento` · `VisorContrato` · `FormularioLogin` · `RegistroDispositivo` · `FormularioKYCReforzado` (`DeclaracionPEP`) · `FormularioPerfil` · `FormularioCambioContrasena` · `AsistenteBaja` | forma en `packages/ui`; captura/biometría en `apps/movil` |
+| Billetera (M2) | `TarjetaSaldo` · `AccesosRapidos` · `ListaMovimientos` (`FilaMovimiento`) · `ResumenRecarga` · `PantallaQR` · `FormularioCuentaBancaria` · `FormularioAporte` (`FilaAporte`) · `PantallaResultado` | `packages/ui`; QR en `apps/movil` |
+| Pasanaku (M3) | `CanjearInvitacion` · `FormularioPostulacion` · `TarjetaGrupo` · `ReglamentoGrupo` · `PanelSorteo` (`ListaTurnos`) · `AsistenteOrganizador` · `FormularioGrupo` · `TarjetaReputacion` · `FormularioReseña` (`EstrellasCalificacion`) | `packages/ui` |
+| Shell (M) | `BarraPestanas` · `BandejaNotificaciones` (`FilaNotificacion`) | `packages/ui` |
+
+Átomos y moléculas nuevos que esto obliga a incluir en F1.2/F1.3 (además de los ya listados):
+**`CampoOTP`** (entrada de 6 casillas, además del PIN de F1.5), **`EstrellasCalificacion`**,
+**`CampoCodigo`** (invitación) y **`SelectorCuentaBancaria`**. Todos con sus **cuatro estados**
+donde apliquen — es lo que hace que ninguna pantalla de dinero pueda saltárselos.
+
 **Entregable F1:** el inventario completo con prueba unitaria por átomo, prueba de
 comportamiento por molécula, `jest-axe` limpio y captura visual en ambos temas.
 
