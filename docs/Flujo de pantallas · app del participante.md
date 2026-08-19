@@ -275,6 +275,29 @@ Sirve RF-11, RF-12. CU 80, 81.
 
 ---
 
+## 6b · Reclamos y denuncias · carril **M3** (F5) · `apps/movil/src/pantallas/pasanaku/`
+
+Sirve RF-17, RF-18. CU 52, 53, 76. El participante **abre** el caso que después atiende el
+backoffice ([[Flujo de pantallas · backoffice administrador]] §3.4).
+
+### 6b.1 · `pasanaku/reclamo` — Hacer un reclamo (RF-17 · [[CU-52 Atender un reclamo en plazo]])
+- **Compone:** organismo `FormularioReclamo` — molécula `SelectorCategoria`
+  (`COMISION`/`DATOS_PERSONALES`/`GRUPO`/`OPERACION_NO_RECONOCIDA`/`SALDO`/`SERVICIO`), campo de
+  detalle, adjuntos. Muestra el **plazo** en que se responderá. **Estados:** los cuatro.
+  **Endpoint:** `POST /reclamos`.
+- **Encadena:** `pasanaku/reclamo/[id]` — seguimiento del estado (auto-resuelto por política o
+  en atención) con `LineaDeTiempo`; botón **Apelar** si no queda conforme ([[CU-53 Elevar un reclamo a segunda instancia]]).
+
+### 6b.2 · `pasanaku/denunciar` — Denunciar a otro usuario (RF-18)
+- **Compone:** organismo `FormularioDenuncia` (a quién, motivo catalogado, evidencia). Es la vía
+  **privada** al operador; la reseña pública y moderada es `pasanaku/reseñar`
+  ([[CU-76 Reseñar a un participante y moderar la reseña]]). **Estados:** los cuatro.
+  **Endpoint:** `POST /reclamos` (categoría denuncia).
+- **Nota de modelo:** la denuncia como categoría/tabla propia y su enlace al circuito de
+  incumplimiento (módulo 08) es una extensión a declarar antes de implementarla.
+
+---
+
 ## 7 · Inventario de organismos que el sistema de diseño debe entregar
 
 Estos organismos los **construye F1** en `packages/ui` (los transversales) o los shells de cada
@@ -294,6 +317,7 @@ dominio (los específicos), y los carriles M1/M2/M3 solo los **componen**. Entra
 | `CanjearInvitacion`, `FormularioPostulacion`, `TarjetaGrupo`, `ReglamentoGrupo` | pasanaku | M3 (F5) | `CampoCodigo`, `ChipEstado` |
 | `AsistenteOrganizador`, `FormularioGrupo` | pasanaku | M3 (F5) | `Campo*` (gated) |
 | `PanelSorteo` (`ListaTurnos`), `TarjetaReputacion`, `FormularioReseña` (`EstrellasCalificacion`) | pasanaku | M3 (F5) | — |
+| `FormularioReclamo` (`SelectorCategoria`, `LineaDeTiempo`), `FormularioDenuncia` | pasanaku | M3 (F5) | `Campo*`, adjuntos |
 | `BandejaNotificaciones` (`FilaNotificacion`), `BarraPestanas` | shell | M (F2) | `ChipEstado`, `Avatar` |
 
 **Regla de subida** (`planes/10 · Plan maestro del frontend` §"lo que sirve a dos productos sube a

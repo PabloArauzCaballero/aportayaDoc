@@ -125,12 +125,31 @@ por carril es directo (una pantalla = un archivo, sin router central):
 | **M** | F2 | `navegacion/` (tab bar, `ProveedorSesion`, deep links) · `pantallas/notificaciones/bandeja` |
 | **M1** | F3 | `pantallas/identidad/`: bienvenida · registro · verificación básica · contrato · sesión · mfa · dispositivo · **verificación profunda** · perfil · contraseña · baja |
 | **M2** | F4 | `pantallas/billetera/`: inicio (saldo) · recargar · retirar · cuenta-bancaria · extracto · pagar-aporte (saga) · confirmación |
-| **M3** | F5 | `pantallas/pasanaku/`: unirse · postular · grupo/[codigo] · **organizador** · **crear** 🔒 · sorteo · reputación · reseñar |
+| **M3** | F5 | `pantallas/pasanaku/`: unirse · postular · grupo/[codigo] · **organizador** · **crear** 🔒 · sorteo · reputación · reseñar · **reclamo** · **denunciar** |
 
 > **El gate básica/profunda es del shell, no de cada pantalla.** El `ProveedorSesion` de **M**
 > expone el nivel de verificación; las acciones de nivel profundo (crear grupo, habilitarse
 > como organizador) las pinta M3 **deshabilitadas con motivo**. Así el gate se prueba una vez,
 > en el shell, y no se repite en cada pantalla.
+
+### 2.7 · Las pantallas de cada carril de backoffice
+
+El recorrido del administrador ([[Flujo funcional · usuario administrador]]) está desglosado en
+[[Flujo de pantallas · backoffice administrador]]. El backoffice es React + Vite con TanStack
+Router (una ruta = un archivo) y el organismo `TablaDeDatos` como pieza de trabajo. Reparto:
+
+| Carril | Fase | Rutas que posee (`apps/backoffice/src/rutas/…`) |
+| :-: | :-: | --- |
+| **B** | F6 | shell: `layout/`, `proveedores/`, `organismos/TablaDeDatos`, tablero, **`operacion/estado`** (estado de plataforma) |
+| **B1** | F7 | `operacion/`: conciliación · cierre-diario · desembolsos (autorizar/ejecutar) · reclamos · **políticas-resolución** · roles · tarifario · reportes · **fondeo (QR)** · **mensajería** |
+| **B2** | F8 | `cumplimiento/`: **verificaciones** (aceptar/rechazar) · alertas · casos/ROS · uif · riesgo · gobierno |
+| **B3** | F13 | `contabilidad/`: período · presupuesto · compras/CxP · cobros · activos · estados (mini-contable esencial) |
+| **B4** | F14 | `publicidad/`: partners · anunciantes · campañas (aprobar) · moderación · liquidación |
+
+> **La segregación de funciones se pinta en pantalla:** desembolsos, compras/CxP y campañas
+> muestran solo el lado (autorizar **o** ejecutar / gestionar **o** aprobar) que el rol del
+> operador permite — nunca los dos botones. El guard de rutas monta cada una **según el permiso
+> del token**, así que la navegación misma refleja el `roles-y-accesos` del backend.
 
 ---
 

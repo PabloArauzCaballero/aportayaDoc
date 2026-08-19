@@ -172,6 +172,36 @@ dinero. Sin límite vigente a la fecha, la operación se **rechaza**.
 
 ---
 
+## 7b · Reclamos y denuncias — el participante abre el caso
+
+El circuito de atención del backoffice ([[Flujo funcional · usuario administrador]] §4) **empieza
+acá**: el usuario final es quien abre el caso, y muchos se **auto-resuelven por política** sin que
+una persona intervenga.
+
+### RF-17 · Hacer un reclamo
+- **Actor:** cualquier usuario. **Disparador:** algo salió mal (un cobro, el saldo, un grupo,
+  sus datos, el servicio).
+- **Implementa:** [[CU-52 Atender un reclamo en plazo]] — el reclamo entra **catalogado** por
+  categoría (`COMISION`, `DATOS_PERSONALES`, `GRUPO`, `OPERACION_NO_RECONOCIDA`, `SALDO`,
+  `SERVICIO`) y por canal. Si una **política** cubre el caso, se **resuelve solo** (con la
+  decisión registrada); si no, pasa a una persona. El plazo hábil se guarda al abrir.
+- **Estado que deja:** caso abierto con su categoría y su plazo; el titular puede seguir su
+  estado y, si no queda conforme, **apelar** ([[CU-53 Elevar un reclamo a segunda instancia]]).
+
+### RF-18 · Denunciar a otro usuario
+- **Actor:** cualquier usuario. **Disparador:** la mala conducta de otro participante.
+- **Implementa:** comparte el circuito de atención con su propia categoría; una denuncia con
+  sustento puede alimentar el circuito de **incumplimiento/sanción** (módulo 08) con su
+  **debido proceso** (el denunciado tiene descargo y apelación). La reseña entre pares
+  ([[CU-76 Reseñar a un participante y moderar la reseña]]) es la vía pública y moderada; la
+  denuncia es la vía privada al operador.
+- **Estado que deja:** caso de denuncia abierto y catalogado.
+  *(Nota de modelo: la denuncia como categoría/tabla propia y su enlace al módulo 08 es una
+  extensión a declarar antes de implementarla — hoy existe el reclamo catalogado y la reseña
+  moderada.)*
+
+---
+
 ## 8 · Cuenta: perfil, credenciales y baja
 
 ### RF-14 · Modificar la contraseña

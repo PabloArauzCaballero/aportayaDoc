@@ -254,8 +254,29 @@ existir para que M1/M2/M3 solo compongan. F1 los entrega; los transversales sube
 
 Átomos y moléculas nuevos que esto obliga a incluir en F1.2/F1.3 (además de los ya listados):
 **`CampoOTP`** (entrada de 6 casillas, además del PIN de F1.5), **`EstrellasCalificacion`**,
-**`CampoCodigo`** (invitación) y **`SelectorCuentaBancaria`**. Todos con sus **cuatro estados**
-donde apliquen — es lo que hace que ninguna pantalla de dinero pueda saltárselos.
+**`CampoCodigo`** (invitación), **`SelectorCuentaBancaria`** y **`SelectorCategoria`** (reclamo).
+Todos con sus **cuatro estados** donde apliquen — es lo que hace que ninguna pantalla de dinero
+pueda saltárselos.
+
+## F1.8 · Los organismos que exige el recorrido del administrador
+
+El recorrido de [[Flujo funcional · usuario administrador]], desglosado en
+[[Flujo de pantallas · backoffice administrador]], fija los organismos del backoffice. La pieza
+central es **`TablaDeDatos`** (F1.4, virtualizada); el resto son paneles y fichas específicos.
+El backoffice **no es un segundo sistema de diseño**: usa los mismos tokens y átomos, portados a
+densidad de escritorio.
+
+| Área | Organismos (los construye F1/shell, los compone el carril) | Carril |
+| --- | --- | --- |
+| Shell / tablero | `TablaDeDatos`, `PanelKPIs` (`TarjetaKPI`), `PanelEstadoPlataforma` | B (F6) |
+| Operación | `PanelDescuadre`, `ResumenCierre`, `PanelAprobacion`/`PanelEjecucion`, `FichaReclamo` (`LineaDeTiempo`), `PanelResolucion`, `EditorDePolitica`/`SimuladorDeReglas`, `EditorDeRoles`, `FormularioTarifario`/`PanelPreaviso`, `ConstructorDeReporte`, `FormularioInstrumentoFondeo`/`VistaPreviaQR`/`HistorialFondeo`, `EditorDePlantilla`/`MatrizDeCanales`/`PanelRuteoProveedor` | B1 (F7) |
+| Cumplimiento | `RevisorDeIdentidad`, `PanelTriaje`, `FichaCaso`, `PanelROS`, `FormularioRequerimiento`, `FichaIncidente`, `ActaComite` | B2 (F8) |
+| Contabilidad | `PanelPeriodo`, `EditorPresupuesto`, `FichaFactura`, `PanelDepreciacion`, `VisorEstadoFinanciero` | B3 (F13) |
+| Publicidad | `FormularioPartner`, `FormularioAnunciante`, `PanelAprobacionCampana`, `ColaModeracion` | B4 (F14) |
+
+Suben a `packages/ui` los transversales (`TablaDeDatos`, `PanelAprobacion`/`PanelEjecucion`,
+`LineaDeTiempo`, `PanelSaludProveedor` —lo comparten fondeo y mensajería—, `SimuladorDeReglas`);
+las fichas y paneles de un solo dominio viven en su ruta.
 
 **Entregable F1:** el inventario completo con prueba unitaria por átomo, prueba de
 comportamiento por molécula, `jest-axe` limpio y captura visual en ambos temas.
