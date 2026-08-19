@@ -112,13 +112,13 @@ superficie tiene el carril.
 | [`2E`](#2e--organizador-y-automatización) | P5 | T4 | 14 | Organizador y automatización | ●●●○○ |
 | [`3A`](#3a--aportes-y-pagos-con-qr) | P2 | T4 | 9 | Aportes y pagos con QR | ●●○○○ |
 | [`3B`](#3b--transparencia-y-reputación) | P3 | T4 | 13 | Transparencia y reputación | ●●●○○ |
-| [`3C`](#3c--cumplimiento-asfi-y-uif) | P4 | T5 | 16 | Cumplimiento ASFI y UIF | ●●●●● |
+| [`3C`](#3c--cumplimiento-asfi-y-uif) | P4 | T6 | 16 | Cumplimiento ASFI y UIF | ●●●●● |
 | [`3D`](#3d--cuenta-bancaria-de-destino) | P4 | T4 | 10a | Cuenta bancaria de destino | ●○○○○ |
 | [`4A`](#4a--entrega-del-fondo) | P2 | T5 | 10b | Entrega del fondo | ●○○○○ |
 | [`4B`](#4b--garantía-e-incumplimiento) | P3 | T5 | 11 | Garantía e incumplimiento | ●●●○○ |
 | [`5T`](#5t--convergencia-y-despliegue) | P2 | T6–T8 | 17 | Convergencia y despliegue | ●●●●○ |
-| [`5A`](#5a--contabilidad-erp-carril-nuevo) | P3 | T8 | 18 | Contabilidad ERP ★ | ●●●○○ |
-| [`5B`](#5b--publicidad-y-campañas-carril-nuevo) | P4 | T8 | 19 | Publicidad y campañas ★ | ●●○○○ |
+| [`5A`](#5a--contabilidad-erp-carril-nuevo) | P4 | T5 | 18 | Contabilidad ERP ★ | ●●●○○ |
+| [`5B`](#5b--publicidad-y-campañas-carril-nuevo) | P4 | T9 | 19 | Publicidad y campañas ★ | ●●○○○ |
 | [`F0-M`](#f0-m--andamiaje-móvil) | P3 | T1 | F0 | Andamiaje móvil | ●●○○○ |
 | [`F0-B`](#f0-b--andamiaje-backoffice) | P4 | T1 | F0 | Andamiaje backoffice | ●●○○○ |
 | [`F0-W`](#f0-w--andamiaje-web) | P5 | T1 | F0 | Andamiaje web | ●●○○○ |
@@ -130,12 +130,12 @@ superficie tiene el carril.
 | [`F4`](#f4--móvil--billetera) | P1 | T5 | F4 | Móvil · billetera | ●●●●○ |
 | [`F5`](#f5--móvil--pasanaku) | P1 | T6–T7 | F5 | Móvil · pasanaku | ●●●●● |
 | [`F7`](#f7--backoffice--operación) | P3 | T6–T7 | F7 | Backoffice · operación | ●●●●● |
-| [`F8`](#f8--backoffice--cumplimiento) | P4 | T6–T7 | F8 | Backoffice · cumplimiento | ●●●●● |
+| [`F8`](#f8--backoffice--cumplimiento) | P4 | T7–T8 | F8 | Backoffice · cumplimiento | ●●●●● |
 | [`F10`](#f10--seo) | P5 | T6 | F10 | SEO | ●●○○○ |
 | [`F11`](#f11--geo) | P5 | T7 | F11 | GEO | ●●○○○ |
 | [`F12`](#f12--publicación) | P1 | T8 | F12 | Publicación | ●●●○○ |
 | [`F13`](#f13--backoffice--contabilidad-erp-carril-nuevo) | P3 | T9 | F13 | Backoffice · ERP ★ | ●●○○○ |
-| [`F14`](#f14--backoffice--publicidad-carril-nuevo) | P4 | T9 | F14 | Backoffice · publicidad ★ | ●●○○○ |
+| [`F14`](#f14--backoffice--publicidad-carril-nuevo) | P4 | T10 | F14 | Backoffice · publicidad ★ | ●●○○○ |
 
 ★ carriles nuevos: cubren los 12 CU que ningún plan nombraba
 ([[17 Plan de acción secuencial · coordinación de cinco máquinas]] defecto 5).
@@ -667,7 +667,7 @@ dos carriles de puestos distintos: se escribe en la ficha de los dos.
 
 | | |
 | --- | --- |
-| **Puesto · tramo · fase** | **P4** · Dell A · **T5** · fase 16 *(deuda declarada de T4)* |
+| **Puesto · tramo · fase** | **P4** · Dell A · **T6** · fase 16 *(deuda declarada de T4)* — *cascada de la decisión del 2026-08-18: la fase 18 se adelantó a T5* |
 | **Módulo** | `12_cumplimiento_asfi` — **47 entidades, el módulo más grande de la bóveda** |
 | **Servicio** | `cumplimiento` — un desplegable, propiedad exclusiva del carril |
 | **Esquema · rol** | `cumplimiento` · `svc_cumplimiento` — no lee ningún otro esquema |
@@ -829,7 +829,7 @@ macOS o bajo WSL2 no son los del sistema, son los de la capa de virtualización.
 
 | | |
 | --- | --- |
-| **Puesto · tramo · fase** | **P3** · Legion · **T8** · fase 18 |
+| **Puesto · tramo · fase** | **P4** · Dell A · **T5** · fase 18 — *adelantado por condición de licencia, decisión del 2026-08-18* |
 | **Módulo** | `13_contabilidad_erp` — 18 entidades |
 | **Servicio** | `erp` — un desplegable, propiedad exclusiva del carril |
 | **Esquema · rol** | `erp` · `svc_erp` — no lee ningún otro esquema |
@@ -867,7 +867,7 @@ sistema es cómo el balance del ERP deja de coincidir con el libro de la billete
 
 | | |
 | --- | --- |
-| **Puesto · tramo · fase** | **P4** · Dell A · **T8** · fase 19 |
+| **Puesto · tramo · fase** | **P4** · Dell A · **T9** · fase 19 — *cascada de la decisión del 2026-08-18* |
 | **Módulo** | `14_publicidad_campanas` — 14 entidades |
 | **Servicio** | `publicidad` — un desplegable, propiedad exclusiva del carril |
 | **Esquema · rol** | `publicidad` · `svc_publicidad` — no lee ningún otro esquema |
@@ -1208,7 +1208,7 @@ interno». El backoffice es donde una fuga de permisos no se nota hasta la audit
 
 | | |
 | --- | --- |
-| **Puesto · tramo · fase** | **P4** · Dell A · **T6 → T7** · fase F8 |
+| **Puesto · tramo · fase** | **P4** · Dell A · **T7 → T8** · fase F8 — *cascada de la decisión del 2026-08-18* |
 | **Posee** | `apps/backoffice/src/rutas/cumplimiento/` |
 | **Tamaño** | ●●●●● · 38 CU de cumplimiento y gobierno |
 
@@ -1335,7 +1335,7 @@ del mismo número es un documento que nadie firma.
 
 | | |
 | --- | --- |
-| **Puesto · tramo · fase** | **P4** · Dell A · **T9** · fase F14 |
+| **Puesto · tramo · fase** | **P4** · Dell A · **T10** · fase F14 — *cascada de la decisión del 2026-08-18* |
 | **Posee** | `apps/backoffice/src/rutas/publicidad/` |
 | **Documento** | El backend `servicios/publicidad/` ya está andamiado; el documento de fase está pendiente de redactar (§11 de [[17 Plan de acción secuencial · coordinación de cinco máquinas]]) |
 | **Tamaño** | ●●○○○ · CU-110–114 |

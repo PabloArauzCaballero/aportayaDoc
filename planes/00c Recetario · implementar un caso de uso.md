@@ -99,6 +99,7 @@ De `implementar-desde-boveda`. **No se saltea ninguno y no se cambia el orden.**
 | **1** | **Restricciones primero** — aplicar las del caso (`sql/40_reglas/restricciones.sql`) | Escribir la lógica antes que la barrera es la forma habitual de descubrir en producción que la barrera no existía |
 | **2** | **Semillas de catálogo** — umbrales, límites, tarifario, impuestos, licencia | Sin catálogo, *denegar por omisión* bloquea todo. Y eso es correcto |
 | **3** | **Contrato** como operación en `openapi/<servicio>.yaml` | Cierra preguntas que si no aparecen a mitad del código |
+| **3b** | **Puertos** — ¿toca algo fuera del proceso (red, disco, correo, plata, reloj, azar)? Interfaz en `dominio/puertos/` y **adaptador local primero** ([[ADR-033 Puertos y adaptadores]]) | Decidirlo después obliga a reescribir el organismo, que ya habrá quedado atado a un proveedor |
 | **4** | **Átomos** puros, con pruebas en milisegundos | Son la parte que se puede probar rápido y mil veces |
 | **5** | **Moléculas** — repositorios y adaptadores, uno por colaborador, sin abrir transacción | Un colaborador por pieza; ninguna orquesta a otra ni abre transacción — eso es del organismo |
 | **6** | **Organismo** — el caso de uso, única frontera transaccional | El `@Transactional` vive acá y en ningún otro nivel: una sola frontera por caso de uso |
@@ -113,7 +114,9 @@ servicios/tarifas/src/main/java/bo/aportaya/tarifas/
   aplicacion/CU31DevengarComision.java            ← ORGANISMO: orquesta la transacción
   dominio/DevengoComision.java                    ← ÁTOMO: invariantes, sin IO ni Spring
   infraestructura/DevengoRepositorio.java         ← MOLÉCULA: SQL, sin lógica
-  infraestructura/PasarelaAdapter.java            ← MOLÉCULA de borde, idempotente
+  dominio/puertos/PasarelaDePago.java             ← PUERTO: lo define el dominio
+  infraestructura/adaptadores/pagos/SimuladorAdaptador.java   ← adaptador local (por defecto)
+  infraestructura/adaptadores/pagos/QrInteropAdaptador.java   ← adaptador real, por configuración
   infraestructura/NucleoFinancieroCliente.java    ← MOLÉCULA: otro servicio
   web/ComisionesController.java                   ← PÁGINA: implementa lo generado
 servicios/tarifas/src/test/java/bo/aportaya/tarifas/
@@ -578,7 +581,7 @@ docker compose up -d postgres pgbouncer
 python3 scripts/generar_ddl.py
 psql -d aportaya -v ON_ERROR_STOP=1 -f sql/aplicar.sql
 psql -d aportaya -v ON_ERROR_STOP=1 -f sql/60_semillas/sembrar.sql        # 20 catálogos
-psql -d aportaya -f sql/61_prueba/sembrar_prueba.sql                       # 14, solo local
+psql -d aportaya -f sql/61_dev/sembrar_dev.sql                       # 14, solo local
 psql -d aportaya -f sql/50_verificacion/prueba_humo.sql                    # todo OK, cero FALLA
 ./gradlew generateJooq
 ./gradlew bootRun

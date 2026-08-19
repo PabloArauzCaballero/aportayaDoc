@@ -1,0 +1,176 @@
+{
+  "descripcion": "Lo que rodea al dinero y hace auditable la operación: canales y preferencias de contacto, avisos enviados con prueba de entrega, cierre diario cuadrado, conciliación de custodia con encaje, arqueo de efectivo, un reclamo con plazo corriendo y un evento de riesgo operativo.",
+  "entorno": "dev",
+  "nota": "El encaje da exactamente 1,000000: Bs 9.900 en custodia contra Bs 9.900 de dinero electrónico emitido. Ese número es el que se le muestra a un supervisor.",
+  "reglas_que_permite_probar": [
+    "R-NOT — un aviso obligatorio no se suprime aunque el usuario apague el canal",
+    "R-CUS — la conciliación de custodia calcula diferencia y ratio de cobertura como columnas derivadas",
+    "R-PLZ — el plazo del reclamo se guarda al ingresar y no se recalcula al consultar",
+    "R-RIS — un faltante de arqueo se convierte en evento de riesgo operativo con pérdida cuantificada"
+  ],
+  "bloques": [
+    {
+      "tabla": "canal_vinculado",
+      "conflicto": [],
+      "comentario": "USR000004 se dio de baja de WhatsApp comercial: los avisos de cobranza obligatorios igual le llegan, los comerciales no.",
+      "filas": [
+        { "usuario_id": { "$ref": "usuario", "codigo_publico": "USR000001" }, "tipo": "WHATSAPP", "identificador": "+59171000001", "verificado": true, "verificado_en": { "$sql": "now() - interval '120 days'" }, "opt_in_en": { "$sql": "now() - interval '120 days'" }, "opt_out_en": null, "motivo_opt_out": null, "ventana_conversacion_hasta": { "$sql": "now() + interval '20 hours'" }, "rebotes_consecutivos": 0, "estado": "ACTIVO" },
+        { "usuario_id": { "$ref": "usuario", "codigo_publico": "USR000002" }, "tipo": "WHATSAPP", "identificador": "+59171000002", "verificado": true, "verificado_en": { "$sql": "now() - interval '110 days'" }, "opt_in_en": { "$sql": "now() - interval '110 days'" }, "opt_out_en": null, "motivo_opt_out": null, "ventana_conversacion_hasta": null, "rebotes_consecutivos": 0, "estado": "ACTIVO" },
+        { "usuario_id": { "$ref": "usuario", "codigo_publico": "USR000003" }, "tipo": "PUSH", "identificador": "demo-push-03", "verificado": true, "verificado_en": { "$sql": "now() - interval '100 days'" }, "opt_in_en": { "$sql": "now() - interval '100 days'" }, "opt_out_en": null, "motivo_opt_out": null, "ventana_conversacion_hasta": null, "rebotes_consecutivos": 0, "estado": "ACTIVO" },
+        { "usuario_id": { "$ref": "usuario", "codigo_publico": "USR000004" }, "tipo": "WHATSAPP", "identificador": "+59171000004", "verificado": true, "verificado_en": { "$sql": "now() - interval '95 days'" }, "opt_in_en": { "$sql": "now() - interval '95 days'" }, "opt_out_en": { "$sql": "now() - interval '20 days'" }, "motivo_opt_out": "El titular pidió no recibir mensajes comerciales", "ventana_conversacion_hasta": { "$sql": "now() + interval '12 hours'" }, "rebotes_consecutivos": 0, "estado": "ACTIVO" },
+        { "usuario_id": { "$ref": "usuario", "codigo_publico": "USR000005" }, "tipo": "WHATSAPP", "identificador": "+59171000005", "verificado": true, "verificado_en": { "$sql": "now() - interval '90 days'" }, "opt_in_en": { "$sql": "now() - interval '90 days'" }, "opt_out_en": null, "motivo_opt_out": null, "ventana_conversacion_hasta": null, "rebotes_consecutivos": 0, "estado": "ACTIVO" },
+        { "usuario_id": { "$ref": "usuario", "codigo_publico": "USR000006" }, "tipo": "CORREO", "identificador": "demo6@pasanaku.test", "verificado": true, "verificado_en": { "$sql": "now() - interval '85 days'" }, "opt_in_en": { "$sql": "now() - interval '85 days'" }, "opt_out_en": null, "motivo_opt_out": null, "ventana_conversacion_hasta": null, "rebotes_consecutivos": 0, "estado": "ACTIVO" }
+      ]
+    },
+    {
+      "tabla": "preferencia_notificacion",
+      "conflicto": [],
+      "comentario": "El tope diario y la franja de no molestar valen para lo comercial y lo de cobranza; nunca para un aviso transaccional o de seguridad.",
+      "filas": [
+        { "usuario_id": { "$ref": "usuario", "codigo_publico": "USR000001" }, "canal_primario": "WHATSAPP", "canal_respaldo": "PUSH_APP", "acepta_whatsapp": true, "acepta_correo": true, "acepta_sms": true, "acepta_push": true, "tope_diario_mensajes": 5, "hora_no_molestar_desde": "22:00:00", "hora_no_molestar_hasta": "07:00:00", "frecuencia_resumen": "SEMANAL" },
+        { "usuario_id": { "$ref": "usuario", "codigo_publico": "USR000002" }, "canal_primario": "WHATSAPP", "canal_respaldo": "SMS", "acepta_whatsapp": true, "acepta_correo": true, "acepta_sms": true, "acepta_push": true, "tope_diario_mensajes": 5, "hora_no_molestar_desde": "22:00:00", "hora_no_molestar_hasta": "07:00:00", "frecuencia_resumen": "SEMANAL" },
+        { "usuario_id": { "$ref": "usuario", "codigo_publico": "USR000003" }, "canal_primario": "PUSH_APP", "canal_respaldo": "WHATSAPP", "acepta_whatsapp": true, "acepta_correo": true, "acepta_sms": false, "acepta_push": true, "tope_diario_mensajes": 3, "hora_no_molestar_desde": "21:00:00", "hora_no_molestar_hasta": "08:00:00", "frecuencia_resumen": "MENSUAL" },
+        { "usuario_id": { "$ref": "usuario", "codigo_publico": "USR000004" }, "canal_primario": "WHATSAPP", "canal_respaldo": "SMS", "acepta_whatsapp": false, "acepta_correo": true, "acepta_sms": true, "acepta_push": true, "tope_diario_mensajes": 2, "hora_no_molestar_desde": "21:00:00", "hora_no_molestar_hasta": "08:00:00", "frecuencia_resumen": "MENSUAL" },
+        { "usuario_id": { "$ref": "usuario", "codigo_publico": "USR000005" }, "canal_primario": "WHATSAPP", "canal_respaldo": "CORREO", "acepta_whatsapp": true, "acepta_correo": true, "acepta_sms": true, "acepta_push": true, "tope_diario_mensajes": 8, "hora_no_molestar_desde": null, "hora_no_molestar_hasta": null, "frecuencia_resumen": "SEMANAL" },
+        { "usuario_id": { "$ref": "usuario", "codigo_publico": "USR000006" }, "canal_primario": "CORREO", "canal_respaldo": "PUSH_APP", "acepta_whatsapp": false, "acepta_correo": true, "acepta_sms": false, "acepta_push": true, "tope_diario_mensajes": 3, "hora_no_molestar_desde": "23:00:00", "hora_no_molestar_hasta": "06:00:00", "frecuencia_resumen": "MENSUAL" }
+      ]
+    },
+    {
+      "tabla": "notificacion",
+      "conflicto": [],
+      "comentario": "Cuatro avisos que dejaron rastro: la entrega cobrada, el vencimiento del aporte, la cobertura del fondo y la imputación con plazo de descargo. Los dos últimos son obligatorios y por eso salieron aunque el titular apagó WhatsApp comercial.",
+      "filas": [
+        { "usuario_id": { "$ref": "usuario", "codigo_publico": "USR000001" }, "evento_id": { "$ref": "evento_notificable", "tipo": "ENTREGA_ACREDITADA" }, "prioridad": "CRITICA", "contexto": { "grupo": "GRP-DEMO-01", "periodo": 1, "bruto": 3000.0, "deducciones": 10.5, "neto": 2989.5 }, "clave_deduplicacion": "entrega:GRP-DEMO-01:1:USR000001", "estado": "LEIDA", "programada_para": { "$sql": "now() - interval '30 days'" }, "creada_en": { "$sql": "now() - interval '30 days'" }, "finalizada_en": { "$sql": "now() - interval '30 days'" }, "correlation_id": { "$sql": "gen_random_uuid()" } },
+        { "usuario_id": { "$ref": "usuario", "codigo_publico": "USR000004" }, "evento_id": { "$ref": "evento_notificable", "tipo": "APORTE_POR_VENCER" }, "prioridad": "NORMAL", "contexto": { "grupo": "GRP-DEMO-01", "periodo": 2, "monto": 500.0, "vence_en_dias": 3 }, "clave_deduplicacion": "por-vencer:GRP-DEMO-01:2:USR000004", "estado": "ENTREGADA", "programada_para": { "$sql": "now() - interval '11 days'" }, "creada_en": { "$sql": "now() - interval '11 days'" }, "finalizada_en": { "$sql": "now() - interval '11 days'" }, "correlation_id": { "$sql": "gen_random_uuid()" } },
+        { "usuario_id": { "$ref": "usuario", "codigo_publico": "USR000004" }, "evento_id": { "$ref": "evento_notificable", "tipo": "APORTE_VENCIDO" }, "prioridad": "ALTA", "contexto": { "grupo": "GRP-DEMO-01", "periodo": 2, "monto": 500.0, "mora": 10.0, "total": 510.0 }, "clave_deduplicacion": "vencido:GRP-DEMO-01:2:USR000004", "estado": "ENTREGADA", "programada_para": { "$sql": "now() - interval '4 days'" }, "creada_en": { "$sql": "now() - interval '4 days'" }, "finalizada_en": { "$sql": "now() - interval '4 days'" }, "correlation_id": { "$sql": "gen_random_uuid()" } },
+        { "usuario_id": { "$ref": "usuario", "codigo_publico": "USR000004" }, "evento_id": { "$ref": "evento_notificable", "tipo": "COBERTURA_APLICADA" }, "prioridad": "ALTA", "contexto": { "grupo": "GRP-DEMO-01", "periodo": 2, "cubierto": 500.0, "deuda": 510.0 }, "clave_deduplicacion": "cobertura:GRP-DEMO-01:2:USR000004", "estado": "ENTREGADA", "programada_para": { "$sql": "now() - interval '3 days'" }, "creada_en": { "$sql": "now() - interval '3 days'" }, "finalizada_en": { "$sql": "now() - interval '3 days'" }, "correlation_id": { "$sql": "gen_random_uuid()" } }
+      ]
+    },
+    {
+      "tabla": "envio_notificacion",
+      "conflicto": [],
+      "comentario": "La prueba de entrega: sin esto no se puede sostener que el plazo de descargo empezó a correr (R-PLZ).",
+      "filas": [
+        { "notificacion_id": { "$sql": "(SELECT id FROM notificacion WHERE clave_deduplicacion = 'entrega:GRP-DEMO-01:1:USR000001')" }, "proveedor_id": { "$ref": "proveedor_mensajeria", "codigo": "WHATSAPP_BSP" }, "version_plantilla_id": { "$sql": "(SELECT v.id FROM version_plantilla v JOIN plantilla_mensaje p ON p.id = v.plantilla_id WHERE p.codigo = 'TX_ENTREGA_ACREDITADA_WA' AND v.version = 1)" }, "canal_vinculado_id": { "$sql": "(SELECT id FROM canal_vinculado WHERE identificador = '+59171000001' AND tipo = 'WHATSAPP')" }, "canal": "WHATSAPP", "destinatario": "+59171000001", "clave_idempotencia": "demo-envio-entrega-p1", "encolado_en": { "$sql": "now() - interval '30 days'" }, "contenido_enviado": "María Elena, cobraste tu turno del grupo Pasanaku demo del barrio. Bolsa: Bs 3000.00. Deducciones: Bs 10.50. Acreditado: Bs 2989.50. Detalle en la app.", "estado": "LEIDO", "id_mensaje_proveedor": "wamid.DEMO0001", "orden": 1, "intentos": 1, "max_intentos": 3, "costo": 0.28, "moneda": "BOB", "codigo_error": null, "enviado_en": { "$sql": "now() - interval '30 days'" }, "entregado_en": { "$sql": "now() - interval '30 days'" }, "leido_en": { "$sql": "now() - interval '30 days'" }, "proximo_reintento_en": null },
+        { "notificacion_id": { "$sql": "(SELECT id FROM notificacion WHERE clave_deduplicacion = 'por-vencer:GRP-DEMO-01:2:USR000004')" }, "proveedor_id": { "$ref": "proveedor_mensajeria", "codigo": "WHATSAPP_BSP" }, "version_plantilla_id": { "$sql": "(SELECT v.id FROM version_plantilla v JOIN plantilla_mensaje p ON p.id = v.plantilla_id WHERE p.codigo = 'COB_APORTE_POR_VENCER_WA' AND v.version = 1)" }, "canal_vinculado_id": { "$sql": "(SELECT id FROM canal_vinculado WHERE identificador = '+59171000004' AND tipo = 'WHATSAPP')" }, "canal": "WHATSAPP", "destinatario": "+59171000004", "clave_idempotencia": "demo-envio-por-vencer-p2-04", "encolado_en": { "$sql": "now() - interval '11 days'" }, "contenido_enviado": "Pedro, tu aporte de Bs 500.00 al grupo Pasanaku demo del barrio vence en 3 días. Podés pagarlo desde la app en un toque.", "estado": "ENTREGADO", "id_mensaje_proveedor": "wamid.DEMO0002", "orden": 1, "intentos": 1, "max_intentos": 3, "costo": 0.28, "moneda": "BOB", "codigo_error": null, "enviado_en": { "$sql": "now() - interval '11 days'" }, "entregado_en": { "$sql": "now() - interval '11 days'" }, "leido_en": null, "proximo_reintento_en": null },
+        { "notificacion_id": { "$sql": "(SELECT id FROM notificacion WHERE clave_deduplicacion = 'vencido:GRP-DEMO-01:2:USR000004')" }, "proveedor_id": { "$ref": "proveedor_mensajeria", "codigo": "WHATSAPP_BSP" }, "version_plantilla_id": { "$sql": "(SELECT v.id FROM version_plantilla v JOIN plantilla_mensaje p ON p.id = v.plantilla_id WHERE p.codigo = 'COB_APORTE_VENCIDO_WA' AND v.version = 1)" }, "canal_vinculado_id": { "$sql": "(SELECT id FROM canal_vinculado WHERE identificador = '+59171000004' AND tipo = 'WHATSAPP')" }, "canal": "WHATSAPP", "destinatario": "+59171000004", "clave_idempotencia": "demo-envio-vencido-p2-04", "encolado_en": { "$sql": "now() - interval '4 days'" }, "contenido_enviado": "Pedro: tu aporte al grupo Pasanaku demo del barrio venció. Total a pagar hoy: Bs 510.00 (aporte Bs 500.00 + recargo Bs 10.00). Si necesitás otro plazo, escribinos.", "estado": "ENTREGADO", "id_mensaje_proveedor": "wamid.DEMO0003", "orden": 1, "intentos": 1, "max_intentos": 3, "costo": 0.28, "moneda": "BOB", "codigo_error": null, "enviado_en": { "$sql": "now() - interval '4 days'" }, "entregado_en": { "$sql": "now() - interval '4 days'" }, "leido_en": null, "proximo_reintento_en": null },
+        { "notificacion_id": { "$sql": "(SELECT id FROM notificacion WHERE clave_deduplicacion = 'cobertura:GRP-DEMO-01:2:USR000004')" }, "proveedor_id": { "$ref": "proveedor_mensajeria", "codigo": "WHATSAPP_BSP" }, "version_plantilla_id": { "$sql": "(SELECT v.id FROM version_plantilla v JOIN plantilla_mensaje p ON p.id = v.plantilla_id WHERE p.codigo = 'COB_COBERTURA_APLICADA_WA' AND v.version = 1)" }, "canal_vinculado_id": { "$sql": "(SELECT id FROM canal_vinculado WHERE identificador = '+59171000004' AND tipo = 'WHATSAPP')" }, "canal": "WHATSAPP", "destinatario": "+59171000004", "clave_idempotencia": "demo-envio-cobertura-p2-04", "encolado_en": { "$sql": "now() - interval '3 days'" }, "contenido_enviado": "Pedro: el fondo de garantía del grupo Pasanaku demo del barrio cubrió tu aporte de Bs 500.00 para que el grupo no se frene. Queda una deuda a tu nombre por Bs 510.00. Podés regularizarla o pedir un plan de pagos.", "estado": "ENTREGADO", "id_mensaje_proveedor": "wamid.DEMO0004", "orden": 1, "intentos": 1, "max_intentos": 3, "costo": 0.28, "moneda": "BOB", "codigo_error": null, "enviado_en": { "$sql": "now() - interval '3 days'" }, "entregado_en": { "$sql": "now() - interval '3 days'" }, "leido_en": null, "proximo_reintento_en": null }
+      ]
+    },
+    {
+      "tabla": "cierre_diario",
+      "conflicto": [],
+      "comentario": "Un cierre cuadrado: todo lo recaudado quedó conciliado y no hay excepciones abiertas.",
+      "filas": [
+        {
+          "fecha": { "$fecha": "-1 days" },
+          "total_recaudado": 2500.0, "total_conciliado": 2500.0, "total_excepciones": 0.0,
+          "cantidad_pagos": 5, "cuadrado": true,
+          "cerrado_por": { "$ref": "usuario", "codigo_publico": "USR000008" },
+          "cerrado_en": { "$sql": "now() - interval '18 hours'" }, "reabierto_en": null
+        }
+      ]
+    },
+    {
+      "tabla": "conciliacion_custodia",
+      "conflicto": [],
+      "comentario": "El encaje del día: Bs 9.900 en el banco custodio contra Bs 9.900 de dinero electrónico emitido. `diferencia` y `ratio_cobertura` son columnas derivadas: no se escriben, se calculan.",
+      "filas": [
+        {
+          "cuenta_custodia_id": { "$sql": "(SELECT id FROM cuenta_custodia WHERE contrato_referencia = 'FID-DEMO-001')" },
+          "cierre_diario_id": { "$sql": "(SELECT id FROM cierre_diario ORDER BY fecha DESC LIMIT 1)" },
+          "ejecutada_por": { "$ref": "usuario", "codigo_publico": "USR000008" },
+          "fecha": { "$fecha": "-1 days" },
+          "saldo_dinero_electronico": 9900.0, "saldo_custodia": 9900.0, "saldo_en_transito": 0.0,
+          "cumple_encaje": true, "estado": "CUADRADA",
+          "ejecutada_en": { "$sql": "now() - interval '17 hours'" }
+        }
+      ]
+    },
+    {
+      "tabla": "arqueo_punto_atencion",
+      "conflicto": [],
+      "comentario": "Un arqueo con faltante de Bs 20: `diferencia` es derivada y negativa, y por eso abre el evento de riesgo operativo de más abajo.",
+      "filas": [
+        {
+          "punto_atencion_id": { "$ref": "punto_atencion", "codigo": "PA-SCZ-001" },
+          "arqueado_por": { "$ref": "usuario", "codigo_publico": "USR000008" },
+          "fecha": { "$fecha": "-44 days" },
+          "saldo_inicial": 0.0, "total_recargas": 600.0, "total_retiros": 0.0,
+          "saldo_teorico": 600.0, "saldo_contado": 580.0,
+          "estado": "DESCUADRADO",
+          "observaciones": "Faltante de Bs 20,00 al cierre. Se abre evento de riesgo operativo y se descuenta del corresponsal.",
+          "cerrado_en": { "$sql": "now() - interval '44 days'" }
+        },
+        {
+          "punto_atencion_id": { "$ref": "punto_atencion", "codigo": "PA-LPZ-001" },
+          "arqueado_por": { "$ref": "usuario", "codigo_publico": "USR000008" },
+          "fecha": { "$fecha": "-44 days" },
+          "saldo_inicial": 0.0, "total_recargas": 0.0, "total_retiros": 0.0,
+          "saldo_teorico": 0.0, "saldo_contado": 0.0,
+          "estado": "CUADRADO", "observaciones": null,
+          "cerrado_en": { "$sql": "now() - interval '44 days'" }
+        }
+      ]
+    },
+    {
+      "tabla": "evento_riesgo_operativo",
+      "conflicto": [],
+      "comentario": "El faltante del arqueo, cuantificado. `perdida_neta` es derivada: bruta menos recuperación.",
+      "filas": [
+        {
+          "codigo": "ERO-DEMO-0001", "incidente_operativo_id": null,
+          "registrado_por": { "$ref": "usuario", "codigo_publico": "USR000009" },
+          "categoria_evento": "FRAUDE_EXTERNO", "factor_riesgo": "PERSONAS",
+          "reportado_central_riesgo_operativo": false,
+          "linea_negocio": "Recaudación en puntos de atención",
+          "descripcion": "Faltante de Bs 20,00 en el arqueo del corresponsal PA-SCZ-001. Se recuperó la totalidad con el descuento de la liquidación del punto.",
+          "fecha_ocurrencia": { "$sql": "now() - interval '44 days'" },
+          "fecha_deteccion": { "$sql": "now() - interval '44 days'" },
+          "fecha_contabilizacion": { "$sql": "now() - interval '43 days'" },
+          "perdida_bruta": 20.0, "recuperacion": 20.0, "moneda": "BOB",
+          "causa_raiz": "Conteo incorrecto al cierre de caja del corresponsal.",
+          "estado": "CERRADO"
+        }
+      ]
+    },
+    {
+      "tabla": "reclamo_cliente",
+      "conflicto": [],
+      "comentario": "Reclamo con plazo GUARDADO al ingresar, no recalculado: 5 días hábiles desde el ingreso. `ck_reclamo_conservacion` exige además conservar el expediente 10 años. Es el caso que ejercita la segunda instancia ante el regulador.",
+      "filas": [
+        {
+          "codigo": "REC-DEMO-0001",
+          "usuario_id": { "$ref": "usuario", "codigo_publico": "USR000004" },
+          "punto_reclamo_id": { "$ref": "punto_reclamo", "codigo": "PR-APP" },
+          "responsable_id": { "$ref": "usuario", "codigo_publico": "USR000008" },
+          "ticket_soporte_id": null, "devolucion_comision_id": null,
+          "categoria": "GRUPO", "producto": "PASANAKU", "monto_reclamado": 10.0,
+          "descripcion": "No estoy de acuerdo con el recargo por mora de Bs 10. El día del vencimiento intenté pagar con el QR y la app me dio error; recién al día siguiente pude entrar. Pido que se me deje sin efecto el recargo.",
+          "canal_ingreso": "APP", "estado": "EN_ANALISIS",
+          "fecha_ingreso": { "$sql": "now() - interval '2 days'" },
+          "dias_habiles_plazo": 5,
+          "plazo_respuesta": { "$sql": "now() + interval '5 days'" },
+          "plazo_prorrogado_hasta": null, "prorroga_comunicada_al_cliente_en": null,
+          "prorroga_comunicada_al_organismo_en": null, "justificacion_prorroga": null,
+          "fecha_respuesta": null, "resultado": null, "respuesta": null,
+          "incluido_en_reporte_mensual": null,
+          "conservar_hasta": { "$fecha": "3660 days" }
+        }
+      ]
+    },
+    {
+      "tabla": "instancia_reclamo",
+      "conflicto": [],
+      "comentario": "Primera instancia abierta en la entidad. Si la respuesta no conforma, se agrega otra fila con instancia REGULADOR: el historial no se pisa.",
+      "filas": [
+        {
+          "reclamo_id": { "$sql": "(SELECT id FROM reclamo_cliente WHERE codigo = 'REC-DEMO-0001')" },
+          "instancia": "ENTIDAD", "fecha_elevacion": { "$sql": "now() - interval '2 days'" },
+          "numero_expediente": "EXP-ENT-0001", "estado": "EN_TRAMITE",
+          "resolucion": null, "fecha_resolucion": null, "monto_resarcido": null
+        }
+      ]
+    }
+  ]
+}

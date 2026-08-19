@@ -94,7 +94,7 @@ el trámite que el proyecto tiene por delante.
 
 - Exactitud de dinero por tipo, no por disciplina.
 - Frontera transaccional declarativa y verificable.
-- Ecosistema maduro para lo que este sistema necesita: Flyway, Testcontainers,
+- Ecosistema maduro para lo que este sistema necesita: Testcontainers,
   Resilience4j, ShedLock, Micrometer.
 
 **En contra, y hay que asumirlo**

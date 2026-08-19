@@ -1,0 +1,140 @@
+name: Bóveda, esquema, semillas y despliegue
+
+# Las puertas que no dependen de que alguien se acuerde:
+#
+#   1 · la bóveda es coherente y lo derivado no divergió de su fuente
+#   2 · las 65 skills están asignadas, los carriles dicen lo mismo en los dos planes
+#   3 · ningún servicio queda con una réplica, y el escalado cabe en el pool
+#   4 · el esquema aplica en limpio sobre PostgreSQL 16 y la prueba de humo pasa
+#   5 · las semillas de dev NO entran a una base que no esté marcada como dev
+#
+# La quinta es la que importa el día que alguien apunte un despliegue al lugar
+# equivocado: la guarda tiene que fallar, y este workflow comprueba que falla.
+
+on:
+  push:
+    branches: [main, dev]
+    paths-ignore:
+      - "landing/**"
+  pull_request:
+    paths-ignore:
+      - "landing/**"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  boveda:
+    name: Bóveda, carriles y despliegue coherentes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Dependencias
+        run: python3 -m pip install --quiet pyyaml
+
+      - name: Verificar la bóveda
+        run: python3 scripts/verificar_boveda.py
+
+      - name: Verificar los carriles — skills, alineación y balance
+        run: python3 scripts/verificar_carriles.py
+
+      - name: Generar los manifiestos — valida las reglas de disponibilidad
+        run: python3 scripts/generar_k8s.py
+
+      - name: Regenerar lo derivado
+        run: |
+          python3 scripts/generar_ddl.py
+          python3 scripts/generar_semillas.py
+
+      - name: Lo derivado no puede divergir de su fuente
+        run: |
+          if ! git diff --quiet -- sql/; then
+            echo "::error::sql/ quedó desfasado de docs/entidades/ o de seeders/."
+            echo "Corré 'python3 scripts/generar_ddl.py' y commiteá el resultado."
+            git diff --stat -- sql/
+            exit 1
+          fi
+
+  esquema:
+    name: Esquema, semillas y prueba de humo sobre PostgreSQL real
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: aportaya
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+        ports: ["5432:5432"]
+    env:
+      PGPASSWORD: postgres
+      PGHOST: localhost
+      PGUSER: postgres
+      PGDATABASE: aportaya
+      # El search_path completo: el SQL escrito a mano (restricciones, semillas,
+      # prueba de humo) referencia las tablas por nombre simple.
+      PGOPTIONS: >-
+        -c search_path=aportes,auditoria,cumplimiento,entregas,erp,garantia,grupos,identidad,notificaciones,nucleo_financiero,organizador,publicidad,tarifas,transparencia,catalogo,comun,public
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar cliente de PostgreSQL
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Aplicar el esquema en limpio
+        run: psql -v ON_ERROR_STOP=1 -q -f sql/aplicar.sql
+
+      - name: Sembrar los catálogos mínimos
+        run: psql -v ON_ERROR_STOP=1 -q -f sql/60_semillas/sembrar.sql
+
+      - name: Los mínimos son idempotentes — la segunda corrida no inserta nada
+        run: psql -v ON_ERROR_STOP=1 -q -f sql/60_semillas/sembrar.sql
+
+      - name: La guarda de dev BLOQUEA una base sin marcar
+        run: |
+          if psql -v ON_ERROR_STOP=1 -q -f sql/61_dev/sembrar_dev.sql 2>/dev/null; then
+            echo "::error::Las semillas de dev entraron a una base SIN app.entorno = 'dev'."
+            echo "La guarda de sembrar_dev.sql no está cumpliendo su función."
+            exit 1
+          fi
+          echo "La guarda rechazó la siembra, como corresponde."
+
+      - name: Marcar la base como de desarrollo y sembrar dev
+        run: |
+          psql -q -c "ALTER DATABASE aportaya SET app.entorno = 'dev'"
+          psql -v ON_ERROR_STOP=1 -q -f sql/61_dev/sembrar_dev.sql
+
+      - name: Prueba de humo — cero FALLA
+        run: |
+          psql -q -f sql/50_verificacion/prueba_humo.sql > /tmp/humo.txt
+          fallas=$(grep -c 'FALLA' /tmp/humo.txt || true)
+          oks=$(grep -c 'OK' /tmp/humo.txt || true)
+          echo "prueba de humo: $oks OK, $fallas FALLA"
+          if [ "$fallas" -ne 0 ]; then
+            grep 'FALLA' /tmp/humo.txt
+            exit 1
+          fi
+
+      - name: Las cuentas de dev existen y tienen hash real
+        run: |
+          psql -v ON_ERROR_STOP=1 -qtA -c "
+            SELECT CASE WHEN count(*) = 2 THEN 'ok' ELSE 'faltan cuentas de dev' END
+              FROM usuario u
+              JOIN credencial_acceso c ON c.usuario_id = u.id
+             WHERE u.codigo_publico IN ('USR000090','USR000091')
+               AND c.hash_contrasena LIKE '\$argon2id\$%'" | grep -qx ok
+
+      - name: Los canales por defecto están encendidos y los opcionales no
+        run: |
+          psql -v ON_ERROR_STOP=1 -qtA -c "
+            SELECT CASE WHEN count(*) = 0 THEN 'ok' ELSE 'catálogo de canales incoherente' END
+              FROM proveedor_mensajeria
+             WHERE (codigo IN ('BANDEJA_INTERNA') AND NOT activo)
+                OR (codigo IN ('WHATSAPP_BSP','SMS_LOCAL','VOZ_IVR') AND activo)" | grep -qx ok

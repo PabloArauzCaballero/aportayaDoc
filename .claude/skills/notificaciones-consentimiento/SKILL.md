@@ -48,6 +48,26 @@ Reglas de contenido:
 - El monto y la fecha, cuando van, salen del hecho registrado, no de un cálculo
   aparte que puede diferir.
 
+## Canales por defecto — correo y bandeja interna
+
+[[ADR-035 Canales por defecto]]: los canales encendidos son **`IN_APP`** (la bandeja
+de la app), **`PUSH`** (el aviso en el celular) y **`CORREO`** (la constancia).
+WhatsApp, SMS y voz están **apagados** hasta que haya contrato con proveedor: no se
+usan en un flujo nuevo.
+
+| | `IN_APP` | `PUSH` y `CORREO` |
+| --- | --- | --- |
+| Qué es | Fila en `bandeja_entrada` | Fila en `envio_notificacion` |
+| Cuándo se escribe | En la **misma transacción** que la notificación | Después, por el relevo del outbox |
+| ¿Puede fallar? | No | Sí: cola, reintento y cola muerta |
+| ¿Entra en `cadena_respaldo`? | **No** | Sí |
+| ¿Se suprime? | No, nunca: es el expediente | Sí, salvo `es_obligatorio` |
+| ¿Cuenta para el tope diario? | No | Sí |
+
+La cadena sembrada: `CORREO>PUSH` para seguridad, regulatorio y prioridad `CRITICA`;
+`PUSH>CORREO` para el resto. Los 37 eventos tienen plantilla vigente en los tres
+canales por defecto.
+
 ## Despacho
 
 ```

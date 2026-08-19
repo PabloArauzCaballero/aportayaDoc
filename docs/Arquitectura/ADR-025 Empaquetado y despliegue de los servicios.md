@@ -91,12 +91,20 @@ Los perfiles de compose son: `base` (infraestructura), `<servicio>` (uno),
 | Entrada | **NGINX Ingress** → gateway. Ningún servicio con `Service` de tipo `LoadBalancer` |
 | Sondas | `readiness` y `liveness` sobre Actuator, distintas: *readiness* mira la base y Kafka; *liveness*, solo el proceso |
 | Configuración | `ConfigMap` por servicio, secretos en `Secret` montados como variables. **Nunca en la imagen** |
-| Migraciones | **Un `Job` de Flyway antes del despliegue**, con `rol_migracion`. Ningún servicio migra al arrancar |
-| Réplicas | 1 por omisión; 3 en `nucleo-financiero`, `aportes` e `identidad` |
+| Migraciones | **Un `Job` que ejecuta `psql -f sql/aplicar.sql`** antes del despliegue, con `rol_migracion`. Ningún servicio migra al arrancar |
+| Réplicas | Por **nivel de criticidad**, nunca 1 en nada que atienda usuarios ([[ADR-037 Alta disponibilidad y balanceo]]) |
 | Despliegue | Rolling, con `maxUnavailable: 0` en los servicios de dinero |
 
+> [!warning] Dos líneas de este ADR quedaron corregidas
+> **Migraciones**: decía "`Job` de Flyway". Lo corrigió
+> [[ADR-032 Aplicación del esquema]]: el mecanismo es `psql` sobre `sql/aplicar.sql`,
+> porque `sql/` es generado y Flyway asume archivos inmutables con checksum.
+> **Réplicas**: decía "1 por omisión; 3 en `nucleo-financiero`, `aportes` e
+> `identidad`". Lo corrigió [[ADR-037 Alta disponibilidad y balanceo]]: una réplica no
+> es un despliegue, es un punto único de falla con `Deployment` alrededor.
+
 **Que ningún servicio migre al arrancar** es la regla que más importa acá: con
-catorce procesos arrancando a la vez, catorce Flyway compitiendo por el mismo esquema
+catorce procesos arrancando a la vez, catorce de ellos aplicando DDL sobre el mismo esquema
 es una condición de carrera garantizada. La migración es un paso del despliegue, no
 del arranque.
 
@@ -129,7 +137,7 @@ propio del servicio.
 | **Un solo contenedor con los catorce servicios dentro** | Anula el despliegue independiente, que es la mitad del motivo de [[ADR-014 Arquitectura de servicios]]. |
 | **`docker compose` también en producción** | Alcanza para un entorno de prueba y no da despliegue progresivo, sondas ni reprogramación. |
 | **Manifiestos escritos a mano por servicio** | Catorce copias que divergen. |
-| **Migración al arrancar** (`spring.flyway.enabled=true`) | Carrera entre réplicas y entre servicios sobre el mismo esquema. |
+| **Migración al arrancar** (una réplica aplicando DDL al levantar) | Carrera entre réplicas y entre servicios sobre el mismo esquema. |
 | **Serverless** | Conexiones efímeras contra RLS por sesión y transacciones con contexto: incompatible, y ya estaba descartado. |
 
 ## Consecuencias
@@ -158,7 +166,8 @@ propio del servicio.
 
 - [ ] Ninguna imagen corre como root ni usa `latest`.
 - [ ] Ningún servicio publica puerto al exterior salvo el gateway.
-- [ ] Ningún `application.yml` tiene `spring.flyway.enabled: true`.
+- [ ] Ningún `application.yml` aplica DDL al arrancar (ni `spring.flyway.enabled`, ni
+      `spring.sql.init.mode: always`, ni un `CommandLineRunner` con `CREATE`).
 - [ ] Los manifiestos están generados: regenerar no produce diff.
 - [ ] `docker compose --profile base up` más un servicio alcanza para trabajar.
 - [ ] Cada servicio responde `readiness` y `liveness` por separado, y *readiness*

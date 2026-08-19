@@ -229,7 +229,7 @@ resolución de ASFI.
 | Entorno | Qué hacer |
 | --- | --- |
 | Producción | Se deja `EN_TRAMITE`. El `UPDATE` de habilitación está en el campo `al_otorgarse_la_licencia` del propio seeder |
-| Local y pruebas | La semilla de **prueba** (`sql/61_prueba/`) habilita la licencia |
+| Local y pruebas | La semilla de **prueba** (`sql/61_dev/`) habilita la licencia |
 | **Nunca** | Desactivar la validación en el código para "poder trabajar". Eso es el riesgo 7 del plan maestro |
 
 Y una prueba explícita: **con licencia `EN_TRAMITE`, toda operación de dinero es

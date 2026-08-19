@@ -45,7 +45,7 @@ alcance: servicios/* · plataforma/* · despliegue/*
 
 | Artefacto | Estado |
 | --- | --- |
-| `docs/` — bóveda | **Completa**: 99 casos de uso, 306 entidades, 633 relaciones, 138 restricciones, 32 ADR |
+| `docs/` — bóveda | **Completa**: 99 casos de uso, 306 entidades, 633 relaciones, 138 restricciones, 37 ADR |
 | `sql/` — esquema | **Generado y aplicable**: `psql -v ON_ERROR_STOP=1 -f sql/aplicar.sql` |
 | `seeders/` — catálogos | **Listos**: **20** catálogos mínimos (van a producción) + **14** de prueba |
 | `scripts/` — generadores | **Listos**: DDL, bóveda, semillas, verificador. **Falta**: asignación de esquema por servicio (Fase 1) |
@@ -92,7 +92,7 @@ choca con uno de estos, gana el invariante y se escribe un ADR explicando la ten
 | Framework | **Spring Boot 3.3**, Spring MVC | 015 | WebFlux no: la carga es de E/S, no de concurrencia reactiva |
 | Construcción | **Gradle** con Kotlin DSL, catálogo de versiones | 015 | `settings.gradle.kts` descubre por barrido |
 | Acceso a datos | **jOOQ** generado desde la base viva | 016 | **JPA prohibido**, no desaconsejado |
-| Migraciones | **Flyway** aplicando `sql/`, como `Job` de despliegue | 025 | Ningún servicio migra al arrancar |
+| Migraciones | **`psql -f sql/aplicar.sql`** como `Job` de despliegue; Flyway descartado | 032 | Ningún servicio migra al arrancar |
 | Datos | Un clúster · **un esquema y un rol por servicio** | 017 | Las 633 FK se conservan |
 | Dinero | **`BigDecimal`** dentro de `Dinero`; cadena decimal en JSON | 019 | Invariante 4 |
 | Contratos | **OpenAPI 3.1 escrito primero**; servidor y clientes generados | 020 | El controlador implementa la interfaz generada |
@@ -204,7 +204,8 @@ verifica en CI desde entonces.**
 
 - **No** se declara `spring-boot-starter-data-jpa` en ningún `build.gradle.kts`.
 - **No** existe la clave `spring.jpa` en ningún `application.yml`.
-- Flyway corre como `Job` de despliegue con `rol_migracion`, nunca al arrancar.
+- El `Job` de migración corre `psql -f sql/aplicar.sql` con `rol_migracion`, nunca al
+  arrancar un servicio. Flyway está descartado (ADR-032).
 - Regla de análisis estático: cualquier importe de `jakarta.persistence` es error.
 
 ### R3 · Append-only sin escritura accidental

@@ -47,7 +47,7 @@ fecha_revision: 2026-08-16
 | Lectura y escritura separadas, réplicas, vistas y proyecciones | `lecturas-proyecciones` |
 | NGINX como única entrada, contenedor sin root, redes internas, Kubernetes aparte | `despliegue-contenedores` |
 | Respaldos configurables y **ensayo de restauración obligatorio** | `respaldos-restauracion` |
-| Semillas en JSON, idempotentes, las de prueba bloqueadas en producción | `semillas-catalogos` (ya lo hacía: `seeders/minimos` y `seeders/prueba`) |
+| Semillas en JSON, idempotentes, las de prueba bloqueadas en producción | `semillas-catalogos` (ya lo hacía: `seeders/minimos` y `seeders/dev`) |
 | CI con puertas que bloquean el merge, cobertura como piso, cadena de suministro | `ci-calidad` |
 | OpenAPI sin divergencia, documentación de endpoints, README por carpeta con valor real | `documentacion-entregables` |
 | Protocolo por fases con gate de entrada y salida, informe de progreso | `plan-por-fases` |

@@ -7,10 +7,32 @@ description: "Agregar o cambiar datos de catálogo de AportaYa en seeders/ (umbr
 
 ```
 seeders/minimos/   catálogos sin los cuales el sistema NO opera → van también a producción
-seeders/prueba/    datos de demostración para desarrollo y QA   → nunca a producción
+seeders/dev/       datos de desarrollo y QA                   → nunca a producción
         ↓ python3 scripts/generar_semillas.py   (lo encadena generar_ddl.py)
-sql/60_semillas/   sql/61_prueba/
+sql/60_semillas/   sql/61_dev/
 ```
+
+## La frontera dev / mínimos es dura, y la verifica el generador
+
+`generar_semillas.py` **no genera** si se rompe alguna de estas tres:
+
+| Regla | Qué impide |
+| --- | --- |
+| Cada archivo declara `"entorno"` igual al de su carpeta (`minimo` / `dev`) | Que un archivo de demostración se cuele en la carpeta que va a producción |
+| `minimos/` no escribe tablas de personas (`usuario`, `credencial_acceso`, `cuenta_billetera`, `sesion`, …) | Que una persona de demostración exista en producción |
+| Una tabla la escribe **un solo** conjunto, nunca los dos | Que un umbral regulatorio se cambie desde un archivo que nadie revisa como regulatorio |
+
+Y `sql/61_dev/sembrar_dev.sql` arranca con una guarda que aborta si la base no
+tiene `app.entorno = 'dev'`. La marca la pone el arranque de desarrollo:
+
+```bash
+psql -d aportaya -c "ALTER DATABASE aportaya SET app.entorno = 'dev'"
+```
+
+**Dónde va cada cosa, sin dudar:** ¿lo necesita producción para operar? → `minimos/`.
+¿Es una persona, un grupo, un movimiento o una credencial? → `dev/`. Si dudás, es
+`dev/`: un mínimo que falta se nota al primer arranque; un dato de demostración en
+producción se nota tarde y mal.
 
 **Los JSON son la fuente de verdad.** El SQL es derivado y se regenera; editarlo a
 mano se pierde en la siguiente corrida.
@@ -104,7 +126,7 @@ agrega también **qué regla permiten probar**.
 
 ## Procedimiento
 
-1. Editar o agregar el JSON en `seeders/minimos/` o `seeders/prueba/`.
+1. Editar o agregar el JSON en `seeders/minimos/` o `seeders/dev/`.
 2. Registrarlo en el `manifiesto.json` correspondiente, **en el orden correcto**:
    las FK exigen que el destino exista antes.
 3. Actualizar la tabla de `seeders/README.md` con el archivo y su estado.
@@ -114,7 +136,8 @@ agrega también **qué regla permiten probar**.
 python3 scripts/generar_semillas.py
 psql -d aportaya -v ON_ERROR_STOP=1 -f sql/aplicar.sql
 psql -d aportaya -v ON_ERROR_STOP=1 -f sql/60_semillas/sembrar.sql
-psql -d aportaya -v ON_ERROR_STOP=1 -f sql/61_prueba/sembrar_prueba.sql
+psql -d aportaya -c "ALTER DATABASE aportaya SET app.entorno = 'dev'"
+psql -d aportaya -v ON_ERROR_STOP=1 -f sql/61_dev/sembrar_dev.sql
 psql -d aportaya -f sql/50_verificacion/prueba_humo.sql     # todo OK
 ```
 

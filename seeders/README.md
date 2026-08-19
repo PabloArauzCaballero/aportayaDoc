@@ -6,11 +6,19 @@ distintos:
 ```
 seeders/
 ├── minimos/     catálogos sin los cuales el sistema NO opera. Van también a producción.
-└── prueba/      datos de demostración para desarrollo y QA. Nunca a producción.
+└── dev/         datos de desarrollo y QA. Nunca a producción, y con guarda que lo impide.
 ```
 
+> [!danger] La frontera entre los dos es dura y está verificada
+> `scripts/generar_semillas.py` **se niega a generar** si: un archivo declara un
+> `entorno` distinto al de su carpeta, `minimos/` toca una tabla de datos de
+> personas, o una misma tabla la escriben los dos conjuntos. Y
+> `sql/61_dev/sembrar_dev.sql` empieza con una guarda que **aborta** si la base no
+> tiene `app.entorno = 'dev'`. Sembrar dev en producción no es un descuido posible:
+> es una excepción de PostgreSQL.
+
 Los JSON son **la fuente de verdad**. El SQL de `sql/60_semillas/` y
-`sql/61_prueba/` es un derivado:
+`sql/61_dev/` es un derivado:
 
 ```bash
 python3 scripts/generar_semillas.py
@@ -43,8 +51,8 @@ local y en QA, y no deben tocar producción jamás.
 | `11-contratos-de-adhesion.json` | 4 contratos en borrador | redactar y registrar ante ASFI |
 | `12-calendario-habil.json` | 33 feriados nacionales de 2026 a 2028 | listo — ampliar cada año |
 | `13-politicas-de-token.json` | 13 políticas de token, una por propósito | listo |
-| `14-proveedores-externos.json` | 6 rieles de pago y 5 de mensajería, todos inactivos | ⚠ **PROVISIONAL** |
-| `15-eventos-y-plantillas.json` | 33 eventos notificables, 18 plantillas y sus versiones | textos por aprobar |
+| `14-proveedores-externos.json` | 6 rieles de pago y 6 de mensajería; solo la bandeja interna nace activa | ⚠ **PROVISIONAL** |
+| `15-eventos-y-plantillas.json` | 37 eventos notificables, 122 plantillas y sus versiones (IN_APP · PUSH · CORREO en todos) | textos por aprobar |
 | `16-reputacion-y-scoring.json` | modelo v1, 6 factores, 17 reglas de impacto, 8 insignias | ⚠ **PROVISIONAL** |
 | `17-organizador-y-emparejamiento.json` | 13 requisitos de habilitación, criterio de emparejamiento, 8 reglas de automatización | revisar con riesgos |
 | `18-sanciones-y-cobranza.json` | política de sanción, 23 filas de matriz y 6 etapas de cobranza | revisar con riesgos y legal |
@@ -66,6 +74,12 @@ legal, y cada fila tiene su columna `base_normativa` esperando la cita exacta.
 >
 > El archivo de licencia trae, en `al_otorgarse_la_licencia`, el `UPDATE` que
 > corresponde el día que ASFI resuelva.
+>
+> **La única excepción es `BANDEJA_INTERNA`**, el adaptador de la bandeja de la app:
+> nace activo porque no depende de ningún tercero, no cuesta nada y no puede
+> "caerse" —escribe una fila en la misma transacción que la notificación—. Encender
+> `CORREO_SMTP` y `PUSH_APP` es cosa del entorno: en dev lo hace
+> `seeders/dev/01-entorno-tecnico.json` apuntando a un buzón local.
 
 Tres catálogos tienen una desviación anotada, y conviene conocerla antes de usarlos:
 
@@ -208,9 +222,35 @@ qué sirven.
 psql -d aportaya -v ON_ERROR_STOP=1 -f sql/aplicar.sql
 # 2) catálogos (también en producción)
 psql -d aportaya -v ON_ERROR_STOP=1 -f sql/60_semillas/sembrar.sql
-# 3) datos de prueba (nunca en producción)
-psql -d aportaya -v ON_ERROR_STOP=1 -f sql/61_prueba/sembrar_prueba.sql
+# 3) datos de dev (nunca en producción) — antes, marcar la base como de desarrollo
+psql -d aportaya -c "ALTER DATABASE aportaya SET app.entorno = 'dev'"
+psql -d aportaya -v ON_ERROR_STOP=1 -f sql/61_dev/sembrar_dev.sql
 ```
+
+Sin el `ALTER DATABASE`, el paso 3 termina en:
+
+```
+ERROR:  SEMILLAS DE DEV BLOQUEADAS: app.entorno = <sin definir>, se exige 'dev'
+```
+
+### Las dos cuentas con contraseña real
+
+`15-usuarios-dev.json` es el único archivo del repositorio cuyas credenciales
+**autentican de verdad**: lleva el hash Argon2id auténtico de la contraseña de
+desarrollo, con los mismos parámetros que usa identidad (`m=65536, t=3, p=4`).
+
+| Cuenta | Correo | Rol | Para qué |
+| --- | --- | --- | --- |
+| `USR000090` | `a2020115468@estudiantes.upsa.edu.bo` | `PARTICIPANTE` | Entrar a la app móvil |
+| `USR000091` | `pabliarca@gmail.com` | `ADMIN_PLATAFORMA` | Entrar al backoffice |
+
+Las dos traen canal `CORREO` verificado y canal `IN_APP`, que son los dos canales
+por defecto del proyecto ([[ADR-035 Canales por defecto]]), y `USR000090` trae un
+dispositivo Android de confianza con token push, porque el desarrollo móvil
+arranca en Android ([[ADR-036 Android primero]]).
+
+Las demás cuentas de dev llevan hashes de relleno y **no** dejan iniciar sesión: es
+deliberado, para que nadie confunda una cuenta de demostración con una usable.
 
 Los mínimos son idempotentes: volver a ejecutarlos no duplica nada.
 
@@ -220,8 +260,8 @@ Sobre PostgreSQL 16 y base recién creada, aplicando esquema → mínimos → m�
 otra vez → prueba → prueba de humo:
 
 ```
-minimos  → sql/60_semillas: 21 archivos, 626 filas
-prueba   → sql/61_prueba:   14 archivos, 572 filas
+minimos  → sql/60_semillas: 21 archivos, 835 filas
+dev      → sql/61_dev:   15 archivos, 601 filas
 prueba de humo: 151 OK, 0 FALLA
 tablas con datos: 173 de 382
 suma de saldo_total de todas las cuentas de billetera: 0,00
@@ -229,6 +269,11 @@ transacciones de billetera con débitos ≠ créditos: 0
 asientos contables con debe ≠ haber: 0 (25 asientos, 53 movimientos)
 custodia: libro 9.900,00 · banco 9.900,00 · ratio de cobertura 1,000000
 ```
+
+> **Reverificado el 2026-08-19** sobre PostgreSQL 16 en contenedor limpio: esquema,
+> mínimos, guarda de dev (bloquea sin la marca, siembra con ella) y prueba de humo
+> **151 OK, 0 FALLA**. Las cifras de cuadre de arriba son de la corrida anterior y no
+> cambiaron de origen: esta tanda solo agregó cuentas de dev y catálogo de canales.
 
 La segunda corrida de los mínimos no inserta ni una fila: si alguna vez falla ahí,
 hay un bloque sin `conflicto` o con una clave natural que no existe.

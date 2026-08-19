@@ -20,8 +20,17 @@ apps/movil/src/
 ├── organismos/   FormularioDeAporte, ResumenDeBilletera, ListaDeMovimientos
 ├── pantallas/    composición de organismos + ruta, sin lógica
 ├── dominio/      un cliente por caso de uso, tipado desde openapi/ del servicio
+│   └── puertos/  Biometria · AvisosPush · Camara · AlmacenSeguro · Haptica
+├── infraestructura/
+│   ├── android/  implementación Android — se escribe primero
+│   └── ios/      implementación iOS — el pase de paridad vive acá
 └── tokens/       único lugar con valores de color, espacio y tipografía
 ```
+
+**Android primero, iOS por pase** ([[ADR-036 Android primero]]). Una pantalla se
+termina en Android —cuatro estados, humo en verde sobre emulador— y recién ahí se
+escribe su ficha de paridad. `Platform.OS` **no aparece en una vista**: lo que difiere
+por plataforma se resuelve en el adaptador o en el token.
 
 Ningún componente hace `fetch`: la red vive en `dominio/`, y las pantallas la
 consumen por hooks ([[ADR-009 Composición atómica]]).
@@ -59,6 +68,8 @@ que produce un efecto suma **enviando** y **sin conexión**.
 | Biometría y MFA | `expo-local-authentication` | CU-04 |
 | Dispositivo de confianza | Identificador estable + registro en el servidor | CU-04 |
 | Notificaciones | FCM/APNs; el contenido no revela montos ni datos personales | Módulo 05 |
+| Bandeja de avisos | Lee `bandeja_entrada`, que es la fuente; el push es solo el aviso ([[ADR-035 Canales por defecto]]) | Módulo 05 |
+| Subir un archivo | `multipart` al endpoint del servicio dueño; vuelve una **clave de objeto**, no una URL ([[ADR-034 Almacenamiento de archivos]]) | CU-02, CU-22 |
 
 Si se deniega un permiso, la app explica qué se pierde y ofrece una alternativa
 (ingresar el código del QR a mano), en vez de quedarse en una pantalla muerta.

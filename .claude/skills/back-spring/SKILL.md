@@ -33,11 +33,12 @@ sin esperar a que termines ([[ADR-020 Contratos OpenAPI primero]]).
 
 ```
 1  openapi/<servicio>.yaml        la operación, con sus códigos de error
-2  dominio/                       los átomos que el cálculo necesita
-3  infraestructura/               repositorios y clientes, sin lógica
-4  aplicacion/CU<NN>*.java        el organismo: orquesta y abre la transacción
-5  web/<X>Controller.java         implementa la interfaz generada
-6  pruebas                        las siete obligatorias
+2  dominio/puertos/               lo que está afuera, como interfaz del dominio
+3  dominio/                       los átomos que el cálculo necesita
+4  infraestructura/               repositorios, clientes y adaptadores, sin lógica
+5  aplicacion/CU<NN>*.java        el organismo: orquesta y abre la transacción
+6  web/<X>Controller.java         implementa la interfaz generada
+7  pruebas                        las siete obligatorias
 ```
 
 ## El organismo — un caso de uso, una clase, una transacción
@@ -99,6 +100,31 @@ esconde la dependencia y hace imposible construir la clase en una prueba unitari
 
 Los adaptadores externos y los clientes de otros servicios entran **detrás de una
 interfaz del dominio**, para poder sustituirlos por un doble sin tocar el organismo.
+
+## Puertos y adaptadores — lo que está afuera
+
+Regla de [[ADR-033 Puertos y adaptadores]]: **si sale del proceso —red, disco, correo,
+plata, reloj, azar— es puerto.**
+
+```
+dominio/puertos/AlmacenDeArchivos.java              interfaz, sin Spring, sin SDK
+infraestructura/adaptadores/archivos/
+    AlmacenLocalAdaptador.java                      @ConditionalOnProperty(…, matchIfMissing = true)
+    AlmacenS3Adaptador.java                         @ConditionalOnProperty(…, havingValue = "s3")
+```
+
+| Regla | Rechazo de revisión si… |
+| --- | --- |
+| El puerto lo define el dominio | La firma tiene un tipo del SDK del proveedor |
+| El adaptador local es el valor por omisión | La omisión elige un tercero (`matchIfMissing` en el que no toca) |
+| El nombre de la marca vive en un solo paquete | `grep <proveedor>` aparece fuera de `adaptadores/` |
+| Se elige por configuración | Hay un `if proveedor ==` o un `@Profile` decidiendo proveedor |
+| El adaptador traduce el error | Un `SocketTimeout` o un `IOException` llega al organismo |
+
+**Los defaults del proyecto**: archivos → `local`
+([[ADR-034 Almacenamiento de archivos]]); mensajería → bandeja interna y correo
+([[ADR-035 Canales por defecto]]);
+pagos y facturación → simulador. Encender otro es configuración, nunca código.
 
 ## Lo que este servicio no puede hacer
 

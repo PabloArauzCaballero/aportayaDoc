@@ -6,10 +6,15 @@ Convierte los seeders JSON de seeders/ en SQL aplicable.
 
 Lee
     seeders/minimos/*.json   catálogos que también van a producción
-    seeders/prueba/*.json    datos de prueba, solo desarrollo y QA
+    seeders/dev/*.json       datos de desarrollo y QA — NUNCA a producción
 Escribe
     sql/60_semillas/         SQL de los seeders mínimos + sembrar.sql
-    sql/61_prueba/           SQL de los datos de prueba + sembrar_prueba.sql
+    sql/61_dev/              SQL de los datos de dev + sembrar_dev.sql
+
+La separación entre los dos conjuntos es dura y la verifica este mismo script:
+ninguna tabla escrita por `minimos/` puede escribirse desde `dev/`, `minimos/` no
+toca datos de personas, y el orquestador de dev arranca con una guarda que aborta
+si la base no está marcada como entorno de desarrollo.
 
 Los JSON son la fuente de verdad. El SQL es un derivado: no lo edite.
 
@@ -47,9 +52,40 @@ ORIGEN = pathlib.Path("seeders")
 DESTINOS = {
     "minimos": (pathlib.Path("sql/60_semillas"), "sembrar.sql",
                 "Catálogos mínimos — también se aplican en producción"),
-    "prueba": (pathlib.Path("sql/61_prueba"), "sembrar_prueba.sql",
-               "Datos de prueba — NO aplicar en producción"),
+    "dev": (pathlib.Path("sql/61_dev"), "sembrar_dev.sql",
+            "Datos de desarrollo — NO aplicar en producción"),
 }
+
+# Lo que debe decir el campo "entorno" de cada archivo de la carpeta.
+ETIQUETA = {"minimos": "minimo", "dev": "dev"}
+
+# Tablas con datos de personas: `minimos/` no las toca nunca. Un catálogo que
+# necesita una persona está mal modelado, o es un dato de dev disfrazado.
+PROHIBIDAS_EN_MINIMOS = {
+    "usuario", "credencial_acceso", "historial_credencial", "sesion",
+    "documento_identidad", "verificacion_kyc", "declaracion_pep",
+    "debida_diligencia", "expediente_cliente", "perfil_financiero",
+    "perfil_transaccional", "direccion_usuario", "canal_vinculado",
+    "factor_mfa", "dispositivo", "cuenta_billetera", "movimiento_billetera",
+    "asiento_contable", "linea_asiento", "intento_autenticacion",
+    "aceptacion_contrato", "consentimiento", "referencia_personal",
+}
+
+# Guarda que encabeza el orquestador de dev: sin esta marca, no siembra.
+GUARDA_DEV = "\n".join([
+    "-- GUARDA — sin esto, estas semillas no entran a ninguna base.",
+    "-- La marca la pone el arranque de desarrollo, nunca un despliegue:",
+    "--   ALTER DATABASE pasanaku SET app.entorno = 'dev';",
+    "DO $$",
+    "BEGIN",
+    "  IF current_setting('app.entorno', true) IS DISTINCT FROM 'dev' THEN",
+    "    RAISE EXCEPTION",
+    "      'SEMILLAS DE DEV BLOQUEADAS: app.entorno = %, se exige ''dev''',",
+    "      coalesce(nullif(current_setting('app.entorno', true), ''), '<sin definir>');",
+    "  END IF;",
+    "END $$;",
+    "",
+])
 
 
 def lit(valor):
@@ -185,6 +221,56 @@ def validar(entorno, mods):
     return errores
 
 
+def tablas_de(entorno):
+    """Las tablas que escribe un conjunto de seeders."""
+    escritas = set()
+    for ruta in sorted((ORIGEN / entorno).glob("*.json")):
+        if ruta.name == "manifiesto.json":
+            continue
+        datos = json.loads(ruta.read_text(encoding="utf-8"))
+        for b in datos.get("bloques", []):
+            if "tabla" in b:
+                escritas.add(b["tabla"])
+    return escritas
+
+
+def validar_separacion():
+    """La frontera dura entre `minimos/` y `dev/`.
+
+    No es una convención de carpetas: es lo que impide que un dato de demostración
+    viaje a producción dentro de un catálogo, y que un umbral regulatorio se
+    modifique desde un archivo que nadie revisa como si fuera regulatorio.
+    """
+    errores = []
+
+    for entorno, etiqueta in ETIQUETA.items():
+        carpeta = ORIGEN / entorno
+        manifiesto = json.loads((carpeta / "manifiesto.json").read_text(encoding="utf-8"))
+        if manifiesto.get("entorno") != etiqueta:
+            errores.append(f"{entorno}/manifiesto.json: entorno debe ser '{etiqueta}'")
+        for nombre in manifiesto["orden"]:
+            ruta = carpeta / nombre
+            if not ruta.exists():
+                continue
+            datos = json.loads(ruta.read_text(encoding="utf-8"))
+            if datos.get("entorno") != etiqueta:
+                errores.append(
+                    f"{entorno}/{nombre}: declara entorno "
+                    f"'{datos.get('entorno')}' y está en la carpeta de '{etiqueta}'")
+
+    de_minimos, de_dev = tablas_de("minimos"), tablas_de("dev")
+
+    for tabla in sorted(de_minimos & PROHIBIDAS_EN_MINIMOS):
+        errores.append(f"minimos/: escribe '{tabla}', que es dato de personas")
+
+    for tabla in sorted(de_minimos & de_dev):
+        errores.append(
+            f"colisión: '{tabla}' la escriben mínimos y dev. Un catálogo tiene un"
+            f" solo dueño: si es de producción va en minimos/, si no, en dev/")
+
+    return errores
+
+
 def procesar(entorno):
     carpeta = ORIGEN / entorno
     destino, orquestador, titulo = DESTINOS[entorno]
@@ -210,6 +296,8 @@ def procesar(entorno):
          f"--   psql -d pasanaku -v ON_ERROR_STOP=1 -f {destino}/{orquestador}",
          "-- GENERADO desde seeders/ — no editar a mano.", "",
          "\\set ON_ERROR_STOP on", "BEGIN;", ""]
+    if entorno == "dev":
+        L += [GUARDA_DEV]
     L += [f"\\ir {a}" for a in archivos]
     L += ["", "COMMIT;", ""]
     (destino / orquestador).write_text("\n".join(L), encoding="utf-8")
@@ -218,7 +306,7 @@ def procesar(entorno):
 
 def main():
     mods, _, _ = cargar()
-    problemas = []
+    problemas = validar_separacion()
     for entorno in DESTINOS:
         problemas += validar(entorno, mods)
     if problemas:

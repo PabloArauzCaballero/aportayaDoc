@@ -42,6 +42,8 @@ docs/
 | **Cumplimiento** | Contraste requisito por requisito contra ASFI, UIF, BCB, SIN e ISO, con estado y brechas abiertas. | [[Cumplimiento]] |
 | **Casos de uso** | Cómo se ejecuta cada flujo: pasos, tablas, validaciones, evidencia y criterios de aceptación. | [[_CasosDeUso]] |
 | **Restricciones** | Las reglas que la base de datos hace cumplir, con su DDL y la norma que las obliga. | [[Restricciones]] |
+| **Arquitectura** | Las decisiones técnicas, una por documento, con su motivo y lo que las revertiría. | [[_Arquitectura]] |
+| **Cómo se programa** | El orden obligatorio de un flujo —contrato, backend, app, humo— y las reglas duras contra la invención. | [[Procedimiento de desarrollo]] · [[Contrato de implementación para IA]] |
 
 ## Los cinco registros que conviene entender primero
 

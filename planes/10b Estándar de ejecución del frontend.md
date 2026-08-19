@@ -36,7 +36,7 @@ que la app y el backoffice deben mostrar. Se lee y se implementa eso.
 
 **No se inventan datos de ejemplo con apariencia real.** Nada de nombres de personas
 verosímiles, cédulas, montos que parezcan reales o capturas que simulen una cuenta
-existente. Los fixtures salen de `seeders/prueba/` o son obviamente ficticios.
+existente. Los fixtures salen de `seeders/dev/` o son obviamente ficticios.
 
 ---
 

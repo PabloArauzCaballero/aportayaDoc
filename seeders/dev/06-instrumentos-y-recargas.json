@@ -1,0 +1,1121 @@
+{
+  "descripcion": "Por dónde entra el dinero: instrumentos de fondeo verificados, un punto de atención en efectivo, la cuenta de billetera del fondo de garantía y las seis recargas que financian el grupo.",
+  "entorno": "dev",
+  "nota": "Toda recarga tiene contrapartida en la cuenta puente de custodia: el dinero que se acredita en una billetera es dinero que entró al banco custodio. Por eso SYS-CUSTODIA queda con saldo negativo — representa la posición del sistema, no la plata de nadie.",
+  "reglas_que_permite_probar": [
+    "R-BIL-01 — cada transacción cuadra: débitos = créditos",
+    "R-BIL-06 — clave de idempotencia única por orden de recarga y por transacción",
+    "R-CUS — el saldo de custodia respalda el dinero electrónico emitido"
+  ],
+  "bloques": [
+    {
+      "tabla": "cuenta_billetera",
+      "conflicto": [
+        "numero_cuenta"
+      ],
+      "comentario": "El fondo de garantía tiene cuenta propia: no es del grupo ni del organizador (ck_cuenta_titularidad exige titular nulo para este tipo).",
+      "filas": [
+        {
+          "numero_cuenta": "FDG-0000001",
+          "tipo": "FONDO_GARANTIA",
+          "moneda": "BOB",
+          "estado": "ACTIVA",
+          "nivel_debida_diligencia": "REFORZADA",
+          "fecha_apertura": {
+            "$sql": "now() - interval '45 days'"
+          },
+          "cuenta_contable_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.03"
+          }
+        }
+      ]
+    },
+    {
+      "tabla": "punto_atencion",
+      "conflicto": [
+        "codigo"
+      ],
+      "comentario": "Un corresponsal habilitado con límite diario de efectivo: lo que permite ejercitar el arqueo y el tope de efectivo por punto.",
+      "filas": [
+        {
+          "codigo": "PA-SCZ-001",
+          "tipo": "AGENTE_CORRESPONSAL",
+          "razon_social": "Comercial El Cristo S.R.L.",
+          "nit": "1023456789",
+          "departamento": "SANTA CRUZ",
+          "municipio": "Santa Cruz de la Sierra",
+          "direccion": "Av. Cañoto esq. Ballivián 123",
+          "responsable_usuario_id": null,
+          "limite_efectivo_diario": 20000.0,
+          "estado": "HABILITADO",
+          "habilitado_desde": {
+            "$fecha": "-90 days"
+          }
+        },
+        {
+          "codigo": "PA-LPZ-001",
+          "tipo": "AGENCIA_PROPIA",
+          "razon_social": "AportaYa S.A. — Agencia Central",
+          "nit": "1099887766",
+          "departamento": "LA PAZ",
+          "municipio": "La Paz",
+          "direccion": "Calle Potosí 1120, piso 3",
+          "responsable_usuario_id": null,
+          "limite_efectivo_diario": 50000.0,
+          "estado": "HABILITADO",
+          "habilitado_desde": {
+            "$fecha": "-120 days"
+          }
+        }
+      ]
+    },
+    {
+      "tabla": "instrumento_fondeo",
+      "conflicto": [],
+      "comentario": "Instrumentos verificados y con titular coincidente. ck_instrumento_sin_pan impide guardar el número completo: solo enmascarado y hash.",
+      "filas": [
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000001"
+          },
+          "tipo": "CUENTA_BANCARIA",
+          "entidad_financiera": "BANCO DEMO S.A.",
+          "token_proveedor": null,
+          "hash_identificador": {
+            "$sql": "encode(digest('demo-instrumento-01', 'sha256'), 'hex')"
+          },
+          "enmascarado": "****4001",
+          "titular_nombre": "Titular demo USR000001",
+          "titular_documento": "9000001",
+          "titular_coincide": true,
+          "moneda": "BOB",
+          "es_principal": true,
+          "estado_verificacion": "VERIFICADO",
+          "metodo_verificacion": "MICRODEPOSITO",
+          "verificado_en": {
+            "$sql": "now() - interval '46 days'"
+          },
+          "bloqueado_hasta": null
+        },
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000002"
+          },
+          "tipo": "CUENTA_BANCARIA",
+          "entidad_financiera": "BANCO DEMO S.A.",
+          "token_proveedor": null,
+          "hash_identificador": {
+            "$sql": "encode(digest('demo-instrumento-02', 'sha256'), 'hex')"
+          },
+          "enmascarado": "****4002",
+          "titular_nombre": "Titular demo USR000002",
+          "titular_documento": "9000002",
+          "titular_coincide": true,
+          "moneda": "BOB",
+          "es_principal": true,
+          "estado_verificacion": "VERIFICADO",
+          "metodo_verificacion": "MICRODEPOSITO",
+          "verificado_en": {
+            "$sql": "now() - interval '46 days'"
+          },
+          "bloqueado_hasta": null
+        },
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000003"
+          },
+          "tipo": "CUENTA_BANCARIA",
+          "entidad_financiera": "BANCO DEMO S.A.",
+          "token_proveedor": null,
+          "hash_identificador": {
+            "$sql": "encode(digest('demo-instrumento-03', 'sha256'), 'hex')"
+          },
+          "enmascarado": "****4003",
+          "titular_nombre": "Titular demo USR000003",
+          "titular_documento": "9000003",
+          "titular_coincide": true,
+          "moneda": "BOB",
+          "es_principal": true,
+          "estado_verificacion": "VERIFICADO",
+          "metodo_verificacion": "MICRODEPOSITO",
+          "verificado_en": {
+            "$sql": "now() - interval '46 days'"
+          },
+          "bloqueado_hasta": null
+        },
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000004"
+          },
+          "tipo": "EFECTIVO",
+          "entidad_financiera": "AGENTE CORRESPONSAL DEMO",
+          "token_proveedor": null,
+          "hash_identificador": {
+            "$sql": "encode(digest('demo-instrumento-04', 'sha256'), 'hex')"
+          },
+          "enmascarado": "****4004",
+          "titular_nombre": "Titular demo USR000004",
+          "titular_documento": "9000004",
+          "titular_coincide": true,
+          "moneda": "BOB",
+          "es_principal": true,
+          "estado_verificacion": "VERIFICADO",
+          "metodo_verificacion": "MICRODEPOSITO",
+          "verificado_en": {
+            "$sql": "now() - interval '46 days'"
+          },
+          "bloqueado_hasta": null
+        },
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000005"
+          },
+          "tipo": "CUENTA_BANCARIA",
+          "entidad_financiera": "BANCO DEMO S.A.",
+          "token_proveedor": null,
+          "hash_identificador": {
+            "$sql": "encode(digest('demo-instrumento-05', 'sha256'), 'hex')"
+          },
+          "enmascarado": "****4005",
+          "titular_nombre": "Titular demo USR000005",
+          "titular_documento": "9000005",
+          "titular_coincide": true,
+          "moneda": "BOB",
+          "es_principal": true,
+          "estado_verificacion": "VERIFICADO",
+          "metodo_verificacion": "MICRODEPOSITO",
+          "verificado_en": {
+            "$sql": "now() - interval '46 days'"
+          },
+          "bloqueado_hasta": null
+        },
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000006"
+          },
+          "tipo": "CUENTA_BANCARIA",
+          "entidad_financiera": "BANCO DEMO S.A.",
+          "token_proveedor": null,
+          "hash_identificador": {
+            "$sql": "encode(digest('demo-instrumento-06', 'sha256'), 'hex')"
+          },
+          "enmascarado": "****4006",
+          "titular_nombre": "Titular demo USR000006",
+          "titular_documento": "9000006",
+          "titular_coincide": true,
+          "moneda": "BOB",
+          "es_principal": true,
+          "estado_verificacion": "VERIFICADO",
+          "metodo_verificacion": "MICRODEPOSITO",
+          "verificado_en": {
+            "$sql": "now() - interval '46 days'"
+          },
+          "bloqueado_hasta": null
+        }
+      ]
+    },
+    {
+      "tabla": "extracto_bancario",
+      "conflicto": [],
+      "filas": [
+        {
+          "proveedor_id": {
+            "$ref": "proveedor_pago",
+            "codigo": "BANCO_CUSTODIO"
+          },
+          "cuenta": "****4321",
+          "fecha_desde": {
+            "$fecha": "-45 days"
+          },
+          "fecha_hasta": {
+            "$fecha": "-1 days"
+          },
+          "saldo_inicial": 0.0,
+          "saldo_final": 9900.0,
+          "archivo_url": "https://almacen.pasanaku.test/extractos/demo-45d.csv",
+          "importado_en": {
+            "$sql": "now() - interval '1 day'"
+          },
+          "importado_por": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000008"
+          }
+        }
+      ]
+    },
+    {
+      "tabla": "movimiento_bancario",
+      "conflicto": [],
+      "comentario": "Lo que el banco dice que pasó. Contra esto se concilia todo lo demás.",
+      "filas": [
+        {
+          "extracto_id": {
+            "$sql": "(SELECT id FROM extracto_bancario WHERE archivo_url = 'https://almacen.pasanaku.test/extractos/demo-45d.csv')"
+          },
+          "fecha_movimiento": {
+            "$fecha": "-44 days"
+          },
+          "monto": 1200.0,
+          "moneda": "BOB",
+          "glosa": "Abono recarga billetera USR000001",
+          "referencia_banco": "BCO-REC-01",
+          "cuenta_origen": "****4001",
+          "conciliado": true
+        },
+        {
+          "extracto_id": {
+            "$sql": "(SELECT id FROM extracto_bancario WHERE archivo_url = 'https://almacen.pasanaku.test/extractos/demo-45d.csv')"
+          },
+          "fecha_movimiento": {
+            "$fecha": "-44 days"
+          },
+          "monto": 1200.0,
+          "moneda": "BOB",
+          "glosa": "Abono recarga billetera USR000002",
+          "referencia_banco": "BCO-REC-02",
+          "cuenta_origen": "****4002",
+          "conciliado": true
+        },
+        {
+          "extracto_id": {
+            "$sql": "(SELECT id FROM extracto_bancario WHERE archivo_url = 'https://almacen.pasanaku.test/extractos/demo-45d.csv')"
+          },
+          "fecha_movimiento": {
+            "$fecha": "-44 days"
+          },
+          "monto": 1200.0,
+          "moneda": "BOB",
+          "glosa": "Abono recarga billetera USR000003",
+          "referencia_banco": "BCO-REC-03",
+          "cuenta_origen": "****4003",
+          "conciliado": true
+        },
+        {
+          "extracto_id": {
+            "$sql": "(SELECT id FROM extracto_bancario WHERE archivo_url = 'https://almacen.pasanaku.test/extractos/demo-45d.csv')"
+          },
+          "fecha_movimiento": {
+            "$fecha": "-44 days"
+          },
+          "monto": 600.0,
+          "moneda": "BOB",
+          "glosa": "Abono recarga billetera USR000004",
+          "referencia_banco": "BCO-REC-04",
+          "cuenta_origen": "****4004",
+          "conciliado": true
+        },
+        {
+          "extracto_id": {
+            "$sql": "(SELECT id FROM extracto_bancario WHERE archivo_url = 'https://almacen.pasanaku.test/extractos/demo-45d.csv')"
+          },
+          "fecha_movimiento": {
+            "$fecha": "-44 days"
+          },
+          "monto": 2000.0,
+          "moneda": "BOB",
+          "glosa": "Abono recarga billetera USR000005",
+          "referencia_banco": "BCO-REC-05",
+          "cuenta_origen": "****4005",
+          "conciliado": true
+        },
+        {
+          "extracto_id": {
+            "$sql": "(SELECT id FROM extracto_bancario WHERE archivo_url = 'https://almacen.pasanaku.test/extractos/demo-45d.csv')"
+          },
+          "fecha_movimiento": {
+            "$fecha": "-44 days"
+          },
+          "monto": 1200.0,
+          "moneda": "BOB",
+          "glosa": "Abono recarga billetera USR000006",
+          "referencia_banco": "BCO-REC-06",
+          "cuenta_origen": "****4006",
+          "conciliado": true
+        },
+        {
+          "extracto_id": {
+            "$sql": "(SELECT id FROM extracto_bancario WHERE archivo_url = 'https://almacen.pasanaku.test/extractos/demo-45d.csv')"
+          },
+          "fecha_movimiento": {
+            "$fecha": "-12 days"
+          },
+          "monto": 500.0,
+          "moneda": "BOB",
+          "glosa": "Cobro QR aporte periodo 2 USR000001",
+          "referencia_banco": "BCO-P2-01",
+          "cuenta_origen": "****4001",
+          "conciliado": true
+        },
+        {
+          "extracto_id": {
+            "$sql": "(SELECT id FROM extracto_bancario WHERE archivo_url = 'https://almacen.pasanaku.test/extractos/demo-45d.csv')"
+          },
+          "fecha_movimiento": {
+            "$fecha": "-12 days"
+          },
+          "monto": 500.0,
+          "moneda": "BOB",
+          "glosa": "Cobro QR aporte periodo 2 USR000002",
+          "referencia_banco": "BCO-P2-02",
+          "cuenta_origen": "****4002",
+          "conciliado": true
+        },
+        {
+          "extracto_id": {
+            "$sql": "(SELECT id FROM extracto_bancario WHERE archivo_url = 'https://almacen.pasanaku.test/extractos/demo-45d.csv')"
+          },
+          "fecha_movimiento": {
+            "$fecha": "-11 days"
+          },
+          "monto": 500.0,
+          "moneda": "BOB",
+          "glosa": "Cobro QR aporte periodo 2 USR000003",
+          "referencia_banco": "BCO-P2-03",
+          "cuenta_origen": "****4003",
+          "conciliado": true
+        },
+        {
+          "extracto_id": {
+            "$sql": "(SELECT id FROM extracto_bancario WHERE archivo_url = 'https://almacen.pasanaku.test/extractos/demo-45d.csv')"
+          },
+          "fecha_movimiento": {
+            "$fecha": "-13 days"
+          },
+          "monto": 500.0,
+          "moneda": "BOB",
+          "glosa": "Cobro QR aporte periodo 2 USR000005",
+          "referencia_banco": "BCO-P2-05",
+          "cuenta_origen": "****4005",
+          "conciliado": true
+        },
+        {
+          "extracto_id": {
+            "$sql": "(SELECT id FROM extracto_bancario WHERE archivo_url = 'https://almacen.pasanaku.test/extractos/demo-45d.csv')"
+          },
+          "fecha_movimiento": {
+            "$fecha": "-10 days"
+          },
+          "monto": 500.0,
+          "moneda": "BOB",
+          "glosa": "Cobro QR aporte periodo 2 USR000006",
+          "referencia_banco": "BCO-P2-06",
+          "cuenta_origen": "****4006",
+          "conciliado": true
+        }
+      ]
+    },
+    {
+      "tabla": "orden_recarga",
+      "conflicto": [
+        "cuenta_billetera_id",
+        "clave_idempotencia"
+      ],
+      "filas": [
+        {
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "BOB-0000001"
+          },
+          "instrumento_fondeo_id": {
+            "$sql": "(SELECT id FROM instrumento_fondeo WHERE hash_identificador = encode(digest('demo-instrumento-01', 'sha256'), 'hex'))"
+          },
+          "proveedor_id": {
+            "$ref": "proveedor_pago",
+            "codigo": "QR_INTEROP"
+          },
+          "punto_atencion_id": null,
+          "pago_id": null,
+          "transaccion_id": null,
+          "monto_bruto": 1200.0,
+          "costo_proveedor": 0.0,
+          "monto_acreditado": 1200.0,
+          "moneda": "BOB",
+          "estado": "ACREDITADA",
+          "referencia_externa": "QR-000001-INI",
+          "clave_idempotencia": "demo-recarga-01",
+          "solicitada_en": {
+            "$sql": "now() - interval '44 days'"
+          },
+          "acreditada_en": {
+            "$sql": "now() - interval '44 days'"
+          },
+          "expira_en": {
+            "$sql": "now() - interval '43 days'"
+          }
+        },
+        {
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "BOB-0000002"
+          },
+          "instrumento_fondeo_id": {
+            "$sql": "(SELECT id FROM instrumento_fondeo WHERE hash_identificador = encode(digest('demo-instrumento-02', 'sha256'), 'hex'))"
+          },
+          "proveedor_id": {
+            "$ref": "proveedor_pago",
+            "codigo": "QR_INTEROP"
+          },
+          "punto_atencion_id": null,
+          "pago_id": null,
+          "transaccion_id": null,
+          "monto_bruto": 1200.0,
+          "costo_proveedor": 0.0,
+          "monto_acreditado": 1200.0,
+          "moneda": "BOB",
+          "estado": "ACREDITADA",
+          "referencia_externa": "QR-000002-INI",
+          "clave_idempotencia": "demo-recarga-02",
+          "solicitada_en": {
+            "$sql": "now() - interval '44 days'"
+          },
+          "acreditada_en": {
+            "$sql": "now() - interval '44 days'"
+          },
+          "expira_en": {
+            "$sql": "now() - interval '43 days'"
+          }
+        },
+        {
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "BOB-0000003"
+          },
+          "instrumento_fondeo_id": {
+            "$sql": "(SELECT id FROM instrumento_fondeo WHERE hash_identificador = encode(digest('demo-instrumento-03', 'sha256'), 'hex'))"
+          },
+          "proveedor_id": {
+            "$ref": "proveedor_pago",
+            "codigo": "QR_INTEROP"
+          },
+          "punto_atencion_id": null,
+          "pago_id": null,
+          "transaccion_id": null,
+          "monto_bruto": 1200.0,
+          "costo_proveedor": 0.0,
+          "monto_acreditado": 1200.0,
+          "moneda": "BOB",
+          "estado": "ACREDITADA",
+          "referencia_externa": "QR-000003-INI",
+          "clave_idempotencia": "demo-recarga-03",
+          "solicitada_en": {
+            "$sql": "now() - interval '44 days'"
+          },
+          "acreditada_en": {
+            "$sql": "now() - interval '44 days'"
+          },
+          "expira_en": {
+            "$sql": "now() - interval '43 days'"
+          }
+        },
+        {
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "BOB-0000004"
+          },
+          "instrumento_fondeo_id": {
+            "$sql": "(SELECT id FROM instrumento_fondeo WHERE hash_identificador = encode(digest('demo-instrumento-04', 'sha256'), 'hex'))"
+          },
+          "proveedor_id": {
+            "$ref": "proveedor_pago",
+            "codigo": "AGENTE_EFECTIVO"
+          },
+          "punto_atencion_id": {
+            "$ref": "punto_atencion",
+            "codigo": "PA-SCZ-001"
+          },
+          "pago_id": null,
+          "transaccion_id": null,
+          "monto_bruto": 600.0,
+          "costo_proveedor": 0.0,
+          "monto_acreditado": 600.0,
+          "moneda": "BOB",
+          "estado": "ACREDITADA",
+          "referencia_externa": "QR-000004-INI",
+          "clave_idempotencia": "demo-recarga-04",
+          "solicitada_en": {
+            "$sql": "now() - interval '44 days'"
+          },
+          "acreditada_en": {
+            "$sql": "now() - interval '44 days'"
+          },
+          "expira_en": {
+            "$sql": "now() - interval '43 days'"
+          }
+        },
+        {
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "BOB-0000005"
+          },
+          "instrumento_fondeo_id": {
+            "$sql": "(SELECT id FROM instrumento_fondeo WHERE hash_identificador = encode(digest('demo-instrumento-05', 'sha256'), 'hex'))"
+          },
+          "proveedor_id": {
+            "$ref": "proveedor_pago",
+            "codigo": "QR_INTEROP"
+          },
+          "punto_atencion_id": null,
+          "pago_id": null,
+          "transaccion_id": null,
+          "monto_bruto": 2000.0,
+          "costo_proveedor": 0.0,
+          "monto_acreditado": 2000.0,
+          "moneda": "BOB",
+          "estado": "ACREDITADA",
+          "referencia_externa": "QR-000005-INI",
+          "clave_idempotencia": "demo-recarga-05",
+          "solicitada_en": {
+            "$sql": "now() - interval '44 days'"
+          },
+          "acreditada_en": {
+            "$sql": "now() - interval '44 days'"
+          },
+          "expira_en": {
+            "$sql": "now() - interval '43 days'"
+          }
+        },
+        {
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "BOB-0000006"
+          },
+          "instrumento_fondeo_id": {
+            "$sql": "(SELECT id FROM instrumento_fondeo WHERE hash_identificador = encode(digest('demo-instrumento-06', 'sha256'), 'hex'))"
+          },
+          "proveedor_id": {
+            "$ref": "proveedor_pago",
+            "codigo": "QR_INTEROP"
+          },
+          "punto_atencion_id": null,
+          "pago_id": null,
+          "transaccion_id": null,
+          "monto_bruto": 1200.0,
+          "costo_proveedor": 0.0,
+          "monto_acreditado": 1200.0,
+          "moneda": "BOB",
+          "estado": "ACREDITADA",
+          "referencia_externa": "QR-000006-INI",
+          "clave_idempotencia": "demo-recarga-06",
+          "solicitada_en": {
+            "$sql": "now() - interval '44 days'"
+          },
+          "acreditada_en": {
+            "$sql": "now() - interval '44 days'"
+          },
+          "expira_en": {
+            "$sql": "now() - interval '43 days'"
+          }
+        }
+      ]
+    },
+    {
+      "tabla": "transaccion_billetera",
+      "conflicto": [
+        "COALESCE(iniciada_por, '00000000-0000-0000-0000-000000000000'::uuid)",
+        "origen_tipo",
+        "clave_idempotencia"
+      ],
+      "comentario": "hash_registro va vacío a propósito: lo calcula la base al insertar (R-AUD-03). Escribirlo desde el seeder sería fabricar la cadena.",
+      "filas": [
+        {
+          "tipo": "RECARGA",
+          "estado": "APLICADA",
+          "moneda": "BOB",
+          "monto_total": 1200.0,
+          "grupo_id": null,
+          "origen_tipo": "ORDEN_RECARGA",
+          "origen_id": {
+            "$ref": "orden_recarga",
+            "clave_idempotencia": "demo-recarga-01"
+          },
+          "canal": "APP",
+          "clave_idempotencia": "demo-recarga-01",
+          "hash_registro": "",
+          "ocurrida_en": {
+            "$sql": "now() - interval '44 days'"
+          },
+          "registrada_en": {
+            "$sql": "now() - interval '44 days'"
+          }
+        },
+        {
+          "tipo": "RECARGA",
+          "estado": "APLICADA",
+          "moneda": "BOB",
+          "monto_total": 1200.0,
+          "grupo_id": null,
+          "origen_tipo": "ORDEN_RECARGA",
+          "origen_id": {
+            "$ref": "orden_recarga",
+            "clave_idempotencia": "demo-recarga-02"
+          },
+          "canal": "APP",
+          "clave_idempotencia": "demo-recarga-02",
+          "hash_registro": "",
+          "ocurrida_en": {
+            "$sql": "now() - interval '44 days'"
+          },
+          "registrada_en": {
+            "$sql": "now() - interval '44 days'"
+          }
+        },
+        {
+          "tipo": "RECARGA",
+          "estado": "APLICADA",
+          "moneda": "BOB",
+          "monto_total": 1200.0,
+          "grupo_id": null,
+          "origen_tipo": "ORDEN_RECARGA",
+          "origen_id": {
+            "$ref": "orden_recarga",
+            "clave_idempotencia": "demo-recarga-03"
+          },
+          "canal": "APP",
+          "clave_idempotencia": "demo-recarga-03",
+          "hash_registro": "",
+          "ocurrida_en": {
+            "$sql": "now() - interval '44 days'"
+          },
+          "registrada_en": {
+            "$sql": "now() - interval '44 days'"
+          }
+        },
+        {
+          "tipo": "RECARGA",
+          "estado": "APLICADA",
+          "moneda": "BOB",
+          "monto_total": 600.0,
+          "grupo_id": null,
+          "origen_tipo": "ORDEN_RECARGA",
+          "origen_id": {
+            "$ref": "orden_recarga",
+            "clave_idempotencia": "demo-recarga-04"
+          },
+          "canal": "APP",
+          "clave_idempotencia": "demo-recarga-04",
+          "hash_registro": "",
+          "ocurrida_en": {
+            "$sql": "now() - interval '44 days'"
+          },
+          "registrada_en": {
+            "$sql": "now() - interval '44 days'"
+          }
+        },
+        {
+          "tipo": "RECARGA",
+          "estado": "APLICADA",
+          "moneda": "BOB",
+          "monto_total": 2000.0,
+          "grupo_id": null,
+          "origen_tipo": "ORDEN_RECARGA",
+          "origen_id": {
+            "$ref": "orden_recarga",
+            "clave_idempotencia": "demo-recarga-05"
+          },
+          "canal": "APP",
+          "clave_idempotencia": "demo-recarga-05",
+          "hash_registro": "",
+          "ocurrida_en": {
+            "$sql": "now() - interval '44 days'"
+          },
+          "registrada_en": {
+            "$sql": "now() - interval '44 days'"
+          }
+        },
+        {
+          "tipo": "RECARGA",
+          "estado": "APLICADA",
+          "moneda": "BOB",
+          "monto_total": 1200.0,
+          "grupo_id": null,
+          "origen_tipo": "ORDEN_RECARGA",
+          "origen_id": {
+            "$ref": "orden_recarga",
+            "clave_idempotencia": "demo-recarga-06"
+          },
+          "canal": "APP",
+          "clave_idempotencia": "demo-recarga-06",
+          "hash_registro": "",
+          "ocurrida_en": {
+            "$sql": "now() - interval '44 days'"
+          },
+          "registrada_en": {
+            "$sql": "now() - interval '44 days'"
+          }
+        }
+      ]
+    },
+    {
+      "tabla": "movimiento_billetera",
+      "conflicto": [],
+      "filas": [
+        {
+          "transaccion_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-recarga-01"
+          },
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "BOB-0000001"
+          },
+          "orden": 1,
+          "sentido": "CREDITO",
+          "monto": 1200.0,
+          "saldo_disponible_posterior": 1200.0,
+          "saldo_retenido_posterior": 0.0,
+          "glosa": "Recarga acreditada — referencia QR-000001-INI",
+          "registrado_en": {
+            "$sql": "now() - interval '44 days'"
+          }
+        },
+        {
+          "transaccion_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-recarga-01"
+          },
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "SYS-CUSTODIA"
+          },
+          "orden": 2,
+          "sentido": "DEBITO",
+          "monto": 1200.0,
+          "saldo_disponible_posterior": -1200.0,
+          "saldo_retenido_posterior": 0.0,
+          "glosa": "Contrapartida en la cuenta puente de custodia — recarga 01",
+          "registrado_en": {
+            "$sql": "now() - interval '44 days'"
+          }
+        },
+        {
+          "transaccion_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-recarga-02"
+          },
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "BOB-0000002"
+          },
+          "orden": 1,
+          "sentido": "CREDITO",
+          "monto": 1200.0,
+          "saldo_disponible_posterior": 1200.0,
+          "saldo_retenido_posterior": 0.0,
+          "glosa": "Recarga acreditada — referencia QR-000002-INI",
+          "registrado_en": {
+            "$sql": "now() - interval '44 days'"
+          }
+        },
+        {
+          "transaccion_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-recarga-02"
+          },
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "SYS-CUSTODIA"
+          },
+          "orden": 2,
+          "sentido": "DEBITO",
+          "monto": 1200.0,
+          "saldo_disponible_posterior": -2400.0,
+          "saldo_retenido_posterior": 0.0,
+          "glosa": "Contrapartida en la cuenta puente de custodia — recarga 02",
+          "registrado_en": {
+            "$sql": "now() - interval '44 days'"
+          }
+        },
+        {
+          "transaccion_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-recarga-03"
+          },
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "BOB-0000003"
+          },
+          "orden": 1,
+          "sentido": "CREDITO",
+          "monto": 1200.0,
+          "saldo_disponible_posterior": 1200.0,
+          "saldo_retenido_posterior": 0.0,
+          "glosa": "Recarga acreditada — referencia QR-000003-INI",
+          "registrado_en": {
+            "$sql": "now() - interval '44 days'"
+          }
+        },
+        {
+          "transaccion_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-recarga-03"
+          },
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "SYS-CUSTODIA"
+          },
+          "orden": 2,
+          "sentido": "DEBITO",
+          "monto": 1200.0,
+          "saldo_disponible_posterior": -3600.0,
+          "saldo_retenido_posterior": 0.0,
+          "glosa": "Contrapartida en la cuenta puente de custodia — recarga 03",
+          "registrado_en": {
+            "$sql": "now() - interval '44 days'"
+          }
+        },
+        {
+          "transaccion_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-recarga-04"
+          },
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "BOB-0000004"
+          },
+          "orden": 1,
+          "sentido": "CREDITO",
+          "monto": 600.0,
+          "saldo_disponible_posterior": 600.0,
+          "saldo_retenido_posterior": 0.0,
+          "glosa": "Recarga acreditada — referencia QR-000004-INI",
+          "registrado_en": {
+            "$sql": "now() - interval '44 days'"
+          }
+        },
+        {
+          "transaccion_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-recarga-04"
+          },
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "SYS-CUSTODIA"
+          },
+          "orden": 2,
+          "sentido": "DEBITO",
+          "monto": 600.0,
+          "saldo_disponible_posterior": -4200.0,
+          "saldo_retenido_posterior": 0.0,
+          "glosa": "Contrapartida en la cuenta puente de custodia — recarga 04",
+          "registrado_en": {
+            "$sql": "now() - interval '44 days'"
+          }
+        },
+        {
+          "transaccion_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-recarga-05"
+          },
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "BOB-0000005"
+          },
+          "orden": 1,
+          "sentido": "CREDITO",
+          "monto": 2000.0,
+          "saldo_disponible_posterior": 2000.0,
+          "saldo_retenido_posterior": 0.0,
+          "glosa": "Recarga acreditada — referencia QR-000005-INI",
+          "registrado_en": {
+            "$sql": "now() - interval '44 days'"
+          }
+        },
+        {
+          "transaccion_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-recarga-05"
+          },
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "SYS-CUSTODIA"
+          },
+          "orden": 2,
+          "sentido": "DEBITO",
+          "monto": 2000.0,
+          "saldo_disponible_posterior": -6200.0,
+          "saldo_retenido_posterior": 0.0,
+          "glosa": "Contrapartida en la cuenta puente de custodia — recarga 05",
+          "registrado_en": {
+            "$sql": "now() - interval '44 days'"
+          }
+        },
+        {
+          "transaccion_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-recarga-06"
+          },
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "BOB-0000006"
+          },
+          "orden": 1,
+          "sentido": "CREDITO",
+          "monto": 1200.0,
+          "saldo_disponible_posterior": 1200.0,
+          "saldo_retenido_posterior": 0.0,
+          "glosa": "Recarga acreditada — referencia QR-000006-INI",
+          "registrado_en": {
+            "$sql": "now() - interval '44 days'"
+          }
+        },
+        {
+          "transaccion_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-recarga-06"
+          },
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "SYS-CUSTODIA"
+          },
+          "orden": 2,
+          "sentido": "DEBITO",
+          "monto": 1200.0,
+          "saldo_disponible_posterior": -7400.0,
+          "saldo_retenido_posterior": 0.0,
+          "glosa": "Contrapartida en la cuenta puente de custodia — recarga 06",
+          "registrado_en": {
+            "$sql": "now() - interval '44 days'"
+          }
+        }
+      ]
+    },
+    {
+      "sql": "UPDATE orden_recarga o SET transaccion_id = t.id FROM transaccion_billetera t\n WHERE t.clave_idempotencia = o.clave_idempotencia AND o.transaccion_id IS NULL;",
+      "comentario": "La orden y su transacción se apuntan mutuamente; el enlace se cierra después de insertar ambas"
+    },
+    {
+      "tabla": "movimiento_custodia",
+      "conflicto": [],
+      "comentario": "El lado bancario de cada recarga, ya conciliado contra el extracto",
+      "filas": [
+        {
+          "cuenta_custodia_id": {
+            "$sql": "(SELECT id FROM cuenta_custodia WHERE contrato_referencia = 'FID-DEMO-001')"
+          },
+          "movimiento_bancario_id": {
+            "$sql": "(SELECT id FROM movimiento_bancario WHERE referencia_banco = 'BCO-REC-01')"
+          },
+          "fecha_valor": {
+            "$fecha": "-44 days"
+          },
+          "tipo": "INGRESO",
+          "sentido": "CREDITO",
+          "monto": 1200.0,
+          "referencia_bancaria": "BCO-REC-01",
+          "glosa": "Abono por recarga de billetera del titular USR000001",
+          "conciliado": true,
+          "registrado_en": {
+            "$sql": "now() - interval '44 days'"
+          }
+        },
+        {
+          "cuenta_custodia_id": {
+            "$sql": "(SELECT id FROM cuenta_custodia WHERE contrato_referencia = 'FID-DEMO-001')"
+          },
+          "movimiento_bancario_id": {
+            "$sql": "(SELECT id FROM movimiento_bancario WHERE referencia_banco = 'BCO-REC-02')"
+          },
+          "fecha_valor": {
+            "$fecha": "-44 days"
+          },
+          "tipo": "INGRESO",
+          "sentido": "CREDITO",
+          "monto": 1200.0,
+          "referencia_bancaria": "BCO-REC-02",
+          "glosa": "Abono por recarga de billetera del titular USR000002",
+          "conciliado": true,
+          "registrado_en": {
+            "$sql": "now() - interval '44 days'"
+          }
+        },
+        {
+          "cuenta_custodia_id": {
+            "$sql": "(SELECT id FROM cuenta_custodia WHERE contrato_referencia = 'FID-DEMO-001')"
+          },
+          "movimiento_bancario_id": {
+            "$sql": "(SELECT id FROM movimiento_bancario WHERE referencia_banco = 'BCO-REC-03')"
+          },
+          "fecha_valor": {
+            "$fecha": "-44 days"
+          },
+          "tipo": "INGRESO",
+          "sentido": "CREDITO",
+          "monto": 1200.0,
+          "referencia_bancaria": "BCO-REC-03",
+          "glosa": "Abono por recarga de billetera del titular USR000003",
+          "conciliado": true,
+          "registrado_en": {
+            "$sql": "now() - interval '44 days'"
+          }
+        },
+        {
+          "cuenta_custodia_id": {
+            "$sql": "(SELECT id FROM cuenta_custodia WHERE contrato_referencia = 'FID-DEMO-001')"
+          },
+          "movimiento_bancario_id": {
+            "$sql": "(SELECT id FROM movimiento_bancario WHERE referencia_banco = 'BCO-REC-04')"
+          },
+          "fecha_valor": {
+            "$fecha": "-44 days"
+          },
+          "tipo": "INGRESO",
+          "sentido": "CREDITO",
+          "monto": 600.0,
+          "referencia_bancaria": "BCO-REC-04",
+          "glosa": "Abono por recarga de billetera del titular USR000004",
+          "conciliado": true,
+          "registrado_en": {
+            "$sql": "now() - interval '44 days'"
+          }
+        },
+        {
+          "cuenta_custodia_id": {
+            "$sql": "(SELECT id FROM cuenta_custodia WHERE contrato_referencia = 'FID-DEMO-001')"
+          },
+          "movimiento_bancario_id": {
+            "$sql": "(SELECT id FROM movimiento_bancario WHERE referencia_banco = 'BCO-REC-05')"
+          },
+          "fecha_valor": {
+            "$fecha": "-44 days"
+          },
+          "tipo": "INGRESO",
+          "sentido": "CREDITO",
+          "monto": 2000.0,
+          "referencia_bancaria": "BCO-REC-05",
+          "glosa": "Abono por recarga de billetera del titular USR000005",
+          "conciliado": true,
+          "registrado_en": {
+            "$sql": "now() - interval '44 days'"
+          }
+        },
+        {
+          "cuenta_custodia_id": {
+            "$sql": "(SELECT id FROM cuenta_custodia WHERE contrato_referencia = 'FID-DEMO-001')"
+          },
+          "movimiento_bancario_id": {
+            "$sql": "(SELECT id FROM movimiento_bancario WHERE referencia_banco = 'BCO-REC-06')"
+          },
+          "fecha_valor": {
+            "$fecha": "-44 days"
+          },
+          "tipo": "INGRESO",
+          "sentido": "CREDITO",
+          "monto": 1200.0,
+          "referencia_bancaria": "BCO-REC-06",
+          "glosa": "Abono por recarga de billetera del titular USR000006",
+          "conciliado": true,
+          "registrado_en": {
+            "$sql": "now() - interval '44 days'"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -404,7 +404,7 @@ def generar():
     # Solo se borra lo que este script genera: 50_verificacion/prueba_humo.sql
     # está escrito a mano y no debe perderse.
     for sub in ("00_base", "10_tablas", "15_infra", "20_claves", "30_indices",
-                "35_append_only", "60_semillas", "61_prueba"):
+                "35_append_only", "60_semillas", "61_dev"):
         if (OUT / sub).exists():
             shutil.rmtree(OUT / sub)
 

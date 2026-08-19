@@ -1,0 +1,1610 @@
+{
+  "descripcion": "El libro contable de partida doble derivado de la billetera: un asiento por transacción, con sus movimientos al debe y al haber. Más los saldos diarios sellados y los estados de cuenta emitidos.",
+  "entorno": "dev",
+  "nota": "Los 25 asientos se derivan uno a uno de las transacciones de billetera: DEBITO va al debe y CREDITO al haber. La única excepción es la cuenta técnica de impuestos, que en la billetera es una sola y en el libro se abre en IVA (2.2.01) e IT (2.2.02), porque se declaran por separado.",
+  "reglas_que_permite_probar": [
+    "R-CTB — todo asiento cuadra: suma del debe igual a suma del haber",
+    "R-CTB — cada asiento apunta a la transacción de billetera que lo originó",
+    "R-BIL-03 — el saldo diario se sella y no se reescribe (tabla append-only)"
+  ],
+  "bloques": [
+    {
+      "tabla": "asiento_contable",
+      "conflicto": [],
+      "comentario": "Un asiento por transacción, en estado CONFIRMADO. El número es BIGSERIAL: lo asigna la base y no se repite.",
+      "filas": [
+        {
+          "fecha": {
+            "$sql": "now() - interval '44 days'"
+          },
+          "glosa": "Emisión de dinero electrónico por recarga",
+          "origen_tipo": "BILLETERA",
+          "origen_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-recarga-01"
+          },
+          "grupo_id": null,
+          "estado": "CONFIRMADO",
+          "asiento_reversa_id": null,
+          "registrado_por": null
+        },
+        {
+          "fecha": {
+            "$sql": "now() - interval '44 days'"
+          },
+          "glosa": "Emisión de dinero electrónico por recarga",
+          "origen_tipo": "BILLETERA",
+          "origen_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-recarga-02"
+          },
+          "grupo_id": null,
+          "estado": "CONFIRMADO",
+          "asiento_reversa_id": null,
+          "registrado_por": null
+        },
+        {
+          "fecha": {
+            "$sql": "now() - interval '44 days'"
+          },
+          "glosa": "Emisión de dinero electrónico por recarga",
+          "origen_tipo": "BILLETERA",
+          "origen_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-recarga-03"
+          },
+          "grupo_id": null,
+          "estado": "CONFIRMADO",
+          "asiento_reversa_id": null,
+          "registrado_por": null
+        },
+        {
+          "fecha": {
+            "$sql": "now() - interval '44 days'"
+          },
+          "glosa": "Emisión de dinero electrónico por recarga",
+          "origen_tipo": "BILLETERA",
+          "origen_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-recarga-04"
+          },
+          "grupo_id": null,
+          "estado": "CONFIRMADO",
+          "asiento_reversa_id": null,
+          "registrado_por": null
+        },
+        {
+          "fecha": {
+            "$sql": "now() - interval '44 days'"
+          },
+          "glosa": "Emisión de dinero electrónico por recarga",
+          "origen_tipo": "BILLETERA",
+          "origen_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-recarga-05"
+          },
+          "grupo_id": null,
+          "estado": "CONFIRMADO",
+          "asiento_reversa_id": null,
+          "registrado_por": null
+        },
+        {
+          "fecha": {
+            "$sql": "now() - interval '44 days'"
+          },
+          "glosa": "Emisión de dinero electrónico por recarga",
+          "origen_tipo": "BILLETERA",
+          "origen_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-recarga-06"
+          },
+          "grupo_id": null,
+          "estado": "CONFIRMADO",
+          "asiento_reversa_id": null,
+          "registrado_por": null
+        },
+        {
+          "fecha": {
+            "$sql": "now() - interval '43 days'"
+          },
+          "glosa": "Constitución del fondo de garantía del grupo",
+          "origen_tipo": "BILLETERA",
+          "origen_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-fondo-inicial-01"
+          },
+          "grupo_id": {
+            "$ref": "grupo",
+            "codigo_publico": "GRP-DEMO-01"
+          },
+          "estado": "CONFIRMADO",
+          "asiento_reversa_id": null,
+          "registrado_por": null
+        },
+        {
+          "fecha": {
+            "$sql": "now() - interval '43 days'"
+          },
+          "glosa": "Constitución del fondo de garantía del grupo",
+          "origen_tipo": "BILLETERA",
+          "origen_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-fondo-inicial-02"
+          },
+          "grupo_id": {
+            "$ref": "grupo",
+            "codigo_publico": "GRP-DEMO-01"
+          },
+          "estado": "CONFIRMADO",
+          "asiento_reversa_id": null,
+          "registrado_por": null
+        },
+        {
+          "fecha": {
+            "$sql": "now() - interval '43 days'"
+          },
+          "glosa": "Constitución del fondo de garantía del grupo",
+          "origen_tipo": "BILLETERA",
+          "origen_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-fondo-inicial-03"
+          },
+          "grupo_id": {
+            "$ref": "grupo",
+            "codigo_publico": "GRP-DEMO-01"
+          },
+          "estado": "CONFIRMADO",
+          "asiento_reversa_id": null,
+          "registrado_por": null
+        },
+        {
+          "fecha": {
+            "$sql": "now() - interval '43 days'"
+          },
+          "glosa": "Constitución del fondo de garantía del grupo",
+          "origen_tipo": "BILLETERA",
+          "origen_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-fondo-inicial-04"
+          },
+          "grupo_id": {
+            "$ref": "grupo",
+            "codigo_publico": "GRP-DEMO-01"
+          },
+          "estado": "CONFIRMADO",
+          "asiento_reversa_id": null,
+          "registrado_por": null
+        },
+        {
+          "fecha": {
+            "$sql": "now() - interval '43 days'"
+          },
+          "glosa": "Constitución del fondo de garantía del grupo",
+          "origen_tipo": "BILLETERA",
+          "origen_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-fondo-inicial-05"
+          },
+          "grupo_id": {
+            "$ref": "grupo",
+            "codigo_publico": "GRP-DEMO-01"
+          },
+          "estado": "CONFIRMADO",
+          "asiento_reversa_id": null,
+          "registrado_por": null
+        },
+        {
+          "fecha": {
+            "$sql": "now() - interval '43 days'"
+          },
+          "glosa": "Constitución del fondo de garantía del grupo",
+          "origen_tipo": "BILLETERA",
+          "origen_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-fondo-inicial-06"
+          },
+          "grupo_id": {
+            "$ref": "grupo",
+            "codigo_publico": "GRP-DEMO-01"
+          },
+          "estado": "CONFIRMADO",
+          "asiento_reversa_id": null,
+          "registrado_por": null
+        },
+        {
+          "fecha": {
+            "$sql": "now() - interval '36 days'"
+          },
+          "glosa": "Aporte del participante a la bolsa del grupo",
+          "origen_tipo": "PAGO",
+          "origen_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-aporte-p1-01"
+          },
+          "grupo_id": {
+            "$ref": "grupo",
+            "codigo_publico": "GRP-DEMO-01"
+          },
+          "estado": "CONFIRMADO",
+          "asiento_reversa_id": null,
+          "registrado_por": null
+        },
+        {
+          "fecha": {
+            "$sql": "now() - interval '36 days'"
+          },
+          "glosa": "Aporte del participante a la bolsa del grupo",
+          "origen_tipo": "PAGO",
+          "origen_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-aporte-p1-02"
+          },
+          "grupo_id": {
+            "$ref": "grupo",
+            "codigo_publico": "GRP-DEMO-01"
+          },
+          "estado": "CONFIRMADO",
+          "asiento_reversa_id": null,
+          "registrado_por": null
+        },
+        {
+          "fecha": {
+            "$sql": "now() - interval '36 days'"
+          },
+          "glosa": "Aporte del participante a la bolsa del grupo",
+          "origen_tipo": "PAGO",
+          "origen_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-aporte-p1-03"
+          },
+          "grupo_id": {
+            "$ref": "grupo",
+            "codigo_publico": "GRP-DEMO-01"
+          },
+          "estado": "CONFIRMADO",
+          "asiento_reversa_id": null,
+          "registrado_por": null
+        },
+        {
+          "fecha": {
+            "$sql": "now() - interval '36 days'"
+          },
+          "glosa": "Aporte del participante a la bolsa del grupo",
+          "origen_tipo": "PAGO",
+          "origen_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-aporte-p1-04"
+          },
+          "grupo_id": {
+            "$ref": "grupo",
+            "codigo_publico": "GRP-DEMO-01"
+          },
+          "estado": "CONFIRMADO",
+          "asiento_reversa_id": null,
+          "registrado_por": null
+        },
+        {
+          "fecha": {
+            "$sql": "now() - interval '36 days'"
+          },
+          "glosa": "Aporte del participante a la bolsa del grupo",
+          "origen_tipo": "PAGO",
+          "origen_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-aporte-p1-05"
+          },
+          "grupo_id": {
+            "$ref": "grupo",
+            "codigo_publico": "GRP-DEMO-01"
+          },
+          "estado": "CONFIRMADO",
+          "asiento_reversa_id": null,
+          "registrado_por": null
+        },
+        {
+          "fecha": {
+            "$sql": "now() - interval '36 days'"
+          },
+          "glosa": "Aporte del participante a la bolsa del grupo",
+          "origen_tipo": "PAGO",
+          "origen_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-aporte-p1-06"
+          },
+          "grupo_id": {
+            "$ref": "grupo",
+            "codigo_publico": "GRP-DEMO-01"
+          },
+          "estado": "CONFIRMADO",
+          "asiento_reversa_id": null,
+          "registrado_por": null
+        },
+        {
+          "fecha": {
+            "$sql": "now() - interval '30 days'"
+          },
+          "glosa": "Entrega de la bolsa al beneficiario del turno, neta de comisión",
+          "origen_tipo": "ENTREGA",
+          "origen_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-entrega-p1"
+          },
+          "grupo_id": {
+            "$ref": "grupo",
+            "codigo_publico": "GRP-DEMO-01"
+          },
+          "estado": "CONFIRMADO",
+          "asiento_reversa_id": null,
+          "registrado_por": null
+        },
+        {
+          "fecha": {
+            "$sql": "now() - interval '12 days'"
+          },
+          "glosa": "Aporte del participante a la bolsa del grupo",
+          "origen_tipo": "PAGO",
+          "origen_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-aporte-p2-01"
+          },
+          "grupo_id": {
+            "$ref": "grupo",
+            "codigo_publico": "GRP-DEMO-01"
+          },
+          "estado": "CONFIRMADO",
+          "asiento_reversa_id": null,
+          "registrado_por": null
+        },
+        {
+          "fecha": {
+            "$sql": "now() - interval '12 days'"
+          },
+          "glosa": "Aporte del participante a la bolsa del grupo",
+          "origen_tipo": "PAGO",
+          "origen_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-aporte-p2-02"
+          },
+          "grupo_id": {
+            "$ref": "grupo",
+            "codigo_publico": "GRP-DEMO-01"
+          },
+          "estado": "CONFIRMADO",
+          "asiento_reversa_id": null,
+          "registrado_por": null
+        },
+        {
+          "fecha": {
+            "$sql": "now() - interval '11 days'"
+          },
+          "glosa": "Aporte del participante a la bolsa del grupo",
+          "origen_tipo": "PAGO",
+          "origen_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-aporte-p2-03"
+          },
+          "grupo_id": {
+            "$ref": "grupo",
+            "codigo_publico": "GRP-DEMO-01"
+          },
+          "estado": "CONFIRMADO",
+          "asiento_reversa_id": null,
+          "registrado_por": null
+        },
+        {
+          "fecha": {
+            "$sql": "now() - interval '13 days'"
+          },
+          "glosa": "Aporte del participante a la bolsa del grupo",
+          "origen_tipo": "PAGO",
+          "origen_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-aporte-p2-05"
+          },
+          "grupo_id": {
+            "$ref": "grupo",
+            "codigo_publico": "GRP-DEMO-01"
+          },
+          "estado": "CONFIRMADO",
+          "asiento_reversa_id": null,
+          "registrado_por": null
+        },
+        {
+          "fecha": {
+            "$sql": "now() - interval '10 days'"
+          },
+          "glosa": "Aporte del participante a la bolsa del grupo",
+          "origen_tipo": "PAGO",
+          "origen_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-aporte-p2-06"
+          },
+          "grupo_id": {
+            "$ref": "grupo",
+            "codigo_publico": "GRP-DEMO-01"
+          },
+          "estado": "CONFIRMADO",
+          "asiento_reversa_id": null,
+          "registrado_por": null
+        },
+        {
+          "fecha": {
+            "$sql": "now() - interval '3 days'"
+          },
+          "glosa": "Cobertura del fondo de garantía por aporte impago",
+          "origen_tipo": "COBERTURA",
+          "origen_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-cobertura-p2-04"
+          },
+          "grupo_id": {
+            "$ref": "grupo",
+            "codigo_publico": "GRP-DEMO-01"
+          },
+          "estado": "CONFIRMADO",
+          "asiento_reversa_id": null,
+          "registrado_por": null
+        }
+      ]
+    },
+    {
+      "tabla": "movimiento_contable",
+      "conflicto": [],
+      "comentario": "Las partidas de cada asiento. El total del debe iguala al del haber en cada uno; si no, el asiento no debería existir.",
+      "filas": [
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-recarga-01')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.01"
+          },
+          "debe": 0.0,
+          "haber": 1200.0,
+          "descripcion": "Recarga acreditada — referencia QR-000001-INI"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-recarga-01')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "1.1.01"
+          },
+          "debe": 1200.0,
+          "haber": 0.0,
+          "descripcion": "Contrapartida en la cuenta puente de custodia — recarga 01"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-recarga-02')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.01"
+          },
+          "debe": 0.0,
+          "haber": 1200.0,
+          "descripcion": "Recarga acreditada — referencia QR-000002-INI"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-recarga-02')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "1.1.01"
+          },
+          "debe": 1200.0,
+          "haber": 0.0,
+          "descripcion": "Contrapartida en la cuenta puente de custodia — recarga 02"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-recarga-03')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.01"
+          },
+          "debe": 0.0,
+          "haber": 1200.0,
+          "descripcion": "Recarga acreditada — referencia QR-000003-INI"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-recarga-03')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "1.1.01"
+          },
+          "debe": 1200.0,
+          "haber": 0.0,
+          "descripcion": "Contrapartida en la cuenta puente de custodia — recarga 03"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-recarga-04')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.01"
+          },
+          "debe": 0.0,
+          "haber": 600.0,
+          "descripcion": "Recarga acreditada — referencia QR-000004-INI"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-recarga-04')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "1.1.01"
+          },
+          "debe": 600.0,
+          "haber": 0.0,
+          "descripcion": "Contrapartida en la cuenta puente de custodia — recarga 04"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-recarga-05')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.01"
+          },
+          "debe": 0.0,
+          "haber": 2000.0,
+          "descripcion": "Recarga acreditada — referencia QR-000005-INI"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-recarga-05')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "1.1.01"
+          },
+          "debe": 2000.0,
+          "haber": 0.0,
+          "descripcion": "Contrapartida en la cuenta puente de custodia — recarga 05"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-recarga-06')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.01"
+          },
+          "debe": 0.0,
+          "haber": 1200.0,
+          "descripcion": "Recarga acreditada — referencia QR-000006-INI"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-recarga-06')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "1.1.01"
+          },
+          "debe": 1200.0,
+          "haber": 0.0,
+          "descripcion": "Contrapartida en la cuenta puente de custodia — recarga 06"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-fondo-inicial-01')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.01"
+          },
+          "debe": 100.0,
+          "haber": 0.0,
+          "descripcion": "Constitución del fondo de garantía del grupo"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-fondo-inicial-01')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.03"
+          },
+          "debe": 0.0,
+          "haber": 100.0,
+          "descripcion": "Aporte inicial al fondo de garantía — USR000001"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-fondo-inicial-02')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.01"
+          },
+          "debe": 100.0,
+          "haber": 0.0,
+          "descripcion": "Constitución del fondo de garantía del grupo"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-fondo-inicial-02')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.03"
+          },
+          "debe": 0.0,
+          "haber": 100.0,
+          "descripcion": "Aporte inicial al fondo de garantía — USR000002"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-fondo-inicial-03')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.01"
+          },
+          "debe": 100.0,
+          "haber": 0.0,
+          "descripcion": "Constitución del fondo de garantía del grupo"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-fondo-inicial-03')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.03"
+          },
+          "debe": 0.0,
+          "haber": 100.0,
+          "descripcion": "Aporte inicial al fondo de garantía — USR000003"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-fondo-inicial-04')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.01"
+          },
+          "debe": 100.0,
+          "haber": 0.0,
+          "descripcion": "Constitución del fondo de garantía del grupo"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-fondo-inicial-04')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.03"
+          },
+          "debe": 0.0,
+          "haber": 100.0,
+          "descripcion": "Aporte inicial al fondo de garantía — USR000004"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-fondo-inicial-05')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.01"
+          },
+          "debe": 100.0,
+          "haber": 0.0,
+          "descripcion": "Constitución del fondo de garantía del grupo"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-fondo-inicial-05')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.03"
+          },
+          "debe": 0.0,
+          "haber": 100.0,
+          "descripcion": "Aporte inicial al fondo de garantía — USR000005"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-fondo-inicial-06')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.01"
+          },
+          "debe": 100.0,
+          "haber": 0.0,
+          "descripcion": "Constitución del fondo de garantía del grupo"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-fondo-inicial-06')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.03"
+          },
+          "debe": 0.0,
+          "haber": 100.0,
+          "descripcion": "Aporte inicial al fondo de garantía — USR000006"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-aporte-p1-01')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.01"
+          },
+          "debe": 500.0,
+          "haber": 0.0,
+          "descripcion": "Aporte del período 1 al grupo GRP-DEMO-01"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-aporte-p1-01')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.02"
+          },
+          "debe": 0.0,
+          "haber": 500.0,
+          "descripcion": "Aporte del período 1 — USR000001"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-aporte-p1-02')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.01"
+          },
+          "debe": 500.0,
+          "haber": 0.0,
+          "descripcion": "Aporte del período 1 al grupo GRP-DEMO-01"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-aporte-p1-02')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.02"
+          },
+          "debe": 0.0,
+          "haber": 500.0,
+          "descripcion": "Aporte del período 1 — USR000002"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-aporte-p1-03')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.01"
+          },
+          "debe": 500.0,
+          "haber": 0.0,
+          "descripcion": "Aporte del período 1 al grupo GRP-DEMO-01"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-aporte-p1-03')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.02"
+          },
+          "debe": 0.0,
+          "haber": 500.0,
+          "descripcion": "Aporte del período 1 — USR000003"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-aporte-p1-04')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.01"
+          },
+          "debe": 500.0,
+          "haber": 0.0,
+          "descripcion": "Aporte del período 1 al grupo GRP-DEMO-01"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-aporte-p1-04')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.02"
+          },
+          "debe": 0.0,
+          "haber": 500.0,
+          "descripcion": "Aporte del período 1 — USR000004"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-aporte-p1-05')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.01"
+          },
+          "debe": 500.0,
+          "haber": 0.0,
+          "descripcion": "Aporte del período 1 al grupo GRP-DEMO-01"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-aporte-p1-05')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.02"
+          },
+          "debe": 0.0,
+          "haber": 500.0,
+          "descripcion": "Aporte del período 1 — USR000005"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-aporte-p1-06')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.01"
+          },
+          "debe": 500.0,
+          "haber": 0.0,
+          "descripcion": "Aporte del período 1 al grupo GRP-DEMO-01"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-aporte-p1-06')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.02"
+          },
+          "debe": 0.0,
+          "haber": 500.0,
+          "descripcion": "Aporte del período 1 — USR000006"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-entrega-p1')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.02"
+          },
+          "debe": 3000.0,
+          "haber": 0.0,
+          "descripcion": "Entrega de la bolsa del período 1 al turno 1"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-entrega-p1')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.01"
+          },
+          "debe": 0.0,
+          "haber": 2989.5,
+          "descripcion": "Bolsa del período 1 acreditada, neta de comisión"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-entrega-p1')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "4.1.01"
+          },
+          "debe": 0.0,
+          "haber": 8.81,
+          "descripcion": "Comisión por cobro de turno, neta de impuestos"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-entrega-p1')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.2.01"
+          },
+          "debe": 0.0,
+          "haber": 1.37,
+          "descripcion": "IVA débito fiscal sobre la comisión de entrega"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-entrega-p1')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.2.02"
+          },
+          "debe": 0.0,
+          "haber": 0.32,
+          "descripcion": "Impuesto a las transacciones sobre la comisión de entrega"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-aporte-p2-01')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.02"
+          },
+          "debe": 0.0,
+          "haber": 500.0,
+          "descripcion": "Aporte del período 2 cobrado por QR interoperable — USR000001"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-aporte-p2-01')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "1.1.01"
+          },
+          "debe": 500.0,
+          "haber": 0.0,
+          "descripcion": "Ingreso a custodia por cobro QR del aporte — USR000001"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-aporte-p2-02')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.02"
+          },
+          "debe": 0.0,
+          "haber": 500.0,
+          "descripcion": "Aporte del período 2 cobrado por QR interoperable — USR000002"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-aporte-p2-02')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "1.1.01"
+          },
+          "debe": 500.0,
+          "haber": 0.0,
+          "descripcion": "Ingreso a custodia por cobro QR del aporte — USR000002"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-aporte-p2-03')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.02"
+          },
+          "debe": 0.0,
+          "haber": 500.0,
+          "descripcion": "Aporte del período 2 cobrado por QR interoperable — USR000003"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-aporte-p2-03')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "1.1.01"
+          },
+          "debe": 500.0,
+          "haber": 0.0,
+          "descripcion": "Ingreso a custodia por cobro QR del aporte — USR000003"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-aporte-p2-05')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.02"
+          },
+          "debe": 0.0,
+          "haber": 500.0,
+          "descripcion": "Aporte del período 2 cobrado por QR interoperable — USR000005"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-aporte-p2-05')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "1.1.01"
+          },
+          "debe": 500.0,
+          "haber": 0.0,
+          "descripcion": "Ingreso a custodia por cobro QR del aporte — USR000005"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-aporte-p2-06')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.02"
+          },
+          "debe": 0.0,
+          "haber": 500.0,
+          "descripcion": "Aporte del período 2 cobrado por QR interoperable — USR000006"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-aporte-p2-06')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "1.1.01"
+          },
+          "debe": 500.0,
+          "haber": 0.0,
+          "descripcion": "Ingreso a custodia por cobro QR del aporte — USR000006"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-cobertura-p2-04')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.03"
+          },
+          "debe": 500.0,
+          "haber": 0.0,
+          "descripcion": "Cobertura del aporte impago del período 2 — USR000004"
+        },
+        {
+          "asiento_id": {
+            "$sql": "(SELECT a.id FROM asiento_contable a JOIN transaccion_billetera t ON t.id = a.origen_id WHERE t.clave_idempotencia = 'demo-cobertura-p2-04')"
+          },
+          "cuenta_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.02"
+          },
+          "debe": 0.0,
+          "haber": 500.0,
+          "descripcion": "Aporte del período 2 cubierto por el fondo de garantía"
+        }
+      ]
+    },
+    {
+      "sql": "-- Intencionalmente NO se actualiza transaccion_billetera.asiento_contable_id.\n-- La tabla es append-only (R-AUD-01) y el trigger rechaza cualquier UPDATE, así\n-- que el enlace hacia atrás no se puede cerrar desde un seeder. El vínculo vive\n-- en asiento_contable.origen_id, que apunta a la transacción y alcanza para\n-- reconstruir el libro. En la aplicación, el caso de uso debe crear el asiento\n-- ANTES de insertar la transacción y pasarle el id ya generado: después de\n-- insertarla, esa columna es inmutable.\nSELECT 1;",
+      "comentario": "Por qué el enlace queda en un solo sentido"
+    },
+    {
+      "tabla": "consumo_limite",
+      "conflicto": [],
+      "comentario": "Lo consumido del límite mensual de recarga por cada titular en la ventana en que recargó",
+      "filas": [
+        {
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "BOB-0000001"
+          },
+          "limite_id": {
+            "$sql": "(SELECT id FROM limite_operativo_billetera WHERE concepto = 'RECARGA' AND ventana = 'MES' AND nivel_debida_diligencia = (SELECT nivel_debida_diligencia FROM cuenta_billetera WHERE numero_cuenta = 'BOB-0000001') LIMIT 1)"
+          },
+          "ventana_inicio": {
+            "$sql": "date_trunc('month', now() - interval '44 days')"
+          },
+          "ventana_fin": {
+            "$sql": "date_trunc('month', now() - interval '44 days') + interval '1 month'"
+          },
+          "monto_acumulado": 1200.0,
+          "cantidad_acumulada": 1,
+          "actualizado_en": {
+            "$sql": "now() - interval '44 days'"
+          }
+        },
+        {
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "BOB-0000002"
+          },
+          "limite_id": {
+            "$sql": "(SELECT id FROM limite_operativo_billetera WHERE concepto = 'RECARGA' AND ventana = 'MES' AND nivel_debida_diligencia = (SELECT nivel_debida_diligencia FROM cuenta_billetera WHERE numero_cuenta = 'BOB-0000002') LIMIT 1)"
+          },
+          "ventana_inicio": {
+            "$sql": "date_trunc('month', now() - interval '44 days')"
+          },
+          "ventana_fin": {
+            "$sql": "date_trunc('month', now() - interval '44 days') + interval '1 month'"
+          },
+          "monto_acumulado": 1200.0,
+          "cantidad_acumulada": 1,
+          "actualizado_en": {
+            "$sql": "now() - interval '44 days'"
+          }
+        },
+        {
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "BOB-0000003"
+          },
+          "limite_id": {
+            "$sql": "(SELECT id FROM limite_operativo_billetera WHERE concepto = 'RECARGA' AND ventana = 'MES' AND nivel_debida_diligencia = (SELECT nivel_debida_diligencia FROM cuenta_billetera WHERE numero_cuenta = 'BOB-0000003') LIMIT 1)"
+          },
+          "ventana_inicio": {
+            "$sql": "date_trunc('month', now() - interval '44 days')"
+          },
+          "ventana_fin": {
+            "$sql": "date_trunc('month', now() - interval '44 days') + interval '1 month'"
+          },
+          "monto_acumulado": 1200.0,
+          "cantidad_acumulada": 1,
+          "actualizado_en": {
+            "$sql": "now() - interval '44 days'"
+          }
+        },
+        {
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "BOB-0000004"
+          },
+          "limite_id": {
+            "$sql": "(SELECT id FROM limite_operativo_billetera WHERE concepto = 'RECARGA' AND ventana = 'MES' AND nivel_debida_diligencia = (SELECT nivel_debida_diligencia FROM cuenta_billetera WHERE numero_cuenta = 'BOB-0000004') LIMIT 1)"
+          },
+          "ventana_inicio": {
+            "$sql": "date_trunc('month', now() - interval '44 days')"
+          },
+          "ventana_fin": {
+            "$sql": "date_trunc('month', now() - interval '44 days') + interval '1 month'"
+          },
+          "monto_acumulado": 600.0,
+          "cantidad_acumulada": 1,
+          "actualizado_en": {
+            "$sql": "now() - interval '44 days'"
+          }
+        },
+        {
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "BOB-0000005"
+          },
+          "limite_id": {
+            "$sql": "(SELECT id FROM limite_operativo_billetera WHERE concepto = 'RECARGA' AND ventana = 'MES' AND nivel_debida_diligencia = (SELECT nivel_debida_diligencia FROM cuenta_billetera WHERE numero_cuenta = 'BOB-0000005') LIMIT 1)"
+          },
+          "ventana_inicio": {
+            "$sql": "date_trunc('month', now() - interval '44 days')"
+          },
+          "ventana_fin": {
+            "$sql": "date_trunc('month', now() - interval '44 days') + interval '1 month'"
+          },
+          "monto_acumulado": 2000.0,
+          "cantidad_acumulada": 1,
+          "actualizado_en": {
+            "$sql": "now() - interval '44 days'"
+          }
+        },
+        {
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "BOB-0000006"
+          },
+          "limite_id": {
+            "$sql": "(SELECT id FROM limite_operativo_billetera WHERE concepto = 'RECARGA' AND ventana = 'MES' AND nivel_debida_diligencia = (SELECT nivel_debida_diligencia FROM cuenta_billetera WHERE numero_cuenta = 'BOB-0000006') LIMIT 1)"
+          },
+          "ventana_inicio": {
+            "$sql": "date_trunc('month', now() - interval '44 days')"
+          },
+          "ventana_fin": {
+            "$sql": "date_trunc('month', now() - interval '44 days') + interval '1 month'"
+          },
+          "monto_acumulado": 1200.0,
+          "cantidad_acumulada": 1,
+          "actualizado_en": {
+            "$sql": "now() - interval '44 days'"
+          }
+        }
+      ]
+    },
+    {
+      "tabla": "saldo_diario_billetera",
+      "conflicto": [],
+      "comentario": "Cierre de saldos del día anterior, una fila por cuenta. Es append-only: corregir un saldo es agregar el día siguiente, nunca editar este.",
+      "filas": [
+        {
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "BOB-0000001"
+          },
+          "fecha": {
+            "$fecha": "-1 days"
+          },
+          "saldo_disponible": 3589.5,
+          "saldo_retenido": 0.0,
+          "cantidad_movimientos": 4,
+          "hash_registro": {
+            "$sql": "encode(digest('saldo-diario-BOB-0000001', 'sha256'), 'hex')"
+          },
+          "hash_anterior": null,
+          "cerrado_en": {
+            "$sql": "now() - interval '18 hours'"
+          }
+        },
+        {
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "BOB-0000002"
+          },
+          "fecha": {
+            "$fecha": "-1 days"
+          },
+          "saldo_disponible": 600.0,
+          "saldo_retenido": 0.0,
+          "cantidad_movimientos": 3,
+          "hash_registro": {
+            "$sql": "encode(digest('saldo-diario-BOB-0000002', 'sha256'), 'hex')"
+          },
+          "hash_anterior": null,
+          "cerrado_en": {
+            "$sql": "now() - interval '18 hours'"
+          }
+        },
+        {
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "BOB-0000003"
+          },
+          "fecha": {
+            "$fecha": "-1 days"
+          },
+          "saldo_disponible": 600.0,
+          "saldo_retenido": 0.0,
+          "cantidad_movimientos": 3,
+          "hash_registro": {
+            "$sql": "encode(digest('saldo-diario-BOB-0000003', 'sha256'), 'hex')"
+          },
+          "hash_anterior": null,
+          "cerrado_en": {
+            "$sql": "now() - interval '18 hours'"
+          }
+        },
+        {
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "BOB-0000004"
+          },
+          "fecha": {
+            "$fecha": "-1 days"
+          },
+          "saldo_disponible": 0.0,
+          "saldo_retenido": 0.0,
+          "cantidad_movimientos": 3,
+          "hash_registro": {
+            "$sql": "encode(digest('saldo-diario-BOB-0000004', 'sha256'), 'hex')"
+          },
+          "hash_anterior": null,
+          "cerrado_en": {
+            "$sql": "now() - interval '18 hours'"
+          }
+        },
+        {
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "BOB-0000005"
+          },
+          "fecha": {
+            "$fecha": "-1 days"
+          },
+          "saldo_disponible": 1400.0,
+          "saldo_retenido": 0.0,
+          "cantidad_movimientos": 3,
+          "hash_registro": {
+            "$sql": "encode(digest('saldo-diario-BOB-0000005', 'sha256'), 'hex')"
+          },
+          "hash_anterior": null,
+          "cerrado_en": {
+            "$sql": "now() - interval '18 hours'"
+          }
+        },
+        {
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "BOB-0000006"
+          },
+          "fecha": {
+            "$fecha": "-1 days"
+          },
+          "saldo_disponible": 600.0,
+          "saldo_retenido": 0.0,
+          "cantidad_movimientos": 3,
+          "hash_registro": {
+            "$sql": "encode(digest('saldo-diario-BOB-0000006', 'sha256'), 'hex')"
+          },
+          "hash_anterior": null,
+          "cerrado_en": {
+            "$sql": "now() - interval '18 hours'"
+          }
+        },
+        {
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "FDG-0000001"
+          },
+          "fecha": {
+            "$fecha": "-1 days"
+          },
+          "saldo_disponible": 100.0,
+          "saldo_retenido": 0.0,
+          "cantidad_movimientos": 7,
+          "hash_registro": {
+            "$sql": "encode(digest('saldo-diario-FDG-0000001', 'sha256'), 'hex')"
+          },
+          "hash_anterior": null,
+          "cerrado_en": {
+            "$sql": "now() - interval '18 hours'"
+          }
+        },
+        {
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "GRP-0000001"
+          },
+          "fecha": {
+            "$fecha": "-1 days"
+          },
+          "saldo_disponible": 3000.0,
+          "saldo_retenido": 0.0,
+          "cantidad_movimientos": 13,
+          "hash_registro": {
+            "$sql": "encode(digest('saldo-diario-GRP-0000001', 'sha256'), 'hex')"
+          },
+          "hash_anterior": null,
+          "cerrado_en": {
+            "$sql": "now() - interval '18 hours'"
+          }
+        },
+        {
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "SYS-CUSTODIA"
+          },
+          "fecha": {
+            "$fecha": "-1 days"
+          },
+          "saldo_disponible": -9900.0,
+          "saldo_retenido": 0.0,
+          "cantidad_movimientos": 11,
+          "hash_registro": {
+            "$sql": "encode(digest('saldo-diario-SYS-CUSTODIA', 'sha256'), 'hex')"
+          },
+          "hash_anterior": null,
+          "cerrado_en": {
+            "$sql": "now() - interval '18 hours'"
+          }
+        },
+        {
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "SYS-IMPUESTOS"
+          },
+          "fecha": {
+            "$fecha": "-1 days"
+          },
+          "saldo_disponible": 1.69,
+          "saldo_retenido": 0.0,
+          "cantidad_movimientos": 1,
+          "hash_registro": {
+            "$sql": "encode(digest('saldo-diario-SYS-IMPUESTOS', 'sha256'), 'hex')"
+          },
+          "hash_anterior": null,
+          "cerrado_en": {
+            "$sql": "now() - interval '18 hours'"
+          }
+        },
+        {
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "SYS-INGRESOS"
+          },
+          "fecha": {
+            "$fecha": "-1 days"
+          },
+          "saldo_disponible": 8.81,
+          "saldo_retenido": 0.0,
+          "cantidad_movimientos": 1,
+          "hash_registro": {
+            "$sql": "encode(digest('saldo-diario-SYS-INGRESOS', 'sha256'), 'hex')"
+          },
+          "hash_anterior": null,
+          "cerrado_en": {
+            "$sql": "now() - interval '18 hours'"
+          }
+        }
+      ]
+    },
+    {
+      "tabla": "estado_cuenta_billetera",
+      "conflicto": [],
+      "comentario": "El extracto que el cliente descarga, con su hash para poder verificar después que no se alteró",
+      "filas": [
+        {
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "BOB-0000001"
+          },
+          "periodo_desde": {
+            "$fecha": "-45 days"
+          },
+          "periodo_hasta": {
+            "$fecha": "-1 days"
+          },
+          "saldo_inicial": 0.0,
+          "total_creditos": 4189.5,
+          "total_debitos": 600.0,
+          "saldo_final": 3589.5,
+          "cantidad_movimientos": 4,
+          "url_archivo": "https://almacen.pasanaku.test/extractos/BOB-0000001.pdf",
+          "hash_archivo": {
+            "$sql": "encode(digest('extracto-BOB-0000001', 'sha256'), 'hex')"
+          },
+          "emitido_en": {
+            "$sql": "now() - interval '12 hours'"
+          },
+          "entregado_en": {
+            "$sql": "now() - interval '12 hours'"
+          }
+        },
+        {
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "BOB-0000002"
+          },
+          "periodo_desde": {
+            "$fecha": "-45 days"
+          },
+          "periodo_hasta": {
+            "$fecha": "-1 days"
+          },
+          "saldo_inicial": 0.0,
+          "total_creditos": 1200.0,
+          "total_debitos": 600.0,
+          "saldo_final": 600.0,
+          "cantidad_movimientos": 3,
+          "url_archivo": "https://almacen.pasanaku.test/extractos/BOB-0000002.pdf",
+          "hash_archivo": {
+            "$sql": "encode(digest('extracto-BOB-0000002', 'sha256'), 'hex')"
+          },
+          "emitido_en": {
+            "$sql": "now() - interval '12 hours'"
+          },
+          "entregado_en": {
+            "$sql": "now() - interval '12 hours'"
+          }
+        },
+        {
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "BOB-0000003"
+          },
+          "periodo_desde": {
+            "$fecha": "-45 days"
+          },
+          "periodo_hasta": {
+            "$fecha": "-1 days"
+          },
+          "saldo_inicial": 0.0,
+          "total_creditos": 1200.0,
+          "total_debitos": 600.0,
+          "saldo_final": 600.0,
+          "cantidad_movimientos": 3,
+          "url_archivo": "https://almacen.pasanaku.test/extractos/BOB-0000003.pdf",
+          "hash_archivo": {
+            "$sql": "encode(digest('extracto-BOB-0000003', 'sha256'), 'hex')"
+          },
+          "emitido_en": {
+            "$sql": "now() - interval '12 hours'"
+          },
+          "entregado_en": {
+            "$sql": "now() - interval '12 hours'"
+          }
+        },
+        {
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "BOB-0000004"
+          },
+          "periodo_desde": {
+            "$fecha": "-45 days"
+          },
+          "periodo_hasta": {
+            "$fecha": "-1 days"
+          },
+          "saldo_inicial": 0.0,
+          "total_creditos": 600.0,
+          "total_debitos": 600.0,
+          "saldo_final": 0.0,
+          "cantidad_movimientos": 3,
+          "url_archivo": "https://almacen.pasanaku.test/extractos/BOB-0000004.pdf",
+          "hash_archivo": {
+            "$sql": "encode(digest('extracto-BOB-0000004', 'sha256'), 'hex')"
+          },
+          "emitido_en": {
+            "$sql": "now() - interval '12 hours'"
+          },
+          "entregado_en": {
+            "$sql": "now() - interval '12 hours'"
+          }
+        },
+        {
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "BOB-0000005"
+          },
+          "periodo_desde": {
+            "$fecha": "-45 days"
+          },
+          "periodo_hasta": {
+            "$fecha": "-1 days"
+          },
+          "saldo_inicial": 0.0,
+          "total_creditos": 2000.0,
+          "total_debitos": 600.0,
+          "saldo_final": 1400.0,
+          "cantidad_movimientos": 3,
+          "url_archivo": "https://almacen.pasanaku.test/extractos/BOB-0000005.pdf",
+          "hash_archivo": {
+            "$sql": "encode(digest('extracto-BOB-0000005', 'sha256'), 'hex')"
+          },
+          "emitido_en": {
+            "$sql": "now() - interval '12 hours'"
+          },
+          "entregado_en": {
+            "$sql": "now() - interval '12 hours'"
+          }
+        },
+        {
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "BOB-0000006"
+          },
+          "periodo_desde": {
+            "$fecha": "-45 days"
+          },
+          "periodo_hasta": {
+            "$fecha": "-1 days"
+          },
+          "saldo_inicial": 0.0,
+          "total_creditos": 1200.0,
+          "total_debitos": 600.0,
+          "saldo_final": 600.0,
+          "cantidad_movimientos": 3,
+          "url_archivo": "https://almacen.pasanaku.test/extractos/BOB-0000006.pdf",
+          "hash_archivo": {
+            "$sql": "encode(digest('extracto-BOB-0000006', 'sha256'), 'hex')"
+          },
+          "emitido_en": {
+            "$sql": "now() - interval '12 hours'"
+          },
+          "entregado_en": {
+            "$sql": "now() - interval '12 hours'"
+          }
+        }
+      ]
+    }
+  ]
+}

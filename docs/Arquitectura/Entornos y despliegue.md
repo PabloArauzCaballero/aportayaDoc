@@ -19,9 +19,9 @@ relevo de outbox, más el gateway.
 | Proceso | Qué corre | Rol de base | Escala |
 | --- | --- | --- | --- |
 | `gateway` | Spring Cloud Gateway | — (no toca la base) | Horizontal, sin estado |
-| Los catorce servicios | Spring Boot: API + trabajos + relevo | `svc_<servicio>` | Horizontal; 3 réplicas en `nucleo-financiero`, `aportes` e `identidad` |
+| Los catorce servicios | Spring Boot: API + trabajos + relevo | `svc_<servicio>` | Horizontal, por nivel de criticidad: 4 · 3 · 2 réplicas ([[ADR-037 Alta disponibilidad y balanceo]]) |
 | `auditoria` (lecturas) | Consultas pesadas y exportaciones | `rol_auditor` (solo lectura) | Contra la **réplica** |
-| `migrador` | Flyway aplica `sql/` | `rol_migracion` (DDL) | **Un `Job`, una vez por despliegue** |
+| `migrador` | `psql -f sql/aplicar.sql` | `rol_migracion` (DDL) | **Un `Job`, una vez por despliegue** ([[ADR-032 Aplicación del esquema]]) |
 
 Los roles son los de `sql/00_base/01_roles.sql` más un `svc_<servicio>` por servicio;
 **ninguno es superusuario**, ninguno tiene `UPDATE`/`DELETE` sobre las tablas
@@ -30,8 +30,9 @@ de base, no de código ([[ADR-017 Propiedad de datos por servicio]],
 [[ADR-021 Sesión, RLS y pooling]]).
 
 > **Ningún servicio migra al arrancar.** Con catorce procesos levantando a la vez,
-> catorce Flyway sobre el mismo esquema es una carrera garantizada. La migración es
-> un paso del despliegue.
+> catorce aplicando DDL sobre el mismo esquema es una carrera garantizada. La
+> migración es un paso del despliegue, y Flyway está descartado
+> ([[ADR-032 Aplicación del esquema]]).
 
 ## Entornos
 
@@ -67,10 +68,29 @@ contenedores, los microservicios costarían más de lo que rinden.
 ```bash
 python3 scripts/generar_ddl.py                        # el DDL sale de la bóveda
 psql -v ON_ERROR_STOP=1 -f sql/aplicar.sql            # esquemas → tablas → claves → índices → sellos → reglas → GRANT
+
+# El SQL escrito a mano (restricciones, semillas, humo) nombra las tablas sin
+# calificar. `aplicar.sql` fija el search_path para SU sesión; las sesiones que
+# vienen después lo necesitan explícito:
+export PGOPTIONS="-c search_path=aportes,auditoria,cumplimiento,entregas,erp,garantia,grupos,identidad,notificaciones,nucleo_financiero,organizador,publicidad,tarifas,transparencia,catalogo,comun,public"
+
 psql -v ON_ERROR_STOP=1 -f sql/60_semillas/sembrar.sql
 psql -f sql/50_verificacion/prueba_humo.sql           # comprobaciones sobre la base real
 ./gradlew generateJooq                                # introspección → clases de jOOQ, por esquema
 ```
+
+**Solo en desarrollo**, después de lo anterior:
+
+```bash
+psql -c "ALTER DATABASE aportaya SET app.entorno = 'dev'"   # la marca, una sola vez
+psql -v ON_ERROR_STOP=1 -f sql/61_dev/sembrar_dev.sql
+```
+
+Sin esa marca, `sembrar_dev.sql` **aborta**. Es deliberado: es lo que hace que un
+despliegue apuntado al lugar equivocado falle en vez de contaminar una base real
+([[ADR-032 Aplicación del esquema]], `seeders/README.md`). Un entorno productivo
+**nunca** ejecuta el `ALTER DATABASE`, y por eso `sql/61_dev/` puede quedarse en la
+imagen sin riesgo.
 
 Reglas:
 

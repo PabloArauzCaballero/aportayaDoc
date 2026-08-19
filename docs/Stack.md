@@ -143,7 +143,7 @@ Spring Boot: el código de dominio no cambia, cambian el empaquetado y el despli
 | Runtime / framework | JDK 21 + **Spring Boot 3** (MVC con hilos virtuales) |
 | Acceso a datos | **jOOQ**, generado desde la base viva. Nada de JPA/Hibernate |
 | Dinero | `BigDecimal` nativo |
-| Migraciones | **Flyway** aplicando los artefactos de `sql/` |
+| Migraciones | **`psql -f sql/aplicar.sql`** como `Job` de despliegue; sin herramienta de migración |
 | Cola / outbox / cron | Outbox en PostgreSQL + Kafka; **ShedLock** para el cron |
 | Contratos | **OpenAPI 3.1** escrito primero, servidor y clientes generados |
 | Pruebas | JUnit 5 + Testcontainers + Spring Cloud Contract |
@@ -240,7 +240,7 @@ resuelve ningún problema real del proyecto.
 | --- | --- | --- |
 | Base de datos | **PostgreSQL 16** gestionada, con réplica y PITR | Ya verificado; el modelo usa `btree_gist`, `EXCLUDE`, RLS |
 | Pooling | HikariCP por servicio + **PgBouncer** en modo *transaction*, y **solo `SET LOCAL`** | `SET` plano filtra el contexto RLS entre peticiones |
-| Migraciones | **Flyway** aplicando los artefactos de `sql/`, nunca migraciones de ORM | La fuente de verdad son los `.puml` + el catálogo |
+| Migraciones | **`psql -f sql/aplicar.sql`** como `Job`; ni Flyway ni migraciones de ORM ([[ADR-032 Aplicación del esquema]]) | La fuente de verdad son los `.puml` + el catálogo, y `sql/` se regenera: un checksum inmutable no aplica |
 | Mensajería | **Kafka**, alimentado por el outbox | Retención: una auditoría puede pedir reproducir eventos de un período cerrado |
 | Cron | **ShedLock** sobre PostgreSQL | El cierre diario no puede correr dos veces |
 | Idempotencia | Clave del cliente/proveedor validada antes de escribir | Regla del borde, no del framework |

@@ -102,11 +102,26 @@ simplifica: degrada**.
 
 Lo mecánico no se discute en revisión: lo resuelve la herramienta.
 
+**En el backend (Java 21 · Spring Boot)** — `./gradlew spotlessCheck check`:
+
+- **Spotless** con un único formato; el CI falla si no pasa.
+- **ArchUnit** verifica la dirección de dependencia entre capas, que `@Transactional`
+  solo viva en `aplicacion/`, y que nadie fuera de `infraestructura/adaptadores/`
+  implemente un puerto ([[ADR-023 Composición atómica en Java]],
+  [[ADR-033 Puertos y adaptadores]]).
+- Prohibiciones verificadas: `double`/`float` en dinero (`dinero-decimal`), JPA e
+  Hibernate ([[ADR-016 Acceso a datos con jOOQ]]), consultas fuera de `conContexto`,
+  e importar otro servicio.
+- Una supresión (`@SuppressWarnings`, exclusión de ArchUnit) sin comentario que
+  explique el porqué se rechaza en revisión.
+
+**En el frontend (Expo y backoffice, TypeScript)** — `yarn lint`:
+
 - Prettier y ESLint con la configuración del repo; el CI falla si no pasa.
 - TypeScript en modo estricto; `any` requiere justificación escrita.
-- Reglas de lint propias del proyecto: prohibición de `number` en dinero
-  (`dinero-decimal`), prohibición de consultas fuera de `conContexto`, límite de
-  dependencias entre niveles.
+- Reglas de lint propias: prohibición de `number` en dinero (`dinero-decimal`),
+  límite de dependencias entre niveles, y `Platform.OS` fuera de las vistas
+  ([[ADR-036 Android primero]]).
 - Un `eslint-disable` sin comentario que explique el porqué se rechaza en revisión.
 
 ## Antes de abrir el PR

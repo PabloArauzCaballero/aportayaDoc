@@ -1,0 +1,617 @@
+{
+  "descripcion": "Las dos cuentas de desarrollo con contraseña real: una participante y una de plataforma. Sirven para entrar a la app y al backoffice sin registrar a nadie a mano.",
+  "entorno": "dev",
+  "nota": "Son las únicas credenciales del repositorio que autentican de verdad: el hash es Argon2id auténtico de la contraseña de desarrollo, con los mismos parámetros que usa el servicio de identidad (m=65536, t=3, p=4). Las demás cuentas de dev llevan hashes de relleno y no dejan iniciar sesión.",
+  "advertencia": "SOLO DEV. Este archivo no llega a producción: vive en seeders/dev/, se emite a sql/61_dev/ y el orquestador de dev aborta si la base no está marcada con app.entorno = 'dev'. Si esta contraseña alguna vez sirve en un entorno real, el error no es del archivo: es del despliegue que sembró dev en producción.",
+  "reglas_que_permite_probar": [
+    "R-USR — inicio de sesión real contra credencial_acceso con Argon2id",
+    "R-SEG — dispositivo de confianza Android con token push registrado",
+    "R-NOT — canal por defecto: correo verificado más bandeja interna en el celular",
+    "R-ROL — una misma persona entra a la app como participante y al backoffice como administradora"
+  ],
+  "bloques": [
+    {
+      "tabla": "usuario",
+      "conflicto": [
+        "codigo_publico"
+      ],
+      "filas": [
+        {
+          "codigo_publico": "USR000090",
+          "nombres": "Pablo",
+          "apellidos": "Arauz Caballero",
+          "telefono_e164": "+59171000090",
+          "correo": "a2020115468@estudiantes.upsa.edu.bo",
+          "fecha_nacimiento": "1998-06-15",
+          "estado": "ACTIVO",
+          "nivel_kyc": "COMPLETO",
+          "idioma": "es-BO",
+          "zona_horaria": "America/La_Paz",
+          "fecha_registro": {
+            "$sql": "now() - interval '30 days'"
+          }
+        },
+        {
+          "codigo_publico": "USR000091",
+          "nombres": "Pablo",
+          "apellidos": "Arauz Caballero (plataforma)",
+          "telefono_e164": "+59171000091",
+          "correo": "pabliarca@gmail.com",
+          "fecha_nacimiento": "1998-06-15",
+          "estado": "ACTIVO",
+          "nivel_kyc": "COMPLETO",
+          "idioma": "es-BO",
+          "zona_horaria": "America/La_Paz",
+          "fecha_registro": {
+            "$sql": "now() - interval '30 days'"
+          }
+        }
+      ]
+    },
+    {
+      "tabla": "credencial_acceso",
+      "conflicto": [
+        "usuario_id"
+      ],
+      "comentario": "Argon2id real de la contraseña de desarrollo. Sal fija a propósito: el archivo tiene que ser reproducible y su diff, legible.",
+      "filas": [
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000090"
+          },
+          "hash_contrasena": "$argon2id$v=19$m=65536,t=3,p=4$YXBvcnRheWEtZGV2LTAwMQ$kpVHrAJ5acxqeNs4b0YoCYLkHKe5faS1ZmKvyg5NxEM",
+          "algoritmo": "argon2id",
+          "parametros_kdf": {
+            "m": 65536,
+            "t": 3,
+            "p": 4
+          },
+          "requiere_cambio": false,
+          "cambiada_en": {
+            "$sql": "now() - interval '30 days'"
+          }
+        },
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000091"
+          },
+          "hash_contrasena": "$argon2id$v=19$m=65536,t=3,p=4$YXBvcnRheWEtZGV2LTAwMg$dVEKPtg04c3pt5kPxfwwdlHocFbnNri5tlyGYitVskE",
+          "algoritmo": "argon2id",
+          "parametros_kdf": {
+            "m": 65536,
+            "t": 3,
+            "p": 4
+          },
+          "requiere_cambio": false,
+          "cambiada_en": {
+            "$sql": "now() - interval '30 days'"
+          }
+        }
+      ]
+    },
+    {
+      "tabla": "asignacion_rol",
+      "conflicto": [],
+      "comentario": "USR000090 entra a la app; USR000091 entra al backoffice.",
+      "filas": [
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000090"
+          },
+          "rol_id": {
+            "$ref": "rol",
+            "codigo": "PARTICIPANTE"
+          },
+          "ambito": "GLOBAL",
+          "ambito_id": null,
+          "otorgada_por": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000009"
+          },
+          "otorgada_en": {
+            "$sql": "now() - interval '30 days'"
+          },
+          "vigente_hasta": null
+        },
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000091"
+          },
+          "rol_id": {
+            "$ref": "rol",
+            "codigo": "ADMIN_PLATAFORMA"
+          },
+          "ambito": "GLOBAL",
+          "ambito_id": null,
+          "otorgada_por": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000009"
+          },
+          "otorgada_en": {
+            "$sql": "now() - interval '30 days'"
+          },
+          "vigente_hasta": null
+        }
+      ]
+    },
+    {
+      "tabla": "canal_vinculado",
+      "conflicto": [
+        "identificador",
+        "tipo"
+      ],
+      "comentario": "Los dos canales por defecto del proyecto: correo verificado y bandeja interna. Ni WhatsApp ni SMS: esos adaptadores están apagados.",
+      "filas": [
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000090"
+          },
+          "tipo": "CORREO",
+          "identificador": "a2020115468@estudiantes.upsa.edu.bo",
+          "verificado": true,
+          "verificado_en": {
+            "$sql": "now() - interval '30 days'"
+          },
+          "opt_in_en": {
+            "$sql": "now() - interval '30 days'"
+          },
+          "rebotes_consecutivos": 0,
+          "estado": "ACTIVO"
+        },
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000090"
+          },
+          "tipo": "IN_APP",
+          "identificador": "USR000090",
+          "verificado": true,
+          "verificado_en": {
+            "$sql": "now() - interval '30 days'"
+          },
+          "opt_in_en": {
+            "$sql": "now() - interval '30 days'"
+          },
+          "rebotes_consecutivos": 0,
+          "estado": "ACTIVO"
+        },
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000091"
+          },
+          "tipo": "CORREO",
+          "identificador": "pabliarca@gmail.com",
+          "verificado": true,
+          "verificado_en": {
+            "$sql": "now() - interval '30 days'"
+          },
+          "opt_in_en": {
+            "$sql": "now() - interval '30 days'"
+          },
+          "rebotes_consecutivos": 0,
+          "estado": "ACTIVO"
+        },
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000091"
+          },
+          "tipo": "IN_APP",
+          "identificador": "USR000091",
+          "verificado": true,
+          "verificado_en": {
+            "$sql": "now() - interval '30 days'"
+          },
+          "opt_in_en": {
+            "$sql": "now() - interval '30 days'"
+          },
+          "rebotes_consecutivos": 0,
+          "estado": "ACTIVO"
+        }
+      ]
+    },
+    {
+      "tabla": "preferencia_notificacion",
+      "conflicto": [
+        "usuario_id"
+      ],
+      "filas": [
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000090"
+          },
+          "canal_primario": "PUSH_APP",
+          "canal_respaldo": "CORREO",
+          "acepta_whatsapp": false,
+          "acepta_correo": true,
+          "acepta_sms": false,
+          "acepta_push": true,
+          "tope_diario_mensajes": 20,
+          "frecuencia_resumen": "DIARIO"
+        },
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000091"
+          },
+          "canal_primario": "CORREO",
+          "canal_respaldo": "PUSH_APP",
+          "acepta_whatsapp": false,
+          "acepta_correo": true,
+          "acepta_sms": false,
+          "acepta_push": true,
+          "tope_diario_mensajes": 50,
+          "frecuencia_resumen": "DIARIO"
+        }
+      ]
+    },
+    {
+      "tabla": "dispositivo",
+      "conflicto": [],
+      "comentario": "Android primero: el dispositivo de confianza de dev es un Android de gama media.",
+      "filas": [
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000090"
+          },
+          "huella": {
+            "$sql": "encode(digest('dev-android-USR000090', 'sha256'), 'hex')"
+          },
+          "plataforma": "ANDROID",
+          "modelo": "Pixel 6a (emulador de dev)",
+          "version_app": "1.0.0",
+          "token_push": "dev-push-USR000090",
+          "es_confiable": true,
+          "autorizado_en": {
+            "$sql": "now() - interval '30 days'"
+          },
+          "ultimo_uso_en": {
+            "$sql": "now()"
+          }
+        }
+      ]
+    },
+    {
+      "tabla": "documento_identidad",
+      "conflicto": [],
+      "filas": [
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000090"
+          },
+          "tipo": "CI",
+          "numero_cifrado": "cifrado-USR000090",
+          "version_llave": 1,
+          "hash_numero": {
+            "$sql": "encode(digest('USR000090', 'sha256'), 'hex')"
+          },
+          "pais_emision": "BO",
+          "url_anverso": "local://identidad/dev/USR000090-anverso.jpg",
+          "hash_archivo": {
+            "$sql": "repeat('a', 64)"
+          },
+          "estado": "APROBADA"
+        },
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000091"
+          },
+          "tipo": "CI",
+          "numero_cifrado": "cifrado-USR000091",
+          "version_llave": 1,
+          "hash_numero": {
+            "$sql": "encode(digest('USR000091', 'sha256'), 'hex')"
+          },
+          "pais_emision": "BO",
+          "url_anverso": "local://identidad/dev/USR000091-anverso.jpg",
+          "hash_archivo": {
+            "$sql": "repeat('a', 64)"
+          },
+          "estado": "APROBADA"
+        }
+      ]
+    },
+    {
+      "tabla": "verificacion_kyc",
+      "conflicto": [],
+      "filas": [
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000090"
+          },
+          "nivel_solicitado": "AVANZADO",
+          "estado": "APROBADA",
+          "iniciada_en": {
+            "$sql": "now() - interval '30 days'"
+          },
+          "resuelta_en": {
+            "$sql": "now() - interval '29 days'"
+          }
+        },
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000091"
+          },
+          "nivel_solicitado": "AVANZADO",
+          "estado": "APROBADA",
+          "iniciada_en": {
+            "$sql": "now() - interval '30 days'"
+          },
+          "resuelta_en": {
+            "$sql": "now() - interval '29 days'"
+          }
+        }
+      ]
+    },
+    {
+      "tabla": "declaracion_pep",
+      "conflicto": [],
+      "filas": [
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000090"
+          },
+          "es_pep": false,
+          "declarada_en": {
+            "$sql": "now() - interval '30 days'"
+          }
+        },
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000091"
+          },
+          "es_pep": false,
+          "declarada_en": {
+            "$sql": "now() - interval '30 days'"
+          }
+        }
+      ]
+    },
+    {
+      "tabla": "debida_diligencia",
+      "conflicto": [],
+      "filas": [
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000090"
+          },
+          "tipo": "ESTANDAR",
+          "estado": "COMPLETA",
+          "documentos_requeridos": [
+            "CI",
+            "SELFIE"
+          ],
+          "documentos_recibidos": [
+            "CI",
+            "SELFIE"
+          ],
+          "iniciada_en": {
+            "$sql": "now() - interval '30 days'"
+          },
+          "completada_en": {
+            "$sql": "now() - interval '29 days'"
+          }
+        },
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000091"
+          },
+          "tipo": "ESTANDAR",
+          "estado": "COMPLETA",
+          "documentos_requeridos": [
+            "CI",
+            "SELFIE"
+          ],
+          "documentos_recibidos": [
+            "CI",
+            "SELFIE"
+          ],
+          "iniciada_en": {
+            "$sql": "now() - interval '30 days'"
+          },
+          "completada_en": {
+            "$sql": "now() - interval '29 days'"
+          }
+        }
+      ]
+    },
+    {
+      "tabla": "calificacion_riesgo_cliente",
+      "conflicto": [],
+      "filas": [
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000090"
+          },
+          "nivel": "BAJO",
+          "puntaje_total": 18,
+          "nivel_dd_requerido": "ESTANDAR",
+          "periodicidad_revision_meses": 24,
+          "vigente_desde": {
+            "$sql": "now() - interval '29 days'"
+          },
+          "proxima_revision": {
+            "$fecha": "180 days"
+          },
+          "es_automatica": true
+        },
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000091"
+          },
+          "nivel": "BAJO",
+          "puntaje_total": 18,
+          "nivel_dd_requerido": "ESTANDAR",
+          "periodicidad_revision_meses": 24,
+          "vigente_desde": {
+            "$sql": "now() - interval '29 days'"
+          },
+          "proxima_revision": {
+            "$fecha": "180 days"
+          },
+          "es_automatica": true
+        }
+      ]
+    },
+    {
+      "tabla": "expediente_cliente",
+      "conflicto": [
+        "usuario_id"
+      ],
+      "filas": [
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000090"
+          },
+          "completitud_porcentaje": 100,
+          "documentos": [
+            "CI",
+            "SELFIE",
+            "DOMICILIO"
+          ],
+          "retencion_hasta": {
+            "$fecha": "3650 days"
+          },
+          "estado": "COMPLETO",
+          "ultima_actualizacion": {
+            "$sql": "now() - interval '29 days'"
+          }
+        },
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000091"
+          },
+          "completitud_porcentaje": 100,
+          "documentos": [
+            "CI",
+            "SELFIE",
+            "DOMICILIO"
+          ],
+          "retencion_hasta": {
+            "$fecha": "3650 days"
+          },
+          "estado": "COMPLETO",
+          "ultima_actualizacion": {
+            "$sql": "now() - interval '29 days'"
+          }
+        }
+      ]
+    },
+    {
+      "tabla": "aceptacion_contrato",
+      "conflicto": [],
+      "filas": [
+        {
+          "contrato_adhesion_id": {
+            "$ref": "contrato_adhesion",
+            "codigo": "CTO-BILLETERA",
+            "version": 1
+          },
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000090"
+          },
+          "version_aceptada": 1,
+          "ip": "190.129.0.90",
+          "hash_evidencia": {
+            "$sql": "repeat('a', 64)"
+          },
+          "aceptado_en": {
+            "$sql": "now() - interval '30 days'"
+          }
+        },
+        {
+          "contrato_adhesion_id": {
+            "$ref": "contrato_adhesion",
+            "codigo": "CTO-BILLETERA",
+            "version": 1
+          },
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000091"
+          },
+          "version_aceptada": 1,
+          "ip": "190.129.0.91",
+          "hash_evidencia": {
+            "$sql": "repeat('a', 64)"
+          },
+          "aceptado_en": {
+            "$sql": "now() - interval '30 days'"
+          }
+        }
+      ]
+    },
+    {
+      "tabla": "cuenta_billetera",
+      "conflicto": [
+        "numero_cuenta"
+      ],
+      "filas": [
+        {
+          "numero_cuenta": "BOB-0000090",
+          "tipo": "USUARIO",
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000090"
+          },
+          "moneda": "BOB",
+          "estado": "ACTIVA",
+          "nivel_debida_diligencia": "ESTANDAR",
+          "fecha_apertura": {
+            "$sql": "now() - interval '30 days'"
+          },
+          "politica_billetera_id": {
+            "$ref": "politica_billetera",
+            "codigo": "GENERAL_BOB"
+          },
+          "cuenta_contable_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.01"
+          }
+        },
+        {
+          "numero_cuenta": "BOB-0000091",
+          "tipo": "USUARIO",
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000091"
+          },
+          "moneda": "BOB",
+          "estado": "ACTIVA",
+          "nivel_debida_diligencia": "ESTANDAR",
+          "fecha_apertura": {
+            "$sql": "now() - interval '30 days'"
+          },
+          "politica_billetera_id": {
+            "$ref": "politica_billetera",
+            "codigo": "GENERAL_BOB"
+          },
+          "cuenta_contable_id": {
+            "$ref": "cuenta_contable",
+            "codigo": "2.1.01"
+          }
+        }
+      ]
+    }
+  ]
+}

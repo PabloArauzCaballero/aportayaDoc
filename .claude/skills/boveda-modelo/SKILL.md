@@ -85,7 +85,7 @@ python3 scripts/verificar_boveda.py  # coherencia: casos, restricciones e índic
 ```
 
 `generar_ddl.py` encadena `extraer_sql.py` (restricciones del catálogo) y
-`generar_semillas.py` (`seeders/*.json` → `sql/60_semillas/` y `sql/61_prueba/`).
+`generar_semillas.py` (`seeders/*.json` → `sql/60_semillas/` y `sql/61_dev/`).
 Una columna nueva en el modelo puede romper una semilla: el generador de semillas
 valida cada columna contra el modelo y falla si no existe. Eso es deseable.
 

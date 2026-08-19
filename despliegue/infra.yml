@@ -1,0 +1,90 @@
+# Infraestructura compartida — la parte de la disponibilidad que ningún carril posee.
+#
+# Fuente de verdad de los números de ADR-037. `scripts/generar_k8s.py` los lee,
+# los VALIDA contra los descriptores de los servicios y falla si no cierran.
+# No se edita para "que pase el generador": si no cierra, el problema es real.
+
+# ── Los tres niveles de criticidad (ADR-037 §1 y §2) ────────────────────────
+niveles:
+  N1:
+    descripcion: "Crítico en línea — si se cae, el usuario no puede entrar ni mover plata"
+    replicas_min: 4
+    replicas_max: 10
+    hpa: true
+    pdb_min_disponibles: 3
+    antiafinidad: required
+    max_unavailable: 0
+    pool_hikari: 10
+    objetivo_disponibilidad: 99.9
+    latencia_p95_ms: 400
+  N2:
+    descripcion: "Operación del producto — se atrasa, no se pierde: el outbox absorbe"
+    replicas_min: 3
+    replicas_max: 6
+    hpa: true
+    pdb_min_disponibles: 2
+    antiafinidad: preferred
+    max_unavailable: 0
+    pool_hikari: 8
+    objetivo_disponibilidad: 99.5
+    latencia_p95_ms: 800
+  N3:
+    descripcion: "Diferible — puede esperar minutos sin que nadie afuera lo note"
+    replicas_min: 2
+    replicas_max: 2
+    hpa: false
+    pdb_min_disponibles: 1
+    antiafinidad: preferred
+    max_unavailable: 1
+    objetivo_disponibilidad: 99.0
+    pool_hikari: 5
+    latencia_p95_ms: null
+
+# ── El techo real: conexiones (ADR-037 §3) ─────────────────────────────────
+# Escalar réplicas sin recalcular esto agota PostgreSQL, y entonces se cae todo,
+# no solo el servicio que escaló.
+base_de_datos:
+  postgres:
+    max_connections: 400
+    margen_reservado: 80        # superusuario, migrador, auditor, monitoreo, worker
+  pgbouncer:
+    replicas: 2                 # un pooler único anula la redundancia de arriba
+    modo: transaction
+    max_client_conn: 1000
+    default_pool_size: 18
+    pools_esperados: 16         # 14 servicios + worker + reportes
+  replicacion:
+    espera_sincrona: 1          # synchronous_commit = on · RPO 0
+    replica_lectura_asincrona: 1
+    rto_objetivo_segundos: 120
+
+mensajeria:
+  kafka:
+    brokers: 3
+    replication_factor: 3
+    min_insync_replicas: 2
+    acks: all
+
+# ── La entrada (ADR-022 · ADR-037 §4) ──────────────────────────────────────
+entrada:
+  ingress:
+    replicas: 2
+    clase: nginx
+  gateway:
+    nivel: N1
+    imagen: aportaya/gateway
+    puerto: 8080
+    recursos:
+      memoria: 512Mi
+      cpu: 500m
+
+# ── Entornos desplegados. `dev` no está: dev es compose (ADR-025) ──────────
+entornos:
+  qa:
+    namespace: aportaya-qa
+    factor_replicas: 0.5        # se aplica sobre el mínimo, con piso de 2
+    zonas: 1
+  prod:
+    namespace: aportaya-prod
+    factor_replicas: 1.0
+    zonas: 2                    # si el proveedor da menos, la antiafinidad required falla — a propósito

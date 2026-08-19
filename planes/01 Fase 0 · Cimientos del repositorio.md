@@ -98,7 +98,7 @@ Pasanaku/
 | `./gradlew bd:levantar` | `docker compose --profile base up -d --wait` |
 | `./gradlew bd:aplicar` | `psql -v ON_ERROR_STOP=1 -f sql/aplicar.sql` |
 | `./gradlew bd:semillas` | `python3 scripts/generar_semillas.py` + `sembrar.sql` (**20 catálogos**) |
-| `./gradlew bd:prueba` | `sembrar_prueba.sql` (**14 archivos, nunca** en producción) |
+| `./gradlew bd:dev` | `sembrar_dev.sql` (**15 archivos, nunca** en producción) |
 | `./gradlew bd:reset` | volumen limpio → esquemas y roles → aplicar → semillas → prueba |
 | `./gradlew generateJooq` | genera las clases desde la base viva, **por esquema** |
 | `./gradlew generateOpenApiClients` | interfaces de servidor + cliente Java + cliente TypeScript |
@@ -115,7 +115,7 @@ Pasanaku/
 > [!warning] Todas las dependencias comunes se declaran **acá**
 > Los carriles concurrentes **no agregan dependencias**: una versión nueva en una rama
 > de carril produce conflicto en el catálogo con las otras cuatro máquinas. Se declara
-> ahora todo lo que las 21 fases van a necesitar (Spring Boot, jOOQ, Flyway, Kafka,
+> ahora todo lo que las 21 fases van a necesitar (Spring Boot, jOOQ, Kafka,
 > ShedLock, Resilience4j, Micrometer, JUnit 5, Testcontainers, Spring Cloud Contract,
 > ArchUnit, AssertJ, jqwik, Argon2). Lo que falte después entra por micro-PR
 > ([[07 Carriles de trabajo concurrente]] §6).

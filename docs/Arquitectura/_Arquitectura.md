@@ -69,6 +69,11 @@ está en [[Stack]]. El motivo por el que son catorce y no uno está en
 | [[ADR-025 Empaquetado y despliegue de los servicios\|025]] | Cómo se empaqueta y se pone en producción | Una imagen por servicio · manifiestos generados · migración como trabajo aparte | 012 |
 | [[ADR-026 Pruebas de un sistema distribuido\|026]] | Qué se considera probado | JUnit 5 + Testcontainers · contrato entre servicios · prueba de saga | 008 |
 | [[ADR-013 Respaldo y continuidad\|013]] | Qué se respalda y cómo se prueba que sirve | Punto en el tiempo + ensayo de restauración obligatorio | — |
+| [[ADR-033 Puertos y adaptadores\|033]] | Dónde vive lo que está afuera y cómo se elige su implementación | Puerto en `dominio/puertos/` · adaptadores en `infraestructura/adaptadores/` · el local por omisión | — |
+| [[ADR-034 Almacenamiento de archivos\|034]] | Dónde van los archivos y qué se guarda en la columna | Adaptador local en disco · clave de objeto, nunca una URL pública | — |
+| [[ADR-035 Canales por defecto\|035]] | Por qué canal avisa la plataforma mientras no haya contrato | Bandeja interna + correo, con push como aviso · WhatsApp y SMS apagados | — |
+| [[ADR-036 Android primero\|036]] | En qué orden se construyen las dos plataformas móviles | Android primero · iOS por pase de paridad, por bloque de pantallas | — |
+| [[ADR-037 Alta disponibilidad y balanceo\|037]] | Cuántas réplicas, qué se replica abajo y cómo se reparte la carga | Tres niveles de criticidad · ninguno con menos de 2 réplicas · el tope de escalado atado al pool | — |
 
 ## Decisiones superadas
 
@@ -98,6 +103,8 @@ Se conservan como expediente. **Ninguna manda**; se leen para entender qué camb
 | [[Entornos y despliegue]] | Cómo se aplica el esquema, se siembra y se opera |
 | [[Prompts/_Prompts\|Prompts generalistas]] | Los tres prompts —general, backend, frontend— que imponen la composición atómica |
 | [[Lineamientos adoptados y descartados]] | Qué se tomó de los lineamientos externos y qué se eliminó por contradecir la bóveda |
+| [[Procedimiento de desarrollo]] | Cómo se construye un flujo entero —contrato, backend, app, humo— y qué lo cierra |
+| [[Contrato de implementación para IA]] | Las reglas duras contra la invención: fuentes de verdad, prohibiciones y defaults |
 
 ## Cómo se usa esta carpeta al programar
 

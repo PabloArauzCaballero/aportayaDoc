@@ -44,15 +44,27 @@ Internet → NGINX (único que publica 80/443)
 ## Kubernetes, separado
 
 ```
-infra/k8s/
-├── chart/
-└── entornos/
-    ├── dev/
-    ├── qa/
-    └── prod/
+despliegue/
+├── Dockerfile              plantilla única, parametrizada por servicio
+├── infra.yml               niveles, conexiones, entrada y entornos ← se EDITA
+├── compose/                dev: base · <servicio> · dinero · todo
+└── k8s/generado/           qa/ y prod/ ← se GENERAN, no se versionan
+    ↑ python3 scripts/generar_k8s.py, desde servicios/*/descriptor.yml + infra.yml
 ```
 
-No se mezcla con el compose de desarrollo, y los valores secretos **no van a git**.
+**Los manifiestos no se escriben ni se editan.** Catorce copias divergen y la
+divergencia se descubre en producción ([[ADR-025 Empaquetado y despliegue de los servicios]]).
+Lo que se revisa en un PR es el `descriptor.yml` y `infra.yml`.
+
+`dev` no está en k8s: dev es compose. Y los valores secretos **no van a git**.
+
+### El generador valida antes de escribir
+
+Falla, y no genera nada, si: algún servicio declara menos de 2 réplicas, si el máximo
+excede el tope de su nivel, si `Σ (replicas_max × pool)` no cabe en PgBouncer, si el
+pool de PgBouncer no cabe en `max_connections`, o si un servicio de nivel N1 exige
+antiafinidad estricta en un entorno con una sola zona
+([[ADR-037 Alta disponibilidad y balanceo]]).
 
 | Aspecto | Regla |
 | --- | --- |

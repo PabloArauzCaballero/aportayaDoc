@@ -40,6 +40,9 @@ desincronicen: si alguno produce diff, alguien editó un derivado a mano.
 | Errores de tipos o de lint | No se negocia |
 | Pruebas fallidas o desactivadas sin justificación | Idem |
 | `sql/aplicar.sql` no aplica en limpio o falla la prueba de humo | El esquema es el contrato con la realidad |
+| `sql/` regenerado produce diff | Lo derivado divergió de su fuente: alguien editó el SQL a mano |
+| Las semillas de dev entran a una base **sin** `app.entorno = 'dev'` | La guarda es lo único que separa dev de producción |
+| Un dato de personas aparece en `seeders/minimos/` | Ese archivo va a producción |
 | Semillas no idempotentes | Un despliegue repetido duplicaría catálogo |
 | Semillas de prueba aceptadas en producción | Riesgo de datos falsos en dinero real |
 | Tipos introspectados o OpenAPI desactualizados | Divergencia silenciosa |

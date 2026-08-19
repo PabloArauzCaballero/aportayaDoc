@@ -32,6 +32,17 @@ Antes de escribir el primer archivo, se listan las piezas y su nivel.
 
 Si una pieza cabe en dos niveles, mezcla responsabilidades: se parte igual.
 
+## El puerto no es un nivel nuevo
+
+Un **puerto** es un átomo con una forma particular: una interfaz que declara qué
+necesita el dominio del mundo de afuera. Vive en `dominio/puertos/`. Su
+implementación —el **adaptador**— es una molécula, y vive en
+`infraestructura/adaptadores/`. La dirección de dependencia no cambia: el dominio
+declara, la infraestructura cumple ([[ADR-033 Puertos y adaptadores]]).
+
+La pregunta que decide: **¿esto sale del proceso?** Red, disco, correo, plata, reloj
+o azar → puerto. Un cálculo puro no es puerto aunque sea complicado.
+
 ## Reglas que no se negocian
 
 | Regla | Cómo se ve al revisar |

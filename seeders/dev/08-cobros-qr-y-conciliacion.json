@@ -1,0 +1,1279 @@
+{
+  "descripcion": "Cobro del período 2 por QR interoperable: orden con vencimiento, intento, webhook firmado, acreditación, conciliación contra el extracto y constancia verificable. La orden de USR000004 venció sin pago.",
+  "entorno": "dev",
+  "nota": "El webhook llega una sola vez y su clave de idempotencia lo prueba. La conciliación cierra con diferencia 0,00 contra el movimiento bancario del extracto importado en el archivo 06.",
+  "reglas_que_permite_probar": [
+    "R-IDEM — webhook y pago con clave de idempotencia; reprocesar no duplica",
+    "R-CON — un pago acreditado tiene su movimiento bancario y su conciliación",
+    "R-QR — la orden de cobro vence y el intento queda registrado como EXPIRADA"
+  ],
+  "bloques": [
+    {
+      "tabla": "orden_cobro",
+      "conflicto": [
+        "obligacion_id",
+        "clave_idempotencia"
+      ],
+      "filas": [
+        {
+          "obligacion_id": {
+            "$sql": "(SELECT o.id FROM obligacion_aporte o JOIN participante p ON p.id = o.participante_id JOIN usuario u ON u.id = p.usuario_id JOIN periodo pe ON pe.id = o.periodo_id WHERE o.tipo = 'APORTE_PERIODICO' AND pe.numero = 2 AND u.codigo_publico = 'USR000001')"
+          },
+          "proveedor_id": {
+            "$ref": "proveedor_pago",
+            "codigo": "QR_INTEROP"
+          },
+          "monto_exacto": 500.0,
+          "moneda": "BOB",
+          "permite_monto_abierto": false,
+          "referencia_unica": "AP-P2-01",
+          "estado": "PAGADA",
+          "emitida_en": {
+            "$sql": "now() - interval '15 days'"
+          },
+          "expira_en": {
+            "$sql": "now() - interval '5 days'"
+          },
+          "clave_idempotencia": "demo-orden-cobro-p2-01"
+        },
+        {
+          "obligacion_id": {
+            "$sql": "(SELECT o.id FROM obligacion_aporte o JOIN participante p ON p.id = o.participante_id JOIN usuario u ON u.id = p.usuario_id JOIN periodo pe ON pe.id = o.periodo_id WHERE o.tipo = 'APORTE_PERIODICO' AND pe.numero = 2 AND u.codigo_publico = 'USR000002')"
+          },
+          "proveedor_id": {
+            "$ref": "proveedor_pago",
+            "codigo": "QR_INTEROP"
+          },
+          "monto_exacto": 500.0,
+          "moneda": "BOB",
+          "permite_monto_abierto": false,
+          "referencia_unica": "AP-P2-02",
+          "estado": "PAGADA",
+          "emitida_en": {
+            "$sql": "now() - interval '15 days'"
+          },
+          "expira_en": {
+            "$sql": "now() - interval '5 days'"
+          },
+          "clave_idempotencia": "demo-orden-cobro-p2-02"
+        },
+        {
+          "obligacion_id": {
+            "$sql": "(SELECT o.id FROM obligacion_aporte o JOIN participante p ON p.id = o.participante_id JOIN usuario u ON u.id = p.usuario_id JOIN periodo pe ON pe.id = o.periodo_id WHERE o.tipo = 'APORTE_PERIODICO' AND pe.numero = 2 AND u.codigo_publico = 'USR000003')"
+          },
+          "proveedor_id": {
+            "$ref": "proveedor_pago",
+            "codigo": "QR_INTEROP"
+          },
+          "monto_exacto": 500.0,
+          "moneda": "BOB",
+          "permite_monto_abierto": false,
+          "referencia_unica": "AP-P2-03",
+          "estado": "PAGADA",
+          "emitida_en": {
+            "$sql": "now() - interval '15 days'"
+          },
+          "expira_en": {
+            "$sql": "now() - interval '5 days'"
+          },
+          "clave_idempotencia": "demo-orden-cobro-p2-03"
+        },
+        {
+          "obligacion_id": {
+            "$sql": "(SELECT o.id FROM obligacion_aporte o JOIN participante p ON p.id = o.participante_id JOIN usuario u ON u.id = p.usuario_id JOIN periodo pe ON pe.id = o.periodo_id WHERE o.tipo = 'APORTE_PERIODICO' AND pe.numero = 2 AND u.codigo_publico = 'USR000004')"
+          },
+          "proveedor_id": {
+            "$ref": "proveedor_pago",
+            "codigo": "QR_INTEROP"
+          },
+          "monto_exacto": 500.0,
+          "moneda": "BOB",
+          "permite_monto_abierto": false,
+          "referencia_unica": "AP-P2-04",
+          "estado": "EXPIRADA",
+          "emitida_en": {
+            "$sql": "now() - interval '15 days'"
+          },
+          "expira_en": {
+            "$sql": "now() - interval '5 days'"
+          },
+          "clave_idempotencia": "demo-orden-cobro-p2-04"
+        },
+        {
+          "obligacion_id": {
+            "$sql": "(SELECT o.id FROM obligacion_aporte o JOIN participante p ON p.id = o.participante_id JOIN usuario u ON u.id = p.usuario_id JOIN periodo pe ON pe.id = o.periodo_id WHERE o.tipo = 'APORTE_PERIODICO' AND pe.numero = 2 AND u.codigo_publico = 'USR000005')"
+          },
+          "proveedor_id": {
+            "$ref": "proveedor_pago",
+            "codigo": "QR_INTEROP"
+          },
+          "monto_exacto": 500.0,
+          "moneda": "BOB",
+          "permite_monto_abierto": false,
+          "referencia_unica": "AP-P2-05",
+          "estado": "PAGADA",
+          "emitida_en": {
+            "$sql": "now() - interval '15 days'"
+          },
+          "expira_en": {
+            "$sql": "now() - interval '5 days'"
+          },
+          "clave_idempotencia": "demo-orden-cobro-p2-05"
+        },
+        {
+          "obligacion_id": {
+            "$sql": "(SELECT o.id FROM obligacion_aporte o JOIN participante p ON p.id = o.participante_id JOIN usuario u ON u.id = p.usuario_id JOIN periodo pe ON pe.id = o.periodo_id WHERE o.tipo = 'APORTE_PERIODICO' AND pe.numero = 2 AND u.codigo_publico = 'USR000006')"
+          },
+          "proveedor_id": {
+            "$ref": "proveedor_pago",
+            "codigo": "QR_INTEROP"
+          },
+          "monto_exacto": 500.0,
+          "moneda": "BOB",
+          "permite_monto_abierto": false,
+          "referencia_unica": "AP-P2-06",
+          "estado": "PAGADA",
+          "emitida_en": {
+            "$sql": "now() - interval '15 days'"
+          },
+          "expira_en": {
+            "$sql": "now() - interval '5 days'"
+          },
+          "clave_idempotencia": "demo-orden-cobro-p2-06"
+        }
+      ]
+    },
+    {
+      "tabla": "qr_cobro",
+      "conflicto": [],
+      "filas": [
+        {
+          "orden_cobro_id": {
+            "$ref": "orden_cobro",
+            "clave_idempotencia": "demo-orden-cobro-p2-01"
+          },
+          "payload_emv": "00020101021226580014BO.QR.DEMO0114AP-P2-01520400005303068540550052.005802BO5910APORTAYA6304",
+          "url_imagen": "https://almacen.pasanaku.test/qr/AP-P2-01.png",
+          "crc": "A1B2",
+          "banco_emisor": "BANCO DEMO S.A.",
+          "cuenta_abono": "****4321",
+          "es_reutilizable": false,
+          "escaneos": 2
+        },
+        {
+          "orden_cobro_id": {
+            "$ref": "orden_cobro",
+            "clave_idempotencia": "demo-orden-cobro-p2-02"
+          },
+          "payload_emv": "00020101021226580014BO.QR.DEMO0114AP-P2-02520400005303068540550052.005802BO5910APORTAYA6304",
+          "url_imagen": "https://almacen.pasanaku.test/qr/AP-P2-02.png",
+          "crc": "A1B2",
+          "banco_emisor": "BANCO DEMO S.A.",
+          "cuenta_abono": "****4321",
+          "es_reutilizable": false,
+          "escaneos": 2
+        },
+        {
+          "orden_cobro_id": {
+            "$ref": "orden_cobro",
+            "clave_idempotencia": "demo-orden-cobro-p2-03"
+          },
+          "payload_emv": "00020101021226580014BO.QR.DEMO0114AP-P2-03520400005303068540550052.005802BO5910APORTAYA6304",
+          "url_imagen": "https://almacen.pasanaku.test/qr/AP-P2-03.png",
+          "crc": "A1B2",
+          "banco_emisor": "BANCO DEMO S.A.",
+          "cuenta_abono": "****4321",
+          "es_reutilizable": false,
+          "escaneos": 2
+        },
+        {
+          "orden_cobro_id": {
+            "$ref": "orden_cobro",
+            "clave_idempotencia": "demo-orden-cobro-p2-04"
+          },
+          "payload_emv": "00020101021226580014BO.QR.DEMO0114AP-P2-04520400005303068540550052.005802BO5910APORTAYA6304",
+          "url_imagen": "https://almacen.pasanaku.test/qr/AP-P2-04.png",
+          "crc": "A1B2",
+          "banco_emisor": "BANCO DEMO S.A.",
+          "cuenta_abono": "****4321",
+          "es_reutilizable": false,
+          "escaneos": 0
+        },
+        {
+          "orden_cobro_id": {
+            "$ref": "orden_cobro",
+            "clave_idempotencia": "demo-orden-cobro-p2-05"
+          },
+          "payload_emv": "00020101021226580014BO.QR.DEMO0114AP-P2-05520400005303068540550052.005802BO5910APORTAYA6304",
+          "url_imagen": "https://almacen.pasanaku.test/qr/AP-P2-05.png",
+          "crc": "A1B2",
+          "banco_emisor": "BANCO DEMO S.A.",
+          "cuenta_abono": "****4321",
+          "es_reutilizable": false,
+          "escaneos": 2
+        },
+        {
+          "orden_cobro_id": {
+            "$ref": "orden_cobro",
+            "clave_idempotencia": "demo-orden-cobro-p2-06"
+          },
+          "payload_emv": "00020101021226580014BO.QR.DEMO0114AP-P2-06520400005303068540550052.005802BO5910APORTAYA6304",
+          "url_imagen": "https://almacen.pasanaku.test/qr/AP-P2-06.png",
+          "crc": "A1B2",
+          "banco_emisor": "BANCO DEMO S.A.",
+          "cuenta_abono": "****4321",
+          "es_reutilizable": false,
+          "escaneos": 2
+        }
+      ]
+    },
+    {
+      "tabla": "intento_pago",
+      "conflicto": [
+        "orden_cobro_id",
+        "clave_idempotencia"
+      ],
+      "filas": [
+        {
+          "orden_cobro_id": {
+            "$ref": "orden_cobro",
+            "clave_idempotencia": "demo-orden-cobro-p2-01"
+          },
+          "numero_intento": 1,
+          "canal": "QR_INTEROPERABLE",
+          "iniciado_en": {
+            "$sql": "now() - interval '12 days'"
+          },
+          "finalizado_en": {
+            "$sql": "now() - interval '12 days'"
+          },
+          "estado": "APROBADA",
+          "codigo_error": null,
+          "mensaje_proveedor": "Pago aprobado",
+          "clave_idempotencia": "demo-intento-p2-01"
+        },
+        {
+          "orden_cobro_id": {
+            "$ref": "orden_cobro",
+            "clave_idempotencia": "demo-orden-cobro-p2-02"
+          },
+          "numero_intento": 1,
+          "canal": "QR_INTEROPERABLE",
+          "iniciado_en": {
+            "$sql": "now() - interval '12 days'"
+          },
+          "finalizado_en": {
+            "$sql": "now() - interval '12 days'"
+          },
+          "estado": "APROBADA",
+          "codigo_error": null,
+          "mensaje_proveedor": "Pago aprobado",
+          "clave_idempotencia": "demo-intento-p2-02"
+        },
+        {
+          "orden_cobro_id": {
+            "$ref": "orden_cobro",
+            "clave_idempotencia": "demo-orden-cobro-p2-03"
+          },
+          "numero_intento": 1,
+          "canal": "QR_INTEROPERABLE",
+          "iniciado_en": {
+            "$sql": "now() - interval '11 days'"
+          },
+          "finalizado_en": {
+            "$sql": "now() - interval '11 days'"
+          },
+          "estado": "APROBADA",
+          "codigo_error": null,
+          "mensaje_proveedor": "Pago aprobado",
+          "clave_idempotencia": "demo-intento-p2-03"
+        },
+        {
+          "orden_cobro_id": {
+            "$ref": "orden_cobro",
+            "clave_idempotencia": "demo-orden-cobro-p2-04"
+          },
+          "numero_intento": 1,
+          "canal": "QR_INTEROPERABLE",
+          "iniciado_en": {
+            "$sql": "now() - interval '6 days'"
+          },
+          "finalizado_en": {
+            "$sql": "now() - interval '5 days'"
+          },
+          "estado": "EXPIRADA",
+          "codigo_error": "ORDEN_EXPIRADA",
+          "mensaje_proveedor": "La orden venció sin pago",
+          "clave_idempotencia": "demo-intento-p2-04"
+        },
+        {
+          "orden_cobro_id": {
+            "$ref": "orden_cobro",
+            "clave_idempotencia": "demo-orden-cobro-p2-05"
+          },
+          "numero_intento": 1,
+          "canal": "QR_INTEROPERABLE",
+          "iniciado_en": {
+            "$sql": "now() - interval '13 days'"
+          },
+          "finalizado_en": {
+            "$sql": "now() - interval '13 days'"
+          },
+          "estado": "APROBADA",
+          "codigo_error": null,
+          "mensaje_proveedor": "Pago aprobado",
+          "clave_idempotencia": "demo-intento-p2-05"
+        },
+        {
+          "orden_cobro_id": {
+            "$ref": "orden_cobro",
+            "clave_idempotencia": "demo-orden-cobro-p2-06"
+          },
+          "numero_intento": 1,
+          "canal": "QR_INTEROPERABLE",
+          "iniciado_en": {
+            "$sql": "now() - interval '10 days'"
+          },
+          "finalizado_en": {
+            "$sql": "now() - interval '10 days'"
+          },
+          "estado": "APROBADA",
+          "codigo_error": null,
+          "mensaje_proveedor": "Pago aprobado",
+          "clave_idempotencia": "demo-intento-p2-06"
+        }
+      ]
+    },
+    {
+      "tabla": "pago",
+      "conflicto": [
+        "obligacion_id",
+        "clave_idempotencia"
+      ],
+      "filas": [
+        {
+          "obligacion_id": {
+            "$sql": "(SELECT o.id FROM obligacion_aporte o JOIN participante p ON p.id = o.participante_id JOIN usuario u ON u.id = p.usuario_id JOIN periodo pe ON pe.id = o.periodo_id WHERE o.tipo = 'APORTE_PERIODICO' AND pe.numero = 2 AND u.codigo_publico = 'USR000001')"
+          },
+          "intento_pago_id": {
+            "$ref": "intento_pago",
+            "clave_idempotencia": "demo-intento-p2-01"
+          },
+          "proveedor_id": {
+            "$ref": "proveedor_pago",
+            "codigo": "QR_INTEROP"
+          },
+          "monto": 500.0,
+          "moneda": "BOB",
+          "monto_comision_proveedor": 1.75,
+          "monto_neto_acreditado": 498.25,
+          "canal": "QR_INTEROPERABLE",
+          "estado": "ACREDITADO",
+          "fecha_hora_pago": {
+            "$sql": "now() - interval '12 days'"
+          },
+          "fecha_hora_acreditacion": {
+            "$sql": "now() - interval '12 days'"
+          },
+          "referencia_proveedor": "BCO-P2-01",
+          "pagador_nombre": "María Elena Quispe Mamani",
+          "pagador_documento": "9000001",
+          "cuenta_origen_enmascarada": "****4001",
+          "registrado_por": null,
+          "es_manual": false,
+          "clave_idempotencia": "demo-pago-p2-01"
+        },
+        {
+          "obligacion_id": {
+            "$sql": "(SELECT o.id FROM obligacion_aporte o JOIN participante p ON p.id = o.participante_id JOIN usuario u ON u.id = p.usuario_id JOIN periodo pe ON pe.id = o.periodo_id WHERE o.tipo = 'APORTE_PERIODICO' AND pe.numero = 2 AND u.codigo_publico = 'USR000002')"
+          },
+          "intento_pago_id": {
+            "$ref": "intento_pago",
+            "clave_idempotencia": "demo-intento-p2-02"
+          },
+          "proveedor_id": {
+            "$ref": "proveedor_pago",
+            "codigo": "QR_INTEROP"
+          },
+          "monto": 500.0,
+          "moneda": "BOB",
+          "monto_comision_proveedor": 1.75,
+          "monto_neto_acreditado": 498.25,
+          "canal": "QR_INTEROPERABLE",
+          "estado": "ACREDITADO",
+          "fecha_hora_pago": {
+            "$sql": "now() - interval '12 days'"
+          },
+          "fecha_hora_acreditacion": {
+            "$sql": "now() - interval '12 days'"
+          },
+          "referencia_proveedor": "BCO-P2-02",
+          "pagador_nombre": "Juan Carlos Rojas Vargas",
+          "pagador_documento": "9000002",
+          "cuenta_origen_enmascarada": "****4002",
+          "registrado_por": null,
+          "es_manual": false,
+          "clave_idempotencia": "demo-pago-p2-02"
+        },
+        {
+          "obligacion_id": {
+            "$sql": "(SELECT o.id FROM obligacion_aporte o JOIN participante p ON p.id = o.participante_id JOIN usuario u ON u.id = p.usuario_id JOIN periodo pe ON pe.id = o.periodo_id WHERE o.tipo = 'APORTE_PERIODICO' AND pe.numero = 2 AND u.codigo_publico = 'USR000003')"
+          },
+          "intento_pago_id": {
+            "$ref": "intento_pago",
+            "clave_idempotencia": "demo-intento-p2-03"
+          },
+          "proveedor_id": {
+            "$ref": "proveedor_pago",
+            "codigo": "QR_INTEROP"
+          },
+          "monto": 500.0,
+          "moneda": "BOB",
+          "monto_comision_proveedor": 1.75,
+          "monto_neto_acreditado": 498.25,
+          "canal": "QR_INTEROPERABLE",
+          "estado": "ACREDITADO",
+          "fecha_hora_pago": {
+            "$sql": "now() - interval '11 days'"
+          },
+          "fecha_hora_acreditacion": {
+            "$sql": "now() - interval '11 days'"
+          },
+          "referencia_proveedor": "BCO-P2-03",
+          "pagador_nombre": "Ana Lucía Choque Flores",
+          "pagador_documento": "9000003",
+          "cuenta_origen_enmascarada": "****4003",
+          "registrado_por": null,
+          "es_manual": false,
+          "clave_idempotencia": "demo-pago-p2-03"
+        },
+        {
+          "obligacion_id": {
+            "$sql": "(SELECT o.id FROM obligacion_aporte o JOIN participante p ON p.id = o.participante_id JOIN usuario u ON u.id = p.usuario_id JOIN periodo pe ON pe.id = o.periodo_id WHERE o.tipo = 'APORTE_PERIODICO' AND pe.numero = 2 AND u.codigo_publico = 'USR000005')"
+          },
+          "intento_pago_id": {
+            "$ref": "intento_pago",
+            "clave_idempotencia": "demo-intento-p2-05"
+          },
+          "proveedor_id": {
+            "$ref": "proveedor_pago",
+            "codigo": "QR_INTEROP"
+          },
+          "monto": 500.0,
+          "moneda": "BOB",
+          "monto_comision_proveedor": 1.75,
+          "monto_neto_acreditado": 498.25,
+          "canal": "QR_INTEROPERABLE",
+          "estado": "ACREDITADO",
+          "fecha_hora_pago": {
+            "$sql": "now() - interval '13 days'"
+          },
+          "fecha_hora_acreditacion": {
+            "$sql": "now() - interval '13 days'"
+          },
+          "referencia_proveedor": "BCO-P2-05",
+          "pagador_nombre": "Rosa Condori Apaza",
+          "pagador_documento": "9000005",
+          "cuenta_origen_enmascarada": "****4005",
+          "registrado_por": null,
+          "es_manual": false,
+          "clave_idempotencia": "demo-pago-p2-05"
+        },
+        {
+          "obligacion_id": {
+            "$sql": "(SELECT o.id FROM obligacion_aporte o JOIN participante p ON p.id = o.participante_id JOIN usuario u ON u.id = p.usuario_id JOIN periodo pe ON pe.id = o.periodo_id WHERE o.tipo = 'APORTE_PERIODICO' AND pe.numero = 2 AND u.codigo_publico = 'USR000006')"
+          },
+          "intento_pago_id": {
+            "$ref": "intento_pago",
+            "clave_idempotencia": "demo-intento-p2-06"
+          },
+          "proveedor_id": {
+            "$ref": "proveedor_pago",
+            "codigo": "QR_INTEROP"
+          },
+          "monto": 500.0,
+          "moneda": "BOB",
+          "monto_comision_proveedor": 1.75,
+          "monto_neto_acreditado": 498.25,
+          "canal": "QR_INTEROPERABLE",
+          "estado": "ACREDITADO",
+          "fecha_hora_pago": {
+            "$sql": "now() - interval '10 days'"
+          },
+          "fecha_hora_acreditacion": {
+            "$sql": "now() - interval '10 days'"
+          },
+          "referencia_proveedor": "BCO-P2-06",
+          "pagador_nombre": "Luis Fernando Mendoza Paz",
+          "pagador_documento": "9000006",
+          "cuenta_origen_enmascarada": "****4006",
+          "registrado_por": null,
+          "es_manual": false,
+          "clave_idempotencia": "demo-pago-p2-06"
+        }
+      ]
+    },
+    {
+      "tabla": "webhook_pasarela",
+      "conflicto": [
+        "proveedor_id",
+        "clave_idempotencia"
+      ],
+      "filas": [
+        {
+          "proveedor_id": {
+            "$ref": "proveedor_pago",
+            "codigo": "QR_INTEROP"
+          },
+          "evento": "pago.acreditado",
+          "payload_crudo": {
+            "referencia": "BCO-P2-01",
+            "monto": 500.0,
+            "moneda": "BOB",
+            "orden": "AP-P2-01",
+            "estado": "APROBADO"
+          },
+          "firma": "hmac-demo-01",
+          "firma_valida": true,
+          "recibido_en": {
+            "$sql": "now() - interval '12 days'"
+          },
+          "procesado_en": {
+            "$sql": "now() - interval '12 days'"
+          },
+          "intentos_procesamiento": 1,
+          "estado": "PROCESADO",
+          "clave_idempotencia": "demo-webhook-p2-01",
+          "error_procesamiento": null,
+          "pago_id": {
+            "$ref": "pago",
+            "clave_idempotencia": "demo-pago-p2-01"
+          }
+        },
+        {
+          "proveedor_id": {
+            "$ref": "proveedor_pago",
+            "codigo": "QR_INTEROP"
+          },
+          "evento": "pago.acreditado",
+          "payload_crudo": {
+            "referencia": "BCO-P2-02",
+            "monto": 500.0,
+            "moneda": "BOB",
+            "orden": "AP-P2-02",
+            "estado": "APROBADO"
+          },
+          "firma": "hmac-demo-02",
+          "firma_valida": true,
+          "recibido_en": {
+            "$sql": "now() - interval '12 days'"
+          },
+          "procesado_en": {
+            "$sql": "now() - interval '12 days'"
+          },
+          "intentos_procesamiento": 1,
+          "estado": "PROCESADO",
+          "clave_idempotencia": "demo-webhook-p2-02",
+          "error_procesamiento": null,
+          "pago_id": {
+            "$ref": "pago",
+            "clave_idempotencia": "demo-pago-p2-02"
+          }
+        },
+        {
+          "proveedor_id": {
+            "$ref": "proveedor_pago",
+            "codigo": "QR_INTEROP"
+          },
+          "evento": "pago.acreditado",
+          "payload_crudo": {
+            "referencia": "BCO-P2-03",
+            "monto": 500.0,
+            "moneda": "BOB",
+            "orden": "AP-P2-03",
+            "estado": "APROBADO"
+          },
+          "firma": "hmac-demo-03",
+          "firma_valida": true,
+          "recibido_en": {
+            "$sql": "now() - interval '11 days'"
+          },
+          "procesado_en": {
+            "$sql": "now() - interval '11 days'"
+          },
+          "intentos_procesamiento": 1,
+          "estado": "PROCESADO",
+          "clave_idempotencia": "demo-webhook-p2-03",
+          "error_procesamiento": null,
+          "pago_id": {
+            "$ref": "pago",
+            "clave_idempotencia": "demo-pago-p2-03"
+          }
+        },
+        {
+          "proveedor_id": {
+            "$ref": "proveedor_pago",
+            "codigo": "QR_INTEROP"
+          },
+          "evento": "pago.acreditado",
+          "payload_crudo": {
+            "referencia": "BCO-P2-05",
+            "monto": 500.0,
+            "moneda": "BOB",
+            "orden": "AP-P2-05",
+            "estado": "APROBADO"
+          },
+          "firma": "hmac-demo-05",
+          "firma_valida": true,
+          "recibido_en": {
+            "$sql": "now() - interval '13 days'"
+          },
+          "procesado_en": {
+            "$sql": "now() - interval '13 days'"
+          },
+          "intentos_procesamiento": 1,
+          "estado": "PROCESADO",
+          "clave_idempotencia": "demo-webhook-p2-05",
+          "error_procesamiento": null,
+          "pago_id": {
+            "$ref": "pago",
+            "clave_idempotencia": "demo-pago-p2-05"
+          }
+        },
+        {
+          "proveedor_id": {
+            "$ref": "proveedor_pago",
+            "codigo": "QR_INTEROP"
+          },
+          "evento": "pago.acreditado",
+          "payload_crudo": {
+            "referencia": "BCO-P2-06",
+            "monto": 500.0,
+            "moneda": "BOB",
+            "orden": "AP-P2-06",
+            "estado": "APROBADO"
+          },
+          "firma": "hmac-demo-06",
+          "firma_valida": true,
+          "recibido_en": {
+            "$sql": "now() - interval '10 days'"
+          },
+          "procesado_en": {
+            "$sql": "now() - interval '10 days'"
+          },
+          "intentos_procesamiento": 1,
+          "estado": "PROCESADO",
+          "clave_idempotencia": "demo-webhook-p2-06",
+          "error_procesamiento": null,
+          "pago_id": {
+            "$ref": "pago",
+            "clave_idempotencia": "demo-pago-p2-06"
+          }
+        }
+      ]
+    },
+    {
+      "tabla": "conciliacion",
+      "conflicto": [],
+      "filas": [
+        {
+          "pago_id": {
+            "$ref": "pago",
+            "clave_idempotencia": "demo-pago-p2-01"
+          },
+          "movimiento_bancario_id": {
+            "$sql": "(SELECT id FROM movimiento_bancario WHERE referencia_banco = 'BCO-P2-01')"
+          },
+          "estado": "CONCILIADO_AUTOMATICO",
+          "metodo": "REFERENCIA_EXACTA",
+          "diferencia_monto": 0.0,
+          "conciliado_por": null,
+          "fecha_conciliacion": {
+            "$sql": "now() - interval '12 days'"
+          }
+        },
+        {
+          "pago_id": {
+            "$ref": "pago",
+            "clave_idempotencia": "demo-pago-p2-02"
+          },
+          "movimiento_bancario_id": {
+            "$sql": "(SELECT id FROM movimiento_bancario WHERE referencia_banco = 'BCO-P2-02')"
+          },
+          "estado": "CONCILIADO_AUTOMATICO",
+          "metodo": "REFERENCIA_EXACTA",
+          "diferencia_monto": 0.0,
+          "conciliado_por": null,
+          "fecha_conciliacion": {
+            "$sql": "now() - interval '12 days'"
+          }
+        },
+        {
+          "pago_id": {
+            "$ref": "pago",
+            "clave_idempotencia": "demo-pago-p2-03"
+          },
+          "movimiento_bancario_id": {
+            "$sql": "(SELECT id FROM movimiento_bancario WHERE referencia_banco = 'BCO-P2-03')"
+          },
+          "estado": "CONCILIADO_AUTOMATICO",
+          "metodo": "REFERENCIA_EXACTA",
+          "diferencia_monto": 0.0,
+          "conciliado_por": null,
+          "fecha_conciliacion": {
+            "$sql": "now() - interval '11 days'"
+          }
+        },
+        {
+          "pago_id": {
+            "$ref": "pago",
+            "clave_idempotencia": "demo-pago-p2-05"
+          },
+          "movimiento_bancario_id": {
+            "$sql": "(SELECT id FROM movimiento_bancario WHERE referencia_banco = 'BCO-P2-05')"
+          },
+          "estado": "CONCILIADO_AUTOMATICO",
+          "metodo": "REFERENCIA_EXACTA",
+          "diferencia_monto": 0.0,
+          "conciliado_por": null,
+          "fecha_conciliacion": {
+            "$sql": "now() - interval '13 days'"
+          }
+        },
+        {
+          "pago_id": {
+            "$ref": "pago",
+            "clave_idempotencia": "demo-pago-p2-06"
+          },
+          "movimiento_bancario_id": {
+            "$sql": "(SELECT id FROM movimiento_bancario WHERE referencia_banco = 'BCO-P2-06')"
+          },
+          "estado": "CONCILIADO_AUTOMATICO",
+          "metodo": "REFERENCIA_EXACTA",
+          "diferencia_monto": 0.0,
+          "conciliado_por": null,
+          "fecha_conciliacion": {
+            "$sql": "now() - interval '10 days'"
+          }
+        }
+      ]
+    },
+    {
+      "tabla": "constancia_pago",
+      "conflicto": [],
+      "filas": [
+        {
+          "pago_id": {
+            "$ref": "pago",
+            "clave_idempotencia": "demo-pago-p2-01"
+          },
+          "codigo_verificacion": "CONST-P2-01",
+          "hash_contenido": {
+            "$sql": "encode(digest('constancia-p2-01', 'sha256'), 'hex')"
+          },
+          "url_publica": "https://pasanaku.bo/constancia/CONST-P2-01",
+          "url_pdf": "https://almacen.pasanaku.test/constancias/CONST-P2-01.pdf",
+          "fecha_generacion": {
+            "$sql": "now() - interval '12 days'"
+          }
+        },
+        {
+          "pago_id": {
+            "$ref": "pago",
+            "clave_idempotencia": "demo-pago-p2-02"
+          },
+          "codigo_verificacion": "CONST-P2-02",
+          "hash_contenido": {
+            "$sql": "encode(digest('constancia-p2-02', 'sha256'), 'hex')"
+          },
+          "url_publica": "https://pasanaku.bo/constancia/CONST-P2-02",
+          "url_pdf": "https://almacen.pasanaku.test/constancias/CONST-P2-02.pdf",
+          "fecha_generacion": {
+            "$sql": "now() - interval '12 days'"
+          }
+        },
+        {
+          "pago_id": {
+            "$ref": "pago",
+            "clave_idempotencia": "demo-pago-p2-03"
+          },
+          "codigo_verificacion": "CONST-P2-03",
+          "hash_contenido": {
+            "$sql": "encode(digest('constancia-p2-03', 'sha256'), 'hex')"
+          },
+          "url_publica": "https://pasanaku.bo/constancia/CONST-P2-03",
+          "url_pdf": "https://almacen.pasanaku.test/constancias/CONST-P2-03.pdf",
+          "fecha_generacion": {
+            "$sql": "now() - interval '11 days'"
+          }
+        },
+        {
+          "pago_id": {
+            "$ref": "pago",
+            "clave_idempotencia": "demo-pago-p2-05"
+          },
+          "codigo_verificacion": "CONST-P2-05",
+          "hash_contenido": {
+            "$sql": "encode(digest('constancia-p2-05', 'sha256'), 'hex')"
+          },
+          "url_publica": "https://pasanaku.bo/constancia/CONST-P2-05",
+          "url_pdf": "https://almacen.pasanaku.test/constancias/CONST-P2-05.pdf",
+          "fecha_generacion": {
+            "$sql": "now() - interval '13 days'"
+          }
+        },
+        {
+          "pago_id": {
+            "$ref": "pago",
+            "clave_idempotencia": "demo-pago-p2-06"
+          },
+          "codigo_verificacion": "CONST-P2-06",
+          "hash_contenido": {
+            "$sql": "encode(digest('constancia-p2-06', 'sha256'), 'hex')"
+          },
+          "url_publica": "https://pasanaku.bo/constancia/CONST-P2-06",
+          "url_pdf": "https://almacen.pasanaku.test/constancias/CONST-P2-06.pdf",
+          "fecha_generacion": {
+            "$sql": "now() - interval '10 days'"
+          }
+        }
+      ]
+    },
+    {
+      "tabla": "transaccion_billetera",
+      "conflicto": [
+        "COALESCE(iniciada_por, '00000000-0000-0000-0000-000000000000'::uuid)",
+        "origen_tipo",
+        "clave_idempotencia"
+      ],
+      "filas": [
+        {
+          "tipo": "APORTE_A_GRUPO",
+          "estado": "APLICADA",
+          "moneda": "BOB",
+          "monto_total": 500.0,
+          "grupo_id": {
+            "$ref": "grupo",
+            "codigo_publico": "GRP-DEMO-01"
+          },
+          "origen_tipo": "OBLIGACION_APORTE",
+          "origen_id": {
+            "$sql": "(SELECT o.id FROM obligacion_aporte o JOIN participante p ON p.id = o.participante_id JOIN usuario u ON u.id = p.usuario_id JOIN periodo pe ON pe.id = o.periodo_id WHERE o.tipo = 'APORTE_PERIODICO' AND pe.numero = 2 AND u.codigo_publico = 'USR000001')"
+          },
+          "canal": "API",
+          "clave_idempotencia": "demo-aporte-p2-01",
+          "hash_registro": "",
+          "ocurrida_en": {
+            "$sql": "now() - interval '12 days'"
+          },
+          "registrada_en": {
+            "$sql": "now() - interval '12 days'"
+          }
+        },
+        {
+          "tipo": "APORTE_A_GRUPO",
+          "estado": "APLICADA",
+          "moneda": "BOB",
+          "monto_total": 500.0,
+          "grupo_id": {
+            "$ref": "grupo",
+            "codigo_publico": "GRP-DEMO-01"
+          },
+          "origen_tipo": "OBLIGACION_APORTE",
+          "origen_id": {
+            "$sql": "(SELECT o.id FROM obligacion_aporte o JOIN participante p ON p.id = o.participante_id JOIN usuario u ON u.id = p.usuario_id JOIN periodo pe ON pe.id = o.periodo_id WHERE o.tipo = 'APORTE_PERIODICO' AND pe.numero = 2 AND u.codigo_publico = 'USR000002')"
+          },
+          "canal": "API",
+          "clave_idempotencia": "demo-aporte-p2-02",
+          "hash_registro": "",
+          "ocurrida_en": {
+            "$sql": "now() - interval '12 days'"
+          },
+          "registrada_en": {
+            "$sql": "now() - interval '12 days'"
+          }
+        },
+        {
+          "tipo": "APORTE_A_GRUPO",
+          "estado": "APLICADA",
+          "moneda": "BOB",
+          "monto_total": 500.0,
+          "grupo_id": {
+            "$ref": "grupo",
+            "codigo_publico": "GRP-DEMO-01"
+          },
+          "origen_tipo": "OBLIGACION_APORTE",
+          "origen_id": {
+            "$sql": "(SELECT o.id FROM obligacion_aporte o JOIN participante p ON p.id = o.participante_id JOIN usuario u ON u.id = p.usuario_id JOIN periodo pe ON pe.id = o.periodo_id WHERE o.tipo = 'APORTE_PERIODICO' AND pe.numero = 2 AND u.codigo_publico = 'USR000003')"
+          },
+          "canal": "API",
+          "clave_idempotencia": "demo-aporte-p2-03",
+          "hash_registro": "",
+          "ocurrida_en": {
+            "$sql": "now() - interval '11 days'"
+          },
+          "registrada_en": {
+            "$sql": "now() - interval '11 days'"
+          }
+        },
+        {
+          "tipo": "APORTE_A_GRUPO",
+          "estado": "APLICADA",
+          "moneda": "BOB",
+          "monto_total": 500.0,
+          "grupo_id": {
+            "$ref": "grupo",
+            "codigo_publico": "GRP-DEMO-01"
+          },
+          "origen_tipo": "OBLIGACION_APORTE",
+          "origen_id": {
+            "$sql": "(SELECT o.id FROM obligacion_aporte o JOIN participante p ON p.id = o.participante_id JOIN usuario u ON u.id = p.usuario_id JOIN periodo pe ON pe.id = o.periodo_id WHERE o.tipo = 'APORTE_PERIODICO' AND pe.numero = 2 AND u.codigo_publico = 'USR000005')"
+          },
+          "canal": "API",
+          "clave_idempotencia": "demo-aporte-p2-05",
+          "hash_registro": "",
+          "ocurrida_en": {
+            "$sql": "now() - interval '13 days'"
+          },
+          "registrada_en": {
+            "$sql": "now() - interval '13 days'"
+          }
+        },
+        {
+          "tipo": "APORTE_A_GRUPO",
+          "estado": "APLICADA",
+          "moneda": "BOB",
+          "monto_total": 500.0,
+          "grupo_id": {
+            "$ref": "grupo",
+            "codigo_publico": "GRP-DEMO-01"
+          },
+          "origen_tipo": "OBLIGACION_APORTE",
+          "origen_id": {
+            "$sql": "(SELECT o.id FROM obligacion_aporte o JOIN participante p ON p.id = o.participante_id JOIN usuario u ON u.id = p.usuario_id JOIN periodo pe ON pe.id = o.periodo_id WHERE o.tipo = 'APORTE_PERIODICO' AND pe.numero = 2 AND u.codigo_publico = 'USR000006')"
+          },
+          "canal": "API",
+          "clave_idempotencia": "demo-aporte-p2-06",
+          "hash_registro": "",
+          "ocurrida_en": {
+            "$sql": "now() - interval '10 days'"
+          },
+          "registrada_en": {
+            "$sql": "now() - interval '10 days'"
+          }
+        }
+      ]
+    },
+    {
+      "tabla": "movimiento_billetera",
+      "conflicto": [],
+      "filas": [
+        {
+          "transaccion_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-aporte-p2-01"
+          },
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "GRP-0000001"
+          },
+          "orden": 1,
+          "sentido": "CREDITO",
+          "monto": 500.0,
+          "saldo_disponible_posterior": 500.0,
+          "saldo_retenido_posterior": 0.0,
+          "glosa": "Aporte del período 2 cobrado por QR interoperable — USR000001",
+          "registrado_en": {
+            "$sql": "now() - interval '12 days'"
+          }
+        },
+        {
+          "transaccion_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-aporte-p2-01"
+          },
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "SYS-CUSTODIA"
+          },
+          "orden": 2,
+          "sentido": "DEBITO",
+          "monto": 500.0,
+          "saldo_disponible_posterior": -7900.0,
+          "saldo_retenido_posterior": 0.0,
+          "glosa": "Ingreso a custodia por cobro QR del aporte — USR000001",
+          "registrado_en": {
+            "$sql": "now() - interval '12 days'"
+          }
+        },
+        {
+          "transaccion_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-aporte-p2-02"
+          },
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "GRP-0000001"
+          },
+          "orden": 1,
+          "sentido": "CREDITO",
+          "monto": 500.0,
+          "saldo_disponible_posterior": 1000.0,
+          "saldo_retenido_posterior": 0.0,
+          "glosa": "Aporte del período 2 cobrado por QR interoperable — USR000002",
+          "registrado_en": {
+            "$sql": "now() - interval '12 days'"
+          }
+        },
+        {
+          "transaccion_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-aporte-p2-02"
+          },
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "SYS-CUSTODIA"
+          },
+          "orden": 2,
+          "sentido": "DEBITO",
+          "monto": 500.0,
+          "saldo_disponible_posterior": -8400.0,
+          "saldo_retenido_posterior": 0.0,
+          "glosa": "Ingreso a custodia por cobro QR del aporte — USR000002",
+          "registrado_en": {
+            "$sql": "now() - interval '12 days'"
+          }
+        },
+        {
+          "transaccion_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-aporte-p2-03"
+          },
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "GRP-0000001"
+          },
+          "orden": 1,
+          "sentido": "CREDITO",
+          "monto": 500.0,
+          "saldo_disponible_posterior": 1500.0,
+          "saldo_retenido_posterior": 0.0,
+          "glosa": "Aporte del período 2 cobrado por QR interoperable — USR000003",
+          "registrado_en": {
+            "$sql": "now() - interval '11 days'"
+          }
+        },
+        {
+          "transaccion_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-aporte-p2-03"
+          },
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "SYS-CUSTODIA"
+          },
+          "orden": 2,
+          "sentido": "DEBITO",
+          "monto": 500.0,
+          "saldo_disponible_posterior": -8900.0,
+          "saldo_retenido_posterior": 0.0,
+          "glosa": "Ingreso a custodia por cobro QR del aporte — USR000003",
+          "registrado_en": {
+            "$sql": "now() - interval '11 days'"
+          }
+        },
+        {
+          "transaccion_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-aporte-p2-05"
+          },
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "GRP-0000001"
+          },
+          "orden": 1,
+          "sentido": "CREDITO",
+          "monto": 500.0,
+          "saldo_disponible_posterior": 2000.0,
+          "saldo_retenido_posterior": 0.0,
+          "glosa": "Aporte del período 2 cobrado por QR interoperable — USR000005",
+          "registrado_en": {
+            "$sql": "now() - interval '13 days'"
+          }
+        },
+        {
+          "transaccion_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-aporte-p2-05"
+          },
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "SYS-CUSTODIA"
+          },
+          "orden": 2,
+          "sentido": "DEBITO",
+          "monto": 500.0,
+          "saldo_disponible_posterior": -9400.0,
+          "saldo_retenido_posterior": 0.0,
+          "glosa": "Ingreso a custodia por cobro QR del aporte — USR000005",
+          "registrado_en": {
+            "$sql": "now() - interval '13 days'"
+          }
+        },
+        {
+          "transaccion_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-aporte-p2-06"
+          },
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "GRP-0000001"
+          },
+          "orden": 1,
+          "sentido": "CREDITO",
+          "monto": 500.0,
+          "saldo_disponible_posterior": 2500.0,
+          "saldo_retenido_posterior": 0.0,
+          "glosa": "Aporte del período 2 cobrado por QR interoperable — USR000006",
+          "registrado_en": {
+            "$sql": "now() - interval '10 days'"
+          }
+        },
+        {
+          "transaccion_id": {
+            "$ref": "transaccion_billetera",
+            "clave_idempotencia": "demo-aporte-p2-06"
+          },
+          "cuenta_billetera_id": {
+            "$ref": "cuenta_billetera",
+            "numero_cuenta": "SYS-CUSTODIA"
+          },
+          "orden": 2,
+          "sentido": "DEBITO",
+          "monto": 500.0,
+          "saldo_disponible_posterior": -9900.0,
+          "saldo_retenido_posterior": 0.0,
+          "glosa": "Ingreso a custodia por cobro QR del aporte — USR000006",
+          "registrado_en": {
+            "$sql": "now() - interval '10 days'"
+          }
+        }
+      ]
+    },
+    {
+      "tabla": "movimiento_custodia",
+      "conflicto": [],
+      "comentario": "El dinero de los cobros QR entró a la cuenta de custodia: sin esto el encaje no cuadraría",
+      "filas": [
+        {
+          "cuenta_custodia_id": {
+            "$sql": "(SELECT id FROM cuenta_custodia WHERE contrato_referencia = 'FID-DEMO-001')"
+          },
+          "movimiento_bancario_id": {
+            "$sql": "(SELECT id FROM movimiento_bancario WHERE referencia_banco = 'BCO-P2-01')"
+          },
+          "fecha_valor": {
+            "$fecha": "-12 days"
+          },
+          "tipo": "INGRESO",
+          "sentido": "CREDITO",
+          "monto": 500.0,
+          "referencia_bancaria": "BCO-P2-01",
+          "glosa": "Cobro QR del aporte del período 2 — USR000001",
+          "conciliado": true,
+          "registrado_en": {
+            "$sql": "now() - interval '12 days'"
+          }
+        },
+        {
+          "cuenta_custodia_id": {
+            "$sql": "(SELECT id FROM cuenta_custodia WHERE contrato_referencia = 'FID-DEMO-001')"
+          },
+          "movimiento_bancario_id": {
+            "$sql": "(SELECT id FROM movimiento_bancario WHERE referencia_banco = 'BCO-P2-02')"
+          },
+          "fecha_valor": {
+            "$fecha": "-12 days"
+          },
+          "tipo": "INGRESO",
+          "sentido": "CREDITO",
+          "monto": 500.0,
+          "referencia_bancaria": "BCO-P2-02",
+          "glosa": "Cobro QR del aporte del período 2 — USR000002",
+          "conciliado": true,
+          "registrado_en": {
+            "$sql": "now() - interval '12 days'"
+          }
+        },
+        {
+          "cuenta_custodia_id": {
+            "$sql": "(SELECT id FROM cuenta_custodia WHERE contrato_referencia = 'FID-DEMO-001')"
+          },
+          "movimiento_bancario_id": {
+            "$sql": "(SELECT id FROM movimiento_bancario WHERE referencia_banco = 'BCO-P2-03')"
+          },
+          "fecha_valor": {
+            "$fecha": "-11 days"
+          },
+          "tipo": "INGRESO",
+          "sentido": "CREDITO",
+          "monto": 500.0,
+          "referencia_bancaria": "BCO-P2-03",
+          "glosa": "Cobro QR del aporte del período 2 — USR000003",
+          "conciliado": true,
+          "registrado_en": {
+            "$sql": "now() - interval '11 days'"
+          }
+        },
+        {
+          "cuenta_custodia_id": {
+            "$sql": "(SELECT id FROM cuenta_custodia WHERE contrato_referencia = 'FID-DEMO-001')"
+          },
+          "movimiento_bancario_id": {
+            "$sql": "(SELECT id FROM movimiento_bancario WHERE referencia_banco = 'BCO-P2-05')"
+          },
+          "fecha_valor": {
+            "$fecha": "-13 days"
+          },
+          "tipo": "INGRESO",
+          "sentido": "CREDITO",
+          "monto": 500.0,
+          "referencia_bancaria": "BCO-P2-05",
+          "glosa": "Cobro QR del aporte del período 2 — USR000005",
+          "conciliado": true,
+          "registrado_en": {
+            "$sql": "now() - interval '13 days'"
+          }
+        },
+        {
+          "cuenta_custodia_id": {
+            "$sql": "(SELECT id FROM cuenta_custodia WHERE contrato_referencia = 'FID-DEMO-001')"
+          },
+          "movimiento_bancario_id": {
+            "$sql": "(SELECT id FROM movimiento_bancario WHERE referencia_banco = 'BCO-P2-06')"
+          },
+          "fecha_valor": {
+            "$fecha": "-10 days"
+          },
+          "tipo": "INGRESO",
+          "sentido": "CREDITO",
+          "monto": 500.0,
+          "referencia_bancaria": "BCO-P2-06",
+          "glosa": "Cobro QR del aporte del período 2 — USR000006",
+          "conciliado": true,
+          "registrado_en": {
+            "$sql": "now() - interval '10 days'"
+          }
+        }
+      ]
+    },
+    {
+      "sql": "UPDATE cuenta_custodia SET saldo_segun_libro = 9900.00, saldo_segun_banco = 9900.00,\n       fecha_saldo = now()\n WHERE contrato_referencia = 'FID-DEMO-001';",
+      "comentario": "Custodia = 7.400 de recargas + 2.500 de cobros QR. Debe igualar el dinero electrónico emitido"
+    },
+    {
+      "sql": "-- El saldo NO se escribe desde el seeder: lo mantiene la base.\n-- tg_movimiento_sincroniza_saldo recalcula saldo_disponible y saldo_retenido\n-- en cada INSERT de movimiento_billetera, y tg_retencion_sincroniza_saldo hace\n-- lo mismo al crear o cambiar una retención. Escribirlo a mano acá duplicaría\n-- el efecto y es exactamente la clase de defecto que R-BIL-03 previene.\nSELECT 1;",
+      "comentario": "Por qué acá no hay UPDATE de saldos"
+    }
+  ]
+}

@@ -200,7 +200,7 @@ son semanas**: duran lo que dure su carril más lento.
 
 | Puesto | Trabajo |
 | :-: | --- |
-| **P1** Mac | **Backend Fases 1 y 2** — capa de datos generada, `comun/`, worker, outbox. **Congela `packages/datos/src/entidades/`** |
+| **P1** Mac | **Backend Fases 1 y 2** — carriles **`T1` → `T2`** en serie: capa de datos generada, después `comun/`, worker y outbox. **Congela `packages/datos/src/entidades/`** |
 | **P2** Ubuntu | Acompaña el troncal: segunda ejecución de los gates de las Fases 1 y 2, convenciones de `pruebas/fixtures/`, script de reseteo rápido de base |
 | **P3** Legion | **F0 · andamiaje móvil** + `clientes/typescript` (generado) + MSW *(Delta 2)* |
 | **P4** Dell A | **F0 · andamiaje backoffice** *(Delta 2)* |

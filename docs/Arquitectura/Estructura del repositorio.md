@@ -48,8 +48,9 @@ aportaya/
 │   └── backoffice/              React + Vite · cumplimiento, soporte, contabilidad
 ├── despliegue/
 │   ├── Dockerfile               plantilla única, parametrizada por servicio
+│   ├── infra.yml                niveles, conexiones y entornos — lo que ningún carril posee
 │   ├── compose/                 perfiles: base · <servicio> · dinero · todo
-│   └── k8s/                     manifiestos GENERADOS desde el descriptor de cada servicio
+│   └── k8s/generado/            manifiestos GENERADOS por scripts/generar_k8s.py · no se versionan
 ├── sql/                         esquema generado (no se edita a mano)
 ├── docs/                        la bóveda: especificación y arquitectura
 └── scripts/                     generadores en Python
@@ -167,8 +168,8 @@ Esto es lo que hace posible que cinco máquinas trabajen a la vez.
 
 ## Qué no va en este repositorio
 
-- **Migraciones escritas a mano.** El esquema sale de `scripts/generar_ddl.py`; Flyway
-  solo aplica lo que ya está en `sql/`.
+- **Migraciones escritas a mano.** El esquema sale de `scripts/generar_ddl.py`, y el
+  `Job` de despliegue solo aplica lo que ya está en `sql/`.
 - **Código generado versionado.** Ni jOOQ, ni los clientes, ni los manifiestos de
   Kubernetes. Se generan en el CI y la compilación es el gate.
 - **Secretos.** Configuración validada al arrancar; el proceso no levanta si falta una

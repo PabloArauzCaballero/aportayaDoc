@@ -39,8 +39,13 @@ generación por servicio limitado a su esquema. JPA/Hibernate queda prohibido.**
   compilación es el gate**: si el esquema cambió y el código no, no compila.
 - `DSLContext` inyectado; el repositorio recibe el `Configuration` de la
   transacción en curso, nunca abre la suya.
-- Migraciones con **Flyway**, aplicando los artefactos de `sql/` en orden. Flyway
-  no genera nada: solo aplica y registra.
+- Migraciones aplicando los artefactos de `sql/` en orden, sin herramienta de
+  migración: `psql -v ON_ERROR_STOP=1 -f sql/aplicar.sql` como `Job` de despliegue.
+
+> [!warning] Corregido por [[ADR-032 Aplicación del esquema]]
+> Este ADR decía **Flyway**. ADR-032 lo descartó: `sql/` es **generado**, y Flyway
+> asume archivos inmutables con checksum, así que cada regeneración rompería el
+> historial. Vale ADR-032, no esta línea.
 
 ### Lo que queda explícitamente prohibido
 

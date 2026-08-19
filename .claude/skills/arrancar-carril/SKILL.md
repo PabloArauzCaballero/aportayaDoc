@@ -35,6 +35,7 @@ Se completan **antes** de cualquier otra cosa. Si falta uno, se pregunta y se pa
 
 | # | Qué | Cuánto | Para qué |
 | :-: | --- | --- | --- |
+| 0 | `docs/Contrato de implementación para IA.md`, **entero** | ~2 min | Qué no se puede inventar, y los defaults ya elegidos |
 | 1 | Esta skill, completa | — | El contrato |
 | 2 | `docs/CasosDeUso/CU-<NN> *.md` — **todos los del carril, enteros** | todo | Es la especificación. **No se resume ni se saltea** |
 | 3 | `docs/Restricciones.md` — **solo** los `R-XXX-nn` que citan esos CU | grep | Qué rechaza la base |
@@ -95,7 +96,12 @@ completo.** Si creés que sí, la respuesta está en §7.
 | Corrección (4) | `errores-api` · `idempotencia-reintentos` · `seguridad-sesion-rls` · `pruebas-cu` |
 | Cierre (3) | `observabilidad` · `git-flujo` · `definicion-de-terminado` |
 
-**Más las propias del carril**, según la tabla normativa de `planes/19` §2.
+**Más las propias del carril**, según la tabla normativa de `planes/19` §2. Y esta
+skill, `arrancar-carril`, que la carga **todo** carril antes que ninguna otra.
+
+Si sos carril de backend, tu servicio tiene un `descriptor.yml` y vos lo poseés:
+declarás su **nivel** de criticidad y **por qué**, y nunca menos de dos réplicas
+([[ADR-037 Alta disponibilidad y balanceo]]).
 
 > Un carril que no cargó las suyas está trabajando de memoria, y va a inventar
 > exactamente lo que las skills existen para evitar.
@@ -115,6 +121,8 @@ docker compose --profile base up -d --wait        # postgres + pgbouncer + kafka
 
 ls .claude/skills | grep -v README | wc -l         # 65
 python3 scripts/verificar_boveda.py                # TODO OK
+python3 scripts/verificar_carriles.py              # tu puesto dice lo mismo en los dos planes
+python3 scripts/generar_k8s.py                     # tu descriptor cierra contra el pool
 
 ./gradlew :servicios:<SERVICIO>:bootRun            # tu servicio, solo el tuyo
 ```
@@ -136,6 +144,7 @@ Para cada `CU-<NN>`, en este orden. **Cada paso tiene una salida verificable.**
 | 0 | Declarar piezas por nivel + responder las **6 preguntas** de `frontera-transaccional` | Texto, esperando visto bueno | — |
 | 1 | Generar el esqueleto | Archivos + pruebas **fallando** | `./gradlew nuevoCu -Pcu=<NN>` |
 | 2 | Escribir el contrato en `openapi/<SERVICIO>.yaml` | Operación con entrada, salida y `AP-CU<NN>-<nn>` | `./gradlew generateOpenApiClients` |
+| 2b | ¿Toca algo fuera del proceso? Puerto en `dominio/puertos/` + **adaptador local primero** | Interfaz + adaptador por omisión | `./gradlew test` |
 | 3 | Átomos en `dominio/` | Cálculo puro, sin Spring ni jOOQ | `./gradlew test` |
 | 4 | Moléculas en `infraestructura/` | Repositorios y clientes, sin lógica | `./gradlew integrationTest` |
 | 5 | Organismo en `aplicacion/` | `@Transactional` + `conContexto` | `./gradlew integrationTest` |
@@ -144,6 +153,13 @@ Para cada `CU-<NN>`, en este orden. **Cada paso tiene una salida verificable.**
 
 **El paso 0 no se saltea.** Es donde se decide bien o mal, y cuesta cien veces menos
 que descubrirlo en el paso 6.
+
+**Los defaults no se eligen: ya están elegidos.** Archivos → adaptador local en disco.
+Mensajería → bandeja interna y correo, con push como aviso; WhatsApp y SMS apagados.
+Pagos y facturación → simulador. Móvil → Android, y iOS por pase de paridad. Semillas
+→ `minimos/` para producción, `dev/` para todo lo demás, y el generador rechaza que se
+crucen. Apartarse de cualquiera de esos es un ADR, no una decisión de implementación
+(`docs/Contrato de implementación para IA.md` §7).
 
 ---
 
