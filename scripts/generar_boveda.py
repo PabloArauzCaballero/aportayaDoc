@@ -553,6 +553,7 @@ def fichero(k):
     return mods[k]["fichero"]
 
 # ---------------- Index.md ----------------
+n_casos = len(list((ROOT / "CasosDeUso").glob("CU-*.md")))
 L = ["---",
      "tags:\n  - moc\n  - indice",
      'titulo: "AportaYa — modelo de datos"',
@@ -577,7 +578,7 @@ L = ["---",
      f"│   └── Relaciones/          ← una nota por clave foránea ({len(fks)}), en {len(mods)} carpetas",
      "│       ├── 01 - Identidad, Usuarios y Seguridad/",
      "│       └── ...",
-     "├── CasosDeUso/              ← un caso de uso por flujo (36), con criterios de aceptación",
+     f"├── CasosDeUso/              ← un caso de uso por flujo ({n_casos}), con criterios de aceptación",
      "├── Cumplimiento.md          ← matriz normativa ASFI · UIF · BCB · SIN · ISO",
      "├── Restricciones.md         ← catálogo de restricciones con DDL",
      "└── entidades/               ← justificación de negocio + diagramas .puml",

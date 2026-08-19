@@ -28,7 +28,7 @@ docs/
 │   └── Relaciones/          ← una nota por clave foránea (633), en 14 carpetas
 │       ├── 01 - Identidad, Usuarios y Seguridad/
 │       └── ...
-├── CasosDeUso/              ← un caso de uso por flujo (36), con criterios de aceptación
+├── CasosDeUso/              ← un caso de uso por flujo (99), con criterios de aceptación
 ├── Cumplimiento.md          ← matriz normativa ASFI · UIF · BCB · SIN · ISO
 ├── Restricciones.md         ← catálogo de restricciones con DDL
 └── entidades/               ← justificación de negocio + diagramas .puml

@@ -39,7 +39,7 @@ del sistema, en cuatro capas encadenadas.
 | --- | --- | --- |
 | Norma | [`docs/Cumplimiento.md`](docs/Cumplimiento.md) | qué obliga ASFI, UIF, BCB, el SIN y las ISO |
 | Caso de uso | [`docs/CasosDeUso/`](docs/CasosDeUso/_CasosDeUso.md) | cómo se ejecuta cada flujo, paso a paso — 99 casos |
-| Restricción | [`docs/Restricciones.md`](docs/Restricciones.md) | qué impide, en la base, que se viole — 119 reglas |
+| Restricción | [`docs/Restricciones.md`](docs/Restricciones.md) | qué impide, en la base, que se viole — 138 reglas |
 | Modelo | [`docs/Modelos/`](docs/Modelos/Entidades/_Entidades.md) | dónde vive cada dato |
 | Esquema | [`sql/`](sql/README.md) | el DDL ejecutable, generado desde las tres capas anteriores |
 | Arquitectura | [`docs/Arquitectura/`](docs/Arquitectura/_Arquitectura.md) | con qué se implementa, y por qué así |
@@ -50,7 +50,7 @@ python3 scripts/generar_boveda.py   # notas del modelo (Obsidian) desde los .pum
 python3 scripts/generar_ddl.py      # esquema SQL completo desde los .puml + el catálogo
 psql -d aportaya -v ON_ERROR_STOP=1 -f sql/aplicar.sql
 psql -d aportaya -v ON_ERROR_STOP=1 -f sql/60_semillas/sembrar.sql
-psql -d aportaya -f sql/50_verificacion/prueba_humo.sql   # 69 comprobaciones
+psql -d aportaya -f sql/50_verificacion/prueba_humo.sql   # 152 comprobaciones
 ```
 
 El esquema son **306 tablas en un archivo cada una**, con las claves foráneas y los
@@ -102,6 +102,8 @@ autorización de ASFI antes de operar con dinero real**.
 | Billetera, Custodia y Dinero Electrónico | [`.puml`](docs/entidades/10_billetera_custodia.puml) | [`.md`](docs/entidades/10_billetera_custodia.md) | RF-22, RN-23, RN-24 |
 | Tarifas, Comisiones, Impuestos y Facturación | [`.puml`](docs/entidades/11_tarifas_comisiones.puml) | [`.md`](docs/entidades/11_tarifas_comisiones.md) | RF-23, RN-25, RN-26 |
 | Cumplimiento Regulatorio y Consumidor Financiero | [`.puml`](docs/entidades/12_cumplimiento_asfi.puml) | [`.md`](docs/entidades/12_cumplimiento_asfi.md) | RN-27 a RN-30 |
+| Contabilidad Financiera y ERP | [`.puml`](docs/entidades/13_contabilidad_erp.puml) | [`.md`](docs/entidades/13_contabilidad_erp.md) | CU-100 a CU-106 |
+| Publicidad y Campañas | [`.puml`](docs/entidades/14_publicidad_campanas.puml) | [`.md`](docs/entidades/14_publicidad_campanas.md) | CU-110 a CU-114 |
 
 ## Decisiones de diseño que atraviesan todo el modelo
 

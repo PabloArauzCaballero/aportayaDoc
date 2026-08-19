@@ -20,6 +20,16 @@ explícitamente diferidos con su motivo ([P1-8](#p1-8) y [P2-3](#p2-3)). Todo el
 esquema fue aplicado y ejercitado contra PostgreSQL 16 real; la evidencia está
 [al final](#evidencia-de-verificación).
 
+> [!warning] Instantánea del 2026-08-14 — pendiente de extender
+> Esta auditoría se corrió sobre el modelo de **274 tablas**, antes de M13
+> (contabilidad ERP) y M14 (publicidad) y antes de la migración a microservicios.
+> Las cifras "de 274" son de ese momento y no se reescriben. **Queda pendiente**:
+> (a) extender el conteo y la revisión de RLS a las **33 tablas nuevas de M13/M14**
+> —sus políticas de fila no fueron contadas ni escritas—; y (b) reconsiderar cada
+> hallazgo bajo el esquema **por servicio** (RLS con `svc_*`, catálogo de solo
+> lectura y outbox por esquema de [[ADR-027 Infraestructura de mensajería en el modelo]]),
+> no bajo el `rol_aplicacion` único del monolito original.
+
 ---
 
 ## P0 — Bloqueantes

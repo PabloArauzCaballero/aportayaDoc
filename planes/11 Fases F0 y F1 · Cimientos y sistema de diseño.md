@@ -53,6 +53,7 @@ completo, HTML navegable) · skills `disenar-frontend`, `movil-expo`, `web-backo
 ## F0.1 · Los tres andamiajes
 
 ```
+turbo.json          pipeline de tareas del frontend (build, lint, test:front, test:a11y)
 apps/
 ├── movil/          Expo SDK 54 · Expo Router (file-based)
 │   └── src/{tokens,atomos,moleculas,organismos,pantallas,dominio}/
@@ -65,6 +66,12 @@ packages/
 clientes/
 └── typescript/     cliente generado desde el OpenAPI · no se edita · sin dueño de carril
 ```
+
+> **`turbo.json` es el orquestador**, no un gestor: yarn resuelve las dependencias de los
+> workspaces y **Turborepo** corre y cachea las tareas respetando el grafo `apps/*` ↔
+> `packages/*` (así `packages/ui` compila antes que las apps que lo consumen). Lo crea el
+> andamiaje móvil (F0-M, primer usuario) y queda de solo lectura para el resto, como el
+> `tsconfig.base.json`.
 
 > **`clientes/typescript` no es un paquete de este monorepo con dueño: es un artefacto
 > generado.** Lo regenera quien corre `generateOpenApiClients` a partir de los

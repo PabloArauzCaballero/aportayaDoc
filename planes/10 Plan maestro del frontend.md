@@ -86,7 +86,8 @@ Espejo de los diez del backend. Ninguna fase los suspende.
 | Capa | Elección | Nota |
 | --- | --- | --- |
 | Lenguaje | TypeScript estricto | Mismo `tsconfig.base.json` del backend |
-| Gestor | **yarn** workspaces | El monorepo ya existe de la Fase 0 del backend |
+| Gestor | **yarn** workspaces | El monorepo ya existe de la Fase 0 del backend. yarn es el único gestor (nunca pnpm ni npm) |
+| Orquestador | **Turborepo** | Corre y cachea las tareas del frontend (`build`, `lint`, `test:front`, `test:a11y`) sobre los workspaces yarn; el pipeline de `turbo.json` respeta el grafo de dependencias entre `apps/*` y `packages/*` |
 | App | **Expo SDK 54** / React Native, **Expo Router** (file-based) | `expo-camera`, `expo-secure-store`, `expo-local-authentication`, EAS Update |
 | Backoffice | **React 19 + Vite**, **TanStack Router** (file-based) + TanStack Query | Tablas virtualizadas, exportación |
 | Sitio público | **Astro 5** + islas React, adaptador Node | Estático por defecto; SSR solo en verificación |

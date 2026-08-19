@@ -17,7 +17,9 @@ alcance: apps/movil (Expo/React Native) · el recorrido de [[Flujo funcional · 
 > cuatro estados, a dónde navega, qué RF/CU sirve, contra qué endpoint habla y **qué carril
 > la construye** (`planes/16 · Carriles de frontend`).
 >
-> **Stack.** Front = **monorepo con Turborepo**; la app es **React Native (Expo SDK 54)** con
+> **Stack.** Front = **monorepo yarn workspaces orquestado con Turborepo** (yarn es el único
+> gestor del proyecto; Turborepo corre y cachea `build`/`lint`/`test`); la app es
+> **React Native (Expo SDK 54)** con
 > **Expo Router** (una pantalla = un archivo, sin router central). Backend = microservicios
 > **Spring Boot**, consumidos por el gateway a través del cliente generado `clientes/typescript`
 > (nadie lo edita a mano). Ninguna pantalla habla con un servicio directo: todo pasa por la
@@ -185,7 +187,8 @@ Sirve RF-07, RF-08, RF-09, RF-12. CU 10–19, 21.
 - **Compone:** molécula `CampoMonto` + `TecladoNumerico` + selector de medio (QR / punto de
   atención); organismo `ResumenRecarga`. Al confirmar por QR abre `PantallaQR` con el código y
   su vencimiento. **Estados:** cargando (esperando confirmación del proveedor) · error · éxito
-  (acreditado solo cuando el banco confirma). **Endpoint:** `POST /pagos/recargas`.
+  (acreditado solo cuando el banco confirma). **Endpoint:** `POST /billetera/recargas`
+  (la orden vive en `nucleo-financiero`; la cobranza por QR la resuelve `aportes` vía `/qr`).
 
 ### 4.3 · `billetera/retirar` — Retirar crédito (RF-09 · [[CU-11 Retirar saldo]])
 - **Compone:** `CampoMonto` + selector de cuenta destino (`SelectorCuentaBancaria`); muestra
