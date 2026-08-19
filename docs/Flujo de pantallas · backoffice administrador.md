@@ -12,6 +12,11 @@ alcance: apps/backoffice (React + Vite) · el recorrido de [[Flujo funcional · 
 
 # Flujo de pantallas · backoffice administrador
 
+> ⛔ **Antes de implementar algo de este documento, leé y obedecé
+> [[Contrato de implementación para IA]].** No inventes rutas, organismos, endpoints, permisos
+> ni campos: solo existe lo listado acá o en una fuente de verdad; lo demás es **hueco**. Cada
+> ruta se monta según el permiso del token (default-deny); el CRUD "borra" con soft delete.
+
 > **Qué es este documento.** El recorrido de [[Flujo funcional · usuario administrador]]
 > traducido a **pantallas concretas** de `apps/backoffice` (React 19 + Vite, TanStack Router
 > file-based, TanStack Query). Espejo, del lado de operación, de

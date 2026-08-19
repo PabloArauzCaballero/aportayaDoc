@@ -11,6 +11,11 @@ alcance: el recorrido del operador del backoffice (apps/backoffice), por rol, an
 
 # Flujo funcional · usuario administrador
 
+> ⛔ **Antes de implementar algo de este documento, leé y obedecé
+> [[Contrato de implementación para IA]].** No inventes tablas, columnas, endpoints, roles,
+> permisos ni CU: si no está pineado acá o en una fuente de verdad, es un **hueco**, no algo
+> que completás. La segregación de funciones y el default-deny los fija el backend, no la UI.
+
 > **Qué es este documento.** El recorrido del **operador del backoffice** de AportaYa —el
 > "usuario administrador"— descrito como acciones funcionales (AF) y **anclado a los casos de
 > uso que ya existen** en [[_CasosDeUso]]. Es el espejo, del lado de operación y cumplimiento,

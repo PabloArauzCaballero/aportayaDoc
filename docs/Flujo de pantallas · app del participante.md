@@ -11,6 +11,10 @@ alcance: apps/movil (Expo/React Native) · el recorrido de [[Flujo funcional · 
 
 # Flujo de pantallas · app del participante
 
+> ⛔ **Antes de implementar algo de este documento, leé y obedecé
+> [[Contrato de implementación para IA]].** No inventes rutas, organismos, endpoints ni campos:
+> solo existe lo listado acá o en una fuente de verdad; lo demás es **hueco**, no relleno.
+
 > **Qué es este documento.** El recorrido de [[Flujo funcional · recorrido del usuario]]
 > traducido a **pantallas concretas** de `apps/movil` (Expo / React Native, Expo Router
 > file-based). Cada pantalla dice: su ruta, qué organismos de `packages/ui` compone, sus

@@ -10,6 +10,11 @@ alcance: los requisitos funcionales del recorrido de un participante, anclados a
 
 # Flujo funcional · recorrido del usuario
 
+> ⛔ **Antes de implementar algo de este documento, leé y obedecé
+> [[Contrato de implementación para IA]].** No inventes tablas, columnas, endpoints, CU ni
+> códigos de error: si no está pineado acá o en una fuente de verdad, es un **hueco**, no algo
+> que completás. Para la forma de los datos manda el `.puml`; para el contrato, el CU.
+
 > **Qué es este documento.** El recorrido de punta a punta de una persona en AportaYa,
 > descrito como requisitos funcionales (RF) y **anclado a los casos de uso que ya existen**
 > en [[_CasosDeUso]]. No inventa comportamiento: cada RF apunta al CU que lo implementa,
