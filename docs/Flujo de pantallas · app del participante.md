@@ -41,6 +41,12 @@ alcance: apps/movil (Expo/React Native) · el recorrido de [[Flujo funcional · 
 5. **Sesión.** Un `401` en cualquier llamada dispara **un** intento de refresh contra
    `identidad` vía gateway; si falla, la app cae a la pila de identidad con la sesión cerrada
    ([[ADR-024 Autenticación y sesión distribuida]]).
+6. **CRUD sobre lo propio, con soft delete.** El participante administra sus recursos con el
+   ciclo completo — **crear, listar/ver, editar y dar de baja** — sobre lo que le pertenece:
+   cuentas bancarias de destino, dispositivos de confianza, reclamos, preferencias y perfil.
+   **Borrar siempre es _soft delete_** (baja lógica: estado + fecha, el registro queda): nunca
+   un `DELETE` físico. Y lo **financiero no se borra jamás** — saldo, movimientos, aportes y
+   asientos son append-only; un movimiento no se elimina, se explica o se reversa.
 
 ## 1 · Mapa de navegación
 
@@ -141,9 +147,14 @@ Sirve los RF-01, RF-02, RF-04, RF-14, RF-15, RF-16. CU 01–09.
 - **Estados:** cargando · error (código vencido/incorrecto) · éxito. **Endpoint:** `POST /sesion/mfa`.
 - **Navega a:** `dispositivo` (primer login) o shell.
 
-### 2.7 · `identidad/dispositivo` — Registrar dispositivo / biometría (RF-02)
-- **Compone:** organismo `RegistroDispositivo` (`expo-local-authentication`; `Boton` "Activar
-  biometría"). **Estados:** éxito / omitir. **Endpoint:** `POST /sesion/dispositivos`.
+### 2.7 · `identidad/dispositivos` — Dispositivos de confianza (CRUD · RF-02)
+- **Registrar** — organismo `RegistroDispositivo` (`expo-local-authentication`; `Boton`
+  "Activar biometría"). `POST /sesion/dispositivos`.
+- **Listar/ver** — `ListaDispositivos` (nombre, último acceso, actual). `GET /sesion/dispositivos`.
+- **Editar** — renombrar el dispositivo. `PATCH /sesion/dispositivos/{id}`.
+- **Revocar (soft delete)** — desvincula un dispositivo perdido; sus sesiones se invalidan.
+  `DELETE /sesion/dispositivos/{id}`.
+- **Estados:** los cuatro.
 
 ### 2.8 · `identidad/verificacion-profunda` — Elevar verificación 🔒 (RF-04 · [[CU-02 Elevar nivel de debida diligencia]] · [[CU-03 Declaración PEP y beneficiario final]])
 - **Compone:** organismo `FormularioKYCReforzado` (captura reforzada + molécula
@@ -195,9 +206,16 @@ Sirve RF-07, RF-08, RF-09, RF-12. CU 10–19, 21.
   el límite vigente leído del catálogo. **Estados:** los cuatro (error = sin cuenta verificada
   → CTA a `cuenta-bancaria`; o monto sobre el límite). **Endpoint:** `POST /billetera/retiros`.
 
-### 4.4 · `billetera/cuenta-bancaria` — Registrar cuenta destino ([[CU-18 Registrar y verificar una cuenta bancaria de destino]])
-- **Compone:** organismo `FormularioCuentaBancaria` (banco, tipo, número; micro-depósito de
-  verificación). **Estados:** los cuatro. **Endpoint:** `POST /cuentas-bancarias`.
+### 4.4 · `billetera/cuentas-bancarias` — Mis cuentas de destino (CRUD · [[CU-18 Registrar y verificar una cuenta bancaria de destino]])
+- **CRUD completo sobre lo propio:**
+  - **Listar/ver** — organismo `ListaCuentasBancarias` (cada una con `ChipEstado`
+    verificada/pendiente). `GET /cuentas-bancarias`.
+  - **Crear** — `FormularioCuentaBancaria` (banco, tipo, número; micro-depósito de
+    verificación). `POST /cuentas-bancarias`.
+  - **Editar** — alias/etiqueta. `PATCH /cuentas-bancarias/{id}`.
+  - **Eliminar (soft delete)** — desvincula la cuenta (estado + fecha), no borra los retiros ya
+    hechos hacia ella. `DELETE /cuentas-bancarias/{id}`.
+- **Estados:** los cuatro (vacío = "aún no registraste una cuenta").
 
 ### 4.5 · `billetera/extracto` — Movimientos / extracto (Tab Movimientos · [[CU-15 Emitir extracto y certificado de saldo]])
 - **Compone:** organismo `ListaMovimientos` (molécula `FilaMovimiento` con `ChipEstado`),
@@ -298,6 +316,22 @@ backoffice ([[Flujo de pantallas · backoffice administrador]] §3.4).
 
 ---
 
+## 6c · CRUD de los recursos del participante
+
+Lo que el usuario administra sobre lo propio, con **soft delete** donde aplica y sin tocar nunca
+lo financiero (append-only):
+
+| Recurso | Crear | Leer | Actualizar | Borrar (soft delete) |
+| --- | --- | --- | --- | --- |
+| Perfil | — | `GET /usuarios/{id}` | `PUT /usuarios/{id}` | — (se da de baja la cuenta, RF-16) |
+| Contraseña | — | — | `POST /usuarios/{id}/contrasena` | — |
+| Cuenta bancaria de destino | `POST /cuentas-bancarias` | `GET /cuentas-bancarias` | `PATCH …/{id}` | `DELETE …/{id}` (desvincula) |
+| Dispositivo de confianza | `POST /sesion/dispositivos` | `GET /sesion/dispositivos` | `PATCH …/{id}` | `DELETE …/{id}` (revoca) |
+| Preferencias de notificación | — | `GET /notificaciones/preferencias` | `PUT …/preferencias` | desactivar canal |
+| Reclamo / denuncia | `POST /reclamos` | `GET /reclamos`, `/reclamos/{id}` | apelar (`POST /reclamos/{id}/apelacion`) | no se borra: se cierra |
+| **Saldo, movimientos, aportes** | — | `GET /billetera/*` | **append-only** | **nunca** — se reversa, no se borra |
+| Cuenta (baja total) | — | — | — | `POST /usuarios/{id}/baja` (RF-16, con devolución de saldo) |
+
 ## 7 · Inventario de organismos que el sistema de diseño debe entregar
 
 Estos organismos los **construye F1** en `packages/ui` (los transversales) o los shells de cada
@@ -312,7 +346,8 @@ dominio (los específicos), y los carriles M1/M2/M3 solo los **componen**. Entra
 | `FormularioPerfil`, `FormularioCambioContrasena`, `AsistenteBaja` | identidad | M1 (F3) | `Campo*`, doble confirmación |
 | `TarjetaSaldo`, `AccesosRapidos`, `ListaMovimientos` (`FilaMovimiento`) | billetera | M2 (F4) | `Monto`, `ChipEstado` |
 | `CampoMonto`, `ResumenRecarga`, `PantallaQR` | billetera | M2 (F4) | `TecladoNumerico`, `expo-camera` |
-| `FormularioCuentaBancaria`, `SelectorCuentaBancaria` | billetera | M2 (F4) | `Campo*` |
+| `FormularioCuentaBancaria`, `ListaCuentasBancarias`, `SelectorCuentaBancaria` | billetera | M2 (F4) | `Campo*` |
+| `RegistroDispositivo`, `ListaDispositivos` | identidad | M1 (F3) | biometría |
 | `FormularioAporte` (`FilaAporte`), `PantallaResultado` | billetera | M2 (F4) | `Monto` |
 | `CanjearInvitacion`, `FormularioPostulacion`, `TarjetaGrupo`, `ReglamentoGrupo` | pasanaku | M3 (F5) | `CampoCodigo`, `ChipEstado` |
 | `AsistenteOrganizador`, `FormularioGrupo` | pasanaku | M3 (F5) | `Campo*` (gated) |

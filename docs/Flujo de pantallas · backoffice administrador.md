@@ -41,6 +41,19 @@ alcance: apps/backoffice (React + Vite) · el recorrido de [[Flujo funcional · 
 5. **Todo deja rastro.** Cada acción con efecto pide **motivo** y queda en la bitácora; las
    pantallas de decisión que perjudican a alguien siguen el patrón de **debido proceso**
    (causal → notificación → descargo → decisión motivada → apelación por otro).
+6. **CRUD completo, con el ciclo de vida del dominio.** Cada recurso administrable expone las
+   cuatro operaciones — **todo lo que deba poder borrarse, se puede** — pero en un sistema con
+   dinero el "borrar" es casi siempre **soft delete**, no un `DELETE` físico (§8):
+   - **Crear** = `POST` (alta).
+   - **Leer** = `GET` colección (con búsqueda, filtros y paginación en `TablaDeDatos`) + `GET /{id}` (detalle).
+   - **Actualizar** = `PUT`/`PATCH` para datos editables; para **catálogo regulado**
+     (tarifario, políticas, plantillas, umbrales) editar es **publicar una vigencia nueva**
+     (versionado), nunca pisar la vigente.
+   - **Borrar = _soft delete_**: baja lógica (estado + fecha) vía `POST /{id}/baja` o `DELETE`
+     que **desactiva** conservando el historial; el registro no desaparece, deja de estar
+     activo. La **única excepción es lo financiero**: libro, asientos, movimientos, eventos y
+     bitácora son **append-only** y no se borran ni con soft delete — se corrigen con el
+     **movimiento inverso**.
 
 ## 1 · Mapa de navegación
 
@@ -272,6 +285,59 @@ transversales a operación/cumplimiento/contabilidad → suben a `packages/ui`; 
 paneles específicos de un dominio viven en su ruta. Los **mismos tokens y átomos** que la app
 móvil ([[Flujo de pantallas · app del participante]] §7): el backoffice no es un segundo
 sistema de diseño, es el mismo portado a densidad de escritorio.
+
+## 8 · CRUD y ciclo de vida por recurso
+
+Cada pantalla de gestión es un CRUD completo sobre `TablaDeDatos`; la columna **Borrar** dice
+qué significa la baja en cada caso (nunca es un `DELETE` físico sobre dinero). "Versión" marca
+los recursos donde **actualizar = nueva vigencia**.
+
+| Recurso | Crear | Leer | Actualizar | Borrar (soft delete) | Servicio |
+| --- | --- | --- | --- | --- | --- |
+| **Roles de operador** | `POST /roles` | `GET /roles`, `/roles/{id}` | `PATCH /usuarios/{id}/roles` (respeta segregación) | `DELETE /usuarios/{id}/roles/{rol}` (revoca) | identidad |
+| **Partner / socio comercial** | `POST /publicidad/socios` | `GET /publicidad/socios`, `/{id}` | `PUT /publicidad/socios/{id}` | `POST /publicidad/socios/{id}/baja` (desactiva) | publicidad |
+| **Anunciante y cuenta publicitaria** | `POST /anunciantes` | `GET /anunciantes`, `/{id}` | `PUT /anunciantes/{id}` | `POST /anunciantes/{id}/suspension` | publicidad |
+| **Campaña / conjunto / anuncio** | `POST /campanas` | `GET /campanas`, `/campanas/{id}` | `PUT /campanas/{id}` (en borrador) · `POST /campanas/{id}/aprobacion` | `POST /campanas/{id}/pausa` · archivar | publicidad |
+| **Pieza creativa** | `POST /publicidad/piezas` | `GET …/piezas` | reemplazo = nueva pieza | `POST …/piezas/{id}/rechazo` (moderación) | publicidad |
+| **Política de resolución de reclamos** | `POST /reclamos/politicas` (simular antes) | `GET /reclamos/politicas`, `/{id}` | **versión nueva** | `POST /reclamos/politicas/{id}/desactivacion` | cumplimiento |
+| **Plantilla de mensaje** | `POST /notificaciones/plantillas` | `GET …/plantillas`, `/{id}/versiones` | **versión nueva** (la anterior queda) | `POST …/plantillas/{id}/baja` | notificaciones |
+| **Canal / enrutamiento** | `POST /notificaciones/enrutamiento` | `GET …/enrutamiento` | `PUT` (prioridad, proveedor) | desactivar canal | notificaciones |
+| **Tarifario** | `POST /tarifas/tarifarios` (doble control) | `GET /tarifas/tarifarios`, `/{id}` | **vigencia nueva** con preaviso | reemplazo por vigencia | tarifas |
+| **Instrumento de fondeo / QR** | `POST /billetera/instrumentos-fondeo` | `GET …/instrumentos-fondeo`, historial | **vigencia nueva** (doble control) | `POST …/{id}/baja` (queda en historial) | nucleo-financiero + aportes |
+| **Definición de reporte** | `POST /reportes/definiciones` | `GET /reportes/definiciones`, ejecuciones | `PUT /reportes/definiciones/{id}` | `POST …/{id}/baja` | auditoria |
+| **Centro de costo / presupuesto** | `POST /erp/…` | `GET /erp/…` | `PUT` (período abierto) | cerrar/anular partida | erp |
+| **Tercero comercial / orden de compra** | `POST /erp/terceros`, `/ordenes-compra` | `GET /erp/…` | `PUT` (antes de facturar) | `POST /erp/ordenes-compra/{id}/anulacion` | erp |
+| **Activo fijo / categoría** | `POST /erp/activos`, `/categorias-activo` | `GET /erp/…` | `PUT` (datos no contables) | dar de baja el activo (con asiento) | erp |
+| **Reclamo (lado operador)** | lo crea el usuario | `GET /reclamos`, `/reclamos/{id}` | `POST /reclamos/{id}/resolucion` | no se borra: se resuelve/cierra | cumplimiento |
+| **Asientos, cierres, facturas, movimientos** | `POST` | `GET` | **append-only** | **no aplica** — se corrige con el inverso | erp / nucleo-financiero |
+
+> **Regla de oro de la columna Borrar.** Todo lo que **deba** poder borrarse se puede — como
+> **soft delete**: se desactiva conservando su historia (estado + fecha), no desaparece de la
+> base. La **única excepción** es lo financiero: nada que toque el libro, un asiento, un evento
+> o la bitácora se borra ni se edita (append-only,
+> [[ADR-027 Infraestructura de mensajería en el modelo]], `contabilidad-partida-doble`); se
+> corrige con el **movimiento inverso**. Por eso "eliminar" en el backoffice es casi siempre
+> **dar de baja** (soft delete), no `DELETE` físico.
+
+## 9 · Notas de modelo — huecos a declarar antes de implementar
+
+Estos flujos se apoyan en tablas que ya existen, salvo tres extensiones que hay que **declarar
+en la bóveda** (docs/entidades/*.puml + restricciones + CU) antes de escribir código. Se listan
+acá para que no queden implícitas:
+
+1. **Denuncia entre usuarios.** Hoy existe `reclamo_cliente` catalogado y `resena_participante`
+   moderada. La **denuncia** como categoría/tabla propia y su **enlace al circuito de
+   incumplimiento/sanción del módulo 08** (con debido proceso del denunciado) es nueva.
+2. **Política de resolución de reclamos.** El motor (`regla_*`, skill `motor-de-reglas`) existe,
+   pero **aplicarlo a la auto-resolución de reclamos** —catálogo de políticas por categoría con
+   su acción y su tope, y el enlace `reclamo_cliente` ⇄ política que lo resolvió— es una
+   extensión a modelar.
+3. **Estado de plataforma/artefactos.** `AF-02b` es una **proyección de lectura** (observabilidad
+   + indicadores) sobre datos que ya existen; conviene definir la vista/endpoint `GET /auditoria/estado`
+   como proyección, no como tabla nueva (skill `lecturas-proyecciones`).
+
+Todo lo demás (fondeo/QR, mensajería, ERP, publicidad, roles, tarifario, reportes, verificaciones)
+usa tablas y CU existentes.
 
 ## Ver también
 
