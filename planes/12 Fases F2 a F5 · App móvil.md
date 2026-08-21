@@ -63,6 +63,9 @@ digital. Si la abuela no lo entiende, se rehace.
 
 - [ ] Gate común de §10 del plan maestro del frontend
 - [ ] Sesión expirada ⇒ vuelve a login **sin perder el formulario en curso**
+- [ ] Toda notificación queda en la bandeja aunque el push no llegue, y varias
+      seguidas se encolan en vez de pisarse
+- [ ] **Ninguna pantalla ni evento de LGI/FT produce aviso** para el investigado
 - [ ] Modo avión ⇒ último estado visible y botones de dinero deshabilitados con motivo
 - [ ] Una pantalla nueva se registra **solo creando el archivo**
 - [ ] Token y PIN **no** aparecen en ningún log ni traza (revisado con caso real)

@@ -313,6 +313,8 @@ button.tarj:hover{border-color:var(--brand);box-shadow:var(--sh-2);transform:tra
 .push__ic{width:17px;height:17px;border-radius:5px;background:var(--verde-solido);display:grid;place-items:center;flex:none}
 .push__ic svg{width:14px;height:14px}
 .push__app{font-size:11px;font-weight:600;color:var(--text-3);letter-spacing:.01em}
+.push__mas{margin-left:auto;font-size:10px;font-weight:700;color:var(--accent-texto);
+  background:var(--warn-bg);border-radius:var(--r-pill);padding:1px 7px}
 .push__t{font-size:13.5px;font-weight:700;color:var(--text);line-height:1.25;margin:0}
 .push__c{font-size:12.5px;color:var(--text-2);line-height:1.35;margin:2px 0 0}
 .push__m{font-family:var(--font-d);font-weight:600;color:var(--ok-texto)}
@@ -605,6 +607,29 @@ button.tarj:hover{border-color:var(--brand);box-shadow:var(--sh-2);transform:tra
 .resumen__f{display:flex;justify-content:space-between;font-size:13.5px;color:var(--text-2)}
 .resumen__f b{font-family:var(--font-d);color:var(--text);font-weight:600}
 .resumen__f--tot{border-top:1px dashed var(--border);padding-top:var(--s3);margin-top:var(--s2);font-size:15px}
+
+/* ── Ruleta del sorteo ────────────────────────────────────────────────────
+   Gira un contenedor HTML, no el <g> del SVG: el navegador ignora el transform
+   sobre un grupo de SVG en este contexto, y el disco se quedaba quieto.
+   ──────────────────────────────────────────────────────────────────────── */
+.ruleta{position:relative;width:min(258px,88%);aspect-ratio:1;margin:0 auto}
+.ruleta__disco{
+  width:100%;height:100%;transform-origin:50% 50%;
+  filter:drop-shadow(0 10px 22px rgba(12,44,29,.3));
+}
+.ruleta__disco svg{display:block;width:100%;height:100%}
+.ruleta__eje{
+  position:absolute;left:50%;top:50%;width:23%;aspect-ratio:1;transform:translate(-50%,-50%);
+  border-radius:50%;background:var(--bg);border:2px solid var(--g900);
+  display:grid;place-items:center;font-family:var(--font-d);font-size:9.5px;font-weight:700;
+  letter-spacing:.08em;color:var(--brand-texto);
+}
+.ruleta__aguja{
+  position:absolute;left:50%;top:-3px;transform:translateX(-50%);width:0;height:0;
+  border-left:10px solid transparent;border-right:10px solid transparent;
+  border-top:24px solid var(--o500);
+  filter:drop-shadow(0 1.5px 0 var(--g900)) drop-shadow(0 -1.5px 0 var(--g900));
+}
 
 /* ── Tour de bienvenida ───────────────────────────────────────────────────
    Antes de pedirle un dato a nadie hay que explicarle qué es esto. Cuatro
@@ -2351,12 +2376,9 @@ sorteo:{ruta:'pasanaku/grupo/[codigo]/sorteo', titulo:'Verificar el sorteo', vol
     + '<div style="font-family:var(--mono);font-size:11px;color:var(--text-3)">' + SORTEO.id + '</div>'
     + '<div style="font-family:var(--font-d);font-weight:600;font-size:15px;margin:2px 0 var(--s1)">Evento <span style="color:var(--brand-texto)">SORTEO_REALIZADO</span></div>'
     + '<div style="font-size:12px;color:var(--text-3);margin-bottom:var(--s4)">' + SORTEO.fecha + '</div>'
-    + '<div style="position:relative;width:256px;max-width:100%;margin:0 auto">'
-    + '<svg viewBox="0 0 256 256" style="width:100%;height:auto;display:block;filter:drop-shadow(0 10px 22px rgba(12,44,29,.28))">'
-    + '<g id="so-rueda" style="transform-origin:128px 128px;transition:transform 3.6s cubic-bezier(.16,.85,.2,1)">' + rueda + '</g>'
-    + '<circle cx="128" cy="128" r="27" fill="#F6F4EC" stroke="#0C2C1D" stroke-width="2"/>'
-    + '<text x="128" y="128" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="700" fill="#164A30">TURNO</text>'
-    + '<path d="M128 6 L118 30 L138 30 Z" fill="#E5852B" stroke="#0C2C1D" stroke-width="1.5"/></svg></div>'
+    + '<div class="ruleta">'
+    + '<div class="ruleta__disco" id="so-rueda"><svg viewBox="0 0 256 256" aria-hidden="true">' + rueda + '</svg></div>'
+    + '<div class="ruleta__eje">TURNO</div><div class="ruleta__aguja"></div></div>'
     + '<button class="btn btn--acc" id="so-girar" style="margin-top:var(--s4)">Reproducir el sorteo con la semilla guardada</button>'
     + '<p style="font-size:11.5px;color:var(--text-3);margin:var(--s3) 0 0;line-height:1.45">No es una animación decorativa: se vuelve a ejecutar el mismo algoritmo con la misma semilla y tiene que dar el mismo orden. Si diera otro, el evento estaría adulterado.</p></div>'
 
@@ -2394,15 +2416,35 @@ sorteo:{ruta:'pasanaku/grupo/[codigo]/sorteo', titulo:'Verificar el sorteo', vol
     const b = e.currentTarget; b.disabled = true; b.innerHTML = '<span class="spin"></span>Recalculando con la semilla…';
     await llamar('POST','/verificar/sorteos/' + SORTEO.id,
       {nota:'se recomputa el orden y se compara el hash: tiene que coincidir con el guardado'});
-    const idx = 0;   /* la rueda frena en el turno 1: el orden se lee desde ahí */
-    rue.style.transform = 'rotate(' + (360*4 + (360 - (idx + .5) * 360 / n)).toFixed(1) + 'deg)';
+    /* La aguja está arriba; el disco frena con el sector del turno 1 debajo de
+       ella. Cada vuelta suma sobre la anterior, así reproducirlo otra vez vuelve
+       a girar en lugar de quedarse quieto. */
+    const desde = D.giro || 0;
+    D.giro = desde + 360 * 4 + (360 - 0.5 * 360 / n);
     const filas = [...document.querySelectorAll('#so-orden .mov')];
-    filas.forEach((f, i) => setTimeout(() => { f.style.opacity = '1'; }, 3600 + i * 130));
-    setTimeout(() => {
-      document.getElementById('so-est').outerHTML = '<span class="chip chip--ok"><i></i>Hash coincide</span>';
-      b.disabled = false; b.textContent = 'Reproducir otra vez';
-      avisar('El orden reproducido coincide con el guardado');
-    }, 3600 + filas.length * 130);
+
+    const revelar = () => {
+      filas.forEach((f, i) => setTimeout(() => { f.style.opacity = '1'; }, i * 120));
+      setTimeout(() => {
+        const est = document.getElementById('so-est');
+        if (est) est.outerHTML = '<span class="chip chip--ok"><i></i>Hash coincide</span>';
+        b.disabled = false; b.textContent = 'Reproducir otra vez';
+        avisar('El orden reproducido coincide con el guardado');
+      }, filas.length * 120 + 150);
+    };
+
+    /* Quien pidió menos movimiento en su sistema no recibe la vuelta: recibe el
+       resultado. La animación es la explicación, no el dato. */
+    const quieto = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    rue.style.transform = 'rotate(' + D.giro.toFixed(1) + 'deg)';
+    if (quieto || !rue.animate) { revelar(); return; }
+
+    b.innerHTML = '<span class="spin"></span>Girando…';
+    const anim = rue.animate(
+      [{transform:'rotate(' + desde.toFixed(1) + 'deg)'}, {transform:'rotate(' + D.giro.toFixed(1) + 'deg)'}],
+      {duration:3800, easing:'cubic-bezier(.15,.85,.2,1)', fill:'forwards'});
+    anim.onfinish = revelar;
+    setTimeout(() => { if (b.disabled) revelar(); }, 4600);   /* red de seguridad */
   };
   document.querySelectorAll('[data-per]').forEach(b => b.onclick = () => {
     D.perfilSel = perfilPublico(g.turnos[+b.dataset.per], g);
@@ -4828,16 +4870,35 @@ document.getElementById('escenario').onchange = e => {
 };
 /* ── Notificación emergente: lo que ve la persona en el celular ──────────── */
 let tPush = 0;
-function notificar({titulo, cuerpo}){
+/* Toda notificación se guarda en la bandeja en la misma operación que la manda
+   (ADR-035). Que el push no llegue —teléfono apagado, permiso denegado, el
+   proveedor caído— no puede significar que la persona no se entere nunca. */
+const colaPush = [];
+let mostrando = false;
+
+function notificar({titulo, cuerpo, ic, c, soloPush}){
+  if (!soloPush) D.avisos.unshift({t:titulo, s:'Ahora · ' + cuerpo, ic:ic || 'ok', c:c || 'ok'});
+  colaPush.push({titulo, cuerpo});
+  if (!mostrando) siguientePush();
+}
+
+function siguientePush(){
   const el = document.getElementById('push');
+  const n = colaPush.shift();
+  if (!n) { mostrando = false; el.dataset.ver = '0'; return; }
+  mostrando = true;
   el.innerHTML = '<div class="push__cab">'
     + '<span class="push__ic"><svg aria-hidden="true"><use href="#ay-marca"/></svg></span>'
-    + '<span class="push__app">AportaYa · ahora</span></div>'
-    + '<p class="push__t">' + titulo + '</p><p class="push__c">' + cuerpo + '</p>';
+    + '<span class="push__app">AportaYa · ahora</span>'
+    + (colaPush.length ? '<span class="push__mas">+' + colaPush.length + '</span>' : '') + '</div>'
+    + '<p class="push__t">' + n.titulo + '</p><p class="push__c">' + n.cuerpo + '</p>';
   el.dataset.ver = '1';
-  el.onclick = () => { el.dataset.ver = '0'; irM('bandeja'); };
+  el.onclick = () => { el.dataset.ver = '0'; colaPush.length = 0; mostrando = false; irM('bandeja'); };
   clearTimeout(tPush);
-  tPush = setTimeout(() => { el.dataset.ver = '0'; }, 7000);
+  tPush = setTimeout(() => {
+    el.dataset.ver = '0';
+    setTimeout(siguientePush, colaPush.length ? 260 : 0);
+  }, colaPush.length ? 2100 : 6000);
 }
 
 /* Una transferencia entrante: alguien le manda plata a la billetera. La app no
@@ -4856,27 +4917,109 @@ document.getElementById('btnTransfer').onclick = async () => {
 };
 
 /* ── Jornada: tráfico de fondo, para ver el sistema en movimiento ────────── */
+/* ============================================================================
+   Una jornada de la plataforma
+   ----------------------------------------------------------------------------
+   Veinticuatro llamadas que cubren el catálogo de eventos notificables. Cada
+   una dice qué pantalla del backoffice la atiende, a qué pantalla salta la app
+   y —cuando corresponde— qué le llega a la persona al teléfono.
+
+   Lo que NO notifica es tan importante como lo que sí: nada de lo que pasa en
+   la bandeja de alertas de lavado produce un aviso para el investigado. Es el
+   deber de reserva de CU-44, y una notificación de más ahí es un delito.
+   ========================================================================== */
 const JORNADA = [
-  ['POST','/aportes/8f21c4/pago',200,'María Quispe · Bs 253,50 · La Ramada',120],
-  ['POST','/aportes/3b90d1/pago',200,'Delia Huanca · Bs 253,50 · Los Lotes',90],
-  ['POST','/billetera/recargas',200,'recarga por QR · Bs 500,00 · Banco Unión',140],
-  ['GET','/qr/cobros/QR-77120',200,'consulta de estado del cobro',60],
-  ['POST','/aportes/7c11a8/pago',409,'AP-CU21-03 · SALDO_INSUFICIENTE · la saga compensó',210],
-  ['POST','/notificaciones',202,'recordatorio de cobranza · etapa TEMPRANA · 18 destinatarios',180],
-  ['POST','/billetera/retiros',403,'antifraude RECHAZAR · RETIRO_INSTRUMENTO_NUEVO · Rubén Ajata',95],
-  ['POST','/cumplimiento/alertas',201,'ALE-2026-0771 · fraccionamiento bajo umbral · severidad ALTA',75],
-  ['POST','/usuarios',201,'alta de cuenta · 1 de las 12 del patrón coordinado',130],
-  ['POST','/usuarios',201,'alta de cuenta · misma IP, mismo modelo de dispositivo',125],
-  ['POST','/cumplimiento/alertas',201,'ALE-2026-0754 · altas coordinadas · retenidas hasta revisión',80],
-  ['POST','/sesiones',401,'AP-CU04-01 · CREDENCIAL_INVALIDA · 3.º intento de la misma IP',70],
-  ['POST','/sesiones',429,'límite por origen alcanzado · espera creciente',45],
-  ['GET','/grupos/GRP-2026-0142',200,'detalle de grupo y orden de turnos',85],
-  ['POST','/entregas',200,'entrega del turno 4 · Bs 3.000,00 · las 8 reglas cumplen',260],
-  ['POST','/incumplimientos',201,'INC-2026-0214 · presunto · plazo de descargo guardado',110],
-  ['POST','/garantia/coberturas',200,'el fondo cubre Bs 250,00 · la deuda sigue viva',150],
-  ['GET','/conciliacion',200,'4 movimientos · 1 sin cuadrar',95],
-  ['POST','/custodia/cierre-diario',409,'cierre bloqueado · descuadre sin excepción',65],
-  ['POST','/uif/reportes/ROG-2026-08/remision',200,'remisión mensual · radicado UIF-2026-08-01144',300],
+  {m:'POST', r:'/aportes/8f21c4/pago', e:200, ms:120, w:'tablero', mv:'inicio',
+   nota:'María Quispe · Bs 250,00 · La Ramada',
+   push:{t:'Tu aporte de agosto quedó registrado', c:'Bs 250,00 · Pasanaku Mercado La Ramada', ic:'aporte'}},
+
+  {m:'POST', r:'/notificaciones', e:202, ms:180, w:'mora',
+   nota:'recordatorio preventivo · 3 días antes del vencimiento · 41 destinatarios',
+   push:{t:'Faltan 3 días para tu aporte', c:'Vecinas del Plan Tres Mil · Bs 400,00', ic:'reloj', c2:'warn'}},
+
+  {m:'POST', r:'/billetera/recargas', e:200, ms:140, w:'conciliacion', mv:'extracto',
+   nota:'recarga por QR · Bs 500,00 · Banco Unión',
+   push:{t:'Recarga acreditada', c:'Bs 500,00 desde Banco Unión', ic:'qr'}},
+
+  {m:'GET', r:'/qr/cobros/QR-77120', e:200, ms:60, w:'sisWebhooks', perfil:'sistemas',
+   nota:'el webhook del banco llegó dos veces: la clave de idempotencia descartó el segundo'},
+
+  {m:'POST', r:'/billetera/transferencias', e:200, ms:110, w:'tablero', perfil:'finanzas',
+   nota:'CU-12 · transferencia entre billeteras de la plataforma, sin costo',
+   push:{t:'Te transfirieron Bs 120,00', c:'De Delia Huanca S. · ya está en tu saldo', ic:'entra'}},
+
+  {m:'POST', r:'/aportes/7c11a8/pago', e:409, ms:210, w:'mora',
+   nota:'AP-CU21-03 · SALDO_INSUFICIENTE · la saga compensó y nada quedó a medias',
+   push:{t:'No pudimos cobrar tu aporte', c:'Te faltaban Bs 101,00. Cargá saldo y volvé a intentar', ic:'triangulo', c2:'err'}},
+
+  {m:'POST', r:'/garantia/coberturas', e:200, ms:150, w:'fondo',
+   nota:'CU-23 · el fondo cubre Bs 250,00 y se subroga como acreedor',
+   push:{t:'El fondo cubrió tu cuota', c:'Le debés Bs 250,00 al fondo del grupo · 30 días para regularizar', ic:'paraguas', c2:'warn'}},
+
+  {m:'POST', r:'/incumplimientos', e:201, ms:110, w:'incumplimiento',
+   nota:'INC-2026-0214 · presunto · el plazo de descargo se guarda al crearlo, no se recalcula',
+   push:{t:'Tenés un aporte impago', c:'5 días hábiles para regularizar o presentar tu descargo', ic:'expedient', c2:'warn'}},
+
+  {m:'POST', r:'/entregas', e:200, ms:260, w:'desembolsos', mv:'grupos',
+   nota:'entrega del turno 4 · Bs 3.000,00 · las 8 reglas cumplen',
+   push:{t:'Cobraste tu turno', c:'Bs 2.990,00 acreditados · La Ramada, turno 4', ic:'bolsa'}},
+
+  {m:'POST', r:'/facturas', e:201, ms:190, w:'ingresos',
+   nota:'CU-32 · comisión Bs 10,00 con IVA e IT incluidos · factura electrónica emitida',
+   push:{t:'Tu factura está lista', c:'Comisión por cobro de turno · Bs 10,00 · descargala del detalle', ic:'doc', c2:'info'}},
+
+  {m:'POST', r:'/grupos/GRP-2026-0311/sorteo', e:200, ms:230, mv:'sorteo',
+   nota:'CU-60 · semilla pública tomada después del compromiso · evento guardado con su hash',
+   push:{t:'Ya se sorteó el orden', c:'Escuadrón Velasco · te tocó el turno 4 de 10', ic:'certif'}},
+
+  {m:'POST', r:'/grupos/GRP-2026-0311/miembros', e:201, ms:120,
+   nota:'CU-69 · invitación canjeada · el token queda muerto en la misma transacción',
+   push:{t:'Alguien más entró a tu grupo', c:'Escuadrón Velasco · quedan 2 cupos para que arranque', ic:'grupo', c2:'info'}},
+
+  {m:'POST', r:'/usuarios/USR000441/verificacion/decision', e:200, ms:170, w:'verificaciones', perfil:'finanzas',
+   nota:'CU-02 · aprobada con nombre del revisor · se aplican los límites del nivel',
+   push:{t:'Tu identidad quedó verificada', c:'Ya podés cargar hasta Bs 12.000 al mes', ic:'personaok'}},
+
+  {m:'POST', r:'/billetera/retiros', e:403, ms:95, w:'antifraude',
+   nota:'antifraude RECHAZAR · RETIRO_INSTRUMENTO_NUEVO · Rubén Ajata',
+   push:{t:'Frenamos un retiro por seguridad', c:'La cuenta destino se agregó hace 3 horas. Si fuiste vos, esperá 24 h', ic:'candado', c2:'err'}},
+
+  {m:'POST', r:'/sesiones', e:200, ms:80, w:'accesos', perfil:'sistemas',
+   nota:'CU-04 · sesión abierta desde un dispositivo que no estaba registrado',
+   push:{t:'Entraron desde un teléfono nuevo', c:'Samsung A14 · La Paz. Si no fuiste vos, cerrá la sesión ahora', ic:'huella', c2:'warn'}},
+
+  {m:'POST', r:'/reclamos', e:201, ms:130, w:'reclamos', perfil:'finanzas',
+   nota:'CU-52 · plazo de respuesta calculado en días hábiles y guardado al crear el reclamo',
+   push:{t:'Recibimos tu reclamo', c:'RCL-2026-0188 · te respondemos antes del 3 de septiembre', ic:'chat', c2:'info'}},
+
+  {m:'POST', r:'/reclamos/RCL-2026-0181/resolucion', e:200, ms:150, w:'reclamos',
+   nota:'CU-52 · favorable · sin la reparación acreditada el reclamo no se puede cerrar',
+   push:{t:'Tu reclamo se resolvió a tu favor', c:'Te devolvimos Bs 40,00 · ya está en tu saldo', ic:'ok'}},
+
+  {m:'POST', r:'/acuerdos/ACU-2026-0090/voto', e:200, ms:100, mv:'grupo',
+   nota:'CU-63 · quórum alcanzado · 11 a favor, 1 abstención registrada con nombre',
+   push:{t:'El grupo aprobó el nuevo reglamento', c:'Cambia el día de vencimiento al 28 · rige desde septiembre', ic:'doc', c2:'info'}},
+
+  {m:'POST', r:'/usuarios', e:201, ms:130, w:'verificaciones', perfil:'finanzas',
+   nota:'alta de cuenta · 1 de las 31 del patrón coordinado'},
+
+  {m:'POST', r:'/usuarios', e:201, ms:125,
+   nota:'alta de cuenta · misma IP, mismo modelo de dispositivo, 22 minutos'},
+
+  {m:'POST', r:'/cumplimiento/alertas', e:201, ms:75, w:'alertas',
+   nota:'ALE-2026-0754 · altas coordinadas · <b>no genera aviso al investigado</b>: deber de reserva, CU-44'},
+
+  {m:'POST', r:'/sesiones', e:429, ms:45, w:'accesos', perfil:'sistemas',
+   nota:'límite por origen alcanzado · espera creciente · tampoco se avisa, para no confirmar que la cuenta existe'},
+
+  {m:'GET', r:'/conciliacion', e:200, ms:95, w:'conciliacion', perfil:'finanzas',
+   nota:'6 movimientos · 1 sin contraparte y 1 huérfana'},
+
+  {m:'POST', r:'/custodia/cierre-diario', e:409, ms:65, w:'cierre',
+   nota:'AP-CU50-02 · cierre bloqueado · hay excepciones sin registrar'},
+
+  {m:'POST', r:'/uif/reportes/ROG-2026-08/remision', e:200, ms:300, w:'uif',
+   nota:'remisión mensual · radicado UIF-2026-08-01144 · la constancia queda archivada'},
 ];
 let corriendo = false;
 const btnJ = document.getElementById('btnJornada');
@@ -4885,38 +5028,18 @@ btnJ.onclick = async () => {
   corriendo = true;
   /* La jornada no es un log que corre solo: las dos apps se mueven con ella,
      porque el punto es ver dónde aterriza cada llamada. */
-  const ESCENA = {
-    '/aportes/8f21c4/pago':        {w:'tablero',        m:'inicio',   push:['Tu aporte de agosto quedó registrado','Bs 250,00 · Pasanaku Mercado La Ramada']},
-    '/billetera/recargas':         {w:'conciliacion',   m:'extracto', push:['Recarga acreditada','Bs 500,00 desde Banco Unión']},
-    '/notificaciones':             {w:'mora'},
-    '/billetera/retiros':          {w:'antifraude'},
-    '/cumplimiento/alertas':       {w:'alertas'},
-    '/usuarios':                   {w:'verificaciones'},
-    '/sesiones':                   {w:'accesos', perfil:'sistemas'},
-    '/grupos/GRP-2026-0142':       {m:'grupo'},
-    '/entregas':                   {w:'desembolsos',    m:'grupos',   push:['Se entregó el turno 4','Bs 3.000,00 acreditados en tu billetera']},
-    '/incumplimientos':            {w:'incumplimiento'},
-    '/garantia/coberturas':        {w:'fondo',          push:['El fondo cubrió una cuota del grupo','La deuda sigue viva: el fondo pasa a ser acreedor']},
-    '/conciliacion':               {w:'conciliacion'},
-    '/custodia/cierre-diario':     {w:'cierre'},
-    '/uif/reportes/ROG-2026-08/remision':{w:'uif'},
-    '/qr/cobros/QR-77120':         {w:'sisWebhooks',    perfil:'sistemas'},
-  };
   for (let i = 0; i < JORNADA.length && corriendo; i++) {
-    const [m, r, e, nota, ms] = JORNADA[i];
+    const p = JORNADA[i];
     btnJ.textContent = '■ Detener · ' + (i + 1) + '/' + JORNADA.length;
-    registrar({metodo:m, ruta:r, estado:e, ms, nota});
-    const esc = ESCENA[r];
-    if (esc) {
-      if (esc.perfil && esc.perfil !== perfilW) {
-        perfilW = esc.perfil;
-        document.querySelectorAll('#segPerfil button').forEach(x => x.setAttribute('aria-pressed', x.dataset.perfil === perfilW));
-      }
-      if (esc.w && W[esc.w]) irW(esc.w);
-      if (esc.m && M[esc.m] && sesionMovil) irM(esc.m);
-      if (esc.push) notificar({titulo:esc.push[0], cuerpo:esc.push[1]});
+    registrar({metodo:p.m, ruta:p.r, estado:p.e, ms:p.ms, nota:p.nota});
+    if (p.perfil && p.perfil !== perfilW) {
+      perfilW = p.perfil;
+      document.querySelectorAll('#segPerfil button').forEach(x => x.setAttribute('aria-pressed', x.dataset.perfil === perfilW));
     }
-    await espera(900 + Math.random() * 400);
+    if (p.w && W[p.w]) irW(p.w);
+    if (p.mv && M[p.mv] && sesionMovil) irM(p.mv);
+    if (p.push) notificar({titulo:p.push.t, cuerpo:p.push.c, ic:p.push.ic, c:p.push.c2 || 'ok'});
+    await espera(p.push ? 1500 : 950);
   }
   corriendo = false;
   btnJ.textContent = '▶ Reproducir jornada';

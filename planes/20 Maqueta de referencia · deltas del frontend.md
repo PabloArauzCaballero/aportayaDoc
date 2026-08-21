@@ -39,6 +39,7 @@ afecta: [F1, F3, F4, F5, F6, F7, F8]
 | **D-8** | El alta entra por un **tour** de cuatro pantallas | F3 |
 | **D-9** | La cuenta nueva abre con **bono de bienvenida** y su propio estado | F3, F4 |
 | **D-10** | Entrar a un grupo es **canjear una invitación**, con todo a la vista antes | F5 |
+| **D-11** | Toda notificación **se guarda en la bandeja**, y hay eventos que no notifican | F2, F5 |
 
 Y una regla transversal, que es la que produjo casi todos los deltas:
 
@@ -291,6 +292,37 @@ recién ahí el botón. Al confirmar, el token se marca canjeado **en la misma
 transacción** que ocupa el cupo: no existe la ventana donde dos personas entran con la
 misma invitación. Si el último cupo se lo llevó otro, se dice así (`AP-CU68-04`) y la
 invitación queda viva.
+
+---
+
+## D-11 · La notificación se muestra y se guarda
+
+Dos reglas, y la segunda es la que se olvida.
+
+**El aviso emergente es un atajo, no el canal.** Toda notificación se escribe en la
+bandeja en la misma operación que la manda (ADR-035). Que el push no llegue —teléfono
+apagado, permiso denegado, proveedor caído— no puede significar que la persona no se
+entere nunca. En la maqueta la jornada dispara 17 avisos y los 17 quedan en la bandeja
+con su ícono y su tono.
+
+**Cuando llegan varios juntos, se encolan.** Uno pisando al anterior es un aviso
+perdido. Se muestran de a uno, con el contador de los que esperan; tocarlos abre la
+bandeja y limpia la cola.
+
+**Y hay eventos que no notifican, a propósito:**
+
+| Evento | Notifica | Por qué |
+| --- | :-: | --- |
+| Aporte cobrado, entrega, recarga, transferencia | Sí | Es su plata moviéndose |
+| Vencimiento próximo, mora, cobertura del fondo, incumplimiento | Sí | Tiene un plazo que correr |
+| Retiro frenado por antifraude, sesión desde un equipo nuevo | Sí | Puede no haber sido la persona |
+| Reclamo recibido y resuelto, acuerdo del grupo, sorteo | Sí | Hay un plazo o una decisión que la afecta |
+| **Alerta de lavado, caso, reporte a la UIF** | **No** | **Deber de reserva (CU-44): avisarle al investigado es delito** |
+| **Límite de intentos de acceso alcanzado** | **No** | Confirmaría que la cuenta existe |
+
+> Una notificación de más en la bandeja de LGI/FT no es un problema de producto: es un
+> aviso al investigado. Por eso la regla se escribe acá y no queda a criterio de quien
+> implemente la pantalla.
 
 ---
 
