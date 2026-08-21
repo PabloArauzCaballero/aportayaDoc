@@ -157,9 +157,11 @@ acá.**
 6. **No existe un botón «pagar mi aporte»** (D-4). Una persona está en varios grupos:
    la tarjeta de saldo lleva a *aportes pendientes*, filtrable por grupo y por fecha,
    y el pago de una cuota es el detalle de esa cuota.
-7. **La publicidad va rotulada** (D-7): banner con el anunciante a la vista, control
-   para ocultarlo, y pantalla que explica por qué aparece y cómo apagar la
-   segmentación sin perder condiciones del servicio.
+7. **La publicidad va rotulada y no se cierra** (D-7). Un espacio que el usuario apaga
+   no se le puede vender a nadie: lo que se apaga es la **segmentación**, sin que
+   cambie ninguna condición de la cuenta. A cambio, el formato es único y lo impone la
+   plataforma —dos líneas y un monograma, sin animación, sin urgencia inventada y
+   nunca cerca del saldo—, con revisión previa de cada campaña.
 
 ## Gate de salida F4
 
@@ -173,7 +175,9 @@ acá.**
 - [ ] Movimientos **agrupados por día** con neto del día y saldo corrido por línea
 - [ ] *Aportes pendientes* filtra por grupo y por fecha, y muestra el **recargo por
       mora desglosado** cuando lo hay
-- [ ] Todo banner de publicidad está rotulado como tal y se puede ocultar
+- [ ] Todo banner de publicidad está rotulado, **no tiene cierre**, va al pie y respeta
+      el formato único (título ≤ 46, detalle ≤ 60, sin animación)
+- [ ] Apagar la segmentación **no cambia** comisiones, límites ni acceso a grupos
 - [ ] Retiro sin conexión ⇒ bloqueado con motivo, **nunca encolado**
 - [ ] Número de cuenta enmascarado en pantalla, en logs y en capturas
 

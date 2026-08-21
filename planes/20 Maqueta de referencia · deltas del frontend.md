@@ -190,14 +190,32 @@ Llamarle deudor antes de eso es lo que después se cae en una demanda.
 ## D-7 · La publicidad es una superficie del producto
 
 La segunda vertical de negocio se maqueta, no se insinúa. Banner al pie del inicio,
-de movimientos y de la lista de aportes, siempre **rotulado como publicidad**, con el
-anunciante visible y un control para ocultarlo. Al tocarlo se abre una pantalla que
-dice **por qué te aparece** (el anunciante compra un segmento, nunca una lista),
-**por qué existe** (paga la parte gratuita del producto) y deja **apagar la
-segmentación sin perder ninguna condición del servicio**.
+de movimientos y de la lista de aportes, siempre **rotulado como publicidad** y con el
+anunciante visible.
 
-**Cambio en F4/F5:** entra el organismo `BannerDePauta` y la pantalla
-*Sobre este aviso*, contra el servicio `publicidad`.
+**No se puede cerrar, y esa es la decisión.** Un espacio que cada persona apaga no se
+le puede vender a nadie, y entonces habría que cobrarle al usuario lo que hoy es
+gratis. Lo que sí se apaga es la **segmentación**, sin que cambie ninguna condición de
+la cuenta: cobrar por «quitar la publicidad» sería cobrar por los datos.
+
+**La contrapartida es que al anunciante se le exige ser discreto.** No diseña el aviso:
+escribe dos líneas y da su monograma; la tipografía, la paleta, el tamaño y el lugar
+los pone la plataforma. El estándar es parte del producto, no una guía de estilo:
+
+| Se impone | Se prohíbe |
+| --- | --- |
+| Un solo formato: monograma, título ≤ 46 caracteres, detalle ≤ 60 | Mayúsculas sostenidas, exclamaciones repetidas, urgencia inventada |
+| Tipografía y paleta de la plataforma | Que el anunciante elija color |
+| Siempre al pie del contenido | Cerca del saldo o durante una operación con dinero |
+| Rotulado, con el anunciante visible | Botones o íconos que imiten los de la app |
+| Revisión previa de cada campaña | Animación, sonido, autoexpansión, cuenta regresiva |
+
+> Un aviso feo o engañoso no daña la marca del anunciante: **daña la nuestra**, porque
+> aparece adentro de la app donde la gente tiene su plata. Por eso la revisión es
+> previa y la campaña que no cumple no sale.
+
+**Cambio en F4/F5:** entra el organismo `BannerDePauta` —sin cierre, con formato
+único— y la pantalla *Sobre este aviso*, contra el servicio `publicidad`.
 
 ---
 
