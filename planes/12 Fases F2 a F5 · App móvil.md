@@ -133,7 +133,7 @@ acá.**
 | 11 | *Retirar*: destino, monto, **costo y neto antes de confirmar** con biometría | El neto en grande |
 | 12 | Enviar | **Nombre y foto del destinatario antes de aceptar** |
 | 13 | Saldo retenido **separado**, con motivo y hasta cuándo | No se mezcla con disponible |
-| 14 | Extracto **agrupado por día**, con neto diario, saldo corrido por línea y filtros por tipo | Muestra **el movimiento y su corrección**, nunca solo el resultado. El ícono dice **qué pasó**, no si el número sube o baja |
+| 14 | Extracto con **cabecera de período** (saldo inicial → saldo de hoy, entró y salió), cinco filtros y lista **agrupada por día con un solo saldo por día** | Muestra **el movimiento y su corrección**, nunca solo el resultado. El ícono dice **qué pasó**, no si el número sube o baja |
 | 15 | *Movimientos → Descargar* | Extracto por mes y certificado con folio |
 | 16 | *Cerrar mi cuenta* | **Lista de lo que falta**, no un «no» genérico |
 | 17 | Monto no disponible | **Número de oficio y a quién consultar** |
@@ -157,11 +157,12 @@ acá.**
 6. **No existe un botón «pagar mi aporte»** (D-4). Una persona está en varios grupos:
    la tarjeta de saldo lleva a *aportes pendientes*, filtrable por grupo y por fecha,
    y el pago de una cuota es el detalle de esa cuota.
-7. **La publicidad va rotulada y no se cierra** (D-7). Un espacio que el usuario apaga
-   no se le puede vender a nadie: lo que se apaga es la **segmentación**, sin que
-   cambie ninguna condición de la cuenta. A cambio, el formato es único y lo impone la
-   plataforma —dos líneas y un monograma, sin animación, sin urgencia inventada y
-   nunca cerca del saldo—, con revisión previa de cada campaña.
+7. **La publicidad va rotulada, no se cierra y vive en una sola pantalla** (D-7): la
+   portada, al pie. Un espacio que el usuario apaga no se le puede vender a nadie: lo
+   que se apaga es la **segmentación**, sin que cambie ninguna condición de la cuenta.
+   A cambio, el formato es único y lo impone la plataforma —dos líneas y una
+   ilustración en marco fijo, sin animación y sin urgencia inventada—, con revisión
+   previa de cada campaña.
 
 ## Gate de salida F4
 
@@ -172,11 +173,15 @@ acá.**
 - [ ] El costo con impuestos aparece **antes** del botón de confirmar, en las tres
       operaciones con comisión
 - [ ] Lista de movimientos virtualizada y paginada, probada con 5 000 filas en gama baja
-- [ ] Movimientos **agrupados por día** con neto del día y saldo corrido por línea
+- [ ] Movimientos con cabecera de período y **un saldo por día**, no uno por línea: en
+      una lista de celular el saldo corrido en cada fila es ruido, no información
+- [ ] La portada abre contestando tres cosas sin desplazar: cuánto tengo, qué tengo
+      que hacer hoy y cómo van mis grupos
 - [ ] *Aportes pendientes* filtra por grupo y por fecha, y muestra el **recargo por
       mora desglosado** cuando lo hay
-- [ ] Todo banner de publicidad está rotulado, **no tiene cierre**, va al pie y respeta
-      el formato único (título ≤ 46, detalle ≤ 60, sin animación)
+- [ ] El banner de publicidad aparece **solo en la portada**, está rotulado, **no tiene
+      cierre**, va al pie y respeta el formato único (título ≤ 46, detalle ≤ 60,
+      ilustración sin texto adentro, sin animación)
 - [ ] Apagar la segmentación **no cambia** comisiones, límites ni acceso a grupos
 - [ ] Retiro sin conexión ⇒ bloqueado con motivo, **nunca encolado**
 - [ ] Número de cuenta enmascarado en pantalla, en logs y en capturas

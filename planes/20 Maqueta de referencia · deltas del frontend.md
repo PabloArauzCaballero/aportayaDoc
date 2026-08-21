@@ -189,9 +189,9 @@ Llamarle deudor antes de eso es lo que después se cae en una demanda.
 
 ## D-7 · La publicidad es una superficie del producto
 
-La segunda vertical de negocio se maqueta, no se insinúa. Banner al pie del inicio,
-de movimientos y de la lista de aportes, siempre **rotulado como publicidad** y con el
-anunciante visible.
+La segunda vertical de negocio se maqueta, no se insinúa. **Un solo banner, y solo en
+la portada**: no aparece en movimientos, ni en aportes, ni en el perfil. Rotulado como
+publicidad, con el anunciante visible y una ilustración en marco fijo.
 
 **No se puede cerrar, y esa es la decisión.** Un espacio que cada persona apaga no se
 le puede vender a nadie, y entonces habría que cobrarle al usuario lo que hoy es
@@ -204,7 +204,8 @@ los pone la plataforma. El estándar es parte del producto, no una guía de esti
 
 | Se impone | Se prohíbe |
 | --- | --- |
-| Un solo formato: monograma, título ≤ 46 caracteres, detalle ≤ 60 | Mayúsculas sostenidas, exclamaciones repetidas, urgencia inventada |
+| Un solo formato: ilustración en marco cuadrado, título ≤ 46 caracteres, detalle ≤ 60 | Texto, logos o precios dentro de la ilustración |
+| Una sola ubicación: la portada, al pie | Mayúsculas sostenidas, exclamaciones repetidas, urgencia inventada |
 | Tipografía y paleta de la plataforma | Que el anunciante elija color |
 | Siempre al pie del contenido | Cerca del saldo o durante una operación con dinero |
 | Rotulado, con el anunciante visible | Botones o íconos que imiten los de la app |
