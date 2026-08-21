@@ -38,6 +38,7 @@ afecta: [F1, F3, F4, F5, F6, F7, F8]
 | **D-7** | La **publicidad** es una superficie del producto, rotulada y con control | F4, F5 |
 | **D-8** | El alta entra por un **tour** de cuatro pantallas | F3 |
 | **D-9** | La cuenta nueva abre con **bono de bienvenida** y su propio estado | F3, F4 |
+| **D-10** | Entrar a un grupo es **canjear una invitación**, con todo a la vista antes | F5 |
 
 Y una regla transversal, que es la que produjo casi todos los deltas:
 
@@ -258,6 +259,38 @@ catálogo con su campaña, no un número en el código— y la app abre en un es
 
 El bono se acredita con un asiento como cualquier otro, contra una cuenta de gasto de
 la empresa: es costo de adquisición, y alguien lo tiene que aprobar y poder cambiar.
+
+---
+
+## D-10 · Entrar a un grupo es un acto informado
+
+El botón *Unirme con un código* no mete a nadie en ningún lado: abre el canje de una
+invitación (CU-69), y el canje tiene tres momentos.
+
+**1 · El código.** Cinco dígitos, de **un solo uso** y con vencimiento. Dos rechazos
+distintos, y la diferencia importa:
+
+| Caso | Respuesta | Por qué |
+| --- | --- | --- |
+| Código que no existe | `AP-CU69-01` · «no encontramos ninguna invitación» | No se dice si hay un grupo detrás: si no, se prueban códigos hasta acertar |
+| Código ya canjeado o vencido | `AP-CU69-02` · «pedí una nueva» | El token murió; el grupo puede seguir existiendo |
+
+**2 · Lo que se está por firmar.** Antes de confirmar, la pantalla muestra el grupo
+(quién invita, aporte, periodicidad, cupos, cuándo arranca, cómo se sortea el turno),
+**el compromiso completo del ciclo** —cuánto aporta en total y cuánto cobra, con la
+comisión descontada— y el reglamento entero, con la aclaración de que lo aprobó el
+grupo por votación.
+
+> **Nadie entra a un pasanaku sin saber el total.** Un asistente que solo dice «Bs 200
+> al mes» esconde que son Bs 2.000 en diez meses. Es la misma razón por la que un
+> crédito muestra el costo total y no solo la cuota, y acá el argumento es más fuerte:
+> del otro lado no hay un banco, hay nueve vecinos que cuentan con esa plata.
+
+**3 · La confirmación explícita.** Una casilla que dice el compromiso en números, y
+recién ahí el botón. Al confirmar, el token se marca canjeado **en la misma
+transacción** que ocupa el cupo: no existe la ventana donde dos personas entran con la
+misma invitación. Si el último cupo se lo llevó otro, se dice así (`AP-CU68-04`) y la
+invitación queda viva.
 
 ---
 

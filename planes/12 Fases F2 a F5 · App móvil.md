@@ -210,7 +210,7 @@ Es el producto propiamente dicho: el grupo.
 
 | Grupo | CU | Pantallas |
 | --- | --- | --- |
-| **Crear y entrar** | 20, 68, 69 | Asistente que **muestra el costo total del ciclo antes de confirmar** · postulación · invitar con token |
+| **Crear y entrar** | 20, 68, 69 | Asistente que **muestra el costo total del ciclo antes de confirmar** · postulación · **canje de invitación**: código de un solo uso, ficha del grupo, compromiso del ciclo en números y reglamento entero antes de la casilla de confirmación (D-10) |
 | **El ciclo del dinero** | 21, 22 | ***Mi aporte***: monto, fecha límite y **un** botón · ***Cobrar mi turno***: bolsa, cada deducción con su motivo, **el neto en grande** |
 | **Turnos** | 59, 60, 61, 62 | *Tu turno* con **cuenta regresiva al revelado** · **el sorteo como evento guardado** (D-5): compromiso, semilla externa, ejecución y notificación, cada uno con su hash, reproducible en pantalla contra el hash guardado · proponer permuta · fecha corrida por feriado **explicada** |
 | **Decisiones** | 63, 64, 65 | *Grupo → Decisiones*: tarjeta por acuerdo con propuesta, plazo y quórum · traspaso · retiro con su liquidación |
@@ -246,6 +246,11 @@ Es el producto propiamente dicho: el grupo.
 - [ ] *Verificar* el sorteo **reproduce el orden con la semilla guardada**, compara el
       hash y muestra los cinco pasos del evento con el suyo
 - [ ] El perfil público de un tercero **no expone** documento, teléfono ni saldo
+- [ ] Canjear una invitación muestra **el total del ciclo**, no solo la cuota, y exige
+      confirmación explícita con el compromiso escrito en números
+- [ ] Código inexistente y código vencido dan **respuestas distintas**, y la del
+      inexistente no revela si hay un grupo detrás
+- [ ] El token se marca canjeado en la **misma transacción** que ocupa el cupo
 - [ ] Cada insignia abre su pantalla con qué mide y cómo se gana
 - [ ] Las 26 pantallas tienen sus cuatro estados
 
