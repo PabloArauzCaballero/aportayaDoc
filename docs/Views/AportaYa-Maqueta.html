@@ -362,7 +362,7 @@ button.tarj:hover{border-color:var(--brand);box-shadow:var(--sh-2);transform:tra
 .saldo__l svg{width:13px;height:13px;opacity:.8}
 .saldo__m{font-family:var(--font-d);font-weight:600;font-size:38px;letter-spacing:-.03em;margin:6px 0 2px;line-height:1}
 .saldo__m small{font-size:17px;font-weight:500;opacity:.72;margin-right:6px;letter-spacing:0}
-.saldo__p{font-size:12px;color:#BFE0CD;margin:0 0 var(--s4);display:flex;align-items:center;gap:6px}
+.saldo__p{font-size:12px;color:#BFE0CD;margin:5px 0 var(--s4);line-height:1.4}
 .saldo__p b{color:#fff;font-weight:600}
 .saldo__b{display:grid;grid-template-columns:1fr 1fr;gap:var(--s2)}
 .saldo__b .btn{padding:11px var(--s3);font-size:13.5px;min-height:44px;border-radius:var(--r-md)}
@@ -431,7 +431,7 @@ button.tarj:hover{border-color:var(--brand);box-shadow:var(--sh-2);transform:tra
 .gcard:hover{border-color:var(--brand);transform:translateY(-1px)}
 .gcard__n{display:block;font-size:12.5px;font-weight:600;color:var(--text);line-height:1.3;height:32px;overflow:hidden}
 .gcard__t{display:block;font-size:10.5px;color:var(--text-3);margin-top:3px}
-.gcard__b{height:5px;border-radius:var(--r-pill);background:var(--surface-2);overflow:hidden;margin:8px 0 5px}
+.gcard__b{display:block;height:5px;border-radius:var(--r-pill);background:var(--surface-2);overflow:hidden;margin:9px 0 6px}
 .gcard__b i{display:block;height:100%;border-radius:var(--r-pill);background:var(--brand)}
 .gcard__p{display:flex;align-items:center;justify-content:space-between;gap:var(--s2)}
 .gcard__m{font-family:var(--font-d);font-size:12px;font-weight:600;color:var(--text)}
@@ -474,12 +474,19 @@ button.tarj:hover{border-color:var(--brand);box-shadow:var(--sh-2);transform:tra
 .resmes__v{font-family:var(--font-d);font-size:17px;font-weight:600;margin-top:3px;letter-spacing:-.01em}
 .filtros{display:flex;gap:6px;overflow-x:auto;padding:2px 0 6px;scrollbar-width:none}
 .filtros::-webkit-scrollbar{display:none}
+.filtros{display:flex;gap:7px;overflow-x:auto;padding:2px 0 8px;scrollbar-width:none}
 .filtro{
-  font-family:var(--font-b);font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer;
-  padding:7px 13px;border-radius:var(--r-pill);border:1px solid var(--border);
-  background:var(--surface);color:var(--text-2);min-height:34px;
+  font-family:var(--font-b);font-size:12.5px;font-weight:600;white-space:nowrap;cursor:pointer;
+  padding:0 14px;height:34px;border-radius:var(--r-pill);
+  border:1px solid var(--border);background:var(--surface);color:var(--text-2);
+  display:inline-flex;align-items:center;transition:background .15s, border-color .15s, color .15s;
 }
-.filtro[aria-pressed="true"]{background:var(--verde-solido);color:var(--sobre-verde-solido);border-color:var(--verde-solido)}
+.filtro:hover{border-color:var(--field-border)}
+.filtro[aria-pressed="true"]{
+  background:color-mix(in srgb,var(--brand) 13%,transparent);
+  border-color:color-mix(in srgb,var(--brand) 45%,transparent);
+  color:var(--brand-texto);font-weight:700;
+}
 .rapidos{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:var(--s4) 0 0}
 .rapido{
   display:flex;flex-direction:column;align-items:center;gap:6px;padding:11px 4px;
@@ -498,11 +505,11 @@ button.tarj:hover{border-color:var(--brand);box-shadow:var(--sh-2);transform:tra
 }
 .seccion__t h3{font-family:var(--font-d);font-size:14px;font-weight:600;margin:0;color:var(--text);letter-spacing:-.01em}
 .mov{
-  display:flex;align-items:center;gap:var(--s3);padding:10px var(--s2);
-  border-radius:var(--r-md);width:100%;text-align:left;border:0;background:transparent;
+  display:flex;align-items:center;gap:var(--s3);padding:11px var(--s2);
+  width:100%;text-align:left;border:0;background:transparent;
   font-family:var(--font-b);cursor:default;
 }
-.mov+.mov{box-shadow:0 -1px 0 var(--border)}
+.mov+.mov{border-top:1px solid var(--border)}
 .mov__ic{width:38px;height:38px;flex:none;border-radius:12px;display:grid;place-items:center;
   background:var(--surface-2);color:var(--text-2)}
 .mov__ic svg{width:18px;height:18px}
@@ -1722,7 +1729,7 @@ aporte:{ruta:'billetera/pagar-aporte', titulo:'Pagar mi aporte', volver:'inicio'
       document.getElementById('a-err').innerHTML = '<div class="aviso aviso--err">' + IC.escudo
         + '<span><b>No alcanzó el saldo.</b> Cargá crédito y volvé a intentar: la operación se revirtió completa, no quedó nada a medias.<br><code>AP-CU21-03</code></span></div>'; return; }
     D.saldo -= tot;
-    D.movimientos.unshift({t:'Aporte · ' + D.aporte.periodo, s:hoyTxt() + ' · ' + (D.aporte.gn || 'La Ramada').split(' ').slice(-2).join(' '), m:-D.aporte.monto, e:'sale', ic:'aporte'});
+    D.movimientos.unshift({t:'Aporte · ' + D.aporte.periodo, d:hoyTxt(), s:(D.aporte.gn || 'La Ramada'), m:-D.aporte.monto, e:'sale', ic:'aporte'});
     const ob = (D.obligaciones || []).find(o => o.id === D.aporte.id);
     if (ob) { ob.est = 'PAGADA'; ob.pag = hoyTxt() + ' · APO-2026-08-11902'; ob.recargo = 0; }
     await llamar('GET','/billetera/saldo',{nota:'la app vuelve a leer el saldo; nunca lo descuenta por su cuenta'});
@@ -1781,12 +1788,13 @@ extracto:{ruta:'billetera/extracto', titulo:'Movimientos', tab:'extracto', rende
     const lista = sel === 'todos' ? D.movimientos : D.movimientos.filter(m => f.ics.includes(m.ic));
     const entra = lista.filter(m => m.m > 0).reduce((a,m) => a + m.m, 0);
     const sale  = lista.filter(m => m.m < 0).reduce((a,m) => a - m.m, 0);
-    const inicial = D.saldo - D.movimientos.reduce((a,m) => a + m.m, 0);
+    const inicial = D.saldoInicial;
 
     document.getElementById('e-per').innerHTML =
       '<div class="periodo">'
       + '<div class="periodo__c"><span class="periodo__t">Agosto 2026</span>'
-      + '<span class="periodo__n">' + D.movimientos.length + ' movimientos</span></div>'
+      + '<span class="periodo__n">' + (sel === 'todos' ? D.movimientos.length + ' movimientos'
+          : lista.length + ' de ' + D.movimientos.length + ' movimientos') + '</span></div>'
       + '<div class="periodo__s">'
       + '<div class="periodo__b"><div class="periodo__bl">Saldo inicial</div>'
       + '<div class="periodo__bv num">' + bs(inicial) + '</div></div>'
@@ -1801,10 +1809,10 @@ extracto:{ruta:'billetera/extracto', titulo:'Movimientos', tab:'extracto', rende
       + '<span class="periodo__fl">Salió</span>'
       + '<span class="periodo__fv num">−' + bs(sale) + '</span></div></div></div>';
 
-    document.getElementById('e-filtros').innerHTML = FILTROS.map(x =>
-      '<button class="filtro" data-f="' + x.k + '" aria-pressed="' + (x.k === sel) + '">' + x.n
-      + (x.k === 'todos' ? '' : ' <span style="opacity:.55">'
-        + D.movimientos.filter(m => x.ics.includes(m.ic)).length + '</span>') + '</button>').join('');
+    document.getElementById('e-filtros').innerHTML = FILTROS
+      .filter(x => x.k === 'todos' || D.movimientos.some(m => x.ics.includes(m.ic)))
+      .map(x => '<button class="filtro" data-f="' + x.k + '" aria-pressed="' + (x.k === sel) + '">'
+        + x.n + '</button>').join('');
 
     document.getElementById('e-lista').innerHTML =
       (lista.length ? listaPorDia(lista, D.saldo) : '<div class="vacio">' + IC.vacio
@@ -2269,7 +2277,7 @@ function listaPorDia(movs, saldoFinal){
   let saldo = saldoFinal;
   const dias = [];
   movs.forEach(m => {
-    const d = (m.s.split(' · ')[0] || '—').trim();
+    const d = m.d || '—';
     if (!dias.length || dias[dias.length-1].d !== d) dias.push({d, movs:[], cierre:saldo});
     dias[dias.length-1].movs.push(m);
     saldo -= m.m;
@@ -2672,15 +2680,18 @@ optimista:{
   saldo:124000, retenido:0, retenidoTxt:'',
   aporte:{id:'8f21c4', periodo:'Agosto 2026', monto:25000, comision:0, vence:'lunes 25 de agosto',
           estado:'AL_DIA', dias:5, recargo:0},
+  saldoInicial:8000,
   movimientos:[
-    {t:'Recarga por QR',              s:'19 ago · Banco Unión · QR-8841',      m:  50000, e:'entra', ic:'qr'},
-    {t:'Aporte · Agosto 2026',        s:'18 ago · La Ramada · turno 4',        m: -25000, e:'sale',  ic:'aporte'},
-    {t:'Aporte · Agosto 2026',        s:'18 ago · Plan Tres Mil · turno 7',    m: -40000, e:'sale',  ic:'aporte'},
-    {t:'Entrega de fondo',            s:'12 ago · La Ramada · turno 3',        m: 300000, e:'entra', ic:'bolsa'},
-    {t:'Comisión por cobro de turno', s:'12 ago · 0,3 % · mínimo Bs 10',       m:  -1000, e:'sale',  ic:'porcent'},
-    {t:'Retiro a Banco Unión',        s:'10 ago · ••••4321 · 3 h 12 min',      m:-180000, e:'sale',  ic:'banco'},
-    {t:'Recarga en efectivo',         s:'05 ago · Punto Mercado Mutualista',   m:  20000, e:'entra', ic:'billete'},
-    {t:'Devolución de recarga',       s:'02 ago · el banco revirtió el abono', m: -15000, e:'sale',  ic:'reversa'},
+    {t:'Devolución de recarga',       d:'20 ago', s:'El banco revirtió el abono · REV-2291',  m: -28000, e:'sale',  ic:'reversa'},
+    {t:'Recarga por QR',              d:'19 ago', s:'Banco Unión · QR-8841',                  m:  50000, e:'entra', ic:'qr'},
+    {t:'Aporte · Agosto 2026',        d:'18 ago', s:'Vecinas del Plan Tres Mil · turno 7',    m: -40000, e:'sale',  ic:'aporte'},
+    {t:'Aporte · Agosto 2026',        d:'18 ago', s:'Pasanaku Mercado La Ramada · turno 4',   m: -25000, e:'sale',  ic:'aporte'},
+    {t:'Retiro a Banco Unión',        d:'16 ago', s:'Caja de ahorro ••••4321 · 3 h 12 min',   m:-180000, e:'sale',  ic:'banco'},
+    {t:'Comisión por cobro de turno', d:'12 ago', s:'0,3 % de la bolsa · mínimo Bs 10',       m:  -1000, e:'sale',  ic:'porcent'},
+    {t:'Entrega de fondo',            d:'12 ago', s:'Pasanaku Mercado La Ramada · turno 3',   m: 300000, e:'entra', ic:'bolsa'},
+    {t:'Recarga en efectivo',         d:'09 ago', s:'Punto Mercado Mutualista',               m:  20000, e:'entra', ic:'billete'},
+    {t:'Aporte · Julio 2026',         d:'05 ago', s:'Vecinas del Plan Tres Mil · turno 7',    m: -40000, e:'sale',  ic:'aporte'},
+    {t:'Recarga por QR',              d:'02 ago', s:'Banco Unión · QR-8103',                  m:  60000, e:'entra', ic:'qr'},
   ],
   avisos:[
     {t:'Tu aporte de agosto quedó registrado', s:'Hace 3 minutos · comprobante APO-2026-08-11902', ic:'ok', c:'ok'},
@@ -2897,15 +2908,17 @@ adverso:{
   saldo:3400, retenido:15000, retenidoTxt:'Retiro ORD-4477 en revisión antifraude',
   aporte:{id:'8f21c4', periodo:'Agosto 2026', monto:25000, comision:0, vence:'venció el 18 de agosto',
           estado:'EN_MORA', dias:-2, recargo:500},
+  saldoInicial:2000,
   movimientos:[
-    {t:'Recargo por mora',            s:'20 ago · 2 días · La Ramada',          m:   -500, e:'sale',  ic:'calmora'},
-    {t:'Débito de aporte rechazado',  s:'18 ago · saldo insuficiente · Bs 34',  m:      0, e:'sale',  ic:'triangulo'},
-    {t:'Cobertura del fondo',         s:'18 ago · el fondo cubrió tu cuota',    m:  25000, e:'entra', ic:'paraguas'},
-    {t:'Deuda con el fondo de garantía', s:'18 ago · subrogación · plazo 30 días', m:-25000, e:'sale', ic:'expedient'},
-    {t:'Retiro a Banco Unión',        s:'16 ago · ••••4321',                    m:-120000, e:'sale',  ic:'banco'},
-    {t:'Comisión por cobro de turno', s:'12 ago · 0,3 % · mínimo Bs 10',        m:  -1000, e:'sale',  ic:'porcent'},
-    {t:'Entrega de fondo',            s:'12 ago · La Ramada · turno 3',         m: 300000, e:'entra', ic:'bolsa'},
-    {t:'Recarga por QR',              s:'09 ago · Banco Unión · QR-8712',       m:  30000, e:'entra', ic:'qr'},
+    {t:'Recargo por mora',            d:'20 ago', s:'2 días de atraso · La Ramada · Bs 2,50 por día', m:  -500, e:'sale',  ic:'calmora'},
+    {t:'Transferencia enviada',       d:'19 ago', s:'A Delia Huanca S. · misma billetera',    m: -12100, e:'sale',  ic:'enviar'},
+    {t:'El fondo cubrió tu cuota',    d:'18 ago', s:'Bs 250,00 · le quedás debiendo al fondo',m:      0, e:'sale',  ic:'paraguas'},
+    {t:'Débito de aporte rechazado',  d:'18 ago', s:'Tenías Bs 149,00 y la cuota es Bs 250,00',m:     0, e:'sale',  ic:'triangulo'},
+    {t:'Aporte · Julio 2026',         d:'16 ago', s:'Pasanaku Mercado La Ramada · turno 4',   m: -25000, e:'sale',  ic:'aporte'},
+    {t:'Retiro a Banco Unión',        d:'14 ago', s:'Caja de ahorro ••••4321',                m:-290000, e:'sale',  ic:'banco'},
+    {t:'Comisión por cobro de turno', d:'12 ago', s:'0,3 % de la bolsa · mínimo Bs 10',       m:  -1000, e:'sale',  ic:'porcent'},
+    {t:'Entrega de fondo',            d:'12 ago', s:'Pasanaku Mercado La Ramada · turno 3',   m: 300000, e:'entra', ic:'bolsa'},
+    {t:'Recarga por QR',              d:'09 ago', s:'Banco Unión · QR-8712',                  m:  30000, e:'entra', ic:'qr'},
   ],
   avisos:[
     {t:'Tu aporte de agosto está vencido', s:'Hace 2 horas · recargo Bs 5,00 y sumando', ic:'triangulo', c:'err'},
