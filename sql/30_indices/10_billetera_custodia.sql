@@ -76,18 +76,6 @@ CREATE INDEX IF NOT EXISTS ix_instrumento_fondeo_usuario_id
 CREATE UNIQUE INDEX IF NOT EXISTS uq_instrumento_fondeo_usuario_id_hash_identificador
   ON nucleo_financiero.instrumento_fondeo (usuario_id, hash_identificador);
 
-CREATE UNIQUE INDEX IF NOT EXISTS uq_punto_atencion_codigo
-  ON nucleo_financiero.punto_atencion (codigo);
-
-CREATE INDEX IF NOT EXISTS ix_punto_atencion_estado
-  ON nucleo_financiero.punto_atencion (estado);
-
-CREATE INDEX IF NOT EXISTS ix_arqueo_punto_atencion_punto_atencion_id
-  ON nucleo_financiero.arqueo_punto_atencion (punto_atencion_id);
-
-CREATE UNIQUE INDEX IF NOT EXISTS uq_arqueo_punto_atencion_punto_atencion_id_fecha
-  ON nucleo_financiero.arqueo_punto_atencion (punto_atencion_id, fecha);
-
 CREATE INDEX IF NOT EXISTS ix_orden_recarga_cuenta_billetera_id
   ON nucleo_financiero.orden_recarga (cuenta_billetera_id);
 

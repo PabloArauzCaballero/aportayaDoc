@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS nucleo_financiero.instrumento_fondeo (
   verificado_en                      TIMESTAMPTZ,
   bloqueado_hasta                    TIMESTAMPTZ,
   CONSTRAINT pk_instrumento_fondeo PRIMARY KEY (id),
-  CONSTRAINT ck_instrumento_fondeo_tipo CHECK (tipo IN ('AGENTE', 'CUENTA_BANCARIA', 'EFECTIVO', 'QR_BANCARIO', 'TARJETA')),
+  CONSTRAINT ck_instrumento_fondeo_tipo CHECK (tipo IN ('CUENTA_BANCARIA', 'QR_BANCARIO', 'TARJETA')),
   CONSTRAINT ck_instrumento_fondeo_estado_verificacion CHECK (estado_verificacion IN ('PENDIENTE', 'RECHAZADO', 'VENCIDO', 'VERIFICADO'))
 );
 

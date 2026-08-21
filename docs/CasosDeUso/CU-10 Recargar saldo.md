@@ -74,7 +74,7 @@ export const EntradaCU10 = z.object({
   cuentaBilleteraId: z.string().uuid(),
   monto:             MontoSchema,
   moneda:            MonedaSchema,
-  medio:             z.enum(['QR','TARJETA','AGENTE','TRANSFERENCIA']),
+  medio:             z.enum(['QR','TARJETA','TRANSFERENCIA']),  // AGENTE retirado: la app no recarga en efectivo
   instrumentoFondeoId: z.string().uuid().optional(),
 }).strict()
 
@@ -101,6 +101,17 @@ export const ErroresCU10 = {
 | `INSTRUMENTO_NO_VERIFICADO` | El medio de fondeo no está verificado |
 | `CUENTA_NO_OPERATIVA` | La cuenta está congelada o cerrada |
 | `ORDEN_EXPIRADA` | Se intentó acreditar sobre una orden vencida |
+
+> [!danger] `AGENTE` salió, y con él el efectivo
+> La recarga en efectivo por corresponsal **no existe en el producto**:
+> [[ADR-039 Sin efectivo · la plataforma no opera dinero físico]] la retiró del alcance el 20 de
+> agosto de 2026. El único ingreso de fondos es electrónico.
+>
+> Con ella se fueron `punto_atencion`, `arqueo_punto_atencion` y la columna
+> `orden_recarga.punto_atencion_id`; `instrumento_fondeo.tipo` perdió `AGENTE` y `EFECTIVO`, y
+> [[CU-57 Operar un punto de atención y arquear el efectivo]] quedó **obsoleto con su número
+> reservado**. Los umbrales UIF de concepto `EFECTIVO` **se conservan**: son la norma, no una
+> función nuestra — simplemente nunca se disparan.
 
 ## Descomposición atómica
 

@@ -3,6 +3,9 @@ tags:
   - caso-uso
   - modulo/10-billetera-custodia-y-dinero-electronico
 codigo: CU-57
+estado: obsoleto
+obsoleto_por: ADR-039
+obsoleto_desde: 2026-08-20
 criticidad: alta
 actores: [Responsable del punto, Tesorería, Usuario, Sistema]
 normas: [ASFI puntos de atención y corresponsalía, BCB efectivo, UIF]
@@ -10,20 +13,32 @@ normas: [ASFI puntos de atención y corresponsalía, BCB efectivo, UIF]
 
 # CU-57 — Operar un punto de atención y arquear el efectivo
 
+> [!danger] CASO DE USO OBSOLETO — la plataforma no opera efectivo
+> Retirado del alcance por
+> [[ADR-039 Sin efectivo · la plataforma no opera dinero físico]] el 20 de agosto de 2026.
+> Las tablas `punto_atencion` y `arqueo_punto_atencion` **ya no existen en el modelo**, y
+> `CU-10` no admite el medio `AGENTE`.
+>
+> **El documento se conserva entero y su número no se reutiliza** ([[_CasosDeUso]], convención
+> de códigos): si el efectivo vuelve al producto, esto es el punto de partida y no hay que
+> reconstruirlo. **No se implementa.** Las referencias a tablas van en `código`, no como enlace,
+> porque las notas que apuntaban ya no están.
+
+
 > **Objetivo.** Que el efectivo que entra y sale por un corresponsal cuadre todos
 > los días contra lo que el sistema dice, y que la diferencia, si la hay, aparezca
 > ese mismo día con nombre y monto en vez de acumularse.
 
 ## Actores y disparador
 
-- **Actor principal:** responsable del [[punto_atencion]].
+- **Actor principal:** responsable del `punto_atencion`.
 - **Disparadores:** apertura y cierre de la jornada; recarga en efectivo
   ([[CU-10 Recargar saldo]]); retiro en efectivo ([[CU-11 Retirar saldo]]); arqueo
   sorpresivo de tesorería.
 
 ## Precondiciones
 
-1. El [[punto_atencion]] está `HABILITADO`, con `limite_efectivo_diario` y
+1. El `punto_atencion` está `HABILITADO`, con `limite_efectivo_diario` y
    `responsable_usuario_id` asignado.
 2. El punto está dentro del alcance de la licencia
    ([[CU-46 Verificar el alcance de la licencia]]): operar efectivo por
@@ -33,7 +48,7 @@ normas: [ASFI puntos de atención y corresponsalía, BCB efectivo, UIF]
 
 ## Flujo principal
 
-1. Al abrir la jornada se crea [[arqueo_punto_atencion]] del día con
+1. Al abrir la jornada se crea `arqueo_punto_atencion` del día con
    `saldo_inicial`, que es el `saldo_contado` del cierre anterior. **Si no cuadran,
    la jornada no abre**: arrastrar una diferencia es perderla.
 2. Cada operación de efectivo se registra en el acto:
@@ -119,7 +134,7 @@ export const ErroresCU57 = {
 | `CIERRE_ANTERIOR_ABIERTO` | Quedó una jornada sin cerrar o sin cuadrar |
 | `LIMITE_EFECTIVO_EXCEDIDO` | La operación supera el tope diario del punto |
 | `DIFERENCIA_SIN_JUSTIFICAR` | Hay diferencia y no se escribió observación |
-| `ARQUEO_YA_CERRADO` | Reintento sobre un arqueo cerrado; se devuelve el existente (`R-BIL-18`) |
+| `ARQUEO_YA_CERRADO` | Reintento sobre un arqueo cerrado; se devuelve el existente (la restricción de arqueo único por punto y fecha (retirada junto con la tabla)) |
 | `RESPONSABLE_NO_ASIGNADO` | El punto no tiene responsable con rol vigente |
 
 ## Descomposición atómica
@@ -152,12 +167,12 @@ export const ErroresCU57 = {
 
 ## Restricciones aplicables
 
-`R-BIL-01` · `R-BIL-06` · `R-BIL-09` · `R-BIL-11` · `R-BIL-12` · `R-BIL-18` ·
+`R-BIL-01` · `R-BIL-06` · `R-BIL-09` · `R-BIL-11` · `R-BIL-12` · la restricción de arqueo único por punto y fecha (retirada junto con la tabla) ·
 `R-LIC-01` · `R-AUD-01`
 
 ## Evidencia que deja
 
-[[punto_atencion]] · [[arqueo_punto_atencion]] · [[constancia_pago]] ·
+`punto_atencion` · `arqueo_punto_atencion` · [[constancia_pago]] ·
 [[movimiento_custodia]] · [[evento_riesgo_operativo]] · [[bitacora_evento]] ·
 `evento_dominio`
 

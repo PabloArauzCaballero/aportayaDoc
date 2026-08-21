@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS nucleo_financiero.transaccion_billetera (
   CONSTRAINT ck_transaccion_billetera_estado CHECK (estado IN ('APLICADA', 'AUTORIZADA', 'EN_REVISION_FRAUDE', 'INICIADA', 'RECHAZADA', 'REVERSADA')),
   CONSTRAINT ck_transaccion_billetera_monto_total CHECK (monto_total > 0),
   CONSTRAINT ck_transaccion_billetera_origen_tipo CHECK (origen_tipo IN ('AJUSTE', 'COBERTURA_INCUMPLIMIENTO', 'DEVENGO_COMISION', 'ENTREGA_FONDO', 'OBLIGACION_APORTE', 'ORDEN_RECARGA', 'ORDEN_RETIRO', 'TRANSFERENCIA_P2P')),
-  CONSTRAINT ck_transaccion_billetera_canal CHECK (canal IN ('AGENTE', 'API', 'APP', 'BATCH', 'WEB'))
+  CONSTRAINT ck_transaccion_billetera_canal CHECK (canal IN ('API', 'APP', 'BATCH', 'WEB'))
 );
 
 COMMENT ON TABLE nucleo_financiero.transaccion_billetera IS 'Módulo 10 — Billetera, Custodia y Dinero Electrónico. [append-only] El saldo no se guarda: se deriva, y todos los días cuadra contra el banco';

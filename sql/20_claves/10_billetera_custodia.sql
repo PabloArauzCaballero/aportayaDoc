@@ -3,14 +3,6 @@
 -- Se aplican después de crear todas las tablas: el modelo tiene
 -- referencias circulares entre módulos.
 
-ALTER TABLE nucleo_financiero.arqueo_punto_atencion
-  ADD CONSTRAINT fk_arqueo_punto_atencion_arqueado_por
-  FOREIGN KEY (arqueado_por) REFERENCES identidad.usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE;
-
-ALTER TABLE nucleo_financiero.arqueo_punto_atencion
-  ADD CONSTRAINT fk_arqueo_punto_atencion_punto_atencion_id
-  FOREIGN KEY (punto_atencion_id) REFERENCES nucleo_financiero.punto_atencion (id) ON DELETE RESTRICT ON UPDATE CASCADE;
-
 ALTER TABLE nucleo_financiero.bloqueo_saldo
   ADD CONSTRAINT fk_bloqueo_saldo_cuenta_billetera_id
   FOREIGN KEY (cuenta_billetera_id) REFERENCES nucleo_financiero.cuenta_billetera (id) ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -132,10 +124,6 @@ ALTER TABLE nucleo_financiero.orden_recarga
   FOREIGN KEY (proveedor_id) REFERENCES aportes.proveedor_pago (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
 ALTER TABLE nucleo_financiero.orden_recarga
-  ADD CONSTRAINT fk_orden_recarga_punto_atencion_id
-  FOREIGN KEY (punto_atencion_id) REFERENCES nucleo_financiero.punto_atencion (id) ON DELETE SET NULL ON UPDATE CASCADE;
-
-ALTER TABLE nucleo_financiero.orden_recarga
   ADD CONSTRAINT fk_orden_recarga_transaccion_id
   FOREIGN KEY (transaccion_id) REFERENCES nucleo_financiero.transaccion_billetera (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
@@ -170,10 +158,6 @@ ALTER TABLE nucleo_financiero.orden_retiro
 ALTER TABLE nucleo_financiero.politica_billetera
   ADD CONSTRAINT fk_politica_billetera_aprobada_por
   FOREIGN KEY (aprobada_por) REFERENCES identidad.usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
-
-ALTER TABLE nucleo_financiero.punto_atencion
-  ADD CONSTRAINT fk_punto_atencion_responsable_usuario_id
-  FOREIGN KEY (responsable_usuario_id) REFERENCES identidad.usuario (id) ON DELETE SET NULL ON UPDATE CASCADE;
 
 ALTER TABLE nucleo_financiero.regla_antifraude
   ADD CONSTRAINT fk_regla_antifraude_aprobada_por

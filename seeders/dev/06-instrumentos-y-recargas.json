@@ -32,45 +32,6 @@
       ]
     },
     {
-      "tabla": "punto_atencion",
-      "conflicto": [
-        "codigo"
-      ],
-      "comentario": "Un corresponsal habilitado con límite diario de efectivo: lo que permite ejercitar el arqueo y el tope de efectivo por punto.",
-      "filas": [
-        {
-          "codigo": "PA-SCZ-001",
-          "tipo": "AGENTE_CORRESPONSAL",
-          "razon_social": "Comercial El Cristo S.R.L.",
-          "nit": "1023456789",
-          "departamento": "SANTA CRUZ",
-          "municipio": "Santa Cruz de la Sierra",
-          "direccion": "Av. Cañoto esq. Ballivián 123",
-          "responsable_usuario_id": null,
-          "limite_efectivo_diario": 20000.0,
-          "estado": "HABILITADO",
-          "habilitado_desde": {
-            "$fecha": "-90 days"
-          }
-        },
-        {
-          "codigo": "PA-LPZ-001",
-          "tipo": "AGENCIA_PROPIA",
-          "razon_social": "AportaYa S.A. — Agencia Central",
-          "nit": "1099887766",
-          "departamento": "LA PAZ",
-          "municipio": "La Paz",
-          "direccion": "Calle Potosí 1120, piso 3",
-          "responsable_usuario_id": null,
-          "limite_efectivo_diario": 50000.0,
-          "estado": "HABILITADO",
-          "habilitado_desde": {
-            "$fecha": "-120 days"
-          }
-        }
-      ]
-    },
-    {
       "tabla": "instrumento_fondeo",
       "conflicto": [],
       "comentario": "Instrumentos verificados y con titular coincidente. ck_instrumento_sin_pan impide guardar el número completo: solo enmascarado y hash.",
@@ -152,8 +113,8 @@
             "$ref": "usuario",
             "codigo_publico": "USR000004"
           },
-          "tipo": "EFECTIVO",
-          "entidad_financiera": "AGENTE CORRESPONSAL DEMO",
+          "tipo": "CUENTA_BANCARIA",
+          "entidad_financiera": "BANCO UNION S.A.",
           "token_proveedor": null,
           "hash_identificador": {
             "$sql": "encode(digest('demo-instrumento-04', 'sha256'), 'hex')"
@@ -430,7 +391,6 @@
             "$ref": "proveedor_pago",
             "codigo": "QR_INTEROP"
           },
-          "punto_atencion_id": null,
           "pago_id": null,
           "transaccion_id": null,
           "monto_bruto": 1200.0,
@@ -462,7 +422,6 @@
             "$ref": "proveedor_pago",
             "codigo": "QR_INTEROP"
           },
-          "punto_atencion_id": null,
           "pago_id": null,
           "transaccion_id": null,
           "monto_bruto": 1200.0,
@@ -494,7 +453,6 @@
             "$ref": "proveedor_pago",
             "codigo": "QR_INTEROP"
           },
-          "punto_atencion_id": null,
           "pago_id": null,
           "transaccion_id": null,
           "monto_bruto": 1200.0,
@@ -524,11 +482,7 @@
           },
           "proveedor_id": {
             "$ref": "proveedor_pago",
-            "codigo": "AGENTE_EFECTIVO"
-          },
-          "punto_atencion_id": {
-            "$ref": "punto_atencion",
-            "codigo": "PA-SCZ-001"
+            "codigo": "QR_INTEROP"
           },
           "pago_id": null,
           "transaccion_id": null,
@@ -537,7 +491,7 @@
           "monto_acreditado": 600.0,
           "moneda": "BOB",
           "estado": "ACREDITADA",
-          "referencia_externa": "QR-000004-INI",
+          "referencia_externa": "QR-DEMO-04",
           "clave_idempotencia": "demo-recarga-04",
           "solicitada_en": {
             "$sql": "now() - interval '44 days'"
@@ -561,7 +515,6 @@
             "$ref": "proveedor_pago",
             "codigo": "QR_INTEROP"
           },
-          "punto_atencion_id": null,
           "pago_id": null,
           "transaccion_id": null,
           "monto_bruto": 2000.0,
@@ -593,7 +546,6 @@
             "$ref": "proveedor_pago",
             "codigo": "QR_INTEROP"
           },
-          "punto_atencion_id": null,
           "pago_id": null,
           "transaccion_id": null,
           "monto_bruto": 1200.0,

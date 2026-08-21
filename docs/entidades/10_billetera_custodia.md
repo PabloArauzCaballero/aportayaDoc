@@ -310,21 +310,33 @@ uno hecho por QR.
 
 ---
 
-### `PuntoAtencion` / `punto_atencion` y `ArqueoPuntoAtencion` / `arqueo_punto_atencion`
+### ~~`PuntoAtencion` / `ArqueoPuntoAtencion`~~ — retiradas del modelo
 
-**Qué son.** La red física —agencias, agentes corresponsales, cajeros— y su cuadre
-de caja diario.
+> [!danger] Retiradas por [[ADR-039 Sin efectivo · la plataforma no opera dinero físico]] · 20 de agosto de 2026
+> La plataforma **no opera dinero en efectivo**. Estas dos tablas ya no existen, y
+> [[CU-57 Operar un punto de atención y arquear el efectivo]] quedó obsoleto con su número
+> reservado. La sección se conserva **porque contiene el argumento en contra**, y ese argumento
+> sigue siendo válido.
 
-**Para qué sirven (negocio).** En Bolivia una parte grande del público carga y
-retira en efectivo. Sin red física, la billetera solo sirve a quien ya está
-bancarizado, que es justamente quien menos necesita el pasanaku digital.
+**Qué eran.** La red física —agencias, agentes corresponsales, cajeros— y su cuadre de caja
+diario.
 
-El arqueo existe porque **el efectivo se pierde**. Comparar saldo teórico contra
-saldo contado todos los días, por punto, es lo que convierte una diferencia en un
-hallazgo del día en vez de en un faltante de fin de mes que nadie puede explicar.
+**El argumento que sostenían, y que la decisión acepta perder.** En Bolivia una parte grande del
+público carga y retira en efectivo. Sin red física, **la billetera solo sirve a quien ya está
+bancarizado, que es justamente quien menos necesita el pasanaku digital.** Eso no dejó de ser
+cierto porque se haya tomado la decisión contraria: es el costo que
+[[ADR-039 Sin efectivo · la plataforma no opera dinero físico]] declara explícitamente en sus
+consecuencias.
 
-**A nivel de sistema.** `UNIQUE (punto_atencion_id, fecha)`. Un punto con arqueo
-descuadrado no puede operar al día siguiente hasta que se resuelva.
+**Lo que se puso del otro lado de la balanza.** La coherencia de la propuesta de valor —evitar
+complicaciones—, un alcance de licencia más chico ante ASFI, y sacarse de encima el umbral
+PCC-01 por efectivo, el arqueo, la custodia física y el faltante de caja como evento de riesgo.
+La compensación es la **interoperabilidad del QR**, que el reglamento del BCB (RD 079/2022)
+exige para todo el sistema financiero nacional: cualquiera con una cuenta en cualquier banco
+puede fondear.
+
+**Si el efectivo vuelve**, este texto y `CU-57` son el punto de partida: no hay que reconstruir
+el razonamiento, solo revertir la decisión con otro ADR y una migración sobre tablas vacías.
 
 ---
 

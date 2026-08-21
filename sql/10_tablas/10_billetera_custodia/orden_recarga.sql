@@ -7,7 +7,6 @@ CREATE TABLE IF NOT EXISTS nucleo_financiero.orden_recarga (
   cuenta_billetera_id                UUID NOT NULL,
   instrumento_fondeo_id              UUID,
   proveedor_id                       UUID,
-  punto_atencion_id                  UUID,
   pago_id                            UUID,
   transaccion_id                     UUID,
   monto_bruto                        NUMERIC(16,2) DEFAULT 0 NOT NULL,
@@ -30,7 +29,6 @@ COMMENT ON COLUMN nucleo_financiero.orden_recarga.id IS 'PK';
 COMMENT ON COLUMN nucleo_financiero.orden_recarga.cuenta_billetera_id IS 'FK, IDX';
 COMMENT ON COLUMN nucleo_financiero.orden_recarga.instrumento_fondeo_id IS 'FK, NULL';
 COMMENT ON COLUMN nucleo_financiero.orden_recarga.proveedor_id IS 'FK, NULL, M3';
-COMMENT ON COLUMN nucleo_financiero.orden_recarga.punto_atencion_id IS 'FK, NULL';
 COMMENT ON COLUMN nucleo_financiero.orden_recarga.pago_id IS 'FK, NULL, M3';
 COMMENT ON COLUMN nucleo_financiero.orden_recarga.transaccion_id IS 'FK, NULL';
 COMMENT ON COLUMN nucleo_financiero.orden_recarga.monto_bruto IS 'CK: > 0';
