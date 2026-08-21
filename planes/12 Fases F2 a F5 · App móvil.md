@@ -175,6 +175,11 @@ acá.**
 - [ ] Lista de movimientos virtualizada y paginada, probada con 5 000 filas en gama baja
 - [ ] Movimientos con cabecera de período y **un saldo por día**, no uno por línea: en
       una lista de celular el saldo corrido en cada fila es ruido, no información
+- [ ] **Ninguna barra de filtros se desliza en horizontal**: los chips se acomodan en
+      varias líneas y se ve todo lo que hay. Un carrusel de filtros esconde opciones
+      detrás de un gesto que nadie descubre
+- [ ] Cuando hay dos ejes de filtro seguidos, cada uno lleva su rótulo (*Grupo*,
+      *Estado*): ocho pastillas en fila sin rótulo son ocho preguntas
 - [ ] La portada abre contestando tres cosas sin desplazar: cuánto tengo, qué tengo
       que hacer hoy y cómo van mis grupos
 - [ ] *Aportes pendientes* filtra por grupo y por fecha, y muestra el **recargo por

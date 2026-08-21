@@ -473,8 +473,12 @@ button.tarj:hover{border-color:var(--brand);box-shadow:var(--sh-2);transform:tra
 .resmes__l svg{width:13px;height:13px}
 .resmes__v{font-family:var(--font-d);font-size:17px;font-weight:600;margin-top:3px;letter-spacing:-.01em}
 .filtros{display:flex;gap:6px;overflow-x:auto;padding:2px 0 6px;scrollbar-width:none}
-.filtros::-webkit-scrollbar{display:none}
-.filtros{display:flex;gap:7px;overflow-x:auto;padding:2px 0 8px;scrollbar-width:none}
+.filtros{display:flex;flex-wrap:wrap;gap:7px;padding:2px 0 var(--s3)}
+/* Cuando hay dos ejes de filtro seguidos, cada uno dice por qué filtra: ocho
+   pastillas en fila sin rótulo son ocho preguntas. */
+.filtros__l{display:block;font-size:9.5px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--text-3);margin:0 0 6px 3px}
+.filtros--con-l{padding-bottom:var(--s2)}
 .filtro{
   font-family:var(--font-b);font-size:12.5px;font-weight:600;white-space:nowrap;cursor:pointer;
   padding:0 14px;height:34px;border-radius:var(--r-pill);
@@ -487,7 +491,7 @@ button.tarj:hover{border-color:var(--brand);box-shadow:var(--sh-2);transform:tra
   border-color:color-mix(in srgb,var(--brand) 45%,transparent);
   color:var(--brand-texto);font-weight:700;
 }
-.rapidos{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:var(--s4) 0 0}
+.rapidos{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s2);margin:var(--s4) 0 0}
 .rapido{
   display:flex;flex-direction:column;align-items:center;gap:6px;padding:11px 4px;
   background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);
@@ -1554,9 +1558,8 @@ inicio:{ruta:'billetera/inicio', titulo:'', tab:'inicio', render(){
 
     + '<div class="rapidos">'
     + '<button class="rapido" data-ir="recargar"><span>' + IC.entra + '</span>Recargar</button>'
-    + '<button class="rapido" data-ir="retirar"><span>' + IC.banco + '</span>Retirar</button>'
-    + '<button class="rapido" data-ir="recargar"><span>' + IC.qr + '</span>Cobrar QR</button>'
-    + '<button class="rapido" data-ir="aportes"><span>' + IC.aporte + '</span>Aportar</button></div>'
+    + '<button class="rapido" data-ir="aportes"><span>' + IC.aporte + '</span>Aportar</button>'
+    + '<button class="rapido" data-ir="retirar"><span>' + IC.banco + '</span>Retirar</button></div>'
 
     + '<div id="i-dest"></div>'
 
@@ -1976,8 +1979,12 @@ aportes:{ruta:'aportes/mis-obligaciones', titulo:'Mis aportes', volver:'inicio',
       .sort((a,b) => a.dias - b.dias);
     const debe = lista.filter(o => o.est !== 'PAGADA').reduce((a,o) => a + o.monto + o.recargo, 0);
     document.getElementById('ap-f').innerHTML =
-      '<div class="filtros">' + gruposF.map(x => '<button class="filtro" data-g="' + x.k + '" aria-pressed="' + (x.k===fg) + '">' + x.n + '</button>').join('') + '</div>'
-      + '<div class="filtros" style="margin-bottom:var(--s3)">' + fechasF.map(x => '<button class="filtro" data-fe="' + x.k + '" aria-pressed="' + (x.k===ff) + '">' + x.n + '</button>').join('') + '</div>';
+      '<span class="filtros__l">Grupo</span>'
+      + '<div class="filtros filtros--con-l">' + gruposF.map(x =>
+          '<button class="filtro" data-g="' + x.k + '" aria-pressed="' + (x.k===fg) + '">' + x.n + '</button>').join('') + '</div>'
+      + '<span class="filtros__l">Estado</span>'
+      + '<div class="filtros">' + fechasF.map(x =>
+          '<button class="filtro" data-fe="' + x.k + '" aria-pressed="' + (x.k===ff) + '">' + x.n + '</button>').join('') + '</div>';
     document.getElementById('ap-r').innerHTML = debe
       ? '<div class="resmes" style="grid-template-columns:1fr 1fr">'
         + '<div><div class="resmes__l">' + IC.calmora + 'Total a pagar</div><div class="resmes__v">' + bs(debe) + '</div></div>'
