@@ -251,6 +251,7 @@ select,.btn-banco{
   cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:var(--s2);
   min-height:44px;transition:filter .15s,background .15s;width:100%;
 }
+.btn svg{width:16px;height:16px;flex:none}
 .btn:disabled{opacity:.5;cursor:not-allowed}
 .btn:not(:disabled):hover{filter:brightness(.94)}
 .btn--acc{background:linear-gradient(160deg,var(--o400),var(--accent));color:var(--accent-ink);
@@ -496,6 +497,102 @@ button.tarj:hover{border-color:var(--brand);box-shadow:var(--sh-2);transform:tra
   background:color-mix(in srgb,var(--err) 12%,transparent);
   border-color:color-mix(in srgb,var(--err) 45%,transparent);color:var(--err-texto);
 }
+
+/* ── Calendario de aportes ────────────────────────────────────────────────
+   La lista contesta «qué pago ahora». El calendario contesta la otra pregunta,
+   la que hace una persona cuando la plata está justa: «cómo vengo». Por eso acá
+   sí aparece lo pagado —en verde—, y por eso la unidad es el mes: el pasanaku
+   cobra por mes, y el compromiso se entiende viendo el mes entero de una vez. */
+.selvista{
+  display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--field);
+  border:1px solid var(--border);border-radius:var(--r-pill);padding:3px;margin-bottom:var(--s3);
+}
+.selvista button{
+  font-family:var(--font-b);font-size:12.5px;font-weight:600;color:var(--text-2);
+  background:transparent;border:0;border-radius:var(--r-pill);min-height:34px;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+}
+.selvista button svg{width:15px;height:15px;flex:none}
+.selvista button[aria-pressed="true"]{
+  background:var(--surface);color:var(--brand-texto);font-weight:700;box-shadow:0 1px 3px rgba(16,35,26,.10);
+}
+.calnav{display:flex;align-items:center;gap:var(--s2);margin-bottom:var(--s3)}
+.calnav__m{flex:1;text-align:center;font-family:var(--font-d);font-size:15px;font-weight:600;
+  color:var(--text);letter-spacing:-.01em}
+.calnav__b{width:34px;height:34px;flex:none;border-radius:50%;border:1px solid var(--border);
+  background:var(--surface);color:var(--text-2);cursor:pointer;display:grid;place-items:center}
+.calnav__b svg{width:16px;height:16px}
+.calnav__b[disabled]{opacity:.32;cursor:default}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal__dow{font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--text-3);text-align:center;padding-bottom:4px}
+.cal__d{
+  aspect-ratio:1;border-radius:var(--r-sm);border:1.6px solid transparent;background:transparent;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:0;
+  font-family:var(--font-d);font-size:12.5px;font-weight:600;color:var(--text-3);
+}
+.cal__d[data-vacia="1"]{visibility:hidden}
+.cal__d[data-con="1"]{cursor:pointer}
+/* Tres colores y un gris, que son cuatro estados de verdad: lo que pagué, lo
+   que debo pagar, lo que se me pasó y lo que todavía no se abre. */
+.cal__d[data-e="ok"]  {background:var(--ok-bg);   color:var(--ok-texto)}
+.cal__d[data-e="warn"]{background:var(--warn-bg); color:var(--aviso-texto)}
+.cal__d[data-e="err"] {background:var(--err-bg);  color:var(--err-texto)}
+.cal__d[data-e="fut"] {background:var(--surface-2);color:var(--text-3);
+  border-style:dashed;border-color:var(--field-border)}
+.cal__d[data-hoy="1"]{border-color:var(--brand)}
+.cal__d[aria-pressed="true"]{outline:2px solid var(--text);outline-offset:1px}
+.cal__p{display:flex;gap:2px;height:5px;align-items:center}
+.cal__p i{width:5px;height:5px;border-radius:50%;display:block}
+.cal__p i[data-e="ok"]  {background:var(--ok)}
+.cal__p i[data-e="warn"]{background:var(--warn)}
+.cal__p i[data-e="err"] {background:var(--err)}
+.cal__p i[data-e="fut"] {background:var(--text-3);opacity:.5}
+.calley{display:flex;flex-wrap:wrap;gap:6px var(--s4);margin:var(--s4) 0 var(--s2);
+  font-size:11.5px;color:var(--text-3)}
+.calley span{display:inline-flex;align-items:center;gap:6px}
+.calley i{width:9px;height:9px;border-radius:3px;display:block;flex:none}
+.calnota{font-size:11.5px;color:var(--text-3);margin:0 0 var(--s3);line-height:1.45}
+.caldet{display:flex;align-items:baseline;justify-content:space-between;gap:var(--s3);margin:var(--s4) 0 var(--s2)}
+.caldet__t{font-family:var(--font-d);font-size:13px;font-weight:600;color:var(--text)}
+.caldet__b{font-family:var(--font-b);font-size:12px;font-weight:600;color:var(--brand-texto);
+  background:none;border:0;cursor:pointer;padding:0;white-space:nowrap}
+
+
+/* ── Tarjeta de grupo con su rol y sus acciones ───────────────────────────
+   La misma persona organiza un grupo y participa de otro. El rol no es del
+   usuario: es del vínculo con cada grupo, y por eso se dice en cada tarjeta y
+   no una sola vez en el perfil. De ahí también que el botón de invitar aparezca
+   en unas tarjetas y en otras no.                                            */
+.tgrupo{padding:0;overflow:hidden}
+.tgrupo__abrir{
+  display:block;width:100%;text-align:left;background:none;border:0;cursor:pointer;
+  padding:var(--s4);font-family:var(--font-b);color:inherit;
+}
+.tgrupo__pie{
+  display:flex;align-items:center;justify-content:space-between;gap:var(--s3);
+  padding:9px var(--s4);border-top:1px solid var(--border);background:var(--surface-2);
+}
+.tgrupo__rol{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-3);min-width:0}
+.tgrupo__rol svg{width:14px;height:14px;flex:none}
+.tgrupo__rol[data-org="1"]{color:var(--brand-texto);font-weight:600}
+.tgrupo__pie .btn{flex:none}
+
+/* ── Invitación por QR ────────────────────────────────────────────────────
+   El QR y el código de cinco dígitos son el mismo token por dos caminos. El
+   código corto no es un adorno: se dicta por teléfono y se escribe a mano, y
+   hay gente que no puede o no sabe escanear.                                 */
+.invcod{
+  font-family:var(--mono);font-size:25px;font-weight:600;letter-spacing:.34em;
+  color:var(--text);background:var(--surface-2);border:1px dashed var(--field-border);
+  border-radius:var(--r-md);padding:12px 0 12px 12px;margin:0 0 6px;
+}
+.invurl{font-family:var(--mono);font-size:11.5px;color:var(--text-3);word-break:break-all;margin:0 0 var(--s4)}
+.camara--qr{aspect-ratio:1;background:radial-gradient(120% 90% at 50% 25%, #22402f 0%, #0C2C1D 72%)}
+.camara--qr .camara__marco{inset:15%;border-radius:16px}
+.camara--qr .camara__ok{inset:15%;border-radius:16px}
+.camara__qr{width:44%;background:#E3EAE5;padding:7px;border-radius:7px;opacity:.9}
+.camara__qr svg{width:100%;height:auto;display:block}
 
 /* Panel de bienvenida: solo lo ve quien acaba de abrir la cuenta. */
 .bienve{
@@ -1192,6 +1289,9 @@ const IC = {
   enviar:  sv('<path d="M21 3L11 13"/><path d="M21 3l-6.5 18-3.5-8-8-3.5L21 3z"/>'),
   avanzar: sv('<path d="M9.5 6l6 6-6 6"/>'),
   lupa:    sv('<circle cx="10.8" cy="10.8" r="6.3"/><path d="M15.6 15.6L20.8 20.8"/>'),
+  lista:   sv('<path d="M8.6 6.4h11.4M8.6 12h11.4M8.6 17.6h8"/><path d="M4.4 6.4h.1M4.4 12h.1M4.4 17.6h.1"/>'),
+  copiar:  sv('<rect x="8.6" y="8.6" width="11.8" height="11.8" rx="2.2"/><path d="M15.4 5.6H5.8a2.2 2.2 0 00-2.2 2.2v9.6"/>'),
+  calen:   sv('<rect x="3.4" y="5.4" width="17.2" height="15.2" rx="2.2"/><path d="M3.4 10.2h17.2M8 3.4v3.4M16 3.4v3.4"/><path d="M7.8 14h.1M12 14h.1M16.2 14h.1M7.8 17.4h.1M12 17.4h.1"/>'),
 
   /* Dinero: cada movimiento con el ícono de lo que realmente pasó */
   qr:      sv('<rect x="3.5" y="3.5" width="6.5" height="6.5" rx="1.4"/><rect x="14" y="3.5" width="6.5" height="6.5" rx="1.4"/><rect x="3.5" y="14" width="6.5" height="6.5" rx="1.4"/><path d="M14 14h3v3h-3zM20.5 14v6.5H17"/>'),
@@ -1315,6 +1415,14 @@ const INVITACION = {
       'Salir antes de terminar el ciclo exige que otra persona tome tu cupo.',
     ],
   },
+};
+
+/* La invitación por enlace: un token, dos caminos. El QR para quien puede
+   escanear y el código de cinco dígitos para quien lo recibe dictado por
+   teléfono. Vence y es de un solo uso, como cualquier token de CU-69. */
+const INVITACION_QR = {
+  codigo:'48219', token:'INV-2026-08-3391', url:'aportaya.bo/i/48219',
+  vence:'22 de agosto de 2026, 18:40', horas:48,
 };
 
 const PASOS = ['Tus datos','Celular','Anverso','Reverso','Selfie','Cotejo','Perfil','Contrato'];
@@ -2040,7 +2148,8 @@ grupos:{ruta:'pasanaku/mis-grupos', titulo:'Mis pasanakus', tab:'grupos', render
       + 'Con tu cuenta recién abierta te toca empezar por grupos de aporte bajo.</p>'
       + '<button class="btn btn--acc" data-ir="unirme" style="max-width:280px;margin:0 auto">Tengo un código</button></div>'
     : '') + D.grupos.map(g =>
-    '<button class="tarj" data-grupo="' + g.codigo + '" style="width:100%;text-align:left;cursor:pointer;margin-bottom:var(--s3);border-color:' + (g.estado==='ACTIVO'?'var(--border)':'var(--field-border)') + '">'
+    '<div class="tarj tgrupo" style="margin-bottom:var(--s3);border-color:' + (g.estado==='ACTIVO'?'var(--border)':'var(--field-border)') + '">'
+    + '<button class="tgrupo__abrir" data-grupo="' + g.codigo + '">'
     + '<div style="display:flex;justify-content:space-between;align-items:start;gap:var(--s3)">'
     + '<div style="min-width:0"><div style="font-family:var(--font-d);font-weight:600;font-size:14.5px;color:var(--text)">' + g.nombre + '</div>'
     + '<div style="font-family:var(--mono);font-size:11px;color:var(--text-3)">' + g.codigo + '</div></div>'
@@ -2052,10 +2161,21 @@ grupos:{ruta:'pasanaku/mis-grupos', titulo:'Mis pasanakus', tab:'grupos', render
     + (g.estado==='ACTIVO' ? '<div style="margin-top:var(--s3);height:6px;border-radius:var(--r-pill);background:var(--surface-2);overflow:hidden">'
       + '<span style="display:block;height:100%;width:' + Math.round((g.miTurno-1)/g.cupos*100) + '%;background:var(--brand);border-radius:var(--r-pill)"></span></div>'
       + '<div style="font-size:11px;color:var(--text-3);margin-top:4px">' + (g.miTurno-1) + ' turnos entregados · te toca en el ' + g.miTurno + '</div>' : '')
-    + '</button>').join('')
+    + '</button>'
+    /* El pie dice el rol en este grupo, y solo quien lo organiza puede emitir
+       una invitación abierta. La misma persona ve el botón en una tarjeta y no
+       en la de al lado: eso es exactamente lo que se quiere mostrar. */
+    + '<div class="tgrupo__pie">'
+    + '<span class="tgrupo__rol"' + (g.soyOrg ? ' data-org="1"' : '') + '>'
+    + (g.soyOrg ? IC.certif + 'Organizás este grupo' : IC.perfilic + 'Organiza ' + g.org) + '</span>'
+    + (g.soyOrg && g.cupos - g.ocupados > 0
+        ? '<button class="btn btn--fan btn--peq" data-invitar="' + g.codigo + '">' + IC.qr + 'Invitar</button>'
+        : g.soyOrg ? '<span style="font-size:11px;color:var(--text-3)">Sin cupos libres</span>' : '')
+    + '</div></div>').join('')
     + '<button class="btn btn--fan" data-ir="unirme" style="margin-top:var(--s2)">Unirme con un código</button>';
   cablearIr();
   document.querySelectorAll('[data-grupo]').forEach(b => b.onclick = () => { D.grupoActivo = b.dataset.grupo; irM('grupo'); });
+  cablearInvitar();
 }},
 
 /* 11b ─ Detalle del grupo ───────────────────────────────────────────────── */
@@ -2077,14 +2197,34 @@ grupo:{ruta:'pasanaku/grupo/[codigo]', titulo:'Mi pasanaku', volver:'grupos', ta
     + '<div style="display:flex;gap:var(--s2);flex-wrap:wrap"><span class="chip chip--ok"><i></i>' + g.alDia + ' al día</span>'
     + (g.enMora ? '<span class="chip chip--warn"><i></i>' + g.enMora + ' en mora</span>' : '')
     + '<span class="chip chip--neu"><i></i>' + g.cupos + ' cupos</span>'
-    + '<span class="chip chip--neu"><i></i>Aporte ' + bs(g.aporte) + '</span></div></div>'
-    + '<div class="tarj"><div class="seccion__t" style="margin:0 0 var(--s2)"><h3>Orden de turnos</h3><span class="chip chip--info"><i></i>Sorteado</span></div>'
-    + '<p style="font-size:12px;color:var(--text-3);margin:0 0 var(--s3)">Tocá un turno para ver a quién le toca.</p>'
-    + '<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:var(--s2)">' + turnos + '</div>'
-    + '<div id="g-turno"></div>'
-    + '<p style="font-size:12.5px;color:var(--text-2);margin:var(--s4) 0 0">Te toca en el <b>turno ' + g.miTurno + '</b>. El sorteo se hizo con semilla pública: cualquiera puede reproducirlo y llegar al mismo orden.</p>'
-    + '<button class="btn btn--fan" data-ir="sorteo" style="margin-top:var(--s3)">Ver y verificar el sorteo</button></div>';
+    + '<span class="chip chip--neu"><i></i>Aporte ' + bs(g.aporte) + '</span>'
+    + '<span class="chip chip--' + (g.soyOrg ? 'info' : 'neu') + '"><i></i>'
+    + (g.soyOrg ? 'Lo organizás vos' : 'Organiza ' + g.org) + '</span></div></div>'
+    /* Un grupo en formación no tiene orden de turnos, y decir «te toca en el
+       turno null» con el botón de verificar el sorteo al lado es prometer un
+       sorteo que todavía no ocurrió. Lo que falta acá no son turnos: son
+       personas, y por eso lo que se ofrece es invitar. */
+    + (g.estado === 'EN_FORMACION'
+      ? '<div class="tarj"><div class="seccion__t" style="margin:0 0 var(--s2)"><h3>Orden de turnos</h3>'
+        + '<span class="chip chip--neu"><i></i>Todavía no se sortea</span></div>'
+        + '<p style="font-size:12.5px;color:var(--text-2);margin:0 0 var(--s3);line-height:1.5">'
+        + 'El orden se sortea <b>cuando se llenen los ' + g.cupos + ' cupos</b>, con semilla pública y evento guardado. '
+        + 'Repartir turnos con el grupo a medias sería darle lugar en la fila a gente que todavía puede no entrar.</p>'
+        + '<div class="resmes" style="grid-template-columns:1fr 1fr">'
+        + '<div><div class="resmes__l">' + IC.grupo + 'Cupos tomados</div><div class="resmes__v">' + g.ocupados + ' de ' + g.cupos + '</div></div>'
+        + '<div><div class="resmes__l">' + IC.reloj + 'Faltan</div><div class="resmes__v">' + (g.cupos - g.ocupados) + '</div></div></div>'
+        + (g.soyOrg && g.cupos - g.ocupados > 0
+            ? '<button class="btn btn--acc" data-invitar="' + g.codigo + '">' + IC.qr + 'Generar QR de invitación</button>'
+            : '<p style="font-size:12px;color:var(--text-3);margin:0">Quien organiza el grupo es <b>' + g.org + '</b>: la invitación la genera ella.</p>')
+        + '</div>'
+      : '<div class="tarj"><div class="seccion__t" style="margin:0 0 var(--s2)"><h3>Orden de turnos</h3><span class="chip chip--info"><i></i>Sorteado</span></div>'
+        + '<p style="font-size:12px;color:var(--text-3);margin:0 0 var(--s3)">Tocá un turno para ver a quién le toca.</p>'
+        + '<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:var(--s2)">' + turnos + '</div>'
+        + '<div id="g-turno"></div>'
+        + '<p style="font-size:12.5px;color:var(--text-2);margin:var(--s4) 0 0">Te toca en el <b>turno ' + g.miTurno + '</b>. El sorteo se hizo con semilla pública: cualquiera puede reproducirlo y llegar al mismo orden.</p>'
+        + '<button class="btn btn--fan" data-ir="sorteo" style="margin-top:var(--s3)">Ver y verificar el sorteo</button></div>');
   cablearIr();
+  cablearInvitar();
   document.querySelectorAll('[data-turno]').forEach(b => b.onclick = async () => {
     const n = +b.dataset.turno, per = g.turnos[n-1], mio = n === g.miTurno;
     await llamar('GET','/grupos/' + g.codigo + '/turnos/' + n, {nota:'quién ocupa el turno, su estado de aportes y la fecha de entrega'});
@@ -2145,49 +2285,191 @@ perfil:{ruta:'pasanaku/reputacion', titulo:'Mi perfil', tab:'perfil', render(){
 }},
 
 
+/* 12a ─ La invitación que solo emite quien organiza ──────────────────────────
+   ──────────────────────────────────────────────────────────────────────────
+   CU-69 deja invitar a un participante o al organizador, pero eso vale para la
+   invitación dirigida a un teléfono conocido. Un enlace abierto no va dirigido
+   a nadie: entra cualquiera que lo reciba y lo reenvíe. Ese canal lo emite solo
+   quien responde por el grupo —quien lo organiza—, y a cualquier otro se le
+   contesta AP-CU69-07. Es la misma razón por la que el token queda ligado al
+   emisor: toda incorporación por invitación tiene un responsable con nombre.
+   ═══════════════════════════════════════════════════════════════════════════ */
+invitar:{ruta:'pasanaku/grupo/[codigo]/invitacion', titulo:'Invitar al grupo', volver:'grupos', tab:'grupos', render(){
+  return '<div id="inv">' + esq('100%','88px','border-radius:var(--r-lg);margin-bottom:var(--s3)')
+    + esq('100%','300px','border-radius:var(--r-lg)') + '</div>';
+}, async montar(){
+  const g = (D.grupos || []).find(x => x.codigo === D.grupoActivo) || (D.grupos || [])[0];
+  if (!g) return irM('grupos');
+  const caja = document.getElementById('inv');
+  const libres = g.cupos - g.ocupados;
+
+  /* No se llama al servidor para que devuelva un permiso que el cliente ya
+     sabe: la tarjeta no ofrece el botón. La pantalla existe igual para poder
+     mostrar la regla, que es distinto de contarla. */
+  if (!g.soyOrg) {
+    caja.innerHTML = '<div class="aviso aviso--err">' + IC.escudo
+      + '<span><b>El enlace de invitación lo crea quien organiza el grupo.</b> Un enlace abierto lo puede usar '
+      + 'cualquiera que lo reciba, así que lo emite quien responde por el grupo. Pedile a <b>' + g.org
+      + '</b> que genere la invitación, o invitá a alguien por su teléfono desde el grupo.<br><code>AP-CU69-07</code></span></div>';
+    return;
+  }
+
+  const r = await llamar('POST','/grupos/' + g.codigo + '/invitaciones', {efecto:true, idem:idem(), lento:true,
+    nota:'CU-69 canal=ENLACE · token de un solo uso, con vencimiento y ligado al emisor',
+    rechazo:{estado:409, codigo:'AP-CU69-01', texto:'SIN_CUPOS_LIBRES · el grupo está completo'}});
+
+  if (!r.ok || libres <= 0) {
+    caja.innerHTML = '<div class="aviso aviso--err">' + IC.triangulo
+      + '<span><b>No hay cupos libres.</b> Los ' + g.cupos + ' cupos están tomados, así que no se emite el enlace: '
+      + 'una invitación a un grupo lleno solo le hace perder el tiempo a quien la recibe.<br><code>AP-CU69-01</code></span></div>';
+    return;
+  }
+
+  const inv = INVITACION_QR;
+  const regla = t => '<div style="display:flex;gap:var(--s3);padding:7px 0;font-size:12.5px;color:var(--text-2);line-height:1.45">'
+    + '<span style="width:15px;height:15px;flex:none;color:var(--brand-texto);margin-top:1px;display:block">' + IC.ok + '</span>'
+    + '<span>' + t + '</span></div>';
+
+  caja.innerHTML =
+    '<div class="tarj" style="margin-bottom:var(--s3)">'
+    + '<div style="font-family:var(--font-d);font-weight:600;font-size:15px">' + g.nombre + '</div>'
+    + '<div style="font-family:var(--mono);font-size:11.5px;color:var(--text-3);margin-bottom:var(--s3)">' + g.codigo + '</div>'
+    + '<div style="display:flex;gap:var(--s2);flex-wrap:wrap">'
+    + '<span class="chip chip--info"><i></i>Quedan ' + libres + (libres === 1 ? ' cupo' : ' cupos') + '</span>'
+    + '<span class="chip chip--neu"><i></i>Un solo uso</span>'
+    + '<span class="chip chip--warn"><i></i>Vence en ' + inv.horas + ' horas</span></div></div>'
+
+    + '<div class="tarj" style="text-align:center">'
+    + '<div class="qr-caja">' + dibujoQR(semillaTxt(inv.token), 'Código QR de invitación al grupo') + '</div>'
+    + '<p style="font-size:12.5px;color:var(--text-2);margin:0 0 var(--s3);line-height:1.5">'
+    + 'Que lo escaneen desde la app. <b>Si no pueden escanear</b>, alcanza con que escriban este código:</p>'
+    + '<div class="invcod">' + inv.codigo + '</div>'
+    + '<p class="invurl">' + inv.url + '</p>'
+    + '<button class="btn btn--acc" id="inv-wa">' + IC.enviar + 'Compartir por WhatsApp</button>'
+    + '<button class="btn btn--fan" id="inv-cop" style="margin-top:var(--s2)">' + IC.copiar + 'Copiar el enlace</button>'
+    + '<p style="font-size:11px;color:var(--text-3);margin:var(--s3) 0 0;font-family:var(--mono)">' + inv.token + ' · vence el ' + inv.vence + '</p></div>'
+
+    + '<div class="tarj" style="margin-top:var(--s3)">'
+    + '<div class="seccion__t" style="margin:0 0 var(--s2)"><h3>Qué ve quien lo recibe</h3></div>'
+    + regla('Quién invita y a qué grupo, con el aporte y la periodicidad. <b>Nunca los nombres ni los teléfonos</b> de los demás: quien invita ya conoce al invitado, el sistema no tiene por qué presentar a nadie más.')
+    + regla('El <b>compromiso completo del ciclo en números</b> antes de confirmar: cuánto aporta en total, cuánto cobra y con qué comisión.')
+    + regla('El reglamento entero del grupo, con la aclaración de que lo aprobó el grupo por votación.')
+    + '</div>'
+
+    + '<div class="tarj" style="margin-top:var(--s3)">'
+    + '<div class="seccion__t" style="margin:0 0 var(--s2)"><h3>Las reglas del enlace</h3></div>'
+    + regla('Es de <b>un solo uso</b>: se marca canjeado en la misma transacción que ocupa el cupo. No existe la ventana donde dos personas entran con la misma invitación.')
+    + regla('<b>Vence el ' + inv.vence + '.</b> Vencido no se reactiva: se genera otro (<code>AP-CU69-05</code>).')
+    + regla('Si quien lo escanea <b>ya está en el grupo</b>, se le dice y el token no se consume (<code>AP-CU69-03</code>).')
+    + regla('Si el último cupo se ocupó mientras miraba, la invitación <b>queda viva</b> y la persona pasa a lista de espera (<code>AP-CU68-04</code>).')
+    + regla('El emisor queda registrado en el token: <b>' + D.usuario.nombre + '</b>. Toda incorporación por invitación tiene un responsable.')
+    + '</div>'
+
+    + '<button class="btn btn--fan" id="inv-anular" style="margin-top:var(--s3);color:var(--err-texto);border-color:var(--err)">Anular esta invitación</button>'
+    + '<p style="font-size:11.5px;color:var(--text-3);margin:var(--s2) 0 0;line-height:1.45">'
+    + 'Anularla mata el código al instante. Si ya se lo pasaste a alguien, avisale: al escanearlo le va a decir que la invitación no sirve.</p>';
+
+  document.getElementById('inv-wa').onclick = () => avisar('Invitación lista para compartir · código ' + inv.codigo);
+  document.getElementById('inv-cop').onclick = () => avisar('Enlace copiado · ' + inv.url);
+  document.getElementById('inv-anular').onclick = async e => {
+    const b = e.currentTarget; b.disabled = true; b.innerHTML = '<span class="spin"></span>Anulando…';
+    await llamar('DELETE','/grupos/' + g.codigo + '/invitaciones/' + inv.token, {efecto:true, idem:idem(),
+      nota:'CU-69 · el token se revoca y no se reactiva; quien ya lo tenga recibe AP-CU69-05'});
+    avisar('Invitación anulada · el código ' + inv.codigo + ' ya no sirve');
+    irM('grupos');
+  };
+}},
+
 /* 12b ─ Entrar a un grupo con un código ─────────────────────────────────── */
 unirme:{ruta:'pasanaku/canjear-invitacion', titulo:'Unirme a un pasanaku', volver:'grupos', tab:'grupos', render(){
-  return '<p style="color:var(--text-2);font-size:13.5px;margin:0 0 var(--s4)">'
-    + 'Escribí el código que te pasó quien te invitó. Antes de entrar vas a ver a qué te estás comprometiendo.</p>'
-    + '<div class="campo"><label class="campo__l" for="u-cod">Código de invitación</label>'
-    + '<input class="campo__i" id="u-cod" inputmode="numeric" maxlength="5" placeholder="12345" '
-    + 'style="text-align:center;letter-spacing:.55em;font-family:var(--font-d);font-size:24px;font-weight:600;padding:14px 0"></div>'
-    + '<div class="aviso aviso--info">' + IC.escudo
-    + '<span>En esta maqueta el código es <b style="font-family:var(--mono);letter-spacing:.1em">12345</b>. '
-    + 'Cada invitación es de <b>un solo uso</b> y vence: un código que circula por ahí no sirve para entrar dos veces.</span></div>'
-    + '<div id="u-err"></div>'
-    + '<button class="btn btn--acc" id="u-btn">Buscar el grupo</button>'
-    + '<div id="u-res"></div>';
+  return '<p style="color:var(--text-2);font-size:13.5px;margin:0 0 var(--s3)">'
+    + 'Escaneá el QR que te pasaron, o escribí el código. Antes de entrar vas a ver a qué te estás comprometiendo.</p>'
+    /* El QR y el código son el mismo token por dos caminos, y los dos tienen que
+       estar: no todo el mundo puede escanear, y un código de cinco dígitos se
+       dicta por teléfono y se escribe a mano. */
+    + '<div class="selvista" role="group" aria-label="Cómo te llegó la invitación">'
+    + '<button data-modo="qr">' + IC.qr + 'Escanear QR</button>'
+    + '<button data-modo="cod">' + IC.doc + 'Con el código</button></div>'
+    + '<div id="u-modo"></div><div id="u-err"></div><div id="u-res"></div>';
 }, montar(){
-  const inp = document.getElementById('u-cod');
-  inp.oninput = () => { inp.value = inp.value.replace(/\D/g,'').slice(0,5); };
+  let modo = 'qr';
+  const ETQ_SCAN = IC.qr + 'Simular la lectura del QR';
+  const ETQ_COD  = 'Buscar el grupo';
 
-  document.getElementById('u-btn').onclick = async e => {
-    const b = e.currentTarget, cod = inp.value.trim();
+  /* El canje es el mismo venga de la cámara o del teclado: cambia cómo llegó el
+     código, no qué se valida ni qué se muestra antes de confirmar. */
+  const canjear = async (cod, b, etiqueta) => {
     const err = document.getElementById('u-err'), res = document.getElementById('u-res');
     err.innerHTML = ''; res.innerHTML = '';
-
-    if (cod.length !== 5) {
-      err.innerHTML = '<div class="aviso aviso--warn">' + IC.triangulo
-        + '<span>El código tiene 5 dígitos. Revisá el que te pasaron.</span></div>'; return;
-    }
     b.disabled = true; b.innerHTML = '<span class="spin"></span>Buscando…';
     const r = await llamar('GET','/grupos/invitaciones/' + cod,
       {nota:'CU-69 · token de un solo uso, con vencimiento; se valida contra el emisor, no contra una lista',
-       rechazo:{estado:410, codigo:'AP-CU69-02', texto:'INVITACION_VENCIDA · el token ya fue canjeado o expiró'}});
-    b.disabled = false; b.textContent = 'Buscar el grupo';
+       rechazo:{estado:410, codigo:'AP-CU69-05', texto:'TOKEN_INVALIDO · el token ya fue canjeado o expiró'}});
+    b.disabled = false; b.innerHTML = etiqueta;
 
     if (!r.ok) {
       err.innerHTML = '<div class="aviso aviso--err">' + IC.reloj
         + '<span><b>Esa invitación ya no sirve.</b> O la usó alguien más, o pasó su fecha. '
-        + 'Pedile a quien te invitó que te genere una nueva.<br><code>AP-CU69-02</code></span></div>'; return;
+        + 'Pedile a quien te invitó que te genere una nueva.<br><code>AP-CU69-05</code></span></div>'; return;
     }
+    /* Un código que no existe se responde 404 y sin código de negocio: decir
+       «vencida» sería confirmar que alguna vez existió, y con eso se prueban
+       códigos hasta dar con uno. */
     if (cod !== INVITACION.codigo) {
       err.innerHTML = '<div class="aviso aviso--err">' + IC.escudo
         + '<span><b>No encontramos ninguna invitación con ese código.</b> No decimos si existe o no un grupo detrás: '
-        + 'así nadie puede probar códigos hasta dar con uno.<br><code>AP-CU69-01</code></span></div>'; return;
+        + 'así nadie puede probar códigos hasta dar con uno.<br><code>404 · sin código de negocio</code></span></div>'; return;
     }
+    mostrarInvitacion();
+  };
 
+  const pintarModo = () => {
+    document.querySelectorAll('[data-modo]').forEach(x => x.setAttribute('aria-pressed', x.dataset.modo === modo));
+    document.getElementById('u-err').innerHTML = '';
+    document.getElementById('u-res').innerHTML = '';
+    document.getElementById('u-modo').innerHTML = modo === 'qr'
+      ? '<div class="camara camara--qr" id="u-cam">'
+        + '<div class="camara__qr">' + dibujoQR(semillaTxt(INVITACION.grupo.codigo), 'Código QR de una invitación') + '</div>'
+        + '<div class="camara__marco"></div>'
+        + '<div class="camara__t" id="u-camt">Apuntá al código que te pasaron</div></div>'
+        + '<div class="aviso aviso--info">' + IC.escudo
+        + '<span>El QR y el código de cinco dígitos son <b>el mismo token</b>: uno se escanea y el otro se dicta por teléfono. '
+        + 'En los dos casos es de <b>un solo uso</b> y vence.</span></div>'
+        + '<button class="btn btn--acc" id="u-scan">' + ETQ_SCAN + '</button>'
+      : '<div class="campo"><label class="campo__l" for="u-cod">Código de invitación</label>'
+        + '<input class="campo__i" id="u-cod" inputmode="numeric" maxlength="5" placeholder="12345" '
+        + 'style="text-align:center;letter-spacing:.55em;font-family:var(--font-d);font-size:24px;font-weight:600;padding:14px 0"></div>'
+        + '<div class="aviso aviso--info">' + IC.escudo
+        + '<span>En esta maqueta el código es <b style="font-family:var(--mono);letter-spacing:.1em">12345</b>. '
+        + 'Cada invitación es de <b>un solo uso</b> y vence: un código que circula por ahí no sirve para entrar dos veces.</span></div>'
+        + '<button class="btn btn--acc" id="u-btn">' + ETQ_COD + '</button>';
+
+    if (modo === 'qr') {
+      const b = document.getElementById('u-scan');
+      b.onclick = async () => {
+        const cam = document.getElementById('u-cam'), t = document.getElementById('u-camt');
+        t.textContent = 'Leyendo el código…';
+        await espera(650);
+        if (!cam.querySelector('.camara__ok')) cam.insertAdjacentHTML('beforeend','<div class="camara__ok"></div>');
+        t.textContent = 'Código leído · ' + INVITACION.codigo;
+        await canjear(INVITACION.codigo, b, ETQ_SCAN);
+      };
+    } else {
+      const inp = document.getElementById('u-cod');
+      inp.oninput = () => { inp.value = inp.value.replace(/\D/g,'').slice(0,5); };
+      document.getElementById('u-btn').onclick = async e => {
+        const b = e.currentTarget, cod = inp.value.trim();
+        if (cod.length !== 5) {
+          document.getElementById('u-err').innerHTML = '<div class="aviso aviso--warn">' + IC.triangulo
+            + '<span>El código tiene 5 dígitos. Revisá el que te pasaron.</span></div>'; return;
+        }
+        await canjear(cod, b, ETQ_COD);
+      };
+    }
+  };
+
+  const mostrarInvitacion = () => {
+    const res = document.getElementById('u-res');
     const g = INVITACION.grupo;
     const totalCiclo = g.aporte * g.duracion;
     const bolsa = g.aporte * g.cupos;
@@ -2256,8 +2538,9 @@ unirme:{ruta:'pasanaku/canjear-invitacion', titulo:'Unirme a un pasanaku', volve
       D.grupos.unshift({
         codigo:g.codigo, nombre:g.nombre, estado:'EN_FORMACION',
         estadoTxt:'En formación · ' + (g.ocupados + 1) + ' de ' + g.cupos,
-        cupos:g.cupos, aporte:g.aporte, miTurno:null, periodo:'Arranca en septiembre',
-        alDia:g.ocupados + 1, enMora:0, turnos:[],
+        cupos:g.cupos, ocupados:g.ocupados + 1, aporte:g.aporte, miTurno:null,
+        periodo:'Arranca en septiembre', alDia:g.ocupados + 1, enMora:0,
+        org:INVITACION.emitida, soyOrg:0, turnos:[],
       });
       D.obligaciones.push({
         id:'OBL-2026-09-01444', g:g.codigo, gn:g.nombre, per:'Septiembre 2026',
@@ -2270,11 +2553,24 @@ unirme:{ruta:'pasanaku/canjear-invitacion', titulo:'Unirme a un pasanaku', volve
       irM('grupos');
     };
   };
+
+  document.querySelectorAll('[data-modo]').forEach(b => b.onclick = () => {
+    if (b.dataset.modo === modo) return;
+    modo = b.dataset.modo;
+    pintarModo();
+  });
+  pintarModo();
 }},
 
-/* 13 ─ Aportes pendientes ────────────────────────────────────────────────── */
+/* 13 ─ Aportes: la lista y el calendario ─────────────────────────────────────
+   ──────────────────────────────────────────────────────────────────────────
+   Dos vistas de las mismas cuotas, porque son dos preguntas distintas. La lista
+   contesta «qué tengo que pagar ahora» y por eso deja fuera lo pagado. El
+   calendario contesta «cómo vengo» y por eso lo pagado está, en verde: sin el
+   verde, un mes cumplido y un mes en blanco se ven igual.
+   ═══════════════════════════════════════════════════════════════════════════ */
 aportes:{ruta:'aportes/mis-obligaciones', titulo:'Mis aportes', volver:'inicio', tab:'inicio', render(){
-  return '<div id="ap-f"></div><div id="ap-r"></div><div id="ap-l">'
+  return '<div id="ap-seg"></div><div id="ap-f"></div><div id="ap-r"></div><div id="ap-l">'
     + [1,2,3].map(()=>esq('100%','88px','border-radius:var(--r-lg);margin-bottom:var(--s2)')).join('') + '</div>';
 }, async montar(){
   await llamar('GET','/aportes/obligaciones?participante=USR000412',
@@ -2287,8 +2583,35 @@ aportes:{ruta:'aportes/mis-obligaciones', titulo:'Mis aportes', volver:'inicio',
     {k:'mora',  n:'En mora',  ic:'calmora', tono:'mora'},
   ];
   let ff = D.filtroOblF || 'aldia';
-  const pintar = () => {
-    D.filtroOblF = ff;
+  let vista = D.vistaObl || 'lista';
+
+  /* La tarjeta de la cuota es la misma en las dos vistas: cambia dónde se la
+     encuentra, no qué dice ni qué se puede hacer con ella. */
+  const tarjeta = o => {
+    const venc = o.est === 'VENCIDA', pag = o.est === 'PAGADA', fut = o.est === 'FUTURA';
+    const chip = pag ? 'ok' : venc ? 'err' : fut ? 'neu' : (o.dias <= 3 ? 'warn' : 'info');
+    const dd = n => n + (Math.abs(n) === 1 ? ' día' : ' días');
+    const txt  = pag ? 'Pagada' : venc ? 'Vencida hace ' + dd(Math.abs(o.dias))
+               : fut ? 'Se abre en ' + dd(o.dias) : (o.dias === 0 ? 'Vence hoy' : 'Vence en ' + dd(o.dias));
+    return '<div class="tarj" style="margin-bottom:var(--s2);border-color:' + (venc ? 'var(--err)' : 'var(--border)') + '">'
+      + '<div style="display:flex;justify-content:space-between;align-items:start;gap:var(--s3)">'
+      + '<div style="min-width:0"><div style="font-family:var(--font-d);font-weight:600;font-size:14px;color:var(--text);line-height:1.3">' + o.gn + '</div>'
+      + '<div style="font-size:11.5px;color:var(--text-3);margin-top:2px">' + o.per + ' · vence ' + o.vence + '</div>'
+      + '<div style="font-family:var(--mono);font-size:10.5px;color:var(--text-3);margin-top:2px">' + o.id + '</div></div>'
+      + '<span class="chip chip--' + chip + '"><i></i>' + txt + '</span></div>'
+      + '<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:var(--s3);margin-top:var(--s3);padding-top:var(--s3);border-top:1px solid var(--border)">'
+      + '<div><div class="num" style="font-family:var(--font-d);font-size:19px;font-weight:600;color:var(--text)">' + bs(o.monto + o.recargo) + '</div>'
+      + (o.recargo ? '<div style="font-size:11px;color:var(--err-texto)">incluye Bs ' + (o.recargo/100).toFixed(2) + ' de recargo por mora</div>' : '')
+      + (o.pag ? '<div style="font-size:11px;color:var(--text-3)">Pagada el ' + o.pag + '</div>' : '')
+      + (o.cubierta ? '<div style="font-size:11px;color:var(--aviso-texto)">El fondo cubrió la cuota · le debés al fondo</div>' : '') + '</div>'
+      + (pag ? '<button class="btn btn--fan btn--peq" data-comp="' + o.id + '">Comprobante</button>'
+         : fut ? '<span style="font-size:11.5px;color:var(--text-3)">Todavía no se abre</span>'
+         : '<button class="btn btn--acc btn--peq" data-pagar="' + o.id + '">Pagar</button>')
+      + '</div></div>';
+  };
+
+  /* ── Vista de lista ───────────────────────────────────────────────────── */
+  const pintarLista = () => {
     const abiertas = D.obligaciones.filter(o => o.est !== 'PAGADA');
     const lista = abiertas.filter(o => ff === 'mora' ? o.est === 'VENCIDA' : o.est !== 'VENCIDA')
       .sort((a,b) => a.dias - b.dias);
@@ -2306,33 +2629,123 @@ aportes:{ruta:'aportes/mis-obligaciones', titulo:'Mis aportes', volver:'inicio',
         + '<div class="resmes__v"' + (ff === 'mora' ? ' style="color:var(--err-texto)"' : '') + '>' + bs(debe) + '</div></div>'
         + '<div><div class="resmes__l">' + IC.doc + 'Cuotas</div><div class="resmes__v">' + exigibles.length + '</div></div></div>'
       : '';
-    document.getElementById('ap-l').innerHTML = lista.length ? lista.map(o => {
-      const venc = o.est === 'VENCIDA', pag = o.est === 'PAGADA', fut = o.est === 'FUTURA';
-      const chip = pag ? 'ok' : venc ? 'err' : fut ? 'neu' : (o.dias <= 3 ? 'warn' : 'info');
-      const txt  = pag ? 'Pagada' : venc ? 'Vencida hace ' + Math.abs(o.dias) + ' días'
-                 : fut ? 'Se abre en ' + o.dias + ' días' : (o.dias === 0 ? 'Vence hoy' : 'Vence en ' + o.dias + ' días');
-      return '<div class="tarj" style="margin-bottom:var(--s2);border-color:' + (venc ? 'var(--err)' : 'var(--border)') + '">'
-        + '<div style="display:flex;justify-content:space-between;align-items:start;gap:var(--s3)">'
-        + '<div style="min-width:0"><div style="font-family:var(--font-d);font-weight:600;font-size:14px;color:var(--text);line-height:1.3">' + o.gn + '</div>'
-        + '<div style="font-size:11.5px;color:var(--text-3);margin-top:2px">' + o.per + ' · vence ' + o.vence + '</div>'
-        + '<div style="font-family:var(--mono);font-size:10.5px;color:var(--text-3);margin-top:2px">' + o.id + '</div></div>'
-        + '<span class="chip chip--' + chip + '"><i></i>' + txt + '</span></div>'
-        + '<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:var(--s3);margin-top:var(--s3);padding-top:var(--s3);border-top:1px solid var(--border)">'
-        + '<div><div class="num" style="font-family:var(--font-d);font-size:19px;font-weight:600;color:var(--text)">' + bs(o.monto + o.recargo) + '</div>'
-        + (o.recargo ? '<div style="font-size:11px;color:var(--err-texto)">incluye Bs ' + (o.recargo/100).toFixed(2) + ' de recargo por mora</div>' : '')
-        + (o.pag ? '<div style="font-size:11px;color:var(--text-3)">Pagada el ' + o.pag + '</div>' : '')
-        + (o.cubierta ? '<div style="font-size:11px;color:var(--aviso-texto)">El fondo cubrió la cuota · le debés al fondo</div>' : '') + '</div>'
-        + (pag ? '<button class="btn btn--fan btn--peq" data-comp="' + o.id + '">Comprobante</button>'
-           : fut ? '<span style="font-size:11.5px;color:var(--text-3)">Todavía no se abre</span>'
-           : '<button class="btn btn--acc btn--peq" data-pagar="' + o.id + '">Pagar</button>')
-        + '</div></div>';
-    }).join('')
+    document.getElementById('ap-l').innerHTML = lista.length ? lista.map(tarjeta).join('')
       : (ff === 'mora'
           ? '<div class="vacio">' + IC.ok + '<h4>No tenés ninguna cuota en mora</h4>'
             + '<p>Todos tus aportes están dentro de plazo. Así se mantiene el puntaje y así el grupo no tiene que usar el fondo.</p></div>'
           : '<div class="vacio">' + IC.reloj + '<h4>No tenés aportes por pagar</h4>'
             + '<p>' + (enMora ? 'Ojo: tenés ' + enMora + ' en mora. Miralas en la otra pestaña.' : 'El próximo período se abre el 1 de septiembre.') + '</p></div>');
     document.querySelectorAll('[data-fe]').forEach(b => b.onclick = () => { ff = b.dataset.fe; pintar(); });
+  };
+
+  /* ── Vista de calendario ──────────────────────────────────────────────────
+     El mes es la unidad porque el pasanaku cobra por mes. Se navega solo entre
+     los meses que tienen cuotas: un mes vacío al que se llega apretando una
+     flecha no informa nada, y hace dudar de si la app perdió los datos. */
+  const pintarCal = () => {
+    const obl = D.obligaciones.map(o => Object.assign({}, o, {f:aFecha(o.vence)})).filter(o => o.f);
+    const hoy = hoyDemo();
+    const claves = obl.map(o => claveMes(o.f));
+    const min = Math.min.apply(null, claves), max = Math.max.apply(null, claves);
+    let mes = D.mesObl == null ? claveMes(hoy) : D.mesObl;
+    mes = Math.max(min, Math.min(max, mes));
+    D.mesObl = mes;
+    const anio = Math.floor(mes / 12), m = mes % 12;
+    const delMes = obl.filter(o => claveMes(o.f) === mes).sort((a, b) => a.f - b.f);
+    if (D.diaObl && !delMes.some(o => o.f.getDate() === D.diaObl)) D.diaObl = null;
+
+    const deTono = e => delMes.filter(o => tonoObl(o) === e);
+    const cifra = (e, ic, rot, color) => {
+      const g = deTono(e), n = g.length;
+      return '<div><div class="resmes__l">' + IC[ic] + rot + '</div>'
+        + '<div class="resmes__v" style="color:' + color + '">' + bs(g.reduce((a, o) => a + o.monto + o.recargo, 0)) + '</div>'
+        + '<div style="font-size:10.5px;color:var(--text-3);margin-top:1px">' + n + (n === 1 ? ' cuota' : ' cuotas') + '</div></div>';
+    };
+    document.getElementById('ap-f').innerHTML = '';
+    document.getElementById('ap-r').innerHTML =
+      '<div class="calnav">'
+      + '<button class="calnav__b" data-mes="' + (mes - 1) + '" aria-label="Mes anterior"' + (mes <= min ? ' disabled' : '') + '>' + IC.volver + '</button>'
+      + '<div class="calnav__m">' + MESES_L[m].charAt(0).toUpperCase() + MESES_L[m].slice(1) + ' ' + anio + '</div>'
+      + '<button class="calnav__b" data-mes="' + (mes + 1) + '" aria-label="Mes siguiente"' + (mes >= max ? ' disabled' : '') + '>' + IC.avanzar + '</button>'
+      + '</div>'
+      /* Tres cifras y ninguna más: lo pagado, lo que falta pagar y lo que se
+         pasó. Lo que todavía no se abre no entra en ninguna, porque no se debe. */
+      + '<div class="resmes" style="grid-template-columns:1fr 1fr 1fr">'
+      + cifra('ok',   'ok',      'Pagado',    'var(--ok-texto)')
+      + cifra('warn', 'reloj',   'Por pagar', 'var(--aviso-texto)')
+      + cifra('err',  'calmora', 'Vencido',   'var(--err-texto)')
+      + '</div>';
+
+    const DOW = ['L','M','M','J','V','S','D'];
+    const salto = (new Date(anio, m, 1).getDay() + 6) % 7;   /* la semana empieza el lunes */
+    const ultimo = new Date(anio, m + 1, 0).getDate();
+    let g = DOW.map(d => '<div class="cal__dow">' + d + '</div>').join('');
+    for (let i = 0; i < salto; i++) g += '<div class="cal__d" data-vacia="1"></div>';
+    for (let d = 1; d <= ultimo; d++) {
+      const delDia = delMes.filter(o => o.f.getDate() === d);
+      /* Un día puede tener cuotas de dos grupos: el fondo lo pinta el estado más
+         urgente y los puntos muestran que son varias, con el color de cada una. */
+      const peor = ['err','warn','ok','fut'].filter(e => delDia.some(o => tonoObl(o) === e))[0];
+      const at = (peor ? ' data-e="' + peor + '"' : '')
+        + (mismoDia(new Date(anio, m, d), hoy) ? ' data-hoy="1"' : '');
+      const puntos = '<div class="cal__p">'
+        + (delDia.length > 1 ? delDia.slice(0, 3).map(o => '<i data-e="' + tonoObl(o) + '"></i>').join('') : '')
+        + '</div>';
+      g += delDia.length
+        ? '<button class="cal__d" data-con="1" data-dia="' + d + '"' + at
+          + ' aria-pressed="' + (D.diaObl === d) + '" aria-label="' + d + ' de ' + MESES_L[m] + ', '
+          + delDia.length + (delDia.length === 1 ? ' cuota' : ' cuotas') + '">' + d + puntos + '</button>'
+        : '<div class="cal__d"' + at + '>' + d + puntos + '</div>';
+    }
+
+    const fut = deTono('fut');
+    const sel = D.diaObl ? delMes.filter(o => o.f.getDate() === D.diaObl) : delMes;
+    const rot = D.diaObl
+      ? new Date(anio, m, D.diaObl).toLocaleDateString('es-BO', {weekday:'long', day:'numeric', month:'long'})
+      : 'Las cuotas de ' + MESES_L[m];
+    document.getElementById('ap-l').innerHTML =
+      '<div class="cal">' + g + '</div>'
+      + '<div class="calley">'
+      + '<span><i style="background:var(--ok)"></i>Pagado</span>'
+      + '<span><i style="background:var(--warn)"></i>Por pagar</span>'
+      + '<span><i style="background:var(--err)"></i>Vencido</span>'
+      + (fut.length ? '<span><i style="background:var(--text-3);opacity:.45"></i>Todavía no se abre</span>' : '')
+      + '</div>'
+      + (fut.length ? '<p class="calnota">' + (fut.length === 1 ? 'Hay una cuota' : 'Hay ' + fut.length + ' cuotas')
+          + ' de un período que todavía no se abrió, por ' + bs(fut.reduce((a, o) => a + o.monto, 0))
+          + ': se ve para que sepas lo que viene, pero <b>no se debe</b> y por eso no suma a ninguna de las tres cifras.</p>' : '')
+      + '<div class="caldet"><div class="caldet__t">' + rot.charAt(0).toUpperCase() + rot.slice(1) + '</div>'
+      + (D.diaObl ? '<button class="caldet__b" id="cal-todo">Ver todo el mes</button>' : '') + '</div>'
+      + (sel.length ? sel.map(tarjeta).join('')
+         : '<div class="vacio">' + IC.calen + '<h4>Este mes no tiene cuotas</h4>'
+           + '<p>Ningún grupo tuyo cobra en este período.</p></div>');
+
+    document.querySelectorAll('[data-mes]').forEach(b => b.onclick = () => {
+      D.mesObl = +b.dataset.mes; D.diaObl = null; pintar();
+    });
+    document.querySelectorAll('[data-dia]').forEach(b => b.onclick = () => {
+      D.diaObl = D.diaObl === +b.dataset.dia ? null : +b.dataset.dia; pintar();
+    });
+    const todo = document.getElementById('cal-todo');
+    if (todo) todo.onclick = () => { D.diaObl = null; pintar(); };
+  };
+
+  const pintar = () => {
+    D.filtroOblF = ff;
+    D.vistaObl = vista;
+    const hay = (D.obligaciones || []).length;
+    /* Sin cuotas no hay dos vistas entre las que elegir: el selector no aparece. */
+    document.getElementById('ap-seg').innerHTML = hay
+      ? '<div class="selvista" role="group" aria-label="Cómo ver los aportes">'
+        + '<button data-vista="lista" aria-pressed="' + (vista === 'lista') + '">' + IC.lista + 'Lista</button>'
+        + '<button data-vista="cal" aria-pressed="' + (vista === 'cal') + '">' + IC.calen + 'Calendario</button></div>'
+      : '';
+    if (hay && vista === 'cal') pintarCal(); else pintarLista();
+    document.querySelectorAll('[data-vista]').forEach(b => b.onclick = () => {
+      if (b.dataset.vista === vista) return;
+      vista = b.dataset.vista;
+      pintar();
+    });
     document.querySelectorAll('[data-pagar]').forEach(b => b.onclick = () => {
       const o = D.obligaciones.find(x => x.id === b.dataset.pagar);
       D.aporte = {id:o.id, periodo:o.per, monto:o.monto, comision:0, recargo:o.recargo, vence:o.vence, gn:o.gn, dias:o.dias};
@@ -2680,7 +3093,8 @@ Object.assign(D, {
   ],
   grupos:[
     {codigo:'GRP-2026-0142', nombre:'Pasanaku Mercado La Ramada', estado:'ACTIVO', estadoTxt:'Activo',
-     cupos:12, aporte:25000, miTurno:4, periodo:'Agosto 2026', alDia:10, enMora:1,
+     cupos:12, ocupados:12, aporte:25000, miTurno:4, periodo:'Agosto 2026', alDia:10, enMora:1,
+     org:'Rosa Aduviri Q.', soyOrg:0,
      turnos:[
        {n:'Rosa Aduviri Q.',   ini:'RA', e:'ENTREGADO', eTxt:'Ya cobró', mes:'mayo 2026'},
        {n:'Julio Mamani T.',   ini:'JM', e:'ENTREGADO', eTxt:'Ya cobró', mes:'junio 2026'},
@@ -2696,7 +3110,8 @@ Object.assign(D, {
        {n:'Gonzalo Apaza L.',  ini:'GA', e:'AL_DIA',    eTxt:'Al día', mes:'abril 2027'},
      ]},
     {codigo:'GRP-2026-0203', nombre:'Vecinas del Plan Tres Mil', estado:'ACTIVO', estadoTxt:'Activo',
-     cupos:8, aporte:40000, miTurno:7, periodo:'Agosto 2026', alDia:8, enMora:0,
+     cupos:8, ocupados:8, aporte:40000, miTurno:7, periodo:'Agosto 2026', alDia:8, enMora:0,
+     org:'Carmen Villca A.', soyOrg:0,
      turnos:[
        {n:'Carmen Villca A.', ini:'CV', e:'ENTREGADO', eTxt:'Ya cobró', mes:'marzo 2026'},
        {n:'Teresa Limachi R.',ini:'TL', e:'ENTREGADO', eTxt:'Ya cobró', mes:'abril 2026'},
@@ -2707,8 +3122,13 @@ Object.assign(D, {
        {n:'María Quispe M.',  ini:'MQ', e:'AL_DIA',    eTxt:'Al día', mes:'septiembre 2026'},
        {n:'Norah Espejo B.',  ini:'NE', e:'AL_DIA',    eTxt:'Al día', mes:'octubre 2026'},
      ]},
+    /* María organiza este y solo este: por eso la tarjeta de acá tiene el botón
+       de invitar y las otras dos no. El puntaje ya lo decía —«1 grupo
+       administrado»—, pero un dato del perfil no le sirve a nadie si la acción
+       no está donde se necesita. */
     {codigo:'GRP-2026-0288', nombre:'Compañeras del taller', estado:'EN_FORMACION', estadoTxt:'En formación · 7 de 10',
-     cupos:10, aporte:15000, miTurno:null, periodo:'Arranca en septiembre', alDia:7, enMora:0, turnos:[]},
+     cupos:10, ocupados:7, aporte:15000, miTurno:null, periodo:'Arranca en septiembre', alDia:7, enMora:0,
+     org:'María Quispe M.', soyOrg:1, turnos:[]},
   ],
   reputacion:{
     total:742, nivel:'MUY_CONFIABLE',
@@ -2734,6 +3154,40 @@ Object.assign(D, {
 });
 
 const hoyTxt = () => new Date().toLocaleDateString('es-BO', {day:'2-digit', month:'short'});
+
+/* ── Fechas de la maqueta ─────────────────────────────────────────────────
+   La obligación trae el vencimiento como lo lee una persona («25 ago 2026»),
+   que es como se muestra. Para ubicarla en una grilla hay que volverla fecha, y
+   conviene hacerlo en un solo lugar: una pantalla que parsee fechas a mano en
+   dos lados termina con dos calendarios que no coinciden.                    */
+const MESES   = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto',
+                 'septiembre','octubre','noviembre','diciembre'];
+const aFecha = t => {
+  const p = String(t || '').trim().toLowerCase().split(/\s+/);
+  const m = MESES.indexOf((p[1] || '').slice(0, 3));
+  if (p.length < 3 || m < 0 || !+p[0]) return null;
+  return new Date(+p[2], m, +p[0]);
+};
+/* El «hoy» del calendario no es el del navegador: es el del mundo de la maqueta.
+   La obligación dice cuándo vence y a cuántos días está, así que hoy sale de
+   restar. Si se usara la fecha real, el mes de agosto de 2026 se vería vacío
+   apenas pase agosto y la demo quedaría rota sin que nadie tocara nada. */
+const hoyDemo = () => {
+  const o = (D.obligaciones || []).find(x => aFecha(x.vence));
+  if (!o) return new Date();
+  const f = aFecha(o.vence);
+  f.setDate(f.getDate() - o.dias);
+  return f;
+};
+const claveMes = f => f.getFullYear() * 12 + f.getMonth();
+const mismoDia = (a, b) => !!a && !!b && a.getFullYear() === b.getFullYear()
+  && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+/* El estado de la cuota es uno solo y de él salen el color, el rótulo y el
+   orden. Si el color se decidiera aparte del estado, se podría pintar de verde
+   algo que no está pagado. */
+const tonoObl = o => o.est === 'PAGADA' ? 'ok' : o.est === 'VENCIDA' ? 'err'
+                   : o.est === 'FUTURA' ? 'fut' : 'warn';
 
 let temporizadorToast = 0;
 function avisar(texto){
@@ -2802,10 +3256,10 @@ function pintarSaldo(){
 
 /* QR de depósito: cuadrícula determinista a partir del payload, para que se vea
    como un QR real sin fingir que codifica algo. El payload EMV lo devuelve CU-10. */
-function vistaQR(monto){
+function dibujoQR(semilla, etiqueta){
   const n = 25, celda = 8;
-  let semilla = 7, mods = '';
-  const rnd = () => (semilla = (semilla * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+  let s = (semilla >>> 0) || 7, mods = '';
+  const rnd = () => (s = (s * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
   for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
     const enOjo = (x < 7 && y < 7) || (x > n-8 && y < 7) || (x < 7 && y > n-8);
     if (enOjo || rnd() > .52) continue;
@@ -2813,10 +3267,14 @@ function vistaQR(monto){
   }
   const ojo = (x,y) => '<rect x="' + x*celda + '" y="' + y*celda + '" width="' + celda*7 + '" height="' + celda*7 + '" fill="none" stroke="#0C2C1D" stroke-width="' + celda + '"/>'
     + '<rect x="' + (x+2)*celda + '" y="' + (y+2)*celda + '" width="' + celda*3 + '" height="' + celda*3 + '"/>';
+  return '<svg viewBox="0 0 ' + n*celda + ' ' + n*celda + '" role="img" aria-label="' + etiqueta + '">'
+    + '<g fill="#0C2C1D">' + mods + ojo(0,0) + ojo(n-7,0) + ojo(0,n-7) + '</g></svg>';
+}
+
+function vistaQR(monto){
   return '<div style="text-align:center">'
     + '<p style="color:var(--text-2);font-size:13.5px;margin:0 0 var(--s4)">Escaneá este código desde la app de tu banco. Se acredita cuando el banco confirma.</p>'
-    + '<div class="qr-caja"><svg viewBox="0 0 ' + n*celda + ' ' + n*celda + '" role="img" aria-label="Código QR de depósito">'
-    + '<g fill="#0C2C1D">' + mods + ojo(0,0) + ojo(n-7,0) + ojo(0,n-7) + '</g></svg></div>'
+    + '<div class="qr-caja">' + dibujoQR(7, 'Código QR de depósito') + '</div>'
     + '<div class="num" style="font-family:var(--font-d);font-size:26px;font-weight:600">' + bs(monto) + '</div>'
     + '<div style="font-size:12px;color:var(--text-3);margin-bottom:var(--s3)">Orden REC-2026-08-4471 · vence en 14:52</div>'
     + '<div class="tarj" style="text-align:left;font-size:11.5px;color:var(--text-3);font-family:var(--mono);word-break:break-all;margin-bottom:var(--s4)">'
@@ -2874,6 +3332,11 @@ function pintarCuentas(){
 let pantallaM = 'bienvenida';
 function cablearIr(){
   document.querySelectorAll('[data-ir]').forEach(b => b.onclick = () => irM(b.dataset.ir));
+}
+function cablearInvitar(){
+  document.querySelectorAll('[data-invitar]').forEach(b => b.onclick = () => {
+    D.grupoActivo = b.dataset.invitar; irM('invitar');
+  });
 }
 function cablearPauta(){
   document.querySelectorAll('[data-pauta]').forEach(b => b.onclick = () => {

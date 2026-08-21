@@ -189,6 +189,14 @@ acá.**
       llama «otros» es una que no se pensó
 - [ ] *Mis aportes* filtra por **una sola cosa**: a tiempo o en mora. El historial de
       lo pagado vive en Movimientos, que es donde se busca un comprobante
+- [ ] *Mis aportes* tiene **dos vistas de las mismas cuotas** (D-12): la lista contesta
+      qué pagar ahora y el calendario contesta cómo viene la persona. **Lo pagado
+      aparece en verde en el calendario y no en la lista**, y eso no contradice la regla
+      de arriba: el calendario no filtra, ubica en el tiempo
+- [ ] En el calendario, una cuota de un período **que todavía no se abrió** se ve
+      punteada, se dice su importe aparte y **no suma** a ninguna de las tres cifras del mes
+- [ ] Un día con cuotas de **dos grupos** las muestra las dos, con un punto por cuota; el
+      color del día es el del estado más urgente
 - [ ] El total a pagar cuenta **solo lo exigible**: una cuota de un período que
       todavía no se abrió no se debe, y sumarla infla la deuda
 - [ ] La portada abre contestando tres cosas sin desplazar: cuánto tengo, qué tengo
@@ -254,6 +262,20 @@ Es el producto propiamente dicho: el grupo.
 - [ ] Código inexistente y código vencido dan **respuestas distintas**, y la del
       inexistente no revela si hay un grupo detrás
 - [ ] El token se marca canjeado en la **misma transacción** que ocupa el cupo
+- [ ] La invitación se canjea **por QR o por código escrito**, y las dos entradas
+      llegan a la misma pantalla de confirmación: cambia cómo llegó el token, no qué
+      se valida ni qué se muestra antes de aceptar
+- [ ] El **código corto siempre existe** aunque haya QR: se dicta por teléfono y se
+      escribe a mano, y hay gente que no puede escanear
+- [ ] El **enlace abierto de invitación lo emite solo quien organiza el grupo**
+      (`AP-CU69-07`), y el token queda ligado a su emisor. Un participante puede
+      invitar a un conocido por su teléfono; lo que no puede es emitir un enlace que
+      entra cualquiera
+- [ ] La tarjeta de cada grupo dice **el rol en ese grupo**: la misma persona organiza
+      uno y participa de otro, y por eso el botón de invitar está en unas tarjetas y
+      en otras no
+- [ ] Un grupo **en formación no muestra orden de turnos** ni botón de verificar el
+      sorteo: todavía no se sorteó, y lo que le falta son personas
 - [ ] Cada insignia abre su pantalla con qué mide y cómo se gana
 - [ ] Las 26 pantallas tienen sus cuatro estados
 

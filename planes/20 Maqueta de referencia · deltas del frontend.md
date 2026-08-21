@@ -25,7 +25,7 @@ afecta: [F1, F3, F4, F5, F6, F7, F8]
 
 ---
 
-## 1 · Los siete deltas
+## 1 · Los deltas
 
 | # | Delta | Fases que cambian |
 | :-: | --- | --- |
@@ -40,6 +40,8 @@ afecta: [F1, F3, F4, F5, F6, F7, F8]
 | **D-9** | La cuenta nueva abre con **bono de bienvenida** y su propio estado | F3, F4 |
 | **D-10** | Entrar a un grupo es **canjear una invitación**, con todo a la vista antes | F5 |
 | **D-11** | Toda notificación **se guarda en la bandeja**, y hay eventos que no notifican | F2, F5 |
+| **D-12** | *Mis aportes* tiene **dos vistas**: la lista y el calendario del mes | F4, F5 |
+| **D-13** | La invitación se **escanea o se escribe**, y el enlace lo emite **quien organiza** | F5 |
 
 Y una regla transversal, que es la que produjo casi todos los deltas:
 
@@ -273,8 +275,13 @@ distintos, y la diferencia importa:
 
 | Caso | Respuesta | Por qué |
 | --- | --- | --- |
-| Código que no existe | `AP-CU69-01` · «no encontramos ninguna invitación» | No se dice si hay un grupo detrás: si no, se prueban códigos hasta acertar |
-| Código ya canjeado o vencido | `AP-CU69-02` · «pedí una nueva» | El token murió; el grupo puede seguir existiendo |
+| Código que no existe | `404`, **sin código de negocio** · «no encontramos ninguna invitación» | No se dice si hay un grupo detrás: si no, se prueban códigos hasta acertar. Un código de negocio propio ya confirmaría que la búsqueda dio con algo |
+| Código ya canjeado o vencido | `AP-CU69-05` (`TOKEN_INVALIDO`) · «pedí una nueva» | El token murió; el grupo puede seguir existiendo |
+
+> **Corrección.** La primera versión de la maqueta usaba `AP-CU69-01` y `AP-CU69-02`
+> para estos dos casos, pero en [[CU-69 Invitar a un contacto y registrar sus referencias]]
+> esos códigos ya son `SIN_CUPOS_LIBRES` y `DESTINATARIO_SUPRIMIDO`. Manda el caso de
+> uso: el rechazo del token es `AP-CU69-05` y el inexistente no lleva código propio.
 
 **2 · Lo que se está por firmar.** Antes de confirmar, la pantalla muestra el grupo
 (quién invita, aporte, periodicidad, cupos, cuándo arranca, cómo se sortea el turno),
@@ -323,6 +330,103 @@ bandeja y limpia la cola.
 > Una notificación de más en la bandeja de LGI/FT no es un problema de producto: es un
 > aviso al investigado. Por eso la regla se escribe acá y no queda a criterio de quien
 > implemente la pantalla.
+
+---
+
+## D-12 · El calendario no es otro filtro: es otra pregunta
+
+*Mis aportes* pasa a tener **dos vistas de las mismas cuotas**, con un selector arriba.
+
+| Vista | La pregunta que contesta | Qué muestra |
+| --- | --- | --- |
+| **Lista** | «¿Qué tengo que pagar ahora?» | Solo lo abierto —a tiempo o en mora—, ordenado por vencimiento |
+| **Calendario** | «¿Cómo vengo?» | El mes entero, con lo pagado adentro |
+
+**Por qué lo pagado aparece acá y no en la lista.** La regla del gate de F4 —*el historial
+de lo pagado vive en Movimientos*— sigue en pie **para la lista**: una lista de cosas por
+hacer con cosas hechas adentro deja de ser una lista de cosas por hacer. Pero un
+calendario sin lo pagado miente por omisión, porque un mes cumplido y un mes en blanco se
+ven igual, y quien quiere saber si viene cumpliendo no tiene dónde mirarlo. El calendario
+**no filtra: ubica en el tiempo**, y por eso puede mostrar lo que la lista deja fuera.
+
+**Tres colores, y un gris que no es un cuarto color.**
+
+| Estado | Cómo se ve | Qué significa |
+| --- | --- | --- |
+| `PAGADA` | verde | Se pagó · el comprobante está en el detalle |
+| `PENDIENTE` | amarillo | Se debe y todavía está en plazo |
+| `VENCIDA` | rojo | Se pasó el plazo · el recargo va desglosado |
+| `FUTURA` | gris punteado | El período **no se abrió todavía**: no se debe |
+
+Lo `FUTURA` va punteado y no pintado a propósito: se ve para que la persona sepa lo que
+viene, pero **no suma a ninguna de las tres cifras del mes**, y el importe se dice aparte
+en una línea. Es la misma regla del gate de F4 —*el total a pagar cuenta solo lo
+exigible*— llevada al calendario, donde la tentación de sumar todo es mayor porque el mes
+«se ve completo».
+
+**Lo demás que fija la vista:**
+
+- **La unidad es el mes**, porque el pasanaku cobra por mes. Arriba las tres cifras del
+  mes con su cantidad de cuotas, después la grilla, y abajo las cuotas del mes —o las del
+  día que se toque, que se elige y se suelta.
+- **Se navega solo entre los meses que tienen cuotas.** Una flecha que lleva a un mes
+  vacío no informa nada y hace dudar de si la app perdió los datos.
+- **Un día puede tener cuotas de dos grupos.** El fondo del día lo pinta el estado más
+  urgente y los puntos dicen cuántas son y de qué color es cada una: un solo color por día
+  escondería una cuota vencida detrás de otra al día.
+- **La semana empieza el lunes**, y *hoy* se marca con un aro y no con relleno — el
+  relleno ya está diciendo el estado de pago.
+- **La tarjeta de la cuota es la misma en las dos vistas.** Se llega distinto; no se
+  informa distinto ni se puede hacer menos.
+
+**Cambio en F4 y F5:** la fila de *aportes pendientes* pasa a *«Mis aportes: lista y
+calendario del mes, con selector entre las dos»*, y el gate de F4 suma las tres reglas de
+arriba.
+
+---
+
+## D-13 · La invitación se escanea o se escribe, y el enlace lo emite quien organiza
+
+Tres cosas, y la tercera es la que cambia el modelo de la pantalla.
+
+**1 · Dos caminos para el mismo token.** *Unirme a un pasanaku* abre en **Escanear QR**,
+con **Con el código** a un toque. El QR y los cinco dígitos **son el mismo token**: uno se
+apunta con la cámara y el otro se dicta por teléfono y se escribe a mano. El código corto
+no es redundancia — es la vía de quien no puede escanear, y sacarlo dejaría afuera a parte
+de la gente que este producto dice servir. Los dos caminos llegan a **la misma pantalla de
+confirmación** de D-10: cambia cómo llegó el token, no qué se valida ni qué se muestra
+antes de aceptar.
+
+**2 · El rol es del vínculo, no de la persona.** La misma persona organiza un grupo y
+participa de otro. Por eso el rol se dice **en cada tarjeta de grupo** —«Organizás este
+grupo» / «Organiza Rosa Aduviri Q.»— y no una sola vez en el perfil. Es también la razón de
+que el botón de invitar esté en una tarjeta y no en la de al lado: no es un permiso del
+usuario, es un permiso de ese vínculo.
+
+**3 · El enlace abierto lo emite solo quien organiza.** CU-69 deja invitar a un
+participante **o** al organizador, y eso sigue valiendo para la invitación dirigida a un
+teléfono conocido. Pero un **enlace abierto no va dirigido a nadie**: entra cualquiera que
+lo reciba y lo reenvíe. Ese canal lo emite quien responde por el grupo, y a cualquier otro
+se le contesta `AP-CU69-07` (`EMISOR_NO_HABILITADO`). Es la misma razón por la que el token
+queda ligado a su emisor: toda incorporación por invitación tiene un responsable con
+nombre.
+
+La pantalla de la invitación muestra, además del QR y del código: cuántos cupos quedan,
+cuándo vence, que es de un solo uso, **qué ve quien la recibe** —quién invita, el aporte y
+la periodicidad, nunca los nombres ni los teléfonos de los demás— y **qué pasa en cada
+borde**: vencida o canjeada (`AP-CU69-05`), quien ya está en el grupo (`AP-CU69-03`), el
+último cupo tomado mientras miraba (`AP-CU68-04`, la invitación queda viva). Y se puede
+anular, que es lo que hace que emitir un enlace no sea irreversible.
+
+**De paso, un defecto que quedaba a la vista.** Un grupo **en formación** mostraba «te toca
+en el turno *null*» y el botón de verificar el sorteo, con la etiqueta «Sorteado». No hay
+orden de turnos antes de que el grupo se llene: la pantalla ahora dice cuántos cupos faltan
+y ofrece lo único que corresponde ahí, que es invitar. Repartir turnos con el grupo a
+medias sería darle lugar en la fila a gente que todavía puede no entrar.
+
+**Cambio en F5:** la fila del canje pasa a *«Canjear una invitación: por QR o por código,
+con el compromiso completo antes de confirmar»*, se suma *«Emitir una invitación por
+enlace»* como pantalla del organizador, y el gate suma las cinco reglas de arriba.
 
 ---
 
