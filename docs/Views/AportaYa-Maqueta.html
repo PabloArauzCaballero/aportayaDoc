@@ -485,7 +485,28 @@ button.tarj:hover{border-color:var(--brand);box-shadow:var(--sh-2);transform:tra
   border:1px solid var(--border);background:var(--surface);color:var(--text-2);
   display:inline-flex;align-items:center;transition:background .15s, border-color .15s, color .15s;
 }
+.filtro svg{width:15px;height:15px;margin-right:6px;flex:none}
 .filtro:hover{border-color:var(--field-border)}
+.filtro[aria-pressed="true"][data-tono="mora"]{
+  background:color-mix(in srgb,var(--err) 12%,transparent);
+  border-color:color-mix(in srgb,var(--err) 45%,transparent);color:var(--err-texto);
+}
+
+/* Panel de bienvenida: solo lo ve quien acaba de abrir la cuenta. */
+.bienve{
+  position:relative;overflow:hidden;margin-top:var(--s4);padding:var(--s4);
+  border-radius:var(--r-lg);border:1px solid var(--o200);
+  background:linear-gradient(140deg,var(--o100),var(--surface) 72%);
+}
+:root[data-theme="dark"] .bienve,
+:root:not([data-theme="light"]) .bienve{background:linear-gradient(140deg,rgba(229,133,43,.15),var(--surface) 72%);border-color:rgba(229,133,43,.3)}
+.bienve__l{font-size:9.5px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--accent-texto)}
+.bienve__t{font-family:var(--font-d);font-size:16px;font-weight:600;color:var(--text);letter-spacing:-.02em;margin:3px 0 5px}
+.bienve__d{font-size:12.5px;color:var(--text-2);line-height:1.5;margin:0 0 var(--s4)}
+.bienve__p{display:flex;gap:var(--s3);align-items:flex-start;padding:8px 0;font-size:12.5px;color:var(--text-2)}
+.bienve__p b{color:var(--text)}
+.bienve__n{width:20px;height:20px;flex:none;border-radius:50%;background:var(--verde-solido);color:#fff;
+  display:grid;place-items:center;font-family:var(--font-d);font-size:11px;font-weight:700}
 .filtro[aria-pressed="true"]{
   background:color-mix(in srgb,var(--brand) 13%,transparent);
   border-color:color-mix(in srgb,var(--brand) 45%,transparent);
@@ -581,6 +602,35 @@ button.tarj:hover{border-color:var(--brand);box-shadow:var(--sh-2);transform:tra
 .resumen__f{display:flex;justify-content:space-between;font-size:13.5px;color:var(--text-2)}
 .resumen__f b{font-family:var(--font-d);color:var(--text);font-weight:600}
 .resumen__f--tot{border-top:1px dashed var(--border);padding-top:var(--s3);margin-top:var(--s2);font-size:15px}
+
+/* ── Tour de bienvenida ───────────────────────────────────────────────────
+   Antes de pedirle un dato a nadie hay que explicarle qué es esto. Cuatro
+   pantallas, se puede saltar, y la última es la que abre la cuenta.
+   ──────────────────────────────────────────────────────────────────────── */
+.tour{display:flex;flex-direction:column;min-height:100%;text-align:center}
+.tour__salta{align-self:flex-end;margin:-4px -6px 0 0}
+.tour__art{width:min(230px,72%);margin:var(--s5) auto var(--s6);display:block}
+.tour__t{font-family:var(--font-d);font-size:24px;font-weight:600;letter-spacing:-.025em;
+  line-height:1.22;color:var(--text);margin:0 0 var(--s3)}
+.tour__t b{color:var(--brand-texto);font-weight:600}
+.tour__d{font-size:14.5px;color:var(--text-2);line-height:1.55;margin:0 auto;max-width:31ch}
+.tour__pie{margin-top:auto;padding-top:var(--s5)}
+.tour__puntos{display:flex;justify-content:center;gap:7px;margin-bottom:var(--s4)}
+.tour__puntos i{width:7px;height:7px;border-radius:50%;background:var(--border);display:block;transition:width .2s,background .2s}
+.tour__puntos i[data-on="1"]{width:22px;border-radius:var(--r-pill);background:var(--brand)}
+
+/* Estado vacío de la tira de grupos */
+.tira__vacio{
+  display:flex;align-items:center;gap:var(--s3);width:100%;text-align:left;font-family:var(--font-b);
+  padding:var(--s4);border-radius:var(--r-lg);cursor:pointer;
+  border:1px dashed var(--field-border);background:var(--surface-2);
+}
+.tira__vacio>span:first-child{width:38px;height:38px;flex:none;border-radius:12px;background:var(--surface);
+  border:1px solid var(--border);color:var(--brand-texto);display:grid;place-items:center}
+.tira__vacio>span:last-child{display:block;flex:1;min-width:0}
+.tira__vacio svg{width:19px;height:19px}
+.tira__vt{display:block;font-size:13px;font-weight:600;color:var(--text)}
+.tira__vs{display:block;font-size:11.5px;color:var(--text-3);margin-top:2px;line-height:1.35}
 
 /* ── Alta de cuenta: progreso, cámara y cotejo ───────────────────────────── */
 .pasos{display:flex;flex-direction:column;gap:6px;margin:0 0 var(--s4)}
@@ -1174,6 +1224,48 @@ const esq = (w, h, extra) => '<div class="esq" style="width:' + w + ';height:' +
    plata. Cada paso guarda su evidencia; el analista decide después con eso a la
    vista. Esto es lo que exige la debida diligencia, y por eso se maqueta entero.
    ═══════════════════════════════════════════════════════════════════════════ */
+/* El bono de bienvenida sale del catálogo comercial, no de la pantalla: es un
+   costo de adquisición y alguien lo tiene que aprobar y poder cambiar. */
+const BONO = {monto:1000, nombre:'Bono de bienvenida', campana:'ALTA-2026-Q3'};
+
+const TOUR = [
+  {t:'El pasanaku de siempre,<br><b>sin el cuaderno</b>',
+   d:'Los mismos turnos, la misma confianza. Lo que cambia es que ya nadie tiene que juntar, guardar ni acordarse de nada.',
+   art:'<circle cx="70" cy="70" r="52" fill="#E7F2EB"/>'
+      +'<circle cx="70" cy="42" r="11" fill="#1C5A3A"/><path d="M52 74c0-9 8-15 18-15s18 6 18 15" fill="#1C5A3A"/>'
+      +'<circle cx="36" cy="58" r="8.5" fill="#7CBE9C"/><path d="M22 84c0-7.5 6-12.5 14-12.5 3 0 5.7.7 8 2" fill="#7CBE9C"/>'
+      +'<circle cx="104" cy="58" r="8.5" fill="#7CBE9C"/><path d="M118 84c0-7.5-6-12.5-14-12.5-3 0-5.7.7-8 2" fill="#7CBE9C"/>'
+      +'<rect x="46" y="92" width="48" height="30" rx="7" fill="#E5852B"/>'
+      +'<path d="M60 107h20M70 99v16" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/>'},
+
+  {t:'Tu plata está<br><b>en custodia</b>',
+   d:'No la guarda un vecino ni la empresa: vive en una cuenta bancaria separada. Cada movimiento queda con su comprobante, y podés bajar el extracto cuando quieras.',
+   art:'<rect x="18" y="34" width="104" height="74" rx="12" fill="#E7F2EB"/>'
+      +'<path d="M28 60h84" stroke="#7CBE9C" stroke-width="3"/>'
+      +'<path d="M36 74h44M36 86h30" stroke="#1C5A3A" stroke-width="4" stroke-linecap="round"/>'
+      +'<circle cx="99" cy="88" r="18" fill="#1C5A3A"/>'
+      +'<path d="M91 88.5l5.4 5.4L108 82.5" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>'
+      +'<path d="M40 22l14 6v9c0 7-5.6 12.4-14 14.4C31.6 49.4 26 44 26 37v-9z" fill="#E5852B"/>'},
+
+  {t:'El turno se sortea<br><b>a la vista de todos</b>',
+   d:'El orden no lo decide nadie. Sale de una semilla pública que se toma después de cerrar la lista, y cualquiera puede repetir el sorteo y llegar al mismo resultado.',
+   art:'<circle cx="70" cy="72" r="46" fill="#E7F2EB"/>'
+      +'<path d="M70 26a46 46 0 0 1 39.8 22.9L70 72z" fill="#1C5A3A"/>'
+      +'<path d="M109.8 48.9A46 46 0 0 1 70 118V72z" fill="#7CBE9C"/>'
+      +'<path d="M70 118A46 46 0 0 1 30.2 48.9L70 72z" fill="#237349"/>'
+      +'<circle cx="70" cy="72" r="13" fill="#F6F4EC"/>'
+      +'<path d="M70 12l-8 14h16z" fill="#E5852B"/>'},
+
+  {t:'Si alguien no aporta,<br><b>el grupo no se frena</b>',
+   d:'Hay un fondo de garantía que cubre la cuota para que el turno se entregue igual. La deuda no se perdona: queda viva y el fondo pasa a ser el acreedor.',
+   art:'<path d="M70 24v10" stroke="#1C5A3A" stroke-width="5" stroke-linecap="round"/>'
+      +'<path d="M14 76a56 56 0 0 1 112 0z" fill="#1C5A3A"/>'
+      +'<path d="M14 76a56 56 0 0 1 112 0" fill="none" stroke="#164A30" stroke-width="3"/>'
+      +'<path d="M70 76v34a13 13 0 0 0 26 0" fill="none" stroke="#1C5A3A" stroke-width="5.5" stroke-linecap="round"/>'
+      +'<circle cx="44" cy="104" r="15" fill="#E5852B"/>'
+      +'<path d="M44 96v16M39.5 100.5h7a4 4 0 0 1 0 8h-7" stroke="#fff" stroke-width="2.8" stroke-linecap="round" fill="none"/>'},
+];
+
 const PASOS = ['Tus datos','Celular','Anverso','Reverso','Selfie','Cotejo','Perfil','Contrato'];
 const barraPaso = n => '<div class="pasos">'
   + '<div class="pasos__t"><span class="pasos__n">Paso ' + n + ' de 8 · ' + PASOS[n-1] + '</span>'
@@ -1252,8 +1344,30 @@ bienvenida:{ruta:'identidad/bienvenida', barra:false, tab:false, render(){
     + '<h1 style="font-family:var(--font-d);font-size:26px;font-weight:600;margin:0 0 var(--s3);letter-spacing:-.02em">El pasanaku de siempre,<br>con la plata segura</h1>'
     + '<p style="color:var(--text-2);font-size:14.5px;margin:0 0 auto;line-height:1.55">Aportá, cobrá tu turno y mirá el estado del grupo desde el celular. Cada movimiento queda registrado.</p>'
     + '<div style="display:flex;flex-direction:column;gap:var(--s2);padding-bottom:var(--s4)">'
-    + '<button class="btn btn--acc" data-ir="registro">Crear mi cuenta</button>'
+    + '<button class="btn btn--acc" data-ir="tour">Crear mi cuenta</button>'
     + '<button class="btn btn--fan" data-ir="sesion">Ya tengo cuenta</button></div></div>';
+}},
+
+/* 1b ─ Tour de bienvenida ───────────────────────────────────────────────── */
+tour:{ruta:'identidad/tour', titulo:'', volver:'bienvenida', tab:false, render(){
+  const i = D.tourPaso || 0, t = TOUR[i], ultimo = i === TOUR.length - 1;
+  return '<div class="tour">'
+    + '<button class="btn btn--txt tour__salta" data-ir="registro">' + (ultimo ? '' : 'Saltar') + '</button>'
+    + '<svg class="tour__art" viewBox="0 0 140 140" aria-hidden="true">' + t.art + '</svg>'
+    + '<h1 class="tour__t">' + t.t + '</h1>'
+    + '<p class="tour__d">' + t.d + '</p>'
+    + '<div class="tour__pie">'
+    + '<div class="tour__puntos">' + TOUR.map((_, j) => '<i data-on="' + (j === i ? 1 : 0) + '"></i>').join('') + '</div>'
+    + '<button class="btn btn--acc" id="t-sig">' + (ultimo ? 'Crear mi cuenta' : 'Siguiente') + '</button>'
+    + (ultimo ? '<button class="btn btn--txt" data-ir="sesion" style="margin:var(--s3) auto 0;display:block">Ya tengo cuenta</button>' : '')
+    + '</div></div>';
+}, montar(){
+  cablearIr();
+  document.getElementById('t-sig').onclick = () => {
+    const i = D.tourPaso || 0;
+    if (i === TOUR.length - 1) { D.tourPaso = 0; return irM('registro'); }
+    D.tourPaso = i + 1; irM('tour');
+  };
 }},
 
 /* 2 ─ Datos de la persona ───────────────────────────────────────────────── */
@@ -1498,6 +1612,12 @@ onbFin:{ruta:'identidad/alta-completa', titulo:'Tu cuenta está abierta', tab:fa
     + '<span style="width:34px;height:34px;display:block">' + IC.ok + '</span></span>'
     + '<div style="font-family:var(--font-d);font-size:19px;font-weight:600;color:var(--text)">Ya podés usar AportaYa</div>'
     + '<p style="font-size:13px;color:var(--text-2);margin:var(--s2) 0 0;line-height:1.5">Tu billetera quedó abierta en <b>nivel básico</b>. La verificación de tu identidad está en revisión: eso no te frena hoy, pero define hasta dónde podés mover.</p></div>'
+    + '<div class="tarj" style="margin-bottom:var(--s3);text-align:center;border-color:var(--o300);background:linear-gradient(160deg,var(--o100),var(--surface))">'
+    + '<span style="width:44px;height:44px;border-radius:14px;background:var(--verde-solido);color:#fff;display:grid;place-items:center;margin:0 auto var(--s3)">'
+    + '<span style="width:24px;height:24px;display:block">' + IC.bolsa + '</span></span>'
+    + '<div style="font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--accent-texto)">Bono de bienvenida</div>'
+    + '<div class="num" style="font-family:var(--font-d);font-size:30px;font-weight:600;color:var(--text);letter-spacing:-.02em;margin:2px 0 4px">' + bs(BONO.monto) + '</div>'
+    + '<p style="font-size:12.5px;color:var(--text-2);margin:0;line-height:1.5">Ya están en tu billetera, para que pruebes sin poner plata tuya. Se pueden usar para aportar; para retirarlos hace falta un ciclo completo.</p></div>'
     + '<div class="tarj" style="margin-bottom:var(--s3)"><div class="seccion__t" style="margin:0 0 var(--s2)"><h3>Tus límites de hoy</h3><span class="chip chip--info"><i></i>Nivel básico</span></div>'
     + [['Carga por mes','Bs 12.000,00'],['Saldo máximo','Bs 20.000,00'],['Retiro por día','Bs 5.000,00'],['Aporte máximo por grupo','Bs 1.500,00']].map(x =>
       '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px">'
@@ -1511,8 +1631,12 @@ onbFin:{ruta:'identidad/alta-completa', titulo:'Tu cuenta está abierta', tab:fa
     + '<span>Si el analista encuentra algo que no cierra, te lo va a decir con el motivo escrito y vas a poder subsanarlo. Nadie rechaza una cuenta sin explicar por qué.</span></div></div>'
     + '<button class="btn btn--acc" id="f-btn">Entrar a mi billetera</button>';
 }, montar(){
-  document.getElementById('f-btn').onclick = () => { sesionMovil = true; irM('inicio'); };
-  notificar({titulo:'Tu cuenta está abierta', cuerpo:'Nivel básico. La verificación de identidad está en revisión.'});
+  document.getElementById('f-btn').onclick = async () => {
+    await llamar('POST','/publicidad/campanas/' + BONO.campana + '/bono',{efecto:true, idem:idem(),
+      nota:'el bono es un asiento como cualquier otro: sale de una cuenta de gasto de la empresa, no de la nada'});
+    cuentaNueva(); sesionMovil = true; irM('inicio');
+  };
+  notificar({titulo:'Tu cuenta está abierta', cuerpo:'Te regalamos ' + bs(BONO.monto) + ' para que arranques.'});
 }},
 
 /* 5 ─ Iniciar sesión ─────────────────────────────────────────────────────── */
@@ -1579,7 +1703,16 @@ inicio:{ruta:'billetera/inicio', titulo:'', tab:'inicio', render(){
   /* Lo que hay que hacer hoy va antes que cualquier lista: si hay una cuota por
      vencer, esa es la pantalla. */
   const pend = pendientes().slice().sort((a,b) => a.dias - b.dias)[0];
-  document.getElementById('i-dest').innerHTML = pend
+  document.getElementById('i-dest').innerHTML = D.nueva
+    ? '<div class="bienve"><div class="bienve__l">Te regalamos ' + bs(BONO.monto) + '</div>'
+      + '<div class="bienve__t">Ya están en tu billetera</div>'
+      + '<p class="bienve__d">No es una promesa ni un cupón: el dinero está acreditado y lo ves en el saldo de arriba. '
+      + 'Podés usarlo para tu primer aporte. Para retirarlo hace falta que completes un ciclo.</p>'
+      + '<div class="bienve__p"><span class="bienve__n">1</span><span>Entrá a un pasanaku con el código que te pasen, o postulate a uno abierto</span></div>'
+      + '<div class="bienve__p"><span class="bienve__n">2</span><span>Aportá tu cuota cada período. <b>Aportar no cuesta nada</b></span></div>'
+      + '<div class="bienve__p"><span class="bienve__n">3</span><span>Cuando te toque el turno, cobrás la bolsa entera</span></div>'
+      + '<button class="btn btn--acc" data-ir="grupos" style="margin-top:var(--s3)">Buscar mi primer pasanaku</button></div>'
+    : pend
     ? '<button class="destacado" data-pagar="' + pend.id + '"' + (pend.dias < 0 ? ' data-urg="1"' : '') + '>'
       + '<span class="destacado__i">' + (pend.dias < 0 ? IC.triangulo : IC.reloj) + '</span>'
       + '<span class="destacado__c"><span class="destacado__l">'
@@ -1595,7 +1728,11 @@ inicio:{ruta:'billetera/inicio', titulo:'', tab:'inicio', render(){
       + '<span class="destacado__s">El próximo período se abre el 1 de septiembre</span></span></div>';
 
   await llamar('GET','/grupos?participante=USR000412',{nota:'los grupos donde la persona tiene un cupo vigente'});
-  document.getElementById('i-tira').innerHTML = '<div class="tira">' + D.grupos.map(g => {
+  document.getElementById('i-tira').innerHTML = !D.grupos.length
+    ? '<button class="tira__vacio" data-ir="grupos"><span>' + IC.grupo + '</span>'
+      + '<span><span class="tira__vt">Todavía no estás en ningún pasanaku</span>'
+      + '<span class="tira__vs">Entrá con el código que te pasó tu grupo, o postulate a uno abierto.</span></span></button>'
+    : '<div class="tira">' + D.grupos.map(g => {
     const activo = g.estado === 'ACTIVO', pct = activo ? Math.round((g.miTurno - 1) / g.cupos * 100) : 0;
     return '<button class="gcard" data-grupo="' + g.codigo + '">'
       + '<span class="gcard__n">' + g.nombre + '</span>'
@@ -1777,11 +1914,10 @@ extracto:{ruta:'billetera/extracto', titulo:'Movimientos', tab:'extracto', rende
   /* Cinco filtros, no siete: si hay que leer la fila dos veces para saber cuál
      es cuál, el filtro dejó de ayudar. «Otros» junta lo que casi nunca pasa. */
   const FILTROS = [
-    {k:'todos',   n:'Todo'},
-    {k:'aporte',  n:'Aportes',  ics:['aporte']},
-    {k:'recarga', n:'Recargas', ics:['qr','billete']},
-    {k:'retiro',  n:'Retiros',  ics:['banco']},
-    {k:'otros',   n:'Otros',    ics:['bolsa','porcent','calmora','triangulo','reversa','expedient','paraguas']},
+    {k:'todos',   n:'Todo',     ic:'movs'},
+    {k:'aporte',  n:'Aportes',  ic:'aporte', ics:['aporte']},
+    {k:'recarga', n:'Recargas', ic:'entra',  ics:['qr','billete']},
+    {k:'retiro',  n:'Retiros',  ic:'banco',  ics:['banco']},
   ];
   let sel = D.filtroMov || 'todos';
 
@@ -1815,7 +1951,7 @@ extracto:{ruta:'billetera/extracto', titulo:'Movimientos', tab:'extracto', rende
     document.getElementById('e-filtros').innerHTML = FILTROS
       .filter(x => x.k === 'todos' || D.movimientos.some(m => x.ics.includes(m.ic)))
       .map(x => '<button class="filtro" data-f="' + x.k + '" aria-pressed="' + (x.k === sel) + '">'
-        + x.n + '</button>').join('');
+        + IC[x.ic] + x.n + '</button>').join('');
 
     document.getElementById('e-lista').innerHTML =
       (lista.length ? listaPorDia(lista, D.saldo) : '<div class="vacio">' + IC.vacio
@@ -1847,7 +1983,11 @@ grupos:{ruta:'pasanaku/mis-grupos', titulo:'Mis pasanakus', tab:'grupos', render
   return '<div id="gs-lista">' + [1,2,3].map(()=>esq('100%','96px','border-radius:var(--r-lg);margin-bottom:var(--s3)')).join('') + '</div>';
 }, async montar(){
   await llamar('GET','/grupos?participante=USR000412',{nota:'los grupos donde la persona tiene un cupo vigente'});
-  document.getElementById('gs-lista').innerHTML = D.grupos.map(g =>
+  document.getElementById('gs-lista').innerHTML = (!D.grupos.length
+    ? '<div class="vacio">' + IC.grupo + '<h4>Todavía no estás en ningún pasanaku</h4>'
+      + '<p>Podés entrar con el código que te pasó tu grupo, o postularte a uno que esté abierto. '
+      + 'Con tu cuenta recién abierta te toca empezar por grupos de aporte bajo.</p></div>'
+    : '') + D.grupos.map(g =>
     '<button class="tarj" data-grupo="' + g.codigo + '" style="width:100%;text-align:left;cursor:pointer;margin-bottom:var(--s3);border-color:' + (g.estado==='ACTIVO'?'var(--border)':'var(--field-border)') + '">'
     + '<div style="display:flex;justify-content:space-between;align-items:start;gap:var(--s3)">'
     + '<div style="min-width:0"><div style="font-family:var(--font-d);font-weight:600;font-size:14.5px;color:var(--text)">' + g.nombre + '</div>'
@@ -1869,6 +2009,7 @@ grupos:{ruta:'pasanaku/mis-grupos', titulo:'Mis pasanakus', tab:'grupos', render
 grupo:{ruta:'pasanaku/grupo/[codigo]', titulo:'Mi pasanaku', volver:'grupos', tab:'grupos', render(){
   return '<div id="g-cont">' + esq('100%','108px','border-radius:var(--r-lg);margin-bottom:var(--s3)') + esq('100%','220px','border-radius:var(--r-lg)') + '</div>';
 }, async montar(){
+  if (!D.grupos.length) return irM('grupos');
   const g = D.grupos.find(x => x.codigo === (D.grupoActivo || D.grupos[0].codigo)) || D.grupos[0];
   await llamar('GET','/grupos/' + g.codigo, {nota:'CU-60/61 · el orden de turnos se sorteó con semilla pública y es verificable'});
   const turnos = g.turnos.map((p, i) => {
@@ -1958,37 +2099,32 @@ aportes:{ruta:'aportes/mis-obligaciones', titulo:'Mis aportes', volver:'inicio',
 }, async montar(){
   await llamar('GET','/aportes/obligaciones?participante=USR000412',
     {nota:'CU-20 · la obligación se genera al abrir el período; el importe y el vencimiento quedan congelados ahí'});
-  const gruposF = [{k:'todos', n:'Todos los grupos'}].concat(
-    [...new Set(D.obligaciones.map(o => o.g))].map(g => ({k:g, n:(D.obligaciones.find(o=>o.g===g).gn.split(' ').slice(-2).join(' '))})));
-  const fechasF = [
-    {k:'abiertos', n:'Por pagar'},
-    {k:'vencidos', n:'Vencidos'},
-    {k:'30',       n:'Próximos 30 días'},
-    {k:'pagados',  n:'Pagados'},
-    {k:'todos',    n:'Todo el historial'},
+  /* Dos estados, no siete filtros. Lo único que una persona necesita saber de
+     sus aportes es si está a tiempo o si se le pasó alguno. El historial de lo
+     pagado vive en Movimientos, que es donde se busca un comprobante. */
+  const FILTROS = [
+    {k:'aldia', n:'A tiempo', ic:'ok',      tono:'ok'},
+    {k:'mora',  n:'En mora',  ic:'calmora', tono:'mora'},
   ];
-  let fg = D.filtroOblG || 'todos', ff = D.filtroOblF || 'abiertos';
+  let ff = D.filtroOblF || 'aldia';
   const pintar = () => {
-    D.filtroOblG = fg; D.filtroOblF = ff;
-    const lista = D.obligaciones.filter(o => (fg === 'todos' || o.g === fg))
-      .filter(o => ff === 'todos' ? true
-        : ff === 'abiertos' ? (o.est === 'PENDIENTE' || o.est === 'VENCIDA')
-        : ff === 'vencidos' ? o.est === 'VENCIDA'
-        : ff === 'pagados'  ? o.est === 'PAGADA'
-        : (o.dias >= 0 && o.dias <= 30 && o.est !== 'PAGADA'))
+    D.filtroOblF = ff;
+    const abiertas = D.obligaciones.filter(o => o.est !== 'PAGADA');
+    const lista = abiertas.filter(o => ff === 'mora' ? o.est === 'VENCIDA' : o.est !== 'VENCIDA')
       .sort((a,b) => a.dias - b.dias);
-    const debe = lista.filter(o => o.est !== 'PAGADA').reduce((a,o) => a + o.monto + o.recargo, 0);
+    const enMora = abiertas.filter(o => o.est === 'VENCIDA').length;
+    const exigibles = lista.filter(o => o.est !== 'FUTURA');
+    const debe = exigibles.reduce((a,o) => a + o.monto + o.recargo, 0);
     document.getElementById('ap-f').innerHTML =
-      '<span class="filtros__l">Grupo</span>'
-      + '<div class="filtros filtros--con-l">' + gruposF.map(x =>
-          '<button class="filtro" data-g="' + x.k + '" aria-pressed="' + (x.k===fg) + '">' + x.n + '</button>').join('') + '</div>'
-      + '<span class="filtros__l">Estado</span>'
-      + '<div class="filtros">' + fechasF.map(x =>
-          '<button class="filtro" data-fe="' + x.k + '" aria-pressed="' + (x.k===ff) + '">' + x.n + '</button>').join('') + '</div>';
+      '<div class="filtros">' + FILTROS.map(x =>
+        '<button class="filtro" data-fe="' + x.k + '" data-tono="' + x.tono + '" aria-pressed="' + (x.k===ff) + '">'
+        + IC[x.ic] + x.n + '</button>').join('') + '</div>';
     document.getElementById('ap-r').innerHTML = debe
       ? '<div class="resmes" style="grid-template-columns:1fr 1fr">'
-        + '<div><div class="resmes__l">' + IC.calmora + 'Total a pagar</div><div class="resmes__v">' + bs(debe) + '</div></div>'
-        + '<div><div class="resmes__l">' + IC.reloj + 'Cuotas</div><div class="resmes__v">' + lista.filter(o=>o.est!=='PAGADA').length + '</div></div></div>'
+        + '<div><div class="resmes__l">' + (ff === 'mora' ? IC.calmora : IC.reloj)
+        + (ff === 'mora' ? 'Deuda vencida' : 'Total a pagar') + '</div>'
+        + '<div class="resmes__v"' + (ff === 'mora' ? ' style="color:var(--err-texto)"' : '') + '>' + bs(debe) + '</div></div>'
+        + '<div><div class="resmes__l">' + IC.doc + 'Cuotas</div><div class="resmes__v">' + exigibles.length + '</div></div></div>'
       : '';
     document.getElementById('ap-l').innerHTML = lista.length ? lista.map(o => {
       const venc = o.est === 'VENCIDA', pag = o.est === 'PAGADA', fut = o.est === 'FUTURA';
@@ -2011,8 +2147,11 @@ aportes:{ruta:'aportes/mis-obligaciones', titulo:'Mis aportes', volver:'inicio',
            : '<button class="btn btn--acc btn--peq" data-pagar="' + o.id + '">Pagar</button>')
         + '</div></div>';
     }).join('')
-      : '<div class="vacio">' + IC.ok + '<h4>Nada pendiente acá</h4><p>Con este filtro no te queda ninguna cuota por pagar.</p></div>';
-    document.querySelectorAll('[data-g]').forEach(b => b.onclick = () => { fg = b.dataset.g; pintar(); });
+      : (ff === 'mora'
+          ? '<div class="vacio">' + IC.ok + '<h4>No tenés ninguna cuota en mora</h4>'
+            + '<p>Todos tus aportes están dentro de plazo. Así se mantiene el puntaje y así el grupo no tiene que usar el fondo.</p></div>'
+          : '<div class="vacio">' + IC.reloj + '<h4>No tenés aportes por pagar</h4>'
+            + '<p>' + (enMora ? 'Ojo: tenés ' + enMora + ' en mora. Miralas en la otra pestaña.' : 'El próximo período se abre el 1 de septiembre.') + '</p></div>');
     document.querySelectorAll('[data-fe]').forEach(b => b.onclick = () => { ff = b.dataset.fe; pintar(); });
     document.querySelectorAll('[data-pagar]').forEach(b => b.onclick = () => {
       const o = D.obligaciones.find(x => x.id === b.dataset.pagar);
@@ -2028,6 +2167,7 @@ aportes:{ruta:'aportes/mis-obligaciones', titulo:'Mis aportes', volver:'inicio',
 sorteo:{ruta:'pasanaku/grupo/[codigo]/sorteo', titulo:'Verificar el sorteo', volver:'grupo', tab:'grupos', render(){
   return '<div id="so"></div>';
 }, async montar(){
+  if (!D.grupos.length) return irM('grupos');
   const g = D.grupos.find(x => x.codigo === (D.grupoActivo || D.grupos[0].codigo)) || D.grupos[0];
   await llamar('GET','/publico/sorteos/' + SORTEO.id,
     {nota:'CU-62 · el evento del sorteo es público y no requiere sesión: cualquiera puede reproducirlo'});
@@ -2289,8 +2429,7 @@ function listaPorDia(movs, saldoFinal){
     dias[dias.length-1].movs.push(m);
     saldo -= m.m;
   });
-  return dias.map(g => '<div class="dia"><span class="dia__t">' + g.d + '</span><span class="dia__l"></span>'
-    + '<span class="dia__m">saldo ' + bs(g.cierre) + '</span></div>'
+  return dias.map(g => '<div class="dia"><span class="dia__t">' + g.d + '</span><span class="dia__l"></span></div>'
     + g.movs.map(fila).join('')).join('');
 }
 
@@ -2406,6 +2545,35 @@ function avisar(texto){
   el.dataset.ver = '1';
   clearTimeout(temporizadorToast);
   temporizadorToast = setTimeout(() => { el.dataset.ver = '0'; }, 3600);
+}
+
+/* Una cuenta recién abierta no es la de María con un año de historial: es una
+   billetera con el bono adentro y nada más. Se maqueta así a propósito, porque
+   los estados vacíos son la mitad de la app que nadie diseña. */
+function cuentaNueva(){
+  D.nueva = true;
+  D.saldo = BONO.monto;
+  D.saldoInicial = 0;
+  D.retenido = 0; D.retenidoTxt = '';
+  D.movimientos = [{t:BONO.nombre, d:'hoy', s:'Campaña ' + BONO.campana + ' · para que pruebes sin poner plata',
+                    m:BONO.monto, e:'entra', ic:'bolsa'}];
+  D.obligaciones = [];
+  D.grupos = [];
+  D.grupoActivo = null;
+  D.avisos = [{t:'Te regalamos ' + bs(BONO.monto) + ' para arrancar',
+               s:'Hace un momento · campaña ' + BONO.campana, ic:'bolsa', c:'ok'}];
+  D.reputacion = {
+    total:120, nivel:'SIN_HISTORIAL',
+    factores:[
+      {n:'Puntualidad de aporte', peso:'0,30', v:0,  d:'Todavía no tenés aportes registrados'},
+      {n:'Ciclos completados',    peso:'0,15', v:0,  d:'Ninguno todavía'},
+      {n:'Antigüedad',            peso:'0,10', v:2,  d:'Tu cuenta se abrió hoy'},
+      {n:'Como organizadora',     peso:'0,05', v:0,  d:'Todavía no administraste un grupo'},
+      {n:'Mora acumulada',        peso:'0,20', v:0,  d:'Sin atrasos'},
+      {n:'Incumplimientos',       peso:'0,20', v:0,  d:'Ninguno declarado'},
+    ],
+    insignias:Object.keys(INSIGNIAS).map(n => ({n, d:INSIGNIAS[n].que.split('.')[0] + '.', g:0})),
+  };
 }
 
 function pendientes(){
@@ -3305,6 +3473,7 @@ function aplicarClima(k){
   });
   D.grupo = Object.assign({}, D.grupo, {alDia:D.grupos[0].alDia, enMora:D.grupos[0].enMora});
   D.avisos.forEach(a => a.leido = false);
+  D.nueva = false;
 }
 
 

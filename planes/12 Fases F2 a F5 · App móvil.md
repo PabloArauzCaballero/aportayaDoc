@@ -105,6 +105,10 @@ digital. Si la abuela no lo entiende, se rehace.
 ## Gate de salida F3
 
 - [ ] Gate común
+- [ ] `bienvenida → tour → registro`: el tour se puede saltar y no se repite
+- [ ] Al terminar el alta se acredita el **bono de bienvenida** y la app abre en el
+      estado de cuenta nueva, no en el de alguien con historial
+- [ ] Cada lista vacía dice **qué hacer**, no «no hay resultados»
 - [ ] Alta completa de **ocho pasos** con cámara, probada en Android de gama baja
 - [ ] El cotejo campo a campo se ve y **la diferencia se puede corregir** antes de seguir
 - [ ] Prueba de vida bajo el umbral ⇒ reintento con motivo, y a los 3 intentos pasa a
@@ -178,8 +182,12 @@ acá.**
 - [ ] **Ninguna barra de filtros se desliza en horizontal**: los chips se acomodan en
       varias líneas y se ve todo lo que hay. Un carrusel de filtros esconde opciones
       detrás de un gesto que nadie descubre
-- [ ] Cuando hay dos ejes de filtro seguidos, cada uno lleva su rótulo (*Grupo*,
-      *Estado*): ocho pastillas en fila sin rótulo son ocho preguntas
+- [ ] **Cada filtro lleva su ícono**, y no hay filtro «Otros»: una categoría que se
+      llama «otros» es una que no se pensó
+- [ ] *Mis aportes* filtra por **una sola cosa**: a tiempo o en mora. El historial de
+      lo pagado vive en Movimientos, que es donde se busca un comprobante
+- [ ] El total a pagar cuenta **solo lo exigible**: una cuota de un período que
+      todavía no se abrió no se debe, y sumarla infla la deuda
 - [ ] La portada abre contestando tres cosas sin desplazar: cuánto tengo, qué tengo
       que hacer hoy y cómo van mis grupos
 - [ ] *Aportes pendientes* filtra por grupo y por fecha, y muestra el **recargo por

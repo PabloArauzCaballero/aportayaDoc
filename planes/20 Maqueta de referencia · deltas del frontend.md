@@ -36,6 +36,8 @@ afecta: [F1, F3, F4, F5, F6, F7, F8]
 | **D-5** | El sorteo se muestra como **evento guardado y reproducible** | F5 |
 | **D-6** | **Perfil público de terceros** y catálogo de insignias explicable | F5 |
 | **D-7** | La **publicidad** es una superficie del producto, rotulada y con control | F4, F5 |
+| **D-8** | El alta entra por un **tour** de cuatro pantallas | F3 |
+| **D-9** | La cuenta nueva abre con **bono de bienvenida** y su propio estado | F3, F4 |
 
 Y una regla transversal, que es la que produjo casi todos los deltas:
 
@@ -220,6 +222,45 @@ los pone la plataforma. El estándar es parte del producto, no una guía de esti
 
 ---
 
+## D-8 · El alta entra por un tour
+
+Antes de pedirle un dato a nadie hay que explicarle qué es esto. Cuatro pantallas
+con ilustración, saltables, y la última abre la cuenta:
+
+1. **El pasanaku de siempre, sin el cuaderno** — los mismos turnos, sin que nadie tenga
+   que juntar ni guardar
+2. **Tu plata está en custodia** — cuenta bancaria separada, comprobante por movimiento
+3. **El turno se sortea a la vista de todos** — semilla pública, reproducible
+4. **Si alguien no aporta, el grupo no se frena** — el fondo cubre y la deuda queda viva
+
+Las cuatro son las cuatro objeciones que aparecen siempre. Contestarlas antes del
+formulario es lo que hace que alguien complete ocho pasos de verificación.
+
+**Cambio en F3:** `bienvenida → tour → registro`, con `BarraDePuntos` y botón de saltar.
+
+---
+
+## D-9 · La cuenta nueva no es la cuenta llena
+
+Al terminar el alta se acredita un **bono de bienvenida de Bs 10** —parámetro de
+catálogo con su campaña, no un número en el código— y la app abre en un estado
+**propio de cuenta nueva**, distinto del de alguien con historial:
+
+| | Cuenta nueva | Cuenta con historial |
+| --- | --- | --- |
+| Portada | Panel de bienvenida con el bono y los tres pasos siguientes | Tarjeta del próximo aporte |
+| Grupos | Estado vacío que invita a entrar con código | Tira con avance de turno |
+| Movimientos | Un solo asiento: el bono | Extracto del período |
+| Reputación | *Sin historial*, con los factores en cero y su motivo | Puntaje con desglose |
+
+> **Los estados vacíos son la mitad de la app que nadie diseña**, y son justo la mitad
+> que ve una persona el primer día. Si el primer día se ve roto, no hay segundo.
+
+El bono se acredita con un asiento como cualquier otro, contra una cuenta de gasto de
+la empresa: es costo de adquisición, y alguien lo tiene que aprobar y poder cambiar.
+
+---
+
 ## 2 · Componentes que suma `packages/ui` (F1)
 
 La maqueta usa nueve piezas que el inventario de [[11 Fases F0 y F1 · Cimientos y sistema de diseño]] no tenía. Se agregan a F1 **antes** de que los carriles compongan:
@@ -235,6 +276,9 @@ La maqueta usa nueve piezas que el inventario de [[11 Fases F0 y F1 · Cimientos
 | `BannerDePauta` | organismo | Publicidad rotulada |
 | `SeccionDeExpediente` | organismo | KYC, incumplimientos, disputas, reclamos |
 | `SelectorSegmentado` | átomo | Cambio entre vistas equivalentes |
+| `BarraDePuntos` | átomo | Progreso del tour |
+| `PanelBienvenida` | organismo | Portada de cuenta nueva, con el bono y los pasos |
+| `EstadoVacio` | molécula | Cada lista sin datos dice qué hacer, no «no hay resultados» |
 
 Y dos reglas de estilo que la maqueta fija y `disenar-frontend` recoge:
 
