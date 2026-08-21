@@ -91,6 +91,14 @@ partir de ahí, un átomo nuevo se pide por micro-PR.
 | --- | :-: | --- | --- |
 | **M3** | F5 | `apps/movil/src/pantallas/pasanaku/` | 20–29, 52, 53, 59–76 |
 | **B2** | F8 | `apps/backoffice/src/rutas/cumplimiento/` | 38 CU de cumplimiento y gobierno |
+| **B5** | F8.D | `apps/backoffice/src/rutas/sistemas/` | Backoffice de sistemas (delta D-2) |
+
+> **B5 es un producto aparte que comparte el shell.** Plataforma y seguridad tienen su
+> propio menú, su propio layout de sección y sus propios roles (`PLATAFORMA`,
+> `SEGURIDAD`): estado de servicios, SLO, despliegues, base y migraciones, respaldos,
+> proveedores, outbox y webhooks, más *Accesos* e *Incidentes*, que **se mudan desde
+> B1 y B2**. Colisiona con cero archivos de los otros carriles porque vive en su
+> propio directorio de rutas. Ver [[20 Maqueta de referencia · deltas del frontend]].
 
 ### Ola F4 · 3 carriles — publicación y los carriles nuevos
 
@@ -142,7 +150,8 @@ Router (una ruta = un archivo) y el organismo `TablaDeDatos` como pieza de traba
 | :-: | :-: | --- |
 | **B** | F6 | shell: `layout/`, `proveedores/`, `organismos/TablaDeDatos`, tablero, **`operacion/estado`** (estado de plataforma) |
 | **B1** | F7 | `operacion/`: conciliación · cierre-diario · desembolsos (autorizar/ejecutar) · reclamos · **políticas-resolución** · roles · tarifario · reportes · **fondeo (QR)** · **mensajería** |
-| **B2** | F8 | `cumplimiento/`: **verificaciones** (aceptar/rechazar) · alertas · casos/ROS · uif · riesgo · gobierno |
+| **B2** | F8 | `cumplimiento/`: **verificaciones como expediente** (aprobar/observar/rechazar con causal del catálogo) · alertas · casos/ROS · uif · gobierno |
+| **B5** | F8.D | `sistemas/`: estado de servicios · slo · despliegues · base-de-datos · respaldos · proveedores · outbox · webhooks · **accesos** · **incidentes** |
 | **B3** | F13 | `contabilidad/`: período · presupuesto · compras/CxP · cobros · activos · estados (mini-contable esencial) |
 | **B4** | F14 | `publicidad/`: partners · anunciantes · campañas (aprobar) · moderación · liquidación |
 
@@ -170,6 +179,7 @@ frontend             Ola F0 ── Ola F1 ── Ola F2 ── Ola F3 ── Ola
 | B1 · F7 operación | los 26 de operación | backend Olas 2 y 3 |
 | M3 · F5 pasanaku | CU-20…29, 59…76 | backend Olas 2C, 3 y 4 |
 | B2 · F8 cumplimiento | los 38 | backend Olas 2D, 2E y 3C |
+| B5 · F8.D sistemas | ninguno de negocio: consume `/erp/*` e `/indicadores/*` | backend Ola 3 (plataforma) |
 | W · F9 sitio | CU-30, 34, 61, 72, 73, 75 | backend Olas 2B y 3B |
 
 **Si un contrato no existe todavía, el carril de frontend no lo inventa.** Lo pide al

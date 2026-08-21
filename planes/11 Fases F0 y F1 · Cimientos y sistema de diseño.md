@@ -4,12 +4,12 @@ tags:
   - fase
   - frontend
 titulo: "Fases F0 y F1 — Cimientos y sistema de diseño"
-fases: [F0, F1]
+fases: [F0.0, F0, F1]
 depende_de: []
 habilita: [F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12]
 ---
 
-# Fases F0 y F1 — Cimientos y sistema de diseño
+# Fases F0.0, F0 y F1 — Maqueta, cimientos y sistema de diseño
 
 > **Se ejecuta en:** Ola F0 · carril T (troncal, máquina única). **Ningún otro carril
 > de frontend trabaja hasta que su gate esté ejecutado.** Ver
@@ -20,6 +20,96 @@ habilita: [F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12]
 > [[00b Estándar de ejecución · código limpio, pruebas y calidad]] aplican en las dos
 > fases: regla cero, composición atómica, KISS, tokens, los cuatro estados,
 > accesibilidad. **Se declara cada componente por nivel antes de crearlo.**
+
+---
+
+# FASE F0.0 — Maqueta navegable con backend simulado
+
+> **Objetivo.** Que exista el **recorrido completo de los dos productos, navegable y
+> presentable**, con cada llamada al backend simulada, **antes de escribir una sola línea
+> de `apps/`**. No es un borrador que se tira: es la **especificación visual** que F1 y las
+> fases de pantalla reproducen.
+
+> **Se ejecuta en:** una máquina, antes de la Ola F0. **Entregable:**
+> [[AportaYa-Maqueta|docs/Views/AportaYa-Maqueta.html]] + su ficha.
+
+## Por qué es la primera fase y no un adorno
+
+1. **Quien financia decide sobre algo que puede tocar**, no sobre un documento de pantallas.
+   Un recorrido clickeable en el celular de cada director hace por la decisión lo que
+   cuarenta páginas de prosa no hacen.
+2. **Adelanta las decisiones caras al momento en que son baratas.** Cuántas pestañas, dónde
+   vive pagar el aporte, si el saldo se relee o se ajusta, si el efectivo entra: resolverlo
+   en un HTML cuesta una tarde; resolverlo en F4, con el organismo ya construido y consumido
+   por tres pantallas, cuesta diez veces más.
+3. **Convierte la prosa en criterio de aceptación.** F1 no discute cómo se ve una
+   `TarjetaSaldo`: la compara contra la maqueta.
+
+## Gate de entrada
+
+- [ ] `python3 scripts/verificar_boveda.py` → **TODO OK**
+- [ ] [[Flujo de pantallas · app del participante]] y
+      [[Flujo de pantallas · backoffice administrador]] escritos
+- [ ] el sistema de diseño con sus tokens: `docs/Views/Sistema-Diseno/estilos.css`
+
+## Las seis reglas de la maqueta — para que no mienta
+
+Una maqueta que muestra algo que el sistema no va a hacer es peor que no tenerla: fija
+expectativas que después hay que romper.
+
+| # | Regla | Por qué |
+| :-: | --- | --- |
+| 1 | **Los tokens se copian de `estilos.css`**, no se reinterpretan | Un hex que diverja convierte la maqueta en una fuente de verdad falsa |
+| 2 | **Rutas, códigos de error y servicio dueño salen de la bóveda** (`docs/CasosDeUso/`, `scripts/modelo.py` → `PREFIJOS`) | Es lo que la vuelve reutilizable como referencia de los manejadores de MSW |
+| 3 | **Ningún dato es real** y el pie lo dice | Montos, nombres y grupos son de ejemplo; nadie debe poder citar una cifra de acá |
+| 4 | **Tres escenarios de red**: todo bien · intermitente con reintento idempotente · rechazo con el código del CU | Los cuatro estados y la idempotencia se **muestran**, no se prometen |
+| 5 | **El saldo se relee del backend**, nunca se ajusta en memoria | Es la regla §0.2b del flujo de pantallas: si la maqueta la viola, la enseña mal |
+| 6 | **Todo hueco o divergencia que aparezca se declara**, no se completa con una suposición | Es la regla cero de [[Contrato de implementación para IA]] |
+
+## Gate de salida F0.0
+
+- [ ] Recorrido **completo** de participante y de operador, navegable de punta a punta
+- [ ] Cada pantalla cita **su CU y su endpoint reales**; el servicio dueño se resuelve con `PREFIJOS`
+- [ ] Los tres escenarios de red funcionan, incluido el **reintento con la misma clave de idempotencia**
+- [ ] **Cada pantalla del backoffice declara para qué sirve** en lenguaje de negocio
+      ([[Flujo de pantallas · backoffice administrador]] §0.6)
+- [ ] `python3 scripts/verificar_boveda.py` → **TODO OK** *después* de corregir lo que la maqueta destape
+- [ ] Las divergencias encontradas están **corregidas en la bóveda o declaradas** como hueco
+- [ ] Publicada, y **abierta en un dispositivo que no sea el de quien la hizo**
+
+## Lo que F0.0 **no** es
+
+- **No es código de `apps/`.** No crea el monorepo, no instala Expo, no toca `packages/ui`.
+- **No se reutiliza el HTML.** Lo que sobrevive es la decisión de diseño y el mapa
+  pantalla ↔ CU ↔ endpoint, no el marcado.
+- **No reemplaza a F1.** El sistema de diseño se construye igual, átomo por átomo.
+
+## Cómo la consumen las fases siguientes
+
+| Fase | Qué toma de la maqueta |
+| --- | --- |
+| **F0.3** Servidor simulado con MSW | Las **rutas, los códigos de error y los tres escenarios** ya elegidos: los manejadores los reproducen en vez de inventarlos |
+| **F1** Sistema de diseño | El **criterio de aceptación visual** de cada átomo, molécula y organismo |
+| **F2–F8** Pantallas | Cada pantalla se compara contra la suya; lo que difiera se justifica o se corrige |
+
+## Evidencia de que la fase sirve
+
+La primera corrida de F0.0 (agosto de 2026) **destapó ocho defectos en la bóveda** que la
+prosa no había mostrado, y todos se corrigieron antes de que existiera código que los
+heredara:
+
+| # | Lo que apareció | Dónde |
+| :-: | --- | --- |
+| 1 | `CU-08` usaba un ámbito `PLATAFORMA` **que no existe** en el enum (`GLOBAL \| GRUPO \| ORGANIZACION`) | contrato y `gherkin` de [[CU-08 Asignar y revocar roles de operador]] |
+| 2 | `R-SEG-04` y `R-SEG-07` **intercambiadas** en dos documentos | `CU-08` y `planes/06` §17.5 |
+| 3 | `CU-08` describía un **estado que la tabla no tiene** («asignación inactiva») | [[CU-08 Asignar y revocar roles de operador]] |
+| 4 | «Pagar» figuraba en los accesos rápidos, **contra el sistema de diseño** | [[Flujo de pantallas · app del participante]] §4.1 |
+| 5 | La maqueta tenía una pestaña «Avisos» que **la documentación nunca pidió** | §3 del mismo documento |
+| 6 | **Nadie había escrito** que el saldo se relee en vez de ajustarse en memoria | §0.2b, regla nueva |
+| 7 | `POST /sesion` en el flujo de pantallas contra `POST /sesiones` en el CU | divergencia declarada |
+| 8 | 24 permisos que los CU exigen y el catálogo no tiene · 3 propósitos de token sin canal activo | brechas **S-8** y **S-9** de [[Seguridad]] |
+
+Ninguno se habría visto leyendo. Todos aparecieron al intentar dibujarlos.
 
 ---
 
@@ -258,6 +348,31 @@ existir para que M1/M2/M3 solo compongan. F1 los entrega; los transversales sube
 Todos con sus **cuatro estados** donde apliquen — es lo que hace que ninguna pantalla de dinero
 pueda saltárselos.
 
+### Los nueve que suma la maqueta de referencia
+
+[[20 Maqueta de referencia · deltas del frontend]] fija nueve piezas más, y entran en F1
+**antes** de que los carriles compongan: partirlas después es rehacer pantallas ya hechas.
+
+| Componente | Nivel | Dónde se usa |
+| --- | :-: | --- |
+| `BarraDePasos` | molécula | Alta de cuenta, que pasa a ser de **ocho pasos** |
+| `MarcoDeCamara` | organismo | Captura de documento y selfie, con sus controles de calidad a la vista |
+| `FilaDeCotejo` | molécula | Declarado contra leído, campo por campo, con la diferencia marcada |
+| `ChipsDeFiltro` | molécula | Movimientos, aportes pendientes, cualquier bandeja del backoffice |
+| `ResumenDePeriodo` | molécula | Entró y salió del filtro activo |
+| `FilaDeMovimiento` | molécula | **Tipada por lo que pasó**, con saldo corrido |
+| `BannerDePauta` | organismo | Publicidad rotulada, con control para ocultarla |
+| `SeccionDeExpediente` | organismo | KYC, incumplimientos, disputas y reclamos |
+| `SelectorSegmentado` | átomo | Cambio entre vistas equivalentes |
+
+Y dos reglas que `disenar-frontend` recoge y que valen para todo el sistema:
+
+1. **El ícono dice qué pasó, no si el número sube o baja.** Un aporte, una recarga por
+   QR, una comisión y un débito rechazado llevan íconos distintos: el color y el signo
+   ya dicen la dirección. Un `+` y un `−` repetidos en toda la lista no informan nada.
+2. **Los movimientos se agrupan por día**, con el neto del día y el **saldo corrido**
+   al costado de cada línea. Una lista plana de importes no es un extracto.
+
 ## F1.8 · Los organismos que exige el recorrido del administrador
 
 El recorrido de [[Flujo funcional · usuario administrador]], desglosado en
@@ -270,7 +385,8 @@ densidad de escritorio.
 | --- | --- | --- |
 | Shell / tablero | `TablaDeDatos`, `PanelKPIs` (`TarjetaKPI`), `PanelEstadoPlataforma` | B (F6) |
 | Operación | `PanelDescuadre`, `ResumenCierre`, `PanelAprobacion`/`PanelEjecucion`, `FichaReclamo` (`LineaDeTiempo`), `PanelResolucion`, `EditorDePolitica`/`SimuladorDeReglas`, `EditorDeRoles`, `FormularioTarifario`/`PanelPreaviso`, `ConstructorDeReporte`, `FormularioInstrumentoFondeo`/`VistaPreviaQR`/`HistorialFondeo`, `EditorDePlantilla`/`MatrizDeCanales`/`PanelRuteoProveedor` | B1 (F7) |
-| Cumplimiento | `RevisorDeIdentidad`, `PanelTriaje`, `FichaCaso`, `PanelROS`, `FormularioRequerimiento`, `FichaIncidente`, `ActaComite` | B2 (F8) |
+| Cumplimiento | `RevisorDeIdentidad` (= cola + **`SeccionDeExpediente`** ×9), `PanelTriaje`, `FichaCaso`, `PanelROS`, `FormularioRequerimiento`, `ActaComite` | B2 (F8) |
+| Sistemas | `PanelSLO`, `PanelDespliegues`, `PanelColas`, `PanelWebhooks`, `PanelRespaldos`, `PanelSaludProveedor`, `EditorDeRoles`, `FichaIncidente` | B5 (F8.D) |
 | Contabilidad | `PanelPeriodo`, `EditorPresupuesto`, `FichaFactura`, `PanelDepreciacion`, `VisorEstadoFinanciero` | B3 (F13) |
 | Publicidad | `FormularioPartner`, `FormularioAnunciante`, `PanelAprobacionCampana`, `ColaModeracion` | B4 (F14) |
 

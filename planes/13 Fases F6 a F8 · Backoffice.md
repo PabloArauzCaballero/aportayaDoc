@@ -22,6 +22,14 @@ habilita: [F12]
 completa, usuario experto. **El backoffice no es la app estirada**: comparte
 componentes de dominio, no comparte layout (ADR-004).
 
+> [!important] Son **dos** backoffices, no uno con más pestañas (delta D-2)
+> El **financiero** (F7, F8.A–C) y el **de sistemas** (F8.D) no comparten usuario, ni
+> rol, ni la pregunta que vienen a contestar: tesorería mira si el dinero cuadra;
+> plataforma mira si el sistema aguanta y si se puede restaurar. Comparten el **shell
+> de F6** y nada más: ni menú, ni layout de sección, ni permisos. Mezclarlos es lo que
+> termina dándole a un operador financiero permisos sobre la base de datos.
+> Ver [[20 Maqueta de referencia · deltas del frontend]].
+
 > **Todo el backoffice va `noindex, nofollow`**, con `X-Robots-Tag` en NGINX además
 > de la meta. Es una superficie con datos personales detrás de login: que aparezca en
 > un buscador sería un incidente, no un logro de SEO.
@@ -75,7 +83,7 @@ componentes de dominio, no comparte layout (ADR-004).
 
 | Área | Pantallas que exige la bóveda |
 | --- | --- |
-| **Altas y accesos** | Cola de altas con **KYC observado** · auditoría de accesos con dispositivo e IP · ***Accesos***: matriz de usuarios por rol, con vigencia y **quién otorgó** · recuperaciones asistidas |
+| **Altas y accesos** | Cola de altas con **KYC observado** · auditoría de accesos con dispositivo e IP · recuperaciones asistidas. ***Accesos*** y ***Incidentes y riesgo*** se mudan al backoffice de sistemas (F8.D) |
 | **Billetera** | Monitor de recargas **por proveedor**, con tasa de acreditación y tiempo medio · cola de retiros con **puntaje antifraude y decisión del motor** · retenciones vigentes · **formulario de reverso con doble aprobación y motivo obligatorio** · alta de oficios **sin archivo no se ejecuta** · verificación de cuentas por comprobante |
 | **Cobranza y entregas** | Estado de cobranza por grupo y período **con la brecha para completar la bolsa** · tablero de entregas del día con **doble control** · cola de desembolsos por estado y antigüedad, con intentos · panel del fondo por grupo · lista interna con antigüedad, monto y causa |
 | **Cierre** | **Cierre diario con el detalle de lo que impide cuadrar** · panel del punto de atención con el **teórico en vivo** |
@@ -115,11 +123,23 @@ Es la fase más grande del frontend. **Se parte en tres sub-fases con gate propi
 
 ## F8.A · UIF y monitoreo
 
-Bandeja de diligencias **con doble revisión obligatoria para PEP** · panel de PEP con
-próxima revisión · tablero de revisiones vencidas **ordenado por riesgo** · bandeja de
-formularios PCC-01 del período · consulta de ROG con exportación · **bandeja de
-alertas y casos, con plazo y decisión obligatoria** · **editor de reglas con simulador
-al lado** · bandeja de oficios con plazo, alcance y respuesta archivada.
+**Verificación de identidad como cola + expediente** (delta D-3), con sus nueve
+bloques: identidad declarada contra leída, autenticidad del documento, biometría con
+prueba de vida y búsqueda 1:N, listas restrictivas con puntaje de coincidencia
+difusa, perfil y origen de fondos, dispositivo y sesión del alta, composición del
+riesgo factor por factor, historial sin edición, y decisión con **causal del catálogo
+obligatoria** y segunda firma en riesgo alto · bandeja de diligencias **con doble
+revisión obligatoria para PEP** · panel de PEP con próxima revisión · tablero de
+revisiones vencidas **ordenado por riesgo** · bandeja de formularios PCC-01 del
+período · consulta de ROG con exportación · **bandeja de alertas y casos, con plazo y
+decisión obligatoria** · **editor de reglas con simulador al lado** · bandeja de
+oficios con plazo, alcance y respuesta archivada.
+
+> **Una fila con un botón de aprobar no alcanza.** El analista tiene que poder firmar
+> una decisión y defenderla seis meses después: por eso el expediente muestra la
+> evidencia entera y el riesgo se explica por sus factores, no por un número. Y por
+> eso **rechazar u observar sin causal del catálogo es imposible en la interfaz**: la
+> causal viaja en la notificación al titular, que tiene derecho a saber qué subsanar.
 
 > **Deber de reserva (CU-44).** El titular **no** ve nada de esto y la interfaz no
 > puede filtrarlo: ninguna pantalla del backoffice de LGI/FT genera un aviso, una
@@ -169,11 +189,62 @@ como tal.
 - [ ] Ninguna regla, tarifario, segmento ni automatización se activa sin simulación
 - [ ] Cierre mensual y diario **no se confirman** si no cuadran (probado)
 - [ ] Ninguna pantalla de LGI/FT produce rastro visible para el investigado
+- [ ] Rechazar u observar una verificación **sin causal del catálogo** ⇒ imposible
+- [ ] Expediente de riesgo alto ⇒ la interfaz exige segunda firma **de otra persona**
+- [ ] Quien cargó los datos de un alta **no aparece** como revisor posible
 - [ ] Acta sin quórum ⇒ no se cierra; parte interesada ⇒ no puede votar
 - [ ] Indicador provisorio marcado como tal; indicador bajo el mínimo de casos,
       suprimido
 - [ ] Todo reporte muestra **el permiso que exige** antes de ejecutarse
 
+---
+
+# FASE F8.D — Backoffice de sistemas
+
+> **Objetivo.** Que plataforma y seguridad tengan **su propio producto**, con su
+> usuario y su rol, para contestar dos preguntas que el backoffice financiero no
+> contesta: *¿esto aguanta?* y *¿esto se puede restaurar?*
+
+**Usuario:** `PLATAFORMA` y `SEGURIDAD`. **Reutiliza** el shell de F6 completo.
+**No reutiliza** el menú ni el layout de sección del financiero.
+
+## Alcance
+
+| Sección | Pantallas |
+| --- | --- |
+| **Plataforma** | **Estado de servicios** con criticidad y qué se cae con qué · **Salud y SLO**: disponibilidad, p95/p99 y **presupuesto de error consumido** por servicio · **Despliegues**: versión por servicio, quién la puso, reversiones automáticas e **interruptores de funcionalidad** |
+| **Datos** | **Base y migraciones**: versión del esquema, migraciones pendientes, retraso de la réplica, conexiones del pool · **Respaldos y restauración**: RPO y RTO **objetivo contra medido**, y la **fecha de la última restauración probada** |
+| **Integraciones** | **Proveedores externos**: éxito, latencia, **costo real por operación** y reglas de conmutación escritas de antemano · **Outbox y trabajos**: colas con pendientes, fallidos y **descartados**, más los trabajos programados con su última corrida · **Webhooks entrantes**: duplicados, fuera de orden, firma inválida, y qué hace la plataforma con cada caso |
+| **Seguridad** | **Accesos y roles** (viene de F7) · **Incidentes y riesgo** con sus relojes de reporte (viene de F8.C) |
+
+## Las cinco reglas de esta fase
+
+1. **El presupuesto de error es una decisión, no un gráfico.** Cuando un servicio lo
+   agota, la pantalla lo dice y la regla escrita se aplica: se congela todo cambio que
+   no sea de estabilidad. Sin eso, el SLO es decoración.
+2. **Un respaldo que nunca se restauró no es un respaldo.** La pantalla muestra la
+   **fecha de la última restauración probada** y la marca vencida a los 30 días. El
+   número que importa es cuánto tardó, no que el trabajo corrió.
+3. **La conmutación de proveedor es automática pero nunca silenciosa.** Cambiar de
+   banco cambia el costo por operación: la pantalla muestra el costo real contra el
+   contratado, porque eso lo tiene que saber alguien de negocio.
+4. **Ningún mensaje se pierde, y ninguno se reintenta a ciegas.** Lo que agota sus
+   reintentos queda en la cola de descartados, visible, con su motivo. Reintentar un
+   desembolso sin mirar es como se paga dos veces.
+5. **Los interruptores que tocan dinero exigen dos personas.** La interfaz lo muestra
+   y lo impide, igual que un reverso.
+
+## Gate de salida F8.D
+
+- [ ] Gate común de §10 del plan maestro del frontend
+- [ ] Un rol financiero **no ve** este backoffice **y** sus endpoints responden `403`
+- [ ] Presupuesto de error agotado ⇒ la pantalla lo declara, no lo insinúa
+- [ ] Restauración probada hace más de 30 días ⇒ marcada como vencida
+- [ ] Cola de descartados visible con motivo por mensaje; reintentar exige confirmar
+- [ ] Interruptor que toca dinero ⇒ la interfaz rechaza que lo mueva una sola persona
+- [ ] Migración pendiente y retraso de réplica **se muestran en la pantalla que los
+      sufre**, no solo acá
+
 ## Ver también
 
-[[00c Recetario · implementar un caso de uso]] · [[16 Carriles de frontend]] · [[10 Plan maestro del frontend]] · [[12 Fases F2 a F5 · App móvil]] · [[14 Fases F9 a F11 · Sitio público, SEO y GEO]] · [[Cumplimiento]]
+[[00c Recetario · implementar un caso de uso]] · [[16 Carriles de frontend]] · [[10 Plan maestro del frontend]] · [[12 Fases F2 a F5 · App móvil]] · [[14 Fases F9 a F11 · Sitio público, SEO y GEO]] · [[20 Maqueta de referencia · deltas del frontend]] · [[Cumplimiento]]

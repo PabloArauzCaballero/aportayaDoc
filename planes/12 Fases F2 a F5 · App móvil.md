@@ -18,6 +18,12 @@ habilita: [F12]
 > [[10b Estándar de ejecución del frontend]] aplica en las cuatro fases. **Cada
 > pantalla sale de la sección «Interfaz» de su caso de uso** — no se inventa.
 
+> [!tip] La maqueta manda sobre el cómo
+> [[20 Maqueta de referencia · deltas del frontend]] fija la referencia visual y de
+> comportamiento de estas cuatro fases. Los deltas **D-1** (alta de ocho pasos),
+> **D-4** (aportes pendientes), **D-5** (sorteo como evento), **D-6** (perfil público
+> e insignias) y **D-7** (publicidad) ya están aplicados abajo.
+
 **Contexto real de uso, que manda sobre todo lo demás:** Android de gama baja, datos
 móviles intermitentes, en la calle, con una persona que quizá nunca usó una billetera
 digital. Si la abuela no lo entiende, se rehace.
@@ -69,10 +75,10 @@ digital. Si la abuela no lo entiende, se rehace.
 
 | CU | Pantalla | Lo que el CU exige |
 | :-: | --- | --- |
-| 01 | **Alta guiada en cuatro pasos** con cámara para el documento | Al terminar **muestra los topes que le corresponden** |
+| 01 | **Alta guiada en ocho pasos** con captura de documento y prueba de vida (D-1) | Cotejo campo a campo de lo declarado contra lo leído, y al terminar **los topes concretos que le corresponden** |
 | 02 | *Aumentá tu límite* | Muestra **qué desbloquea cada nivel antes** de pedir papeles |
 | 03 | Declaración PEP | Las cinco categorías **en lenguaje llano, no en jerga normativa** |
-| 04 | Ingreso con teléfono y PIN o biometría | Dispositivo nuevo **siempre** pide segundo factor |
+| 04 | Ingreso con teléfono y PIN o biometría | Dispositivo nuevo **siempre** pide segundo factor · el código tiene **tope de 3 intentos y bloqueo por hora**, visible en pantalla |
 | 05 | Contrato a pantalla completa | Resumen de comisiones arriba, **con impuestos incluidos** |
 | 06 | Aviso de actualización de datos | **Qué falta y por qué se pide** |
 | 07 | *Mis datos*: descargar, corregir u oponerse | **Con el plazo de respuesta a la vista** |
@@ -82,8 +88,15 @@ digital. Si la abuela no lo entiende, se rehace.
 
 ## Lo que define esta fase
 
-- **CU-01 es la primera impresión del producto.** Cuatro pasos, cámara para el
-  documento, y al final los límites concretos — no un «bienvenido» vacío.
+- **CU-01 es la primera impresión del producto, y son ocho pasos.** Datos, celular
+  verificado, anverso, reverso, prueba de vida, **cotejo de lo declarado contra lo
+  leído**, perfil del cliente con origen de fondos, y contrato con los tres
+  consentimientos separados. Al final, los límites concretos — no un «bienvenido»
+  vacío. El desglose completo está en [[20 Maqueta de referencia · deltas del frontend]].
+- **El paso de cotejo evita el rechazo más común**, que es un dato mal tipeado. Sin él,
+  la persona se entera al día siguiente de que su alta no pasó.
+- **El perfil del cliente no es burocracia:** es contra lo que después compara el
+  monitoreo. Un alta sin origen de fondos declarado deja al monitoreo sin referencia.
 - **CU-03 en lenguaje llano** es un requisito escrito, no una sugerencia de estilo:
   una declaración PEP que la persona no entiende es una declaración inválida.
 - **CU-46**: mientras la licencia esté `EN_TRAMITE` la app tiene que explicar, sin
@@ -92,7 +105,14 @@ digital. Si la abuela no lo entiende, se rehace.
 ## Gate de salida F3
 
 - [ ] Gate común
-- [ ] Alta completa con cámara, probada en Android de gama baja
+- [ ] Alta completa de **ocho pasos** con cámara, probada en Android de gama baja
+- [ ] El cotejo campo a campo se ve y **la diferencia se puede corregir** antes de seguir
+- [ ] Prueba de vida bajo el umbral ⇒ reintento con motivo, y a los 3 intentos pasa a
+      revisión asistida (probado)
+- [ ] Código de verificación: tope de intentos y bloqueo por hora, con el mensaje que
+      dice **cuántos quedan**
+- [ ] Los tres consentimientos se guardan **por separado**; el de publicidad se puede
+      rechazar sin perder el alta
 - [ ] Dispositivo nuevo ⇒ segundo factor, siempre (probado)
 - [ ] El contrato muestra comisiones **con impuestos** antes de aceptar
 - [ ] Plazo de respuesta visible en *Mis datos* (CU-07)
@@ -113,7 +133,7 @@ acá.**
 | 11 | *Retirar*: destino, monto, **costo y neto antes de confirmar** con biometría | El neto en grande |
 | 12 | Enviar | **Nombre y foto del destinatario antes de aceptar** |
 | 13 | Saldo retenido **separado**, con motivo y hasta cuándo | No se mezcla con disponible |
-| 14 | Extracto | Muestra **el movimiento y su corrección**, nunca solo el resultado |
+| 14 | Extracto **agrupado por día**, con neto diario, saldo corrido por línea y filtros por tipo | Muestra **el movimiento y su corrección**, nunca solo el resultado. El ícono dice **qué pasó**, no si el número sube o baja |
 | 15 | *Movimientos → Descargar* | Extracto por mes y certificado con folio |
 | 16 | *Cerrar mi cuenta* | **Lista de lo que falta**, no un «no» genérico |
 | 17 | Monto no disponible | **Número de oficio y a quién consultar** |
@@ -134,6 +154,12 @@ acá.**
 4. **El extracto muestra la corrección, no el resultado limpio.** Un reverso se ve
    como movimiento nuevo — es `R-AUD-06` hecho interfaz.
 5. **El número de cuenta siempre enmascarado**, en pantalla y en cualquier traza.
+6. **No existe un botón «pagar mi aporte»** (D-4). Una persona está en varios grupos:
+   la tarjeta de saldo lleva a *aportes pendientes*, filtrable por grupo y por fecha,
+   y el pago de una cuota es el detalle de esa cuota.
+7. **La publicidad va rotulada** (D-7): banner con el anunciante a la vista, control
+   para ocultarlo, y pantalla que explica por qué aparece y cómo apagar la
+   segmentación sin perder condiciones del servicio.
 
 ## Gate de salida F4
 
@@ -144,6 +170,10 @@ acá.**
 - [ ] El costo con impuestos aparece **antes** del botón de confirmar, en las tres
       operaciones con comisión
 - [ ] Lista de movimientos virtualizada y paginada, probada con 5 000 filas en gama baja
+- [ ] Movimientos **agrupados por día** con neto del día y saldo corrido por línea
+- [ ] *Aportes pendientes* filtra por grupo y por fecha, y muestra el **recargo por
+      mora desglosado** cuando lo hay
+- [ ] Todo banner de publicidad está rotulado como tal y se puede ocultar
 - [ ] Retiro sin conexión ⇒ bloqueado con motivo, **nunca encolado**
 - [ ] Número de cuenta enmascarado en pantalla, en logs y en capturas
 
@@ -160,11 +190,11 @@ Es el producto propiamente dicho: el grupo.
 | --- | --- | --- |
 | **Crear y entrar** | 20, 68, 69 | Asistente que **muestra el costo total del ciclo antes de confirmar** · postulación · invitar con token |
 | **El ciclo del dinero** | 21, 22 | ***Mi aporte***: monto, fecha límite y **un** botón · ***Cobrar mi turno***: bolsa, cada deducción con su motivo, **el neto en grande** |
-| **Turnos** | 59, 60, 61, 62 | *Tu turno* con **cuenta regresiva al revelado** · botón **Verificar** con veredicto · proponer permuta · fecha corrida por feriado **explicada** |
+| **Turnos** | 59, 60, 61, 62 | *Tu turno* con **cuenta regresiva al revelado** · **el sorteo como evento guardado** (D-5): compromiso, semilla externa, ejecución y notificación, cada uno con su hash, reproducible en pantalla contra el hash guardado · proponer permuta · fecha corrida por feriado **explicada** |
 | **Decisiones** | 63, 64, 65 | *Grupo → Decisiones*: tarjeta por acuerdo con propuesta, plazo y quórum · traspaso · retiro con su liquidación |
 | **Cuando algo sale mal** | 23, 25, 26, 27, 28, 29 | Aviso de incumplimiento con **qué se le imputa y hasta cuándo puede responder** · *Mis avales* con tope consumido · aviso de restricción **persistente pero no bloqueante**, con motivo y monto · *Mi entrega*: línea de tiempo real · *Fondo de garantía*: lo que puso y lo que se consumió |
 | **Reclamos** | 52, 53, 55 | *Ayuda → Reclamo*: **código, plazo y estado siempre a la vista** · elevación a segunda instancia · aviso de incidente que lo afecta |
-| **Reputación** | 70, 71, 74, 75, 76 | Puntaje **con su desglose**, insignias, certificado compartible, reseñas |
+| **Reputación** | 70, 71, 74, 75, 76 | Puntaje **con su desglose**, insignias **con pantalla propia** (qué mide, cómo se gana, para qué sirve, cuánta gente la tiene), **perfil público de terceros** desde el orden de turnos (D-6), certificado compartible, reseñas |
 
 ## Las cuatro reglas de esta fase
 
@@ -175,8 +205,13 @@ Es el producto propiamente dicho: el grupo.
    bloqueante**, con motivo, monto y cómo salir.
 3. **La reputación es explicable.** CU-71: nunca un número solo. Siempre su desglose,
    porque un puntaje que no se puede discutir no se puede usar.
-4. **La transparencia es una función, no un eslogan.** CU-61: el botón *Verificar* da
-   un veredicto que la persona puede recomputar por su cuenta.
+4. **La transparencia es una función, no un eslogan.** CU-61: el sorteo se ve entero
+   —compromiso previo, semilla de fuente externa tomada después, ejecución y hash— y
+   se reproduce en pantalla. Un veredicto de una línea no es verificable.
+5. **Del perfil de otro se muestra su comportamiento, nada más.** Puntaje, nivel,
+   ciclos, aportes a tiempo e insignias. Ni documento, ni teléfono, ni saldo. Y a
+   quien está en mora dentro de su plazo **no se le llama deudor**: todavía no hay
+   incumplimiento declarado.
 
 ## Gate de salida F5
 
@@ -186,7 +221,10 @@ Es el producto propiamente dicho: el grupo.
 - [ ] El plazo de descargo que se muestra es **el guardado por el servidor**, no
       recalculado en el cliente
 - [ ] El puntaje de reputación **nunca** se muestra sin su desglose
-- [ ] *Verificar* el sorteo da veredicto y permite descargar el paquete
+- [ ] *Verificar* el sorteo **reproduce el orden con la semilla guardada**, compara el
+      hash y muestra los cinco pasos del evento con el suyo
+- [ ] El perfil público de un tercero **no expone** documento, teléfono ni saldo
+- [ ] Cada insignia abre su pantalla con qué mide y cómo se gana
 - [ ] Las 26 pantallas tienen sus cuatro estados
 
 ## Ver también
