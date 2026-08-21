@@ -115,5 +115,14 @@ adentro es una revocación que tarda una hora.
 
 - [[CU-08 Asignar y revocar roles de operador]] · [[CU-09 Cambiar credenciales y solicitar la baja]] ·
   [[CU-49 Designar al oficial de cumplimiento y capacitar]]
-- `R-SEG-04` · `R-SEG-07` · `R-SEG-08` en [[Restricciones]]
-- Skills: `autenticacion-jwt`, `seguridad-sesion-rls`, `back-spring`, `semillas-catalogos`
+- `R-SEG-04` (quien autoriza no ejecuta) · `R-SEG-07` (nadie se otorga un rol a sí
+  mismo) · `R-SEG-08` (una asignación viva por usuario, rol y ámbito) · `R-SEG-10`
+  (operador sin TOTP no abre sesión) · `R-SEG-12` (toda decisión irreversible exige
+  segundo factor), en [[Restricciones]]. **`R-SEG-04` y `R-SEG-07` son reglas
+  distintas**: confundirlas produce la prueba equivocada
+- El ámbito de un rol es `GLOBAL`, `GRUPO` u `ORGANIZACION` — no existe `PLATAFORMA`
+- Un permiso que un CU exige y el catálogo no tiene es un **hueco** ([[Seguridad]] §7
+  S-8): se declara, no se inventa ni se cuelga de otro más amplio
+- [[ADR-038 Acceso administrativo · segundo factor y recuperación asistida]] · [[Seguridad]]
+- Skills: `autenticacion-jwt`, `seguridad-sesion-rls`, `seguridad-aplicacion`,
+  `back-spring`, `semillas-catalogos`

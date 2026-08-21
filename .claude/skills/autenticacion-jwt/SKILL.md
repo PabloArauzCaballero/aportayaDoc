@@ -49,6 +49,24 @@ un defecto de seguridad, no de estilo.
 cookie `httpOnly`, `Secure`, `SameSite` estricto, con protección CSRF y CORS por lista
 blanca. Son dos productos con superficies distintas; no se unifica por comodidad.
 
+## El operador no es un usuario más
+
+Para quien tiene un rol de ámbito `GLOBAL` las reglas de arriba son el piso, no el
+techo ([[ADR-038 Acceso administrativo · segundo factor y recuperación asistida]]):
+
+| Regla | Quién la hace cumplir |
+| --- | --- |
+| Segundo factor en **todo** acceso; el dispositivo confiable **no exime** | `R-SEG-10` |
+| El factor es **TOTP**; `SMS` y `WHATSAPP` se rechazan | `R-SEG-10` |
+| Recuperar la clave exige verificación asistida **y** aprobación de otra identidad | aplicación (hueco S-7) |
+| Cambiar la credencial revoca **todas** las sesiones, la confianza de los dispositivos y los refrescos | `R-SEG-11` |
+| Toda acción irreversible o de lectura de terceros exige reautenticación por paso | `R-SEG-12` |
+
+No hace falta que las recuerdes al escribir el endpoint: la base rechaza la fila. Lo
+que sí tenés que hacer es **traducir ese rechazo** al código de error del CU
+(`FACTOR_NO_ENROLADO`, `FACTOR_NO_ADMISIBLE`, `APROBACION_REQUERIDA`) y no dejar que
+salga crudo (`errores-api`).
+
 ## Contraseñas, PIN y códigos
 
 - **Argon2id** con parámetros configurables; nunca hash rápido de propósito general.
@@ -100,6 +118,6 @@ token del cliente.
 
 ## Ver también
 
-`seguridad-sesion-rls` · `roles-y-accesos` · `kyc-onboarding` · `errores-api` ·
+`seguridad-sesion-rls` · `roles-y-accesos` · `seguridad-aplicacion` · `kyc-onboarding` · `errores-api` ·
 `contratos-api` · `back-spring` · `observabilidad` ·
 `docs/Arquitectura/ADR-010 Autenticación y sesión.md`

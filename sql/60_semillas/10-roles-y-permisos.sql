@@ -47,14 +47,18 @@ INSERT INTO permiso (codigo, descripcion, recurso, accion, requiere_mfa) VALUES
   ('CONTABILIDAD_ERP_REPORTES', 'Generar y consultar estados financieros', 'estado_financiero_generado', 'LEER', FALSE),
   ('PUBLICIDAD_ANUNCIANTES', 'Dar de alta y verificar anunciantes y socios comerciales', 'anunciante', 'GESTIONAR', FALSE),
   ('PUBLICIDAD_CAMPANA_GESTIONAR', 'Crear y editar campañas propias', 'campana_publicitaria', 'GESTIONAR', FALSE),
-  ('PUBLICIDAD_APROBAR_CAMPANA', 'Aprobar o rechazar una campaña publicitaria', 'campana_publicitaria', 'APROBAR', FALSE),
+  ('PUBLICIDAD_APROBAR_CAMPANA', 'Aprobar o rechazar una campaña publicitaria', 'campana_publicitaria', 'APROBAR', TRUE),
   ('PUBLICIDAD_MODERAR', 'Aprobar o rechazar piezas creativas', 'pieza_creativa', 'MODERAR', FALSE),
+  ('ACCESOS_ADMINISTRAR', 'Asignar y revocar roles de operador (CU-08); nadie se lo aplica a sí mismo (R-SEG-07)', 'asignacion_rol', 'ADMINISTRAR', TRUE),
+  ('SEGURIDAD_ACCESO_RESTABLECER', 'Aprobar el restablecimiento de la credencial de un operador (ADR-038, R-SEG-11)', 'acceso_operador', 'APROBAR', TRUE),
+  ('SEGURIDAD_FACTOR_REINSCRIBIR', 'Dar de baja y volver a enrolar el segundo factor de un operador (ADR-038)', 'factor_mfa', 'EJECUTAR', TRUE),
   ('PUBLICIDAD_LIQUIDAR', 'Liquidar y facturar el gasto publicitario', 'factura_publicidad', 'GESTIONAR', TRUE)
 ON CONFLICT (codigo) DO NOTHING;
 
 -- Sin esta matriz los roles no otorgan nada y el guard de denegar por omisión rechaza todo. Dos separaciones de funciones están cableadas acá y no se negocian: quien AUTORIZA una entrega o un reverso no puede EJECUTARLO, y quien edita catálogos no toca dinero ni datos sensibles (control CI-04).
 INSERT INTO rol_permiso (rol_id, permiso_id) VALUES
   ((SELECT id FROM rol WHERE codigo = 'ADMIN_PLATAFORMA'), (SELECT id FROM permiso WHERE codigo = 'CATALOGO_EDITAR')),
+  ((SELECT id FROM rol WHERE codigo = 'ADMIN_PLATAFORMA'), (SELECT id FROM permiso WHERE codigo = 'ACCESOS_ADMINISTRAR')),
   ((SELECT id FROM rol WHERE codigo = 'ADMIN_PLATAFORMA'), (SELECT id FROM permiso WHERE codigo = 'TARIFARIO_PUBLICAR')),
   ((SELECT id FROM rol WHERE codigo = 'ADMIN_PLATAFORMA'), (SELECT id FROM permiso WHERE codigo = 'AUDITORIA_LEER')),
   ((SELECT id FROM rol WHERE codigo = 'OFICIAL_CUMPLIMIENTO'), (SELECT id FROM permiso WHERE codigo = 'CUMPLIMIENTO_ALERTAS')),
@@ -73,6 +77,10 @@ INSERT INTO rol_permiso (rol_id, permiso_id) VALUES
   ((SELECT id FROM rol WHERE codigo = 'RESPONSABLE_RIESGOS'), (SELECT id FROM permiso WHERE codigo = 'ENTREGA_AUTORIZAR')),
   ((SELECT id FROM rol WHERE codigo = 'RESPONSABLE_RIESGOS'), (SELECT id FROM permiso WHERE codigo = 'REVERSO_AUTORIZAR')),
   ((SELECT id FROM rol WHERE codigo = 'RESPONSABLE_SEGURIDAD'), (SELECT id FROM permiso WHERE codigo = 'AUDITORIA_LEER')),
+  ((SELECT id FROM rol WHERE codigo = 'RESPONSABLE_SEGURIDAD'), (SELECT id FROM permiso WHERE codigo = 'SEGURIDAD_ACCESO_RESTABLECER')),
+  ((SELECT id FROM rol WHERE codigo = 'RESPONSABLE_SEGURIDAD'), (SELECT id FROM permiso WHERE codigo = 'SEGURIDAD_FACTOR_REINSCRIBIR')),
+  ((SELECT id FROM rol WHERE codigo = 'ADMIN_PLATAFORMA'), (SELECT id FROM permiso WHERE codigo = 'SEGURIDAD_ACCESO_RESTABLECER')),
+  ((SELECT id FROM rol WHERE codigo = 'ADMIN_PLATAFORMA'), (SELECT id FROM permiso WHERE codigo = 'SEGURIDAD_FACTOR_REINSCRIBIR')),
   ((SELECT id FROM rol WHERE codigo = 'TESORERIA'), (SELECT id FROM permiso WHERE codigo = 'ENTREGA_EJECUTAR')),
   ((SELECT id FROM rol WHERE codigo = 'TESORERIA'), (SELECT id FROM permiso WHERE codigo = 'BILLETERA_VER_TERCEROS')),
   ((SELECT id FROM rol WHERE codigo = 'TESORERIA'), (SELECT id FROM permiso WHERE codigo = 'AUDITORIA_LEER')),

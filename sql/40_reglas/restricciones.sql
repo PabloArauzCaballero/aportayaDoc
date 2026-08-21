@@ -479,16 +479,6 @@ CREATE UNIQUE INDEX uq_cuenta_benef_principal
   ON cuenta_bancaria_beneficiario (usuario_id)
   WHERE (es_principal);
 
--- R-BIL-18 · arqueo único por punto y fecha; diferencia justificada al cerrar
-ALTER TABLE arqueo_punto_atencion
-  ADD CONSTRAINT uq_arqueo_punto_fecha UNIQUE (punto_atencion_id, fecha),
-  ADD CONSTRAINT ck_arqueo_diferencia_justificada CHECK (
-        cerrado_en IS NULL
-     OR diferencia = 0
-     OR (observaciones IS NOT NULL AND length(btrim(observaciones)) >= 10)),
-  ADD CONSTRAINT ck_arqueo_contado_al_cerrar CHECK (
-        cerrado_en IS NULL OR saldo_contado IS NOT NULL);
-
 
 -- ---------------------------------------------------------------------
 -- R-LIM — Límites operativos
@@ -1310,6 +1300,138 @@ CREATE UNIQUE INDEX uq_asignacion_vigente
 CREATE INDEX ix_asignacion_por_vencer
   ON asignacion_rol (vigente_hasta)
   WHERE (revocada_en IS NULL AND vigente_hasta IS NOT NULL);
+
+-- R-SEG-10 · el operador entra con dos factores, siempre, y el segundo no es un mensaje
+--
+-- CU-04 exime del segundo factor al dispositivo ya confiable. Para el participante
+-- es una comodidad razonable: lo que arriesga es lo suyo. Para quien tiene un rol de
+-- ámbito GLOBAL —cumplimiento, tesorería, contabilidad, soporte, administración— esa
+-- exención convierte el robo del equipo en el robo del rol, y el rol da acceso a la
+-- plata y a los datos de terceros. Por eso acá no hay dispositivo de confianza que
+-- valga: sin factor confirmado, no hay sesión ([[ADR-038 Acceso administrativo · segundo factor y recuperación asistida]]).
+--
+-- El criterio es el ámbito del ROL, no el de la asignación: una asignación mal
+-- cargada no puede convertir a un participante en operador ni al revés.
+--
+-- Y el factor tiene que ser TOTP. SMS y WhatsApp son canales apagados
+-- ([[ADR-035 Canales por defecto]]) y el intercambio de SIM es el ataque barato
+-- contra una cuenta privilegiada; `RESPALDO` acompaña al TOTP, no lo reemplaza.
+-- La condición «es operador» va copiada en los tres disparadores en vez de
+-- factorizada en una función. No es descuido: una función auxiliar se crea en el
+-- primer esquema del `search_path` de quien aplica el archivo, y el disparador la
+-- resolvería en tiempo de ejecución contra el `search_path` del servicio que
+-- escribe —que no tiene por qué incluir ese esquema—. Una restricción que depende
+-- de la configuración de la conexión no es una restricción.
+CREATE OR REPLACE FUNCTION fn_seg_sesion_operador_exige_mfa() RETURNS trigger AS $$
+BEGIN
+  IF NOT EXISTS (
+        SELECT 1
+          FROM asignacion_rol ar
+          JOIN rol r ON r.id = ar.rol_id
+         WHERE ar.usuario_id = NEW.usuario_id
+           AND ar.revocada_en IS NULL
+           AND (ar.vigente_hasta IS NULL OR ar.vigente_hasta > now())
+           AND r.ambito = 'GLOBAL') THEN
+    RETURN NEW;
+  END IF;
+  IF NOT EXISTS (
+        SELECT 1 FROM factor_mfa f
+         WHERE f.usuario_id = NEW.usuario_id
+           AND f.tipo = 'TOTP'
+           AND f.activo
+           AND f.confirmado_en IS NOT NULL) THEN
+    RAISE EXCEPTION
+      'R-SEG-10: el usuario % tiene rol operativo y no tiene segundo factor TOTP confirmado; no se abre sesión',
+      NEW.usuario_id;
+  END IF;
+  RETURN NEW;
+END $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER tg_sesion_operador_mfa
+  BEFORE INSERT ON sesion
+  FOR EACH ROW EXECUTE FUNCTION fn_seg_sesion_operador_exige_mfa();
+
+CREATE OR REPLACE FUNCTION fn_seg_factor_operador_valido() RETURNS trigger AS $$
+BEGIN
+  IF NEW.tipo IN ('SMS', 'WHATSAPP') AND EXISTS (
+        SELECT 1
+          FROM asignacion_rol ar
+          JOIN rol r ON r.id = ar.rol_id
+         WHERE ar.usuario_id = NEW.usuario_id
+           AND ar.revocada_en IS NULL
+           AND (ar.vigente_hasta IS NULL OR ar.vigente_hasta > now())
+           AND r.ambito = 'GLOBAL') THEN
+    RAISE EXCEPTION
+      'R-SEG-10: % no es un segundo factor admisible para un usuario con rol operativo; use TOTP',
+      NEW.tipo;
+  END IF;
+  RETURN NEW;
+END $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER tg_factor_operador_valido
+  BEFORE INSERT OR UPDATE ON factor_mfa
+  FOR EACH ROW EXECUTE FUNCTION fn_seg_factor_operador_valido();
+
+-- R-SEG-11 · cambiar la clave de un operador no deja nada vivo detrás
+--
+-- CU-09 conserva la sesión que hizo el cambio, y para el titular de una billetera
+-- eso está bien: acaba de probar que es él. Para un operador no alcanza, porque el
+-- caso que importa es el contrario —el atacante cambió la clave— y ahí la sesión
+-- conservada es la del atacante. Se cae todo: sesiones, confianza de los
+-- dispositivos y refrescos emitidos. Volver a entrar cuesta un TOTP; no volver a
+-- entrar le cuesta a la plataforma la base de clientes.
+CREATE OR REPLACE FUNCTION fn_seg_credencial_operador_corta_sesiones() RETURNS trigger AS $$
+BEGIN
+  IF NEW.hash_contrasena = OLD.hash_contrasena THEN
+    RETURN NEW;
+  END IF;
+  IF NOT EXISTS (
+        SELECT 1
+          FROM asignacion_rol ar
+          JOIN rol r ON r.id = ar.rol_id
+         WHERE ar.usuario_id = NEW.usuario_id
+           AND ar.revocada_en IS NULL
+           AND (ar.vigente_hasta IS NULL OR ar.vigente_hasta > now())
+           AND r.ambito = 'GLOBAL') THEN
+    RETURN NEW;
+  END IF;
+
+  UPDATE sesion
+     SET revocada_en = now(),
+         motivo_revocacion = 'R-SEG-11: credencial de operador cambiada'
+   WHERE usuario_id = NEW.usuario_id AND revocada_en IS NULL;
+
+  UPDATE dispositivo
+     SET es_confiable = false
+   WHERE usuario_id = NEW.usuario_id AND es_confiable;
+
+  UPDATE token_verificacion
+     SET estado = 'INVALIDADO', invalidado_en = now(),
+         motivo_invalidacion = 'R-SEG-11: credencial de operador cambiada'
+   WHERE usuario_id = NEW.usuario_id
+     AND tipo_token = 'REFRESCO' AND estado = 'EMITIDO';
+
+  RETURN NEW;
+END $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER tg_credencial_operador_corta_sesiones
+  AFTER UPDATE OF hash_contrasena ON credencial_acceso
+  FOR EACH ROW EXECUTE FUNCTION fn_seg_credencial_operador_corta_sesiones();
+
+-- R-SEG-12 · lo irreversible se confirma con el segundo factor
+--
+-- `permiso.requiere_mfa` existía y nadie garantizaba que estuviera puesto donde
+-- corresponde: aprobar una campaña publicitaria —que compromete gasto y publica
+-- contenido— estaba marcado en `false`. La regla no exige factor para todo lo que
+-- escribe: exigirlo en cada acción del día produce fatiga y la fatiga produce el
+-- clic automático. Lo exige donde la decisión no se deshace o donde se leen datos
+-- de un tercero.
+ALTER TABLE permiso
+  ADD CONSTRAINT ck_permiso_decision_exige_mfa CHECK (
+      requiere_mfa
+   OR accion NOT IN ('AUTORIZAR', 'APROBAR', 'EJECUTAR', 'REVERSAR',
+                     'PUBLICAR', 'ENVIAR', 'CERRAR', 'LEER_TERCEROS')
+  );
 
 
 -- ---------------------------------------------------------------------

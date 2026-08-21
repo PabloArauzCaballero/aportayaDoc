@@ -293,7 +293,7 @@
           "descripcion": "Aprobar o rechazar una campaña publicitaria",
           "recurso": "campana_publicitaria",
           "accion": "APROBAR",
-          "requiere_mfa": false
+          "requiere_mfa": true
         },
         {
           "codigo": "PUBLICIDAD_MODERAR",
@@ -301,6 +301,27 @@
           "recurso": "pieza_creativa",
           "accion": "MODERAR",
           "requiere_mfa": false
+        },
+        {
+          "codigo": "ACCESOS_ADMINISTRAR",
+          "descripcion": "Asignar y revocar roles de operador (CU-08); nadie se lo aplica a sí mismo (R-SEG-07)",
+          "recurso": "asignacion_rol",
+          "accion": "ADMINISTRAR",
+          "requiere_mfa": true
+        },
+        {
+          "codigo": "SEGURIDAD_ACCESO_RESTABLECER",
+          "descripcion": "Aprobar el restablecimiento de la credencial de un operador (ADR-038, R-SEG-11)",
+          "recurso": "acceso_operador",
+          "accion": "APROBAR",
+          "requiere_mfa": true
+        },
+        {
+          "codigo": "SEGURIDAD_FACTOR_REINSCRIBIR",
+          "descripcion": "Dar de baja y volver a enrolar el segundo factor de un operador (ADR-038)",
+          "recurso": "factor_mfa",
+          "accion": "EJECUTAR",
+          "requiere_mfa": true
         },
         {
           "codigo": "PUBLICIDAD_LIQUIDAR",
@@ -328,6 +349,16 @@
           "permiso_id": {
             "$ref": "permiso",
             "codigo": "CATALOGO_EDITAR"
+          }
+        },
+        {
+          "rol_id": {
+            "$ref": "rol",
+            "codigo": "ADMIN_PLATAFORMA"
+          },
+          "permiso_id": {
+            "$ref": "permiso",
+            "codigo": "ACCESOS_ADMINISTRAR"
           }
         },
         {
@@ -508,6 +539,46 @@
           "permiso_id": {
             "$ref": "permiso",
             "codigo": "AUDITORIA_LEER"
+          }
+        },
+        {
+          "rol_id": {
+            "$ref": "rol",
+            "codigo": "RESPONSABLE_SEGURIDAD"
+          },
+          "permiso_id": {
+            "$ref": "permiso",
+            "codigo": "SEGURIDAD_ACCESO_RESTABLECER"
+          }
+        },
+        {
+          "rol_id": {
+            "$ref": "rol",
+            "codigo": "RESPONSABLE_SEGURIDAD"
+          },
+          "permiso_id": {
+            "$ref": "permiso",
+            "codigo": "SEGURIDAD_FACTOR_REINSCRIBIR"
+          }
+        },
+        {
+          "rol_id": {
+            "$ref": "rol",
+            "codigo": "ADMIN_PLATAFORMA"
+          },
+          "permiso_id": {
+            "$ref": "permiso",
+            "codigo": "SEGURIDAD_ACCESO_RESTABLECER"
+          }
+        },
+        {
+          "rol_id": {
+            "$ref": "rol",
+            "codigo": "ADMIN_PLATAFORMA"
+          },
+          "permiso_id": {
+            "$ref": "permiso",
+            "codigo": "SEGURIDAD_FACTOR_REINSCRIBIR"
           }
         },
         {
