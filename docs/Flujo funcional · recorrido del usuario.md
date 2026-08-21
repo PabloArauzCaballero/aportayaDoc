@@ -133,6 +133,11 @@ dinero. Sin límite vigente a la fecha, la operación se **rechaza**.
   límite de retiro vigente.
 - **Implementa:** [[CU-11 Retirar saldo]] — orden de retiro idempotente hacia la cuenta
   verificada; el intento se clasifica y reintenta según error.
+- **Si todavía no tiene cuenta, la agrega desde la misma pantalla de retiro** —banco, tipo y
+  número—, pero eso **no la habilita a cobrar en el acto**: pasa por verificación de titularidad
+  y por la ventana de enfriamiento de [[CU-18 Registrar y verificar una cuenta bancaria de destino]].
+  Retirar hacia una cuenta recién agregada se rechaza con `AP-CU11-03`, y esa demora es
+  deliberada: es lo que corta el fraude de toma de cuenta.
 - **Estado que deja:** saldo debitado y desembolso en curso hacia el banco.
 
 ---

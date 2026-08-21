@@ -36,6 +36,14 @@ alcance: apps/movil (Expo/React Native) · el recorrido de [[Flujo funcional · 
    pantalla de dinero sin sus cuatro estados.
 2. **El dinero no se recalcula en el cliente.** Todo importe se muestra con el átomo `Monto`;
    el total, el saldo y la comisión vienen del backend (partida doble, `contabilidad-partida-doble`).
+2b. **El saldo se vuelve a leer, nunca se ajusta en memoria.** Después de **toda** operación con
+   efecto —recarga acreditada, aporte pagado, retiro solicitado— la app hace `GET /billetera/saldo`
+   otra vez. **Está prohibido** sumar o restar el monto sobre el saldo que ya tenía en pantalla:
+   el saldo no se guarda en ninguna parte, se **deriva** del libro append-only, y una resta hecha
+   en el cliente es una cifra que nadie puede reconstruir después. El mismo criterio para la lista
+   de movimientos: se relee, no se le empuja la fila nueva a mano.
+   **Y el saldo no cambia antes de tiempo**: una recarga por QR se acredita cuando el proveedor
+   confirma, no cuando el usuario dice que pagó ([[CU-10 Recargar saldo]]).
 3. **Red intermitente.** Cada acción con efecto es idempotente desde el cliente (clave de
    idempotencia por gesto); un reintento no duplica (`idempotencia-reintentos`).
 4. **El gate de acceso manda la navegación.** Verificación **básica** vs **profunda**
@@ -180,8 +188,10 @@ Sirve los RF-01, RF-02, RF-04, RF-14, RF-15, RF-16. CU 01–09.
 
 ## 3 · Shell de navegación · carril **M** (F2) · `apps/movil/src/navegacion/`
 
-- **Tab bar** con cuatro destinos: **Inicio**, **Grupos**, **Movimientos**, **Perfil**
-  (átomo/organismo `BarraPestanas`). **Campana** de notificaciones en la cabecera.
+- **Tab bar** con cuatro destinos y **solo cuatro**: **Inicio**, **Grupos**, **Movimientos**,
+  **Perfil** (átomo/organismo `BarraPestanas`). **Avisos no es una pestaña**: se llega por la
+  **campana** de la cabecera, con punto de color cuando hay algo sin leer. Una quinta pestaña
+  para la bandeja le quitaría peso a las cuatro que sostienen el producto.
 - **`ProveedorSesion`**: guarda el token en `expo-secure-store`, adjunta el bearer, ejecuta el
   `401 → refresh → reintento`, y expone el **nivel de verificación** para el gating de la UI.
 - **Deep links** de Expo Router para invitaciones (`aportaya://unirse/{codigo}`) y para abrir
@@ -194,21 +204,66 @@ Sirve los RF-01, RF-02, RF-04, RF-14, RF-15, RF-16. CU 01–09.
 Sirve RF-07, RF-08, RF-09, RF-12. CU 10–19, 21.
 
 ### 4.1 · `billetera/inicio` — Inicio / saldo (Tab Inicio)
-- **Compone:** organismo `TarjetaSaldo` (átomo `Monto`) + `AccesosRapidos` (Recargar,
-  Retirar, Pagar) + `ListaMovimientos` (últimos 5). **Estados:** los cuatro.
+- **Compone:** organismo `TarjetaSaldo` (átomo `Monto`) + `AccesosRapidos` (**Recargar** y
+  **Retirar**, dos y nada más) + `ListaMovimientos` (últimos 5). **Estados:** los cuatro.
 - **Endpoint:** `GET /billetera/saldo`, `GET /billetera/movimientos?limite=5`.
+- **Pagar el aporte NO es un acceso rápido.** Es el llamado a la acción **principal** de la
+  pantalla y vive en la `TarjetaSaldo` como el único botón naranja, más su entrada desde el
+  detalle del grupo. Tres accesos rápidos con el mismo peso escondían la acción que de verdad
+  importa, y el sistema de diseño ya decía **Recargar / Retirar** para la tarjeta de saldo móvil
+  (`docs/Views/Sistema-Diseno/Moviles/Moviles.md`): la que estaba desalineada era esta lista.
+  Un solo naranja por pantalla (`disenar-frontend` §6).
 
 ### 4.2 · `billetera/recargar` — Cargar crédito (RF-07 · [[CU-10 Recargar saldo]])
-- **Compone:** molécula `CampoMonto` + `TecladoNumerico` + selector de medio (QR / punto de
-  atención); organismo `ResumenRecarga`. Al confirmar por QR abre `PantallaQR` con el código y
-  su vencimiento. **Estados:** cargando (esperando confirmación del proveedor) · error · éxito
-  (acreditado solo cuando el banco confirma). **Endpoint:** `POST /billetera/recargas`
-  (la orden vive en `nucleo-financiero`; la cobranza por QR la resuelve `aportes` vía `/qr`).
+- **Compone:** molécula `CampoMonto` + `TecladoNumerico` + organismo `ResumenRecarga`.
+- **El único medio de recarga en la app es el QR. No hay selector de medio.** La propuesta de
+  valor es evitarle complicaciones a la persona, y ofrecerle «andá a un punto con efectivo» es
+  exactamente la complicación que el producto viene a sacar. Sin filas, sin horarios y sin
+  manipular billetes. Además, el efectivo es el medio que arrastra el umbral PCC-01 de la UIF,
+  el arqueo de caja y el faltante de caja como evento de riesgo: no ofrecerlo en la app le quita
+  al producto una superficie entera de cumplimiento y de fraude.
+- **El efectivo salió del producto, no solo de la pantalla.**
+  [[ADR-039 Sin efectivo · la plataforma no opera dinero físico]] retiró del modelo
+  `punto_atencion` y `arqueo_punto_atencion`, dejó [[CU-57 Operar un punto de atención y arquear el efectivo]]
+  obsoleto y sacó `AGENTE` del alcance de licencia sembrado. Ya no es un hueco: es una decisión
+  tomada, con su costo escrito —se pierde a quien no está bancarizado— y su compensación —la
+  interoperabilidad del QR que exige el reglamento del BCB—.
+- **`PantallaQR` muestra cuatro cosas y ninguna más**: el código, el monto, la **orden** a la que
+  pertenece y su **vencimiento con cuenta regresiva**. El payload EMV y `expiraEn` los devuelve
+  `SalidaCU10.qr`; el cliente no arma el código.
+- **El saldo no se mueve mientras el QR está en pantalla.** Se acredita cuando llega la
+  confirmación del proveedor, y recién ahí la app relee el saldo (§0.2b). Acreditar contra la
+  promesa del usuario sería prestarle plata, y la pantalla lo dice con esas palabras.
+- **Al acreditarse**: snackbar de confirmación con el monto, y el movimiento aparece en el
+  extracto en la relectura, no empujado a mano.
+- **Rechazo típico:** `AP-CU10-01 LIMITE_EXCEDIDO`, con la salida ofrecida (elevar el nivel de
+  verificación), nunca un error a secas.
 
 ### 4.3 · `billetera/retirar` — Retirar crédito (RF-09 · [[CU-11 Retirar saldo]])
-- **Compone:** `CampoMonto` + selector de cuenta destino (`SelectorCuentaBancaria`); muestra
-  el límite vigente leído del catálogo. **Estados:** los cuatro (error = sin cuenta verificada
-  → CTA a `cuenta-bancaria`; o monto sobre el límite). **Endpoint:** `POST /billetera/retiros`.
+- **La pantalla pide dos cosas, en este orden: el monto y la cuenta donde depositarlo.**
+  Compone `CampoMonto` (con el disponible y el costo de retiro a la vista) +
+  `SelectorCuentaBancaria`, y **si el usuario todavía no tiene cuenta registrada, la agrega desde
+  acá mismo** con `FormularioCuentaBancaria` —banco, tipo y número—, sin mandarlo a otra pantalla
+  a buscarla. **Endpoint:** `POST /billetera/retiros`.
+- **El número de cuenta se escribe una vez y nunca más se ve entero.** Se cifra antes de tocar
+  disco; la pantalla muestra `numero_enmascarado` (`••••4321`). El número en claro no se
+  persiste, no entra a la bitácora y no viaja en ningún aviso (`R-SEG-01`,
+  [[CU-18 Registrar y verificar una cuenta bancaria de destino]]).
+- **La cuenta tiene que ser del titular.** Se compara `titular_documento` contra el documento de
+  quien retira; si no coinciden **no se registra**. No se retira a cuentas de terceros, y el
+  formulario lo dice antes de que la persona escriba.
+- **Una cuenta recién agregada no cobra el mismo minuto.** Queda `EN_VERIFICACION` (micro-depósito,
+  consulta al proveedor o comprobante) y después en **ventana de enfriamiento**. Si se intenta
+  retirar hacia ella, el rechazo es `AP-CU11-03 INSTRUMENTO_EN_ENFRIAMIENTO`, y la pantalla lo
+  explica en lenguaje humano en vez de mostrar el código pelado. Esta ventana es lo que corta el
+  patrón «me tomaron la cuenta y vaciaron la billetera», y es la misma condición que el motor
+  antifraude vigila con `RETIRO_INSTRUMENTO_NUEVO`.
+- **Un retiro siempre exige segundo factor** (`R-BIL-09`, `AP-CU11-02`).
+- **Estados:** los cuatro. Errores esperables: `AP-CU11-01 SALDO_INSUFICIENTE` (el disponible no
+  cubre monto **más** costo), `AP-CU11-03`, `AP-CU11-04 TITULAR_NO_COINCIDE`.
+- **Al confirmar:** el saldo se relee (§0.2b), aparece el movimiento con estado *en proceso*
+  —el dinero sale cuando Tesorería ejecuta la orden ([[CU-28 Emitir la orden de desembolso y ejecutar el intento]])—
+  y se muestra un snackbar con el monto y la cuenta enmascarada.
 
 ### 4.4 · `billetera/cuentas-bancarias` — Mis cuentas de destino (CRUD · [[CU-18 Registrar y verificar una cuenta bancaria de destino]])
 - **CRUD completo sobre lo propio:**
@@ -223,8 +278,22 @@ Sirve RF-07, RF-08, RF-09, RF-12. CU 10–19, 21.
 
 ### 4.5 · `billetera/extracto` — Movimientos / extracto (Tab Movimientos · [[CU-15 Emitir extracto y certificado de saldo]])
 - **Compone:** organismo `ListaMovimientos` (molécula `FilaMovimiento` con `ChipEstado`),
-  filtros por fecha/tipo, `Boton` "Exportar/Certificado". **Estados:** los cuatro (vacío = "aún
-  no hay movimientos"). **Endpoint:** `GET /billetera/movimientos`, `POST /billetera/certificado`.
+  filtros por tipo (Todos · Aportes · Recargas · Retiros · Entregas) y el bloque de descarga.
+  **Estados:** los cuatro (vacío = "aún no hay movimientos").
+  **Endpoint:** `GET /billetera/movimientos`, `POST /billetera/certificado`.
+- **Descargar el extracto en PDF es un requisito, no un extra.** Sale como el de un banco: saldo
+  inicial, movimientos con **saldo corrido**, totales de créditos y débitos, saldo final, **folio**
+  y **hash del archivo** — los cinco campos de [[estado_cuenta_billetera]]. Se pide con
+  `POST /billetera/certificado` y `tipo = 'EXTRACTO'`; el mismo endpoint con `tipo = 'CERTIFICADO'`
+  emite el certificado de saldo a una fecha de corte.
+- **Un extracto que no cuadra no se emite.** Antes de generarlo se contrasta contra el
+  `saldo_diario_billetera` sellado de la fecha de inicio y de fin; si difiere, se rechaza con
+  `AP-CU15-02 EXTRACTO_NO_CUADRA` y se abre incidente. Si faltan cierres en el rango,
+  `AP-CU15-01 PERIODO_SIN_CIERRES`. La app muestra el motivo, no un fallo genérico.
+- **La descarga deja rastro:** se registra `entregado_en`, y si el que descarga es un operador y
+  no el titular, además entra a [[registro_acceso_datos]].
+- **Al terminar:** snackbar «Extracto descargado» con el folio, y el folio y el hash quedan a la
+  vista para que el titular pueda dárselos a un tercero que quiera verificarlos.
 
 ### 4.6 · `billetera/pagar-aporte` — Pagar el aporte (RF-08 · [[CU-21 Cobrar el aporte del período]])
 - **Compone:** organismo `FormularioAporte` (molécula `FilaAporte`, `CampoMonto` bloqueado al
@@ -234,8 +303,14 @@ Sirve RF-07, RF-08, RF-09, RF-12. CU 10–19, 21.
   (compensada) · éxito. **Endpoint:** `POST /aportes/{id}/pago`.
 
 ### 4.7 · `billetera/confirmacion` — Confirmación (RF-12)
-- **Compone:** organismo `PantallaResultado` (ícono de éxito, `Monto`, comprobante,
-  `Boton` "Compartir comprobante"). Es el estado **éxito** canónico reutilizable.
+- **Compone:** organismo `PantallaResultado` (ícono de éxito, `Monto`, número de comprobante,
+  **saldo después de la operación**, `Boton` "Descargar comprobante" y "Compartir comprobante").
+  Es el estado **éxito** canónico reutilizable.
+- **Descargar el comprobante** usa `POST /billetera/certificado` y termina en un **snackbar** con
+  el nombre del archivo. El snackbar es la molécula `toast/snackbar` del sistema de diseño
+  (`disenar-frontend` §2 y §4): mensaje inferior efímero, nunca un diálogo que haya que cerrar.
+- **Muestra el saldo después**, leído del backend: es la forma más barata de que la persona
+  confirme que la plata se movió como esperaba.
 
 ---
 
@@ -252,10 +327,26 @@ Sirve RF-03, RF-05, RF-06, RF-10, RF-13. CU 20–29, 60, 61, 68–76, 90.
 - **Compone:** organismo `FormularioPostulacion` (preferencias; muestra el puntaje explicable).
   **Estados:** los cuatro. **Endpoint:** `POST /grupos/postulaciones`.
 
+### 5.2b · `pasanaku/mis-grupos` — Mis pasanakus (**pestaña Grupos**)
+- **Es la pantalla de la pestaña, no el detalle.** Una persona está en **varios** pasanakus a la
+  vez —el del mercado, el de las vecinas, el del taller—, y entrar directo a uno solo obliga a
+  adivinar cuál. **Compone:** organismo `ListaGrupos` (molécula `TarjetaGrupo`).
+- **Cada tarjeta muestra** nombre, código, estado (activo / en formación / cerrado), monto del
+  aporte, **tu turno sobre el total** y una barra con los turnos ya entregados.
+- **Estados:** los cuatro (vacío = "todavía no estás en ningún pasanaku", con la acción de
+  unirse con un código). **Endpoint:** `GET /grupos?participante={id}`.
+
 ### 5.3 · `pasanaku/grupo/[codigo]` — Detalle de grupo
 - **Compone:** organismo `TarjetaGrupo` + `ListaParticipantes` + `ReglamentoGrupo` +
   `CalendarioTurnos`. **Estados:** los cuatro. **Endpoint:** `GET /grupos/{codigo}`.
 - **Navega a:** `sorteo`, `pagar-aporte`.
+- **Cada turno del calendario es tocable, y muestra a quién le toca.** Al tocar el número se
+  abre la ficha con **nombre e iniciales de la persona**, el mes en que cobra, su estado
+  —ya cobró / le toca ahora / al día / debe un aporte— y el monto de la bolsa que se lleva.
+  Ver el orden sin ver los nombres no sirve para nada: lo que la persona quiere saber es
+  **quién** está antes que ella y **si esa persona está cumpliendo**. Es la mitad del valor de
+  la transparencia del pasanaku.
+- **Endpoint del detalle del turno:** `GET /grupos/{codigo}/turnos/{n}`.
 
 ### 5.4 · `pasanaku/organizador` — Habilitación de organizador 🔒 (RF-05 · [[CU-90 Postular a organizador y habilitarse]])
 - **Precondición de UI:** nivel **profundo**; si no, muestra CTA a `verificacion-profunda`.
@@ -273,10 +364,23 @@ Sirve RF-03, RF-05, RF-06, RF-10, RF-13. CU 20–29, 60, 61, 68–76, 90.
   orden sellado; enlace a la verificación pública en `apps/web`). **Estados:** cargando ·
   vacío (aún no sorteado) · éxito. **Endpoint:** `GET /grupos/{codigo}/sorteo`.
 
-### 5.7 · `pasanaku/reputacion` — Mi reputación (RF-13 · [[CU-71 Recalcular el puntaje de reputación]])
-- **Compone:** organismo `TarjetaReputacion` (puntaje con factores explicables) +
-  `ListaReseñas` (molécula `FilaReseña` con `EstrellasCalificacion`). **Estados:** los cuatro.
-  **Endpoint:** `GET /reputacion/usuarios/{id}`.
+### 5.7 · `pasanaku/reputacion` — Mi perfil (**pestaña Perfil** · RF-13 · [[CU-71 Recalcular el puntaje de reputación]])
+- **Es la cuarta pestaña, no una pantalla escondida.** Acá la persona ve **cuánto vale su palabra
+  como pasanakero**, que es el activo que construye usando la plataforma.
+- **Compone:** organismo `TarjetaReputacion` + `ListaReseñas` (molécula `FilaReseña` con
+  `EstrellasCalificacion`). **Estados:** los cuatro. **Endpoint:** `GET /reputacion/usuarios/{id}`.
+- **Muestra tres cosas, en este orden:**
+  1. **El puntaje sobre 1.000** con su **nivel de confianza** (`SIN_HISTORIAL`, `EN_OBSERVACION`,
+     `BASICO`, `CONFIABLE`, `MUY_CONFIABLE`, `REFERENTE`, `RESTRINGIDO`).
+  2. **Los seis factores con su peso y su aporte al total** —puntualidad de aporte (0,30), mora
+     acumulada (0,20), incumplimientos declarados (0,20), ciclos completados (0,15), antigüedad
+     (0,10) y comportamiento como organizador (0,05)—, cada uno con la frase que lo explica
+     («23 de 24 aportes pagados antes del vencimiento»). **Un puntaje sin el detalle de sus
+     factores es una caja negra, y una caja negra que te limita no se puede reclamar.**
+  3. **Las insignias** ganadas y las que faltan, con el criterio de cada una a la vista.
+- **Dice para qué sirve el número.** El puntaje decide a qué grupos puede entrar y cuánto le
+  dejan aportar; por eso se muestra entero y se explica que **lo viejo pesa menos** (decaimiento
+  del 2 % mensual): la gente cambia, y el puntaje también.
 
 ### 5.8 · `pasanaku/reseñar` — Reseñar a un participante ([[CU-76 Reseñar a un participante y moderar la reseña]])
 - **Compone:** organismo `FormularioReseña` (`EstrellasCalificacion`, texto moderado).
@@ -294,6 +398,17 @@ Sirve RF-11, RF-12. CU 80, 81.
 - **Estados:** los cuatro (vacío = "estás al día"). **Endpoint:** `GET /notificaciones`.
 - **Recibe** el push que dispara [[CU-80 Despachar una notificación]]; los recordatorios los
   programa [[CU-81 Programar recordatorios de aporte]] en el backend.
+- **Notificación emergente de dinero recibido.** Cuando a la billetera le entra plata —una
+  transferencia de otra persona ([[CU-12 Transferir saldo entre billeteras]]), la acreditación de
+  una recarga o la entrega del turno— aparece la **notificación emergente de Android**: ícono de
+  la app, «AportaYa · ahora», el **monto en el título** y quién lo envió en el cuerpo. Se toca y
+  abre la bandeja. Es el momento en que la persona comprueba que la plata llegó, así que el monto
+  va primero y grande, no escondido en una frase.
+- **El aviso no trae el saldo.** Trae el hecho. Al recibirlo la app **relee** `GET /billetera/saldo`
+  (§0.2b): una notificación puede llegar duplicada, tarde o fuera de orden, y un saldo pintado
+  desde el cuerpo del mensaje sería un saldo inventado.
+- **Y el mismo hecho queda en la bandeja**, escrito en la misma transacción que lo originó
+  ([[ADR-035 Canales por defecto]]): el push se puede perder, la bandeja no.
 
 ---
 
@@ -358,6 +473,10 @@ dominio (los específicos), y los carriles M1/M2/M3 solo los **componen**. Entra
 | `PanelSorteo` (`ListaTurnos`), `TarjetaReputacion`, `FormularioReseña` (`EstrellasCalificacion`) | pasanaku | M3 (F5) | — |
 | `FormularioReclamo` (`SelectorCategoria`, `LineaDeTiempo`), `FormularioDenuncia` | pasanaku | M3 (F5) | `Campo*`, adjuntos |
 | `BandejaNotificaciones` (`FilaNotificacion`), `BarraPestanas` | shell | M (F2) | `ChipEstado`, `Avatar` |
+| `Snackbar` (confirmación efímera de descarga, acreditación y solicitud) | shell | M (F2) | molécula `toast/snackbar` |
+| `ListaGrupos` (`TarjetaGrupo` con estado, turno y avance) | pasanaku | M3 (F5) | `ChipEstado`, `Monto` |
+| `FichaTurno` (quién ocupa el turno, su estado y la bolsa) | pasanaku | M3 (F5) | `Avatar`, `ChipEstado` |
+| `NotificacionEmergente` (push de dinero recibido) | shell | M (F2) | — |
 
 **Regla de subida** (`planes/10 · Plan maestro del frontend` §"lo que sirve a dos productos sube a
 `packages/ui`"): los átomos y las moléculas transversales (`Boton`, `Campo*`, `Monto`,

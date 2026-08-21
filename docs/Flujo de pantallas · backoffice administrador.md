@@ -46,7 +46,14 @@ alcance: apps/backoffice (React + Vite) · el recorrido de [[Flujo funcional · 
 5. **Todo deja rastro.** Cada acción con efecto pide **motivo** y queda en la bitácora; las
    pantallas de decisión que perjudican a alguien siguen el patrón de **debido proceso**
    (causal → notificación → descargo → decisión motivada → apelación por otro).
-6. **CRUD completo, con el ciclo de vida del dominio.** Cada recurso administrable expone las
+6. **Cada pantalla declara para qué sirve, en lenguaje de negocio.** Arriba de todo, antes del
+   título, una línea corta que responde **qué problema resuelve y qué pasa si no existe** —«prueba
+   todos los días que el dinero que dicen los libros existe de verdad en el banco»—, no qué hace
+   técnicamente. Sirve para tres cosas: que un operador nuevo entienda su pantalla sin manual,
+   que en una inspección se pueda explicar el control sin traducir, y que nadie construya una
+   pantalla cuyo propósito no sepa escribir en una frase. Si no se puede escribir esa línea, la
+   pantalla no debería existir.
+7. **CRUD completo, con el ciclo de vida del dominio.** Cada recurso administrable expone las
    cuatro operaciones — **todo lo que deba poder borrarse, se puede** — pero en un sistema con
    dinero el "borrar" es casi siempre **soft delete**, no un `DELETE` físico (§8):
    - **Crear** = `POST` (alta).
@@ -64,7 +71,13 @@ alcance: apps/backoffice (React + Vite) · el recorrido de [[Flujo funcional · 
 
 ```mermaid
 flowchart TD
-    L["Login (MFA)"] --> SH
+    L["acceso/ingreso<br/>credencial"] --> SF["acceso/desafio<br/>TOTP, siempre"]
+    SF --> SH
+    L -.-> RCP["acceso/recuperacion"]
+    RCP --> APB["acceso/aprobaciones<br/>otra identidad aprueba"]
+    APB --> L
+    SF -.-> RIF["acceso/reinscripcion-factor<br/>cuatro ojos + enfriamiento"]
+    RIF --> APB
     subgraph SH["Shell backoffice — carril B (F6)"]
       NAV["Navegación lateral por rol"]
       TAB["Tablero de indicadores"]
@@ -104,11 +117,81 @@ flowchart TD
       LIQ["Liquidación"]
     end
     classDef seg fill:#fde,stroke:#a05;
-    class DES,CXP,CAMP seg;
+    class DES,CXP,CAMP,RCP,APB,RIF seg;
 ```
 
 > Los bloques rosados exigen **doble control**: la pantalla nunca muestra los dos lados al mismo
 > operador.
+
+---
+
+## 2.0 · Acceso · carril **B** (F6) · `apps/backoffice/src/rutas/acceso/`
+
+> Las únicas rutas **públicas** del backoffice. Todo lo demás exige token con permiso; estas
+> exigen lo contrario: **no** se montan con sesión viva. Implementan
+> [[CU-04 Autenticar con MFA y registrar dispositivo]] y
+> [[CU-09 Cambiar credenciales y solicitar la baja]] §8–§9 bajo
+> [[ADR-038 Acceso administrativo · segundo factor y recuperación asistida]].
+
+### 2.0.1 · `acceso/ingreso` — Credencial (AF-01)
+- **Organismos:** `FormularioAcceso` (moléculas `CampoTexto`, `CampoClave`, `BotonPrimario`,
+  `AvisoError`). **Sin** «recordar este equipo» y **sin** atajo biométrico: no existen en esta
+  pantalla, no están ocultos.
+- **Estados:** cargando · error (`sinConexion` incluido) · bloqueado (con el tiempo restante) ·
+  éxito → `acceso/desafio`.
+- **Mensajes:** el error **no distingue** si el usuario existe. Uno solo:
+  `CREDENCIAL_INVALIDA`.
+- **Endpoint:** `POST /sesiones` (paso 1). **Permiso:** ruta pública.
+
+### 2.0.2 · `acceso/desafio` — Segundo factor (AF-01)
+- **Organismos:** `DesafioSegundoFactor` (molécula `CampoCodigo` de seis dígitos, cuenta regresiva
+  de vigencia, enlace «usar un código de respaldo»).
+- **Solo TOTP y códigos de respaldo.** No hay «enviar por SMS» ni «enviar por WhatsApp»: son
+  canales apagados ([[ADR-035 Canales por defecto]]) y `R-SEG-10` los rechaza para un operador.
+- **Estados:** cargando · código vencido · intentos agotados (`DEMASIADOS_INTENTOS`, con espera) ·
+  **sin factor enrolado** (`FACTOR_NO_ENROLADO` → deriva a `acceso/enrolamiento`) · éxito → shell.
+- **Endpoint:** `POST /sesiones` (paso 2). **Permiso:** ruta pública, sesión a medio abrir.
+
+### 2.0.3 · `acceso/enrolamiento` — Enrolar el TOTP (AF-01, cierre de [[CU-08 Asignar y revocar roles de operador]])
+- **Organismos:** `EnrolamientoTOTP` (QR del secreto, confirmación con un código, **entrega de los
+  códigos de respaldo una sola vez**, con confirmación explícita de que se guardaron).
+- **Es el paso que convierte una asignación de rol en un operador que puede entrar.** Mientras no
+  se complete, la persona no abre sesión: lo impide `R-SEG-10`.
+- **Endpoints:** `POST /cuenta/factores`, `POST /cuenta/factores/{id}/confirmacion`.
+
+### 2.0.4 · `acceso/recuperacion` — Pedir el restablecimiento (AF-01b · [[CU-09 Cambiar credenciales y solicitar la baja]] §8)
+- **Organismos:** `SolicitudRecuperacion` (identificador, envío al canal verificado) y
+  `ValidacionToken`.
+- **La pantalla no restablece nada**: abre una solicitud. El texto lo dice sin rodeos —«un
+  responsable de seguridad tiene que aprobarlo y te vamos a pedir verificación»— para que nadie
+  espere un atajo que no existe.
+- **Respuesta idéntica exista o no la cuenta.** Enumerar operadores desde el formulario público es
+  regalar la mitad del trabajo.
+- **Estados:** enviado · token vencido · intentos agotados · **pendiente de aprobación** ·
+  `RECUPERACION_ASISTIDA_REQUERIDA`.
+- **Endpoints:** `POST /cuenta/recuperacion`, `POST /cuenta/recuperacion/operador`.
+
+### 2.0.5 · `acceso/aprobaciones` — Aprobar restablecimientos y reinscripciones (AF-01b/01c)
+- **Ruta privada**, dentro del shell. **Permiso:** `SEGURIDAD_ACCESO_RESTABLECER` para
+  restablecer la clave; `SEGURIDAD_FACTOR_REINSCRIBIR` para el factor. Ambos con
+  `requiere_mfa`, así que la pantalla pide **reautenticación por paso** antes de confirmar.
+- **Organismos:** `TablaDeDatos` con la cola de solicitudes + `PanelDecision` (evidencia de la
+  verificación asistida, campo **motivo obligatorio**, aprobar / rechazar).
+- **Segregación en pantalla (§0.4):** la solicitud del propio operador **no aparece** en su cola.
+  No está deshabilitada: no está.
+- **Tras aprobar**, la pantalla muestra el efecto real —sesiones revocadas, dispositivos que
+  dejaron de ser confiables— porque `R-SEG-11` lo ejecuta en la misma transacción y el aprobador
+  tiene que verlo.
+- **Endpoints:** `GET /cuenta/recuperacion/pendientes`, `POST /cuenta/recuperacion/{id}/aprobacion`.
+
+### 2.0.6 · `acceso/reinscripcion-factor` — Perdí el teléfono (AF-01c · [[CU-09 Cambiar credenciales y solicitar la baja]] §9)
+- **Organismos:** `SolicitudReinscripcion` (causal escrita, adjunto de la verificación asistida) y,
+  ya aprobada, `EnrolamientoTOTP`.
+- **Muestra el enfriamiento** con su vencimiento concreto: durante ese plazo el operador entra y
+  trabaja, pero las acciones con `requiere_mfa` aparecen **deshabilitadas con el motivo y el
+  tiempo restante** (`FACTOR_EN_ENFRIAMIENTO`), no ocultas.
+- **Los códigos de respaldo son la salida ordinaria**: esta pantalla es la excepción, y el texto
+  lo recuerda.
 
 ---
 
@@ -141,11 +224,52 @@ flowchart TD
 - **Permiso:** TESORERIA. **Compone:** `ResumenCierre` + `Boton` "Sellar el día" con doble
   confirmación. **Endpoint:** `POST /custodia/cierre-diario`.
 
-### 3.3 · `operacion/desembolsos` — Autorizar / ejecutar (AF-11 · [[CU-28 Emitir la orden de desembolso y ejecutar el intento]] · [[CU-14 Reversar una transacción]])
-- **Doble control:** CONTABILIDAD **autoriza** (`PanelAprobacion`), TESORERIA **ejecuta**
-  (`PanelEjecucion`); ningún operador ve ambos. **Compone:** `TablaDeDatos` de órdenes +
-  el panel de su lado. **Estados:** los cuatro. **Endpoint:** `POST /desembolsos/{id}/autorizar`,
-  `POST /desembolsos/{id}/ejecutar`.
+### 3.3 · `operacion/desembolsos` — Automático por excepción (AF-11 · [[CU-28 Emitir la orden de desembolso y ejecutar el intento]] · [[CU-14 Reversar una transacción]])
+- **La pantalla no es una cola de aprobaciones: es el tablero de las excepciones.** Lo rutinario
+  se ejecuta **solo**; a la persona le llega únicamente lo que no cumplió alguna condición.
+- **Se ejecuta sin intervención humana si se cumplen las seis**, y basta que falle una para que
+  no salga: las **ocho reglas de entrega** en verde · monto **bajo el umbral** de la política ·
+  **puntaje antifraude** bajo el umbral · beneficiario con **debida diligencia vigente** ·
+  cuenta destino **verificada y fuera de enfriamiento** ([[CU-18 Registrar y verificar una cuenta bancaria de destino]]) ·
+  **encaje** del día anterior cumplido.
+- **Se deriva a una persona** si el monto supera el umbral, si es el **primer pago a esa cuenta**,
+  si el puntaje antifraude supera el umbral o hay alerta abierta, si una regla bloqueante quedó
+  en rojo, o si el proveedor devolvió un rechazo ambiguo.
+- **En el circuito humano sigue el doble control:** CONTABILIDAD **autoriza** (`PanelAprobacion`),
+  TESORERIA **ejecuta** (`PanelEjecucion`); ningún operador ve ambos (`R-SEG-04`).
+- **Compone:** `PanelPolitica` (las dos listas de condiciones y la versión vigente) +
+  `TablaDeDatos` de órdenes con columnas **vía** (automática / humana) y **por qué** + el panel
+  del lado que corresponda. **Estados:** los cuatro.
+  **Endpoint:** `POST /desembolsos/{id}/autorizar`, `POST /desembolsos/{id}/ejecutar`.
+
+> [!important] Por qué automatizar es más defendible que revisar todo a mano
+> Un control que una persona ejecuta cuarenta veces por día es un sello de goma, y el rastro lo
+> prueba: la bitácora deja la mediana de tiempo entre que la orden aparece y que alguien la
+> aprueba. Derivar solo el 6 % le devuelve al humano el tiempo de mirar en serio.
+> Lo que sostiene la automatización ante una inspección son cinco cosas, y las cinco están
+> modeladas: la política es **dato con vigencia aprobado por el comité**
+> (`politica_interna.aprobada_por_directorio` + `acta_comite_id`); los umbrales viven en catálogo
+> con su `base_normativa`; cada ejecución automática guarda [[evaluacion_antifraude]] con puntaje,
+> reglas disparadas y versión del motor; las excepciones caen en el circuito de doble control; y
+> hay control posterior —conciliación diaria más muestreo de auditoría interna—.
+> **La responsabilidad no se automatiza:** responde el oficial que aprobó la regla.
+
+> [!warning] Lo que nunca se automatiza
+> Decidir un **reporte de operación sospechosa** ([[CU-44 De alerta de monitoreo a reporte de operación sospechosa]],
+> `AP-CU44-02`), **declarar un incumplimiento o sancionar** ([[CU-25 Declarar el incumplimiento con descargo y evidencia]]),
+> **levantar un bloqueo de autoridad** ([[CU-17 Bloquear saldo por orden de autoridad]]) y **saltear
+> una regla bloqueante**. Ahí la norma pide una persona, con nombre.
+
+> [!danger] Decisión sujeta a confirmación legal
+> **No se identificó**, en las fuentes de [[Cumplimiento]] §9, ninguna disposición de ASFI ni de
+> la UIF que exija aprobación humana de **cada** desembolso: lo que el Reglamento de riesgo
+> operativo (RNSF Libro 3, Título V) exige es control **proporcional al riesgo**, metodología
+> aprobada por Directorio y rastro auditable. Eso es lectura de la matriz normativa, **no una
+> opinión legal**: [[Cumplimiento]] marca sus umbrales como provisionales (brecha **B-2**) y todo
+> el documento pendiente de revisión de abogado (**B-10**).
+> Antes de operar con dinero real, esta política pasa por
+> [[CU-47 Evaluar el riesgo del producto antes de lanzarlo]] con **no objeción** del comité, y la
+> verificación de la fuente primaria sigue el procedimiento de `norma-nueva`.
 
 ### 3.4 · `operacion/reclamos` — Reclamos y denuncias (AF-08 · [[CU-52 Atender un reclamo en plazo]] · [[CU-53 Elevar un reclamo a segunda instancia]])
 - **Permiso:** SOPORTE / PUNTO_RECLAMO. **Origen:** el caso lo abre el **usuario final** desde
@@ -326,7 +450,7 @@ los recursos donde **actualizar = nueva vigencia**.
 
 ## 9 · Notas de modelo — huecos a declarar antes de implementar
 
-Estos flujos se apoyan en tablas que ya existen, salvo tres extensiones que hay que **declarar
+Estos flujos se apoyan en tablas que ya existen, salvo siete extensiones que hay que **declarar
 en la bóveda** (docs/entidades/*.puml + restricciones + CU) antes de escribir código. Se listan
 acá para que no queden implícitas:
 
@@ -340,6 +464,32 @@ acá para que no queden implícitas:
 3. **Estado de plataforma/artefactos.** `AF-02b` es una **proyección de lectura** (observabilidad
    + indicadores) sobre datos que ya existen; conviene definir la vista/endpoint `GET /auditoria/estado`
    como proyección, no como tabla nueva (skill `lecturas-proyecciones`).
+4. **Política de token sin perfil de usuario.** `politica_token` tiene una fila por `proposito` y
+   `vigente_desde`: **no puede** decir «para operadores, 8 minutos y solo aplicación autenticadora;
+   para participantes, 15 minutos y correo». Endurecer la fila global castigaría al participante.
+   Mientras el hueco esté abierto, el límite del operador lo imponen `R-SEG-10` y `R-SEG-11`, que
+   no dependen de esa tabla; cerrarlo exige una columna nueva y eso es cambio de modelo
+   (`boveda-modelo` + ADR), nunca una decisión de implementación
+   ([[ADR-038 Acceso administrativo · segundo factor y recuperación asistida]] §Consecuencias).
+   **Lo mismo vale para el plazo de enfriamiento de AF-01c**: hoy no hay columna donde vivir, así
+   que se parametriza como catálogo o se declara junto con la anterior.
+5. **Solicitud de restablecimiento de operador.** El flujo AF-01b exige *quién aprobó*, y hoy
+   ninguna tabla guarda al aprobador de un restablecimiento: `token_verificacion` no tiene
+   `aprobado_por`. Mientras tanto la aprobación queda en [[bitacora_evento]] —que es prueba
+   suficiente para auditar, pero **no** permite que la base rechace una autoaprobación—. La regla
+   la sostiene la aplicación; cerrarla en el motor exige la columna.
+6. **Permisos que los CU exigen y el catálogo no tiene.** 24 códigos
+   (`COBRANZA_GESTIONAR`, `ORGANIZADORES_SANCIONAR`, `TESORERIA_OPERAR`…) aparecen en la
+   columna «Exige» de un caso de uso y no existen en `seeders/minimos/`. **No se
+   inventan**: cada uno necesita `recurso`, `accion`, `requiere_mfa` y de qué rol cuelga,
+   y eso lo decide seguridad de la información ([[Seguridad]] §7 S-8).
+   `scripts/verificar_seguridad.py` los lista en cada corrida para que el hueco no se
+   vuelva invisible por costumbre.
+7. **Tres propósitos de token sin canal entregable.** `VERIFICACION_TELEFONO`,
+   `CAMBIO_CORREO` e `INICIO_SESION_SIN_CONTRASENA` solo admiten canales cuyo adaptador
+   está apagado ([[ADR-035 Canales por defecto]]). El riesgo no es el flujo trabado: es
+   que alguien encienda SMS «temporalmente» y reabra lo que `R-SEG-10` cerró
+   ([[Seguridad]] §7 S-9).
 
 Todo lo demás (fondeo/QR, mensajería, ERP, publicidad, roles, tarifario, reportes, verificaciones)
 usa tablas y CU existentes.
@@ -348,5 +498,6 @@ usa tablas y CU existentes.
 
 [[Flujo funcional · usuario administrador]] · `planes/16 · Carriles de frontend` ·
 `planes/11 · Fases F0 y F1` · [[Flujo de pantallas · app del participante]] ·
+[[ADR-038 Acceso administrativo · segundo factor y recuperación asistida]] · [[Seguridad]] ·
 [[ADR-004 Frontend]] · [[ADR-031 Lecturas, réplica y rol auditor]] · `disenar-frontend` ·
 `web-backoffice` · `roles-y-accesos`

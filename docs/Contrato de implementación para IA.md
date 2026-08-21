@@ -55,6 +55,14 @@ no tiene está **equivocado**: gana el `.puml`, y reportás el error del flujo.
 - [ ] ¿Toca algo **fuera del proceso** (red, disco, correo, plata, reloj, azar)? Entonces es
       **puerto** en `dominio/puertos/` + **adaptador local primero**
       ([[ADR-033 Puertos y adaptadores]]). El nombre del proveedor no sale de su adaptador.
+- [ ] Leé `seguridad-aplicacion` y [[Seguridad]] §5. Las **dieciocho prohibiciones** no se
+      discuten en revisión: secreto versionado, SQL concatenado, endpoint sin decisión de
+      autenticación, permiso sin comprobar el recurso, consulta fuera de `conContexto`,
+      `Math.random` para algo que no se debe adivinar, hash rápido de contraseña, `digest()`
+      desnudo, PII en el log, traza en la respuesta, deserialización polimórfica, SSRF,
+      `dangerouslySetInnerHTML`, confiar en que la UI esconde el botón, desactivar una
+      restricción para que pase una prueba, bajar un gate para desbloquear un merge,
+      inventar un código de permiso que el catálogo no tiene, encender un canal apagado.
 
 ## 3 · Prohibiciones (las alucinaciones típicas)
 
@@ -85,6 +93,28 @@ no tiene está **equivocado**: gana el `.puml`, y reportás el error del flujo.
   `infra.yml`; se regeneran ([[ADR-037 Alta disponibilidad y balanceo]]).
 - **No declarar una réplica**, ni un HPA sin tope: el generador lo rechaza y tiene razón.
 
+## 3 bis · Seguridad — lo que no se negocia
+
+Todo endpoint, consulta, adaptador, Dockerfile o pantalla se escribe contra
+[[Seguridad]], que es donde está el estándar completo con su correspondencia ISO/IEC
+27001 y 27034. Lo mínimo que hay que tener presente al escribir:
+
+| Frontera | Por omisión | Si no lo cumplís |
+| --- | --- | --- |
+| HTTP | Guard global; público solo con marca explícita | El endpoint queda abierto y nadie lo nota |
+| Autorización | Se verifica **contra el recurso**, no contra el rol | Cualquier participante opera sobre cualquier grupo |
+| Fila | Toda consulta dentro de `conContexto` | La política de RLS no aplica y se ve todo |
+| Entrada | Contrato `strict()`; lista blanca, no lista negra | Entra lo que nadie declaró |
+| Salida | Ni traza, ni SQL, ni causa interna | El error enseña la arquitectura |
+| Secretos | Fuera del repositorio, siempre | Un `git clone` es una filtración |
+| Cripto | Argon2id, HMAC con pimienta, azar criptográfico | El cifrado de al lado queda decorativo |
+
+**Acceso administrativo** ([[ADR-038 Acceso administrativo · segundo factor y recuperación asistida]]):
+segundo factor **en todo acceso** de un operador, **TOTP** y nunca SMS ni WhatsApp,
+recuperación **aprobada por otra identidad**, y el cambio de credencial que **corta todas**
+sus sesiones. Lo hacen cumplir `R-SEG-10`, `R-SEG-11` y `R-SEG-12`: no hay implementación
+que lo saltee, y tampoco hace falta que la recuerdes — la base la rechaza.
+
 ## 4 · Cuando falta algo (hueco)
 
 Los huecos **ya declarados** viven en la sección "Notas de modelo" de cada flujo y en
@@ -94,6 +124,8 @@ una suposición silenciosa es un defecto.
 
 ## 5 · Verificación mínima (antes de decir "listo")
 
+- [ ] `python3 scripts/verificar_seguridad.py` → **TODO OK** (el estándar de
+      [[Seguridad]] sobre el repositorio: patrones prohibidos, secretos, R-SEG-10/11/12).
 - [ ] `python3 scripts/verificar_boveda.py` → **TODO OK**.
 - [ ] `python3 scripts/generar_semillas.py` → sin errores (valida también la frontera
       dev / mínimos).
@@ -137,4 +169,6 @@ implementación:
 
 [[Flujo funcional · recorrido del usuario]] · [[Flujo de pantallas · app del participante]] ·
 [[Flujo funcional · usuario administrador]] · [[Flujo de pantallas · backoffice administrador]] ·
-`planes/20 · Saneamiento del plan` · `errores-api` · `dinero-decimal` · `definicion-de-terminado`
+[[Seguridad]] · [[ADR-038 Acceso administrativo · segundo factor y recuperación asistida]] ·
+`planes/20 · Saneamiento del plan` · `errores-api` · `dinero-decimal` ·
+`seguridad-aplicacion` · `definicion-de-terminado`

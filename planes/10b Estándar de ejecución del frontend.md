@@ -6,7 +6,7 @@ tags:
   - estandar
 titulo: "Estándar de ejecución del frontend"
 fecha: 2026-08-14
-aplica_a: las 13 fases del frontend, sin excepción
+aplica_a: las 14 fases del frontend, sin excepción
 ---
 
 # Estándar de ejecución del frontend

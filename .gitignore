@@ -25,3 +25,12 @@ servicios/*/build/
 plataforma/*/build/
 clientes/typescript/
 despliegue/k8s/generado/
+
+# --- secretos: nunca versionados (docs/Seguridad.md §3.4, prohibición 1) ---
+.env
+.env.*
+!.env.ejemplo
+*.pem
+*.key
+*.p12
+*.jks

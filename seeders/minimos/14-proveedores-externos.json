@@ -52,19 +52,6 @@
           "prioridad": 3
         },
         {
-          "codigo": "AGENTE_EFECTIVO",
-          "nombre": "Red de agentes corresponsales — recaudación en efectivo",
-          "tipo": "PASARELA",
-          "url_base": "https://agentes.proveedor.example.bo/v1",
-          "referencia_credenciales": "secreto://aportaya/pagos/agentes",
-          "comision_fija": 3.0,
-          "comision_porcentual": 0.0,
-          "soporta_webhook": true,
-          "soporta_consulta_estado": true,
-          "activo": false,
-          "prioridad": 4
-        },
-        {
           "codigo": "TARJETA_ADQUIRENCIA",
           "nombre": "Adquirencia de tarjetas de débito y crédito",
           "tipo": "PASARELA",

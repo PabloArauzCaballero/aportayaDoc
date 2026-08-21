@@ -2,13 +2,13 @@
 tags:
   - moc
   - indice
-relaciones_fk: 633
-cross_modulo: 328
+relaciones_fk: 629
+cross_modulo: 326
 ---
 
 # Índice de relaciones (claves foráneas)
 
-Las **633 claves foráneas** del modelo. **328** cruzan módulos.
+Las **629 claves foráneas** del modelo. **326** cruzan módulos.
 
 [[Index|← Índice general]] · [[_Entidades|Entidades →]]
 
@@ -184,7 +184,6 @@ Son las que acoplan el sistema: conviene revisarlas antes de tocar un módulo.
 | [[solicitud_datos_personales]] | `usuario_id` | [[usuario]] | 09 → 01 | no | [[solicitud_datos_personales.usuario_id → usuario\|ver]] |
 | [[ticket_soporte]] | `asignado_a` | [[usuario]] | 09 → 01 | sí | [[ticket_soporte.asignado_a → usuario\|ver]] |
 | [[ticket_soporte]] | `usuario_id` | [[usuario]] | 09 → 01 | no | [[ticket_soporte.usuario_id → usuario\|ver]] |
-| [[arqueo_punto_atencion]] | `arqueado_por` | [[usuario]] | 10 → 01 | no | [[arqueo_punto_atencion.arqueado_por → usuario\|ver]] |
 | [[bloqueo_saldo]] | `levantada_por` | [[usuario]] | 10 → 01 | sí | [[bloqueo_saldo.levantada_por → usuario\|ver]] |
 | [[certificado_saldo]] | `solicitado_por` | [[usuario]] | 10 → 01 | no | [[certificado_saldo.solicitado_por → usuario\|ver]] |
 | [[conciliacion_custodia]] | `cierre_diario_id` | [[cierre_diario]] | 10 → 03 | sí | [[conciliacion_custodia.cierre_diario_id → cierre_diario\|ver]] |
@@ -203,7 +202,6 @@ Son las que acoplan el sistema: conviene revisarlas antes de tocar un módulo.
 | [[orden_retiro]] | `proveedor_id` | [[proveedor_pago]] | 10 → 03 | sí | [[orden_retiro.proveedor_id → proveedor_pago\|ver]] |
 | [[orden_retiro]] | `solicitada_por` | [[usuario]] | 10 → 01 | no | [[orden_retiro.solicitada_por → usuario\|ver]] |
 | [[politica_billetera]] | `aprobada_por` | [[usuario]] | 10 → 01 | sí | [[politica_billetera.aprobada_por → usuario\|ver]] |
-| [[punto_atencion]] | `responsable_usuario_id` | [[usuario]] | 10 → 01 | sí | [[punto_atencion.responsable_usuario_id → usuario\|ver]] |
 | [[regla_antifraude]] | `aprobada_por` | [[usuario]] | 10 → 01 | sí | [[regla_antifraude.aprobada_por → usuario\|ver]] |
 | [[respuesta_idempotente]] | `usuario_id` | [[usuario]] | 10 → 01 | no | [[respuesta_idempotente.usuario_id → usuario\|ver]] |
 | [[retencion_saldo]] | `liberada_por` | [[usuario]] | 10 → 01 | sí | [[retencion_saldo.liberada_por → usuario\|ver]] |
@@ -754,8 +752,6 @@ Son las que acoplan el sistema: conviene revisarlas antes de tocar un módulo.
 
 | Relación | Destino | Cruza | Opcional |
 | --- | --- | :-: | :-: |
-| [[arqueo_punto_atencion.arqueado_por → usuario]] | [[usuario]] | ↗ | no |
-| [[arqueo_punto_atencion.punto_atencion_id → punto_atencion]] | [[punto_atencion]] | — | no |
 | [[bloqueo_saldo.cuenta_billetera_id → cuenta_billetera]] | [[cuenta_billetera]] | — | no |
 | [[bloqueo_saldo.levantada_por → usuario]] | [[usuario]] | ↗ | sí |
 | [[bloqueo_saldo.retencion_id → retencion_saldo]] | [[retencion_saldo]] | — | sí |
@@ -786,7 +782,6 @@ Son las que acoplan el sistema: conviene revisarlas antes de tocar un módulo.
 | [[orden_recarga.instrumento_fondeo_id → instrumento_fondeo]] | [[instrumento_fondeo]] | — | sí |
 | [[orden_recarga.pago_id → pago]] | [[pago]] | ↗ | sí |
 | [[orden_recarga.proveedor_id → proveedor_pago]] | [[proveedor_pago]] | ↗ | sí |
-| [[orden_recarga.punto_atencion_id → punto_atencion]] | [[punto_atencion]] | — | sí |
 | [[orden_recarga.transaccion_id → transaccion_billetera]] | [[transaccion_billetera]] | — | sí |
 | [[orden_retiro.aprobada_por → usuario]] | [[usuario]] | ↗ | sí |
 | [[orden_retiro.cuenta_billetera_id → cuenta_billetera]] | [[cuenta_billetera]] | — | no |
@@ -796,7 +791,6 @@ Son las que acoplan el sistema: conviene revisarlas antes de tocar un módulo.
 | [[orden_retiro.solicitada_por → usuario]] | [[usuario]] | ↗ | no |
 | [[orden_retiro.transaccion_id → transaccion_billetera]] | [[transaccion_billetera]] | — | sí |
 | [[politica_billetera.aprobada_por → usuario]] | [[usuario]] | ↗ | sí |
-| [[punto_atencion.responsable_usuario_id → usuario]] | [[usuario]] | ↗ | sí |
 | [[regla_antifraude.aprobada_por → usuario]] | [[usuario]] | ↗ | sí |
 | [[respuesta_idempotente.usuario_id → usuario]] | [[usuario]] | ↗ | no |
 | [[retencion_saldo.cuenta_billetera_id → cuenta_billetera]] | [[cuenta_billetera]] | — | no |

@@ -41,7 +41,13 @@ INSERT INTO factor_mfa (usuario_id, tipo, secreto_cifrado, activo, es_principal,
   ((SELECT id FROM usuario WHERE codigo_publico = 'USR000003'), 'WHATSAPP', 'enc:v1:demo-wa-03', TRUE, TRUE, now() - interval '99 days', now() - interval '3 days', 1),
   ((SELECT id FROM usuario WHERE codigo_publico = 'USR000004'), 'SMS', 'enc:v1:demo-sms-04', TRUE, TRUE, now() - interval '94 days', now() - interval '9 days', 1),
   ((SELECT id FROM usuario WHERE codigo_publico = 'USR000005'), 'WHATSAPP', 'enc:v1:demo-wa-05', TRUE, TRUE, now() - interval '89 days', now() - interval '6 hours', 1),
-  ((SELECT id FROM usuario WHERE codigo_publico = 'USR000006'), 'WHATSAPP', 'enc:v1:demo-wa-06', TRUE, TRUE, now() - interval '84 days', now() - interval '4 days', 1)
+  ((SELECT id FROM usuario WHERE codigo_publico = 'USR000006'), 'WHATSAPP', 'enc:v1:demo-wa-06', TRUE, TRUE, now() - interval '84 days', now() - interval '4 days', 1),
+  ((SELECT id FROM usuario WHERE codigo_publico = 'USR000007'), 'TOTP', 'enc:v1:demo-totp-of-cumplimiento', TRUE, TRUE, now() - interval '150 days', now() - interval '3 hours', 1),
+  ((SELECT id FROM usuario WHERE codigo_publico = 'USR000007'), 'RESPALDO', 'enc:v1:demo-respaldo-07', TRUE, FALSE, now() - interval '150 days', NULL, 1),
+  ((SELECT id FROM usuario WHERE codigo_publico = 'USR000008'), 'TOTP', 'enc:v1:demo-totp-tesoreria', TRUE, TRUE, now() - interval '150 days', now() - interval '1 day', 1),
+  ((SELECT id FROM usuario WHERE codigo_publico = 'USR000008'), 'RESPALDO', 'enc:v1:demo-respaldo-08', TRUE, FALSE, now() - interval '150 days', NULL, 1),
+  ((SELECT id FROM usuario WHERE codigo_publico = 'USR000009'), 'TOTP', 'enc:v1:demo-totp-riesgos', TRUE, TRUE, now() - interval '150 days', now() - interval '2 days', 1),
+  ((SELECT id FROM usuario WHERE codigo_publico = 'USR000009'), 'RESPALDO', 'enc:v1:demo-respaldo-09', TRUE, FALSE, now() - interval '150 days', NULL, 1)
 ON CONFLICT DO NOTHING;
 
 -- Cuatro sesiones vigentes y una revocada con motivo. La revocada es la que permite probar que cerrar sesión no borra el rastro.

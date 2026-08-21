@@ -471,6 +471,102 @@
             "$sql": "now() - interval '4 days'"
           },
           "version_llave": 1
+        },
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000007"
+          },
+          "tipo": "TOTP",
+          "secreto_cifrado": "enc:v1:demo-totp-of-cumplimiento",
+          "activo": true,
+          "es_principal": true,
+          "confirmado_en": {
+            "$sql": "now() - interval '150 days'"
+          },
+          "ultimo_uso_en": {
+            "$sql": "now() - interval '3 hours'"
+          },
+          "version_llave": 1
+        },
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000007"
+          },
+          "tipo": "RESPALDO",
+          "secreto_cifrado": "enc:v1:demo-respaldo-07",
+          "activo": true,
+          "es_principal": false,
+          "confirmado_en": {
+            "$sql": "now() - interval '150 days'"
+          },
+          "ultimo_uso_en": null,
+          "version_llave": 1
+        },
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000008"
+          },
+          "tipo": "TOTP",
+          "secreto_cifrado": "enc:v1:demo-totp-tesoreria",
+          "activo": true,
+          "es_principal": true,
+          "confirmado_en": {
+            "$sql": "now() - interval '150 days'"
+          },
+          "ultimo_uso_en": {
+            "$sql": "now() - interval '1 day'"
+          },
+          "version_llave": 1
+        },
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000008"
+          },
+          "tipo": "RESPALDO",
+          "secreto_cifrado": "enc:v1:demo-respaldo-08",
+          "activo": true,
+          "es_principal": false,
+          "confirmado_en": {
+            "$sql": "now() - interval '150 days'"
+          },
+          "ultimo_uso_en": null,
+          "version_llave": 1
+        },
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000009"
+          },
+          "tipo": "TOTP",
+          "secreto_cifrado": "enc:v1:demo-totp-riesgos",
+          "activo": true,
+          "es_principal": true,
+          "confirmado_en": {
+            "$sql": "now() - interval '150 days'"
+          },
+          "ultimo_uso_en": {
+            "$sql": "now() - interval '2 days'"
+          },
+          "version_llave": 1
+        },
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000009"
+          },
+          "tipo": "RESPALDO",
+          "secreto_cifrado": "enc:v1:demo-respaldo-09",
+          "activo": true,
+          "es_principal": false,
+          "confirmado_en": {
+            "$sql": "now() - interval '150 days'"
+          },
+          "ultimo_uso_en": null,
+          "version_llave": 1
         }
       ]
     },

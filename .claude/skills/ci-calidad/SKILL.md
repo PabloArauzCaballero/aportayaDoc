@@ -18,6 +18,8 @@ se reserva para el riesgo —dinero, plazos, evidencia— y el CI se ocupa del r
 5  test:atomos     (puros, sin contenedor)
 6  esquema         python3 scripts/generar_ddl.py → diff vacío
 6b bóveda          python3 scripts/verificar_boveda.py → TODO OK (sale 1 si falla)
+6c seguridad       python3 scripts/verificar_seguridad.py → TODO OK
+                   (patrones prohibidos, secretos, R-SEG-10/11/12, ciclo cableado)
 7  base efímera    sql/aplicar.sql sobre base vacía + prueba de humo
 8  semillas        mínimas dos veces  → mismo estado, sin duplicados
 9  semillas prueba dos veces en entorno no productivo
@@ -32,6 +34,11 @@ se reserva para el riesgo —dinero, plazos, evidencia— y el CI se ocupa del r
 
 Los pasos 6, 13 y 14 son los que impiden que la bóveda, la base y el código se
 desincronicen: si alguno produce diff, alguien editó un derivado a mano.
+
+El paso **6c** es la puerta del estándar de [[Seguridad]]: corre temprano y barato,
+antes de compilar nada, porque un secreto versionado o un patrón prohibido no mejora
+por esperar veinte minutos de suite. Bajarlo para desbloquear un merge está prohibido
+([[Seguridad]] §5, prohibición 16).
 
 ## Qué bloquea el merge
 

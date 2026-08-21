@@ -199,8 +199,7 @@
           "ponderacion": 10,
           "escala": {
             "PRESENCIAL": 5,
-            "APP": 15,
-            "AGENTE": 12
+            "APP": 15
           },
           "base_normativa": "Instructivo EIF — enfoque basado en riesgo",
           "vigente_desde": {

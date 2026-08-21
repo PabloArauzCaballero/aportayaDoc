@@ -41,11 +41,14 @@ implementar, pertenece a su fase, no a esta.
 
 ## Leer antes
 
+[[Seguridad]] **entero** ·
+[[ADR-038 Acceso administrativo · segundo factor y recuperación asistida]] ·
 `docs/Arquitectura/ADR-025 Empaquetado y despliegue de los servicios.md` ·
 `docs/Arquitectura/ADR-013 Respaldo y continuidad.md` (vigente) ·
 `docs/Arquitectura/Entornos y despliegue.md` ·
-skills `resiliencia-rendimiento`, `respaldos-restauracion`, `despliegue-contenedores`,
-`ci-calidad`, `documentacion-entregables`, `definicion-de-terminado`
+skills `seguridad-aplicacion`, `resiliencia-rendimiento`, `respaldos-restauracion`,
+`despliegue-contenedores`, `ci-calidad`, `documentacion-entregables`,
+`definicion-de-terminado`
 
 ---
 
@@ -173,13 +176,19 @@ registrado en `prueba_continuidad` (CU-56 ejercitado con datos reales).
 | **Dependencias** | `./gradlew dependencyCheckAnalyze` sin vulnerabilidades altas o críticas sin justificar |
 | **Archivos subidos** (puerto `AlmacenArchivos`) | Tipo MIME y tamaño validados antes de escribir; nada ejecutable; rutas no derivadas del nombre del usuario |
 | **Cifrado** | Números de cuenta bancaria cifrados; cada descifrado con registro y justificación |
-| **Segregación** | `R-SEG-07`: quien autoriza no ejecuta; quien decide no resuelve la apelación |
+| **Acceso administrativo** | `R-SEG-10`: operador sin TOTP no abre sesión y su factor nunca es SMS ni WhatsApp · `R-SEG-11`: cambiar su credencial no deja sesión viva ni dispositivo confiable · `R-SEG-12`: toda decisión irreversible exige segundo factor ([[ADR-038 Acceso administrativo · segundo factor y recuperación asistida]]) |
+| **Estándar de codificación segura** | `python3 scripts/verificar_seguridad.py` en TODO OK: patrones prohibidos, secretos versionados y el ciclo cableado ([[Seguridad]] §6) |
+| **Segregación** | `R-SEG-04`: quien autoriza no ejecuta; quien decide no resuelve la apelación. `R-SEG-07`: nadie se otorga a sí mismo un rol — son dos reglas distintas y cada una lleva su prueba |
 
 Además: pasar la skill `security-review` sobre el código completo y resolver o
-justificar cada hallazgo por escrito.
+justificar cada hallazgo por escrito, y recorrer [[Seguridad]] §3 control por control
+—cada uno declara si lo hace cumplir el **motor**, un **gate** o una **revisión**, y esa
+columna es lo que el informe tiene que poder demostrar—.
 
-**Entregable 17.5:** informe de seguridad con los diez controles verificados y los
-hallazgos resueltos o justificados.
+**Entregable 17.5:** informe de seguridad con los doce controles verificados, la
+correspondencia ISO/IEC 27001 · 27002 · 27034 de [[Seguridad]] §4, y los hallazgos
+resueltos o justificados. Las brechas que sigan abiertas se declaran en
+[[Seguridad]] §7, no se omiten.
 
 ---
 
@@ -263,8 +272,8 @@ exige un comando ejecutado o un informe con evidencia. La skill
 
 ### Funcionalidad
 - [ ] **94 de los 99 casos de uso** implementados (todos salvo la fase 19, publicidad), cada uno con sus criterios de aceptación como pruebas nombradas
-- [ ] Las **138 restricciones** con prueba de rechazo
-- [ ] Las **306 tablas** tienen código que las escribe — verificable recién con las fases 18 y 19 cerradas; el verificador vive en `verificar_criterios.py` sobre las clases jOOQ usadas
+- [ ] Las **140 restricciones** con prueba de rechazo
+- [ ] Las **304 tablas** tienen código que las escribe — verificable recién con las fases 18 y 19 cerradas; el verificador vive en `verificar_criterios.py` sobre las clases jOOQ usadas
 - [ ] Los seis recorridos E2E en verde
 
 ### Calidad
@@ -289,7 +298,7 @@ exige un comando ejecutado o un informe con evidencia. La skill
 - [ ] Rendimiento medido, con informe antes/después
 - [ ] Las cuatro pruebas de caos con el sistema consistente al final
 - [ ] **Ensayo de restauración ejecutado**, con RTO y RPO medidos
-- [ ] Informe de seguridad con los diez controles verificados
+- [ ] Informe de seguridad con los doce controles verificados y `verificar_seguridad.py` en TODO OK
 - [ ] Trazas correlacionadas hasta el consumidor, probadas con un caso real
 - [ ] Despliegue a ensayo completo, con rollback probado
 

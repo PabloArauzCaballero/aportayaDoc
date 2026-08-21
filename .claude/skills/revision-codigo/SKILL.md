@@ -36,6 +36,9 @@ primero**; estilo, al final y automatizado.
 | Criterio de aceptación sin prueba, o restricción citada sin prueba de rechazo | No está terminado |
 | Migración escrita a mano fuera de `sql/` | El esquema se genera desde la bóveda |
 | `any` o `eslint-disable` sin justificación escrita | Silencia justo donde hay dudas |
+| Cualquiera de las **dieciocho prohibiciones** de [[Seguridad]] §5 | Secreto versionado, SQL concatenado, `Math.random` para un token, hash rápido de contraseña, PII en el log, traza en la respuesta, SSRF, `dangerouslySetInnerHTML`… no se discuten |
+| Una restricción, un disparador o una política de RLS desactivada para que pase una prueba | Si la prueba choca contra el motor, está mal la prueba o el diseño |
+| Un gate del CI bajado para desbloquear el merge | El gate se arregla o se discute; no se apaga |
 
 ## Se comenta, no se bloquea
 
@@ -97,4 +100,4 @@ Si el PR toca `docs/entidades/*.puml`, `docs/Restricciones.md` o `sql/`:
 ## Ver también
 
 `git-flujo` · `glosario-dominio` · `codigo-limpio` · `arquitectura-atomica` · `pruebas-cu` · `implementar-desde-boveda` ·
-`docs/Arquitectura/Método de arquitectura.md`
+`seguridad-aplicacion` · [[Seguridad]] · `docs/Arquitectura/Método de arquitectura.md`

@@ -18,6 +18,12 @@ INSERT INTO asignacion_rol (usuario_id, rol_id, ambito, ambito_id, otorgada_por,
   ((SELECT id FROM usuario WHERE codigo_publico = 'USR000091'), (SELECT id FROM rol WHERE codigo = 'ADMIN_PLATAFORMA'), 'GLOBAL', NULL, (SELECT id FROM usuario WHERE codigo_publico = 'USR000009'), now() - interval '30 days', NULL)
 ON CONFLICT DO NOTHING;
 
+-- USR000091 entra al backoffice, así que R-SEG-10 le exige TOTP confirmado: sin esta fila no puede abrir sesión, y eso es lo correcto (ADR-038). El secreto es un literal de demostración y no autentica nada.
+INSERT INTO factor_mfa (usuario_id, tipo, secreto_cifrado, activo, es_principal, confirmado_en, ultimo_uso_en, version_llave) VALUES
+  ((SELECT id FROM usuario WHERE codigo_publico = 'USR000091'), 'TOTP', 'enc:v1:demo-totp-admin-dev', TRUE, TRUE, now() - interval '30 days', now() - interval '2 hours', 1),
+  ((SELECT id FROM usuario WHERE codigo_publico = 'USR000091'), 'RESPALDO', 'enc:v1:demo-respaldo-admin-dev', TRUE, FALSE, now() - interval '30 days', NULL, 1)
+ON CONFLICT DO NOTHING;
+
 -- Los dos canales por defecto del proyecto: correo verificado y bandeja interna. Ni WhatsApp ni SMS: esos adaptadores están apagados.
 INSERT INTO canal_vinculado (usuario_id, tipo, identificador, verificado, verificado_en, opt_in_en, rebotes_consecutivos, estado) VALUES
   ((SELECT id FROM usuario WHERE codigo_publico = 'USR000090'), 'CORREO', 'a2020115468@estudiantes.upsa.edu.bo', TRUE, now() - interval '30 days', now() - interval '30 days', 0, 'ACTIVO'),

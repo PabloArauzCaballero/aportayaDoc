@@ -165,6 +165,32 @@ de Información de Riesgo Operativo (CIRO)**.
 | Aprobación formal de metodologías por Directorio | ✅ | `politica_interna.aprobada_por_directorio` + `acta_comite_id` |
 | Verificación independiente por Auditoría Interna | ✅ | [[hallazgo_auditoria]] (`origen='AUDITORIA_INTERNA'`) + [[prueba_control]] |
 | Manuales de procedimientos vigentes (su ausencia es falta sancionable) | ✅ | [[politica_interna]] con `version`, `estado`, `proxima_revision` |
+| **Segregación de funciones y definición de niveles y montos de autorización** | ✅ | Las políticas y manuales deben contemplar *«la adecuada segregación de funciones, definición de niveles y montos de autorización»*. Lo soportan `R-SEG-04` (quien autoriza no ejecuta), `R-SEG-07`, `limite_operativo_billetera` (los montos, como dato con vigencia) y `politica_interna.aprobada_por_directorio` |
+
+> [!important] ¿Se puede automatizar un desembolso, o lo tiene que aprobar una persona?
+> **La norma no exige aprobación humana operación por operación.** Lo que el Título V exige es
+> que las políticas y manuales contemplen *«la adecuada segregación de funciones, **definición de
+> niveles y montos de autorización**»* — es decir, que la entidad **defina y documente** hasta qué
+> monto y bajo qué condiciones se autoriza qué, con esa metodología **aprobada por el Directorio**
+> y con rastro auditable. Una política de umbrales es exactamente la forma de **cumplir** ese
+> requisito, no una excepción a él.
+>
+> Revisado también el **Reglamento para Empresas de Tecnología Financiera** (Res. ASFI/540/2025)
+> y el **Reglamento de Servicios de Pago** del BCB (RD 079/2022): ninguno impone intervención
+> humana por operación. Lo que ambos exigen es autorización previa de la entidad, gestión de
+> riesgos documentada, continuidad y evidencia trazable.
+>
+> **Lo que sí exige una persona, y con nombre**, es la vía del sospechoso: la UIF obliga a que la
+> alerta la analice un analista y a que el reporte lo revise **otra identidad**
+> ([[CU-44 De alerta de monitoreo a reporte de operación sospechosa]], `AP-CU44-02`). Y todo lo que
+> sea debido proceso —declarar un incumplimiento, sancionar— o levantar un bloqueo de autoridad.
+>
+> **Alcance de esta verificación.** Se consultaron el portal de ASFI, la RNSF y análisis de
+> estudios jurídicos bolivianos (§9). **No se leyó el texto íntegro del Título V artículo por
+> artículo**, y esto **no sustituye una opinión legal**: la brecha **B-10** sigue abierta y la
+> política pasa por [[CU-47 Evaluar el riesgo del producto antes de lanzarlo]] con no objeción del
+> comité antes de operar con dinero real. Diseño resultante:
+> [[Flujo de pantallas · backoffice administrador]] §3.3.
 
 ### 1.5 Gestión de seguridad de la información
 
@@ -180,6 +206,9 @@ del sistema de riesgo operativo.
 | Inventario y **clasificación** de activos de información | ✅ | [[activo_informacion]] (`clasificacion`, `propietario_id`, `custodio_id`, `criticidad`) |
 | Gestión de incidentes de seguridad y su reporte | ✅ | [[incidente_seguridad]] (`plazo_reporte` guardado, `reportado_al_organismo_en`) |
 | Control de accesos, autenticación fuerte y trazabilidad de sesión | ✅ | M1: [[credencial_acceso]], [[factor_mfa]], [[sesion]], [[dispositivo]], [[intento_autenticacion]], [[asignacion_rol]] |
+| **Autenticación fuerte obligatoria para el acceso privilegiado** | ✅ | `R-SEG-10` impide la [[sesion]] de un operador sin TOTP confirmado; `R-SEG-12` exige segundo factor en toda decisión irreversible ([[ADR-038 Acceso administrativo · segundo factor y recuperación asistida]]) |
+| **Restablecimiento de credencial privilegiada con control dual** | 🟡 | `R-SEG-11` corta sesiones, dispositivos y refrescos al cambiar la credencial de un operador; la aprobación por una segunda identidad la sostiene la aplicación (falta la columna: [[Seguridad]] §7 S-7) |
+| **Estándar de codificación segura y su verificación** | ✅ | [[Seguridad]] con la correspondencia ISO/IEC 27001 · 27002 · 27034, y `scripts/verificar_seguridad.py` como puerta del CI |
 | Registros (logs) inalterables de eventos | ✅ | [[bitacora_evento]] encadenada por hash, *append-only*, con `REVOKE UPDATE/DELETE` |
 | Auditoría de **lectura** de datos sensibles | ✅ | [[registro_acceso_datos]] |
 | Riesgo tecnológico y dependencia de proveedores | ✅ | [[contrato_tercero]] (`es_critico`, cláusulas, SLA) + [[evaluacion_tercero]] |
@@ -374,7 +403,7 @@ contingencia para registrar inicio y fin.
 | --- | :-: | --- |
 | A.5.9 Inventario de información y activos asociados | ✅ | [[activo_informacion]] |
 | A.5.10 Uso aceptable / A.5.12 Clasificación | ✅ | `activo_informacion.clasificacion` |
-| A.5.15–A.5.18 Control de acceso, identidades, derechos | ✅ | [[rol]], [[permiso]], [[rol_permiso]], [[asignacion_rol]], [[credencial_acceso]] |
+| A.5.15–A.5.18 Control de acceso, identidades, derechos | ✅ | [[rol]], [[permiso]], [[rol_permiso]], [[asignacion_rol]], [[credencial_acceso]] · `R-SEG-07`, `R-SEG-08` |
 | A.5.19–A.5.22 Seguridad en relaciones con proveedores y su seguimiento | ✅ | [[contrato_tercero]], [[evaluacion_tercero]] |
 | A.5.24–A.5.28 Gestión de incidentes y recolección de evidencia | ✅ | [[incidente_seguridad]], [[bitacora_evento]] (hash), [[registro_acceso_datos]] |
 | A.5.29–A.5.30 Continuidad y preparación TIC | ✅ | [[plan_continuidad]], [[prueba_continuidad]] |
@@ -383,14 +412,18 @@ contingencia para registrar inicio y fin.
 | A.5.34 Privacidad y protección de PII | ✅ | §5 completo |
 | A.5.35–A.5.36 Revisión independiente y cumplimiento | ✅ | [[hallazgo_auditoria]], [[prueba_control]] |
 | A.6.3 Concienciación y formación | ✅ | [[capacitacion_cumplimiento]] |
-| A.8.2 Derechos de acceso privilegiado | ✅ | [[asignacion_rol]] + [[registro_acceso_datos]] |
+| A.8.2 Derechos de acceso privilegiado | ✅ | [[asignacion_rol]] + [[registro_acceso_datos]] + `R-SEG-10`/`R-SEG-12` ([[ADR-038 Acceso administrativo · segundo factor y recuperación asistida]]) |
+| A.8.5 Autenticación segura | ✅ | MFA obligatorio para operadores con TOTP; `R-SEG-10` lo hace cumplir en el motor |
 | A.8.10 Borrado de información / A.8.11 Enmascaramiento | ✅ | [[proceso_anonimizacion]], `numero_enmascarado` |
-| A.8.12 Prevención de fuga de datos | 🟡 | Detectable vía `registro_acceso_datos` masivo → alerta; la herramienta DLP es externa |
+| A.8.12 Prevención de fuga de datos | 🟡 | Detectable vía `registro_acceso_datos` masivo → alerta; la herramienta DLP es externa ([[Seguridad]] §7 S-3) |
 | A.8.15 Registro de eventos (logging) | ✅ | [[bitacora_evento]], `evento_dominio`, [[intento_autenticacion]] |
 | A.8.16 Actividades de monitoreo | ✅ | [[alerta_cumplimiento]], [[evaluacion_antifraude]], [[alerta_monitoreo_lft]] |
-| A.8.24 Uso de criptografía | 🟡 | Señalado en el modelo (`*_cifrado`, hashes con pepper); gestión de llaves es infraestructura |
-| A.8.32 Gestión de cambios | 🔵 | Proceso de ingeniería: fuera del modelo |
-| A.5.7 Inteligencia de amenazas / A.8.8 Gestión de vulnerabilidades | ❌→🔵 | No modelado: corresponde a herramientas de seguridad, no al esquema de negocio |
+| A.8.24 Uso de criptografía | 🟡 | Señalado en el modelo (`*_cifrado`, hashes con pepper) y normado en [[Seguridad]] §3.4, con gate de patrones prohibidos; la gestión de llaves sigue siendo infraestructura |
+| A.8.25–A.8.29 Desarrollo seguro, requisitos, ingeniería, codificación y pruebas de seguridad | ✅ | [[Seguridad]] §3 y §5 + `seguridad-aplicacion` + `scripts/verificar_seguridad.py` en el CI |
+| A.8.31 Separación de entornos | ✅ | Guarda de `seeders/dev`; el CI comprueba que **bloquea** una base sin marcar |
+| A.8.32 Gestión de cambios | ✅ | ADR obligatorio, generadores y el gate «lo derivado no diverge de su fuente» |
+| A.8.8 Gestión de vulnerabilidades técnicas | 🟡 | Escaneo de dependencias en cada PR ([[Seguridad]] §3.6); las pruebas de intrusión siguen abiertas (S-1) |
+| A.5.7 Inteligencia de amenazas | 🔵 | Proceso, no esquema; declarado en [[Seguridad]] §7 S-5 |
 
 ### 6.2 Otros estándares
 
@@ -400,6 +433,11 @@ contingencia para registrar inicio y fin.
 | **ISO 31000** Gestión del riesgo | Marco, proceso, registro de riesgos y tratamiento | ✅ | [[evento_riesgo_operativo]], [[control_interno]], [[plan_accion_riesgo]], [[matriz_riesgo_lft]] |
 | **ISO 19011** Auditoría de sistemas de gestión | Programa de auditoría, hallazgos, seguimiento | ✅ | [[hallazgo_auditoria]], [[prueba_control]], [[plan_accion_riesgo]] |
 | **ISO/IEC 27701** Privacidad | Roles, PII, derechos del titular, terceros | ✅ | §5 |
+| **ISO/IEC 27002:2022** Guía de implementación | Cómo se implementa cada control de 27001 | ✅ | [[Seguridad]] §3: una fila por control, con quién lo hace cumplir |
+| **ISO/IEC 27034** Seguridad de aplicaciones | Controles de aplicación **verificables**, con nivel de confianza declarado | ✅ | [[Seguridad]] §3 (control) + §6 (gate). El nivel es la columna motor / gate / revisión |
+| **ISO/IEC 27005** Gestión del riesgo de seguridad | Identificar, analizar y tratar | ✅ | [[Seguridad]] §2 modelo de amenazas + [[evento_riesgo_operativo]] |
+| **ISO/IEC 27017** Seguridad en la nube | Responsabilidad compartida, aislamiento | 🟡 | [[ADR-025 Empaquetado y despliegue de los servicios]] y [[Seguridad]] §3.7; falta el contrato con el proveedor |
+| **ISO/IEC 27018** PII en la nube | Tratamiento por el encargado | 🟡 | §5 y [[Seguridad]] §3.3; falta el anexo contractual |
 | **ISO/IEC 20000-1** Gestión de servicios TI | Incidentes, SLA, proveedores | 🟡 | [[incidente_operativo]], [[ticket_soporte]], `acuerdo_nivel_servicio` |
 | **COSO / COBIT** Control interno y gobierno TI | Ambiente de control, actividades, monitoreo | ✅ | [[comite_gobierno]], [[acta_comite]], [[control_interno]], [[politica_interna]] |
 | **PCI DSS** (si se tocan tarjetas) | No almacenar PAN, tokenizar | ✅ | [[instrumento_fondeo]] guarda `token_proveedor` y `hash_identificador`, **nunca el PAN** |
@@ -443,8 +481,8 @@ Honestidad sobre lo que este repositorio **no** resuelve:
 | **B-2** | Cifras de límites, umbrales, plazos y alícuotas sin sembrar | 🟡 Seeder | Legal confirma cada valor y llena `base_normativa` en `limite_operativo_billetera`, `umbral_reporte_uif`, `catalogo_reporte_regulatorio`, `impuesto` |
 | **B-3** | ~~Evento significativo de facturación sin estructura propia~~ | ✅ Cerrada | Resuelta en esta revisión: se agregó [[evento_significativo_sin]] y `factura_electronica.evento_significativo_id` |
 | **B-4** | Formato exacto de los archivos PCC-01 / ROG-01..04 y del módulo de reclamos | 🟡 Integración | Mapear cada campo del formato oficial contra las columnas; `catalogo_reporte_regulatorio.formato` guarda el layout |
-| **B-5** | Gestión de vulnerabilidades, pruebas de intrusión e inteligencia de amenazas | 🔵 Operativa | Herramientas y proceso de seguridad; solo el resultado (hallazgo/incidente) entra al modelo |
-| **B-6** | Gestión de llaves criptográficas y cifrado en reposo | 🔵 Infraestructura | KMS/HSM; el modelo marca qué columnas lo exigen |
+| **B-5** | Pruebas de intrusión e inteligencia de amenazas | 🔵 Operativa | **Parcialmente cerrada**: el escaneo de dependencias y el estándar de codificación segura ya son gate ([[Seguridad]] §3.6 y §6). Quedan el pentest y la suscripción de amenazas (S-1, S-5); solo el resultado entra al modelo |
+| **B-6** | Gestión de llaves criptográficas y cifrado en reposo | 🔵 Infraestructura | KMS/HSM; el modelo marca qué columnas lo exigen (`version_llave`) y [[Seguridad]] §3.4 fija qué algoritmo va en cada caso (S-2) |
 | **B-7** | Políticas, manuales y actas reales | 🔵 Organizacional | Las tablas existen vacías: hay que redactarlos y aprobarlos en Directorio |
 | **B-8** | Capital mínimo, estructura societaria y auditoría externa | 🔵 Societaria | Fuera del alcance técnico |
 | **B-9** | Plazo de adecuación UIF (90 + 30 días desde junio de 2026) | 🟡 Proyecto | El modelo ya soporta los nuevos artículos 52 y 53; la implementación debe estar en producción dentro del plazo |
@@ -462,6 +500,9 @@ de producto.
 - ASFI — [Derechos del consumidor financiero](https://www.asfi.gob.bo/la/derechos-del-consumidor-financiero)
 - ASFI — [Reglamento de derechos del consumidor financiero (PDF)](https://www.baneco.com.bo/doc/asfi/ASFI-Reglamento_derechos_del_consumidor.pdf)
 - RNSF Libro 3, Título V — [Gestión de riesgo operativo: ciclo, CIRO, categorías y factores](https://www.piranirisk.com/es/academia/especiales/riesgo-operativo-asfi-bolivia)
+- ASFI — [Recopilación de Normas para Servicios Financieros (RNSF), índice oficial](https://www.asfi.gob.bo/la/recopilacion-normas-para-servicios-financieros-rnsf) · consultada en agosto de 2026 para la exigencia de **segregación de funciones y definición de niveles y montos de autorización**
+- ASFI — [Empresas de tecnología financiera en Bolivia: un nuevo horizonte (documento oficial, 2025)](https://www.asfi.gob.bo/sites/default/files/2025-07/Empresas%20de%20tecnolog%C3%ADa%20financiera%20en%20Bolivia%20Un%20nuevo%20horizonte%20para%20la%20innovaci%C3%B3n%20financiera.pdf)
+- BCB — [Reglamento de Servicios de Pago (RD 079/2022), comunicado oficial](https://www.bcb.gob.bo/?q=content/el-bcb-emite-reglamento-que-profundiza-el-proceso-de-modernizaci%C3%B3n-del-sistema-de-pagos)
 - ASFI — [Reglamento para la Gestión de Seguridad de la Información](https://redtiseg.com/reglamento-de-seguridad-de-la-informacion-asfi/)
 - UIF — [Resolución Administrativa UIF/050/2026 (modifica arts. 52 y 53 del Instructivo aprobado por R.A. UIF/016/2026)](https://www.uif.gob.bo/wp-content/uploads/2026/06/R.A.50.2026-f-con-anexos-y-firma-colores.pdf)
 - UIF — [Instructivo Específico para Entidades de Intermediación Financiera con EBR](https://www.uif.gob.bo/wp-content/uploads/2025/09/Instructivo-EIF-RA-42-2022.pdf) · [Normativa externa UIF](https://www.uif.gob.bo/index.php/normativa-externa/)

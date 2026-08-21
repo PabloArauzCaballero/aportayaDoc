@@ -6,7 +6,6 @@ INSERT INTO proveedor_pago (codigo, nombre, tipo, url_base, referencia_credencia
   ('QR_INTEROP', 'QR interoperable — Reglamento de Servicios de Pago del BCB', 'PASARELA', 'https://qr.proveedor.example.bo/v1', 'secreto://aportaya/pagos/qr-interop', 0.0, 0.35, TRUE, TRUE, FALSE, 1),
   ('ACH_INTERBANCARIA', 'Transferencia interbancaria — cámara de compensación', 'BANCO', 'https://ach.proveedor.example.bo/v1', 'secreto://aportaya/pagos/ach', 2.5, 0.0, FALSE, TRUE, FALSE, 2),
   ('BILLETERA_TERCERO', 'Billetera móvil de tercero — abono a cuenta de custodia', 'BILLETERA', 'https://billetera.proveedor.example.bo/v1', 'secreto://aportaya/pagos/billetera-tercero', 1.0, 0.5, TRUE, TRUE, FALSE, 3),
-  ('AGENTE_EFECTIVO', 'Red de agentes corresponsales — recaudación en efectivo', 'PASARELA', 'https://agentes.proveedor.example.bo/v1', 'secreto://aportaya/pagos/agentes', 3.0, 0.0, TRUE, TRUE, FALSE, 4),
   ('TARJETA_ADQUIRENCIA', 'Adquirencia de tarjetas de débito y crédito', 'PASARELA', 'https://tarjetas.proveedor.example.bo/v1', 'secreto://aportaya/pagos/tarjetas', 0.0, 2.85, TRUE, TRUE, FALSE, 5),
   ('BANCO_CUSTODIO', 'Banco custodio — extractos y desembolsos de la cuenta de custodia', 'BANCO', 'https://custodio.proveedor.example.bo/v1', 'secreto://aportaya/custodia/banco', 0.0, 0.0, FALSE, TRUE, FALSE, 9)
 ON CONFLICT (codigo) DO NOTHING;

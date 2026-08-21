@@ -602,6 +602,113 @@ SELECT pg_temp.debe_fallar('R-PUB-06 segunda factura del mismo período', $q$
           'GENERADA', now())
 $q$);
 
+-- =====================================================================
+--  M1 · Acceso administrativo (R-SEG-10/11/12) — ADR-038
+--
+--  Se prueba el comportamiento, no la presencia: que un operador sin segundo
+--  factor NO abra sesión, que su factor no pueda ser un mensaje, y que
+--  cambiar su credencial no deje nada vivo detrás. Los actores son propios
+--  de la prueba: depender de los seeders la volvería vacía sin avisar.
+-- =====================================================================
+
+SELECT pg_temp.debe_pasar('alta de actores de acceso administrativo', $q$
+  INSERT INTO usuario (id, codigo_publico, nombres, apellidos, telefono_e164,
+      fecha_nacimiento, estado, nivel_kyc, idioma, zona_horaria, fecha_registro)
+  VALUES ('cc000000-0000-0000-0000-0000000000f1', 'ZZOPERA01', 'Operadora',
+          'Prueba', '+59170000011', '1990-01-01', 'ACTIVO', 'COMPLETO',
+          'es', 'America/La_Paz', now()),
+         ('cc000000-0000-0000-0000-0000000000f2', 'ZZPARTI01', 'Participante',
+          'Prueba', '+59170000012', '1990-01-01', 'ACTIVO', 'COMPLETO',
+          'es', 'America/La_Paz', now());
+  INSERT INTO rol (id, codigo, nombre, ambito, es_sistema)
+  VALUES ('cc000000-0000-0000-0000-0000000000f3', 'ZZ_OPERATIVO',
+          'Rol operativo de prueba', 'GLOBAL', FALSE);
+  INSERT INTO asignacion_rol (usuario_id, rol_id, ambito, ambito_id,
+      otorgada_por, otorgada_en)
+  VALUES ('cc000000-0000-0000-0000-0000000000f1',
+          'cc000000-0000-0000-0000-0000000000f3', 'GLOBAL', NULL,
+          'cc000000-0000-0000-0000-00000000000a', now());
+  INSERT INTO dispositivo (id, usuario_id, huella, plataforma, modelo,
+      version_app, es_confiable, autorizado_en, ultimo_uso_en)
+  VALUES ('cc000000-0000-0000-0000-0000000000f4',
+          'cc000000-0000-0000-0000-0000000000f1', 'ZZ-HUELLA-OPERADORA',
+          'WEB', 'Escritorio', '1.0', TRUE, now(), now());
+  INSERT INTO credencial_acceso (id, usuario_id, hash_contrasena, algoritmo,
+      parametros_kdf, requiere_cambio, cambiada_en)
+  VALUES ('cc000000-0000-0000-0000-0000000000f5',
+          'cc000000-0000-0000-0000-0000000000f1', 'hash-viejo', 'ARGON2ID',
+          '{}'::jsonb, FALSE, now())
+$q$);
+
+-- R-SEG-10 · sin TOTP confirmado no hay sesión de operador
+SELECT pg_temp.debe_fallar('R-SEG-10 sesión de operador sin segundo factor', $q$
+  INSERT INTO sesion (usuario_id, dispositivo_id, iniciada_en,
+      ultima_actividad_en, expira_en, ip_origen)
+  VALUES ('cc000000-0000-0000-0000-0000000000f1',
+          'cc000000-0000-0000-0000-0000000000f4', now(), now(),
+          now() + interval '1 hour', '190.129.0.99')
+$q$);
+
+-- R-SEG-10 · el segundo factor de un operador no puede ser un mensaje
+SELECT pg_temp.debe_fallar('R-SEG-10 factor SMS para un operador', $q$
+  INSERT INTO factor_mfa (usuario_id, tipo, secreto_cifrado, version_llave,
+      activo, es_principal, confirmado_en)
+  VALUES ('cc000000-0000-0000-0000-0000000000f1', 'SMS', 'x', 1, TRUE, TRUE, now())
+$q$);
+
+-- ... y para un participante el mismo factor sigue valiendo
+SELECT pg_temp.debe_pasar('R-SEG-10 factor SMS para un participante', $q$
+  INSERT INTO factor_mfa (usuario_id, tipo, secreto_cifrado, version_llave,
+      activo, es_principal, confirmado_en)
+  VALUES ('cc000000-0000-0000-0000-0000000000f2', 'SMS', 'x', 1, TRUE, TRUE, now())
+$q$);
+
+SELECT pg_temp.debe_pasar('alta del TOTP de la operadora', $q$
+  INSERT INTO factor_mfa (usuario_id, tipo, secreto_cifrado, version_llave,
+      activo, es_principal, confirmado_en)
+  VALUES ('cc000000-0000-0000-0000-0000000000f1', 'TOTP', 'x', 1, TRUE, TRUE, now())
+$q$);
+
+SELECT pg_temp.debe_pasar('R-SEG-10 con TOTP confirmado la sesión abre', $q$
+  INSERT INTO sesion (id, usuario_id, dispositivo_id, iniciada_en,
+      ultima_actividad_en, expira_en, ip_origen)
+  VALUES ('cc000000-0000-0000-0000-0000000000f6',
+          'cc000000-0000-0000-0000-0000000000f1',
+          'cc000000-0000-0000-0000-0000000000f4', now(), now(),
+          now() + interval '1 hour', '190.129.0.99')
+$q$);
+
+-- R-SEG-11 · cambiar la credencial del operador no deja nada vivo detrás
+SELECT pg_temp.debe_pasar('R-SEG-11 cambio de credencial de la operadora', $q$
+  UPDATE credencial_acceso SET hash_contrasena = 'hash-nuevo', cambiada_en = now()
+   WHERE id = 'cc000000-0000-0000-0000-0000000000f5'
+$q$);
+
+SELECT CASE WHEN NOT EXISTS (
+         SELECT 1 FROM sesion
+          WHERE usuario_id = 'cc000000-0000-0000-0000-0000000000f1'
+            AND revocada_en IS NULL)
+       THEN 'OK    · R-SEG-11 ninguna sesión del operador quedó viva'
+       ELSE 'FALLA · R-SEG-11 quedó una sesión viva tras cambiar la credencial' END;
+
+SELECT CASE WHEN NOT EXISTS (
+         SELECT 1 FROM dispositivo
+          WHERE usuario_id = 'cc000000-0000-0000-0000-0000000000f1'
+            AND es_confiable)
+       THEN 'OK    · R-SEG-11 ningún dispositivo del operador quedó confiable'
+       ELSE 'FALLA · R-SEG-11 quedó un dispositivo confiable' END;
+
+-- R-SEG-12 · lo irreversible se confirma con el segundo factor
+SELECT pg_temp.debe_fallar('R-SEG-12 permiso APROBAR sin segundo factor', $q$
+  INSERT INTO permiso (codigo, descripcion, recurso, accion, requiere_mfa)
+  VALUES ('ZZ_APROBAR_SIN_MFA', 'prueba', 'zz', 'APROBAR', FALSE)
+$q$);
+
+SELECT pg_temp.debe_pasar('R-SEG-12 el mismo permiso con segundo factor entra', $q$
+  INSERT INTO permiso (codigo, descripcion, recurso, accion, requiere_mfa)
+  VALUES ('ZZ_APROBAR_CON_MFA', 'prueba', 'zz', 'APROBAR', TRUE)
+$q$);
+
 -- --- restricciones que exigen datos de varios módulos: se verifica que
 --     existan y estén activas, sin simular el flujo completo ----------
 WITH esperadas(codigo, objeto) AS (VALUES
@@ -646,9 +753,12 @@ WITH esperadas(codigo, objeto) AS (VALUES
       ('R-AUD-07 uq_saldo_diario_cuenta_fecha',  'uq_saldo_diario_cuenta_fecha'),
       ('R-BIL-17 uq_cuenta_benef_hash',          'uq_cuenta_benef_hash'),
       ('R-BIL-17 uq_cuenta_benef_principal',     'uq_cuenta_benef_principal'),
-      ('R-BIL-18 uq_arqueo_punto_fecha',         'uq_arqueo_punto_fecha'),
       ('R-SEG-07 ck_asignacion_no_autoasignada', 'ck_asignacion_no_autoasignada'),
       ('R-SEG-08 uq_asignacion_vigente',         'uq_asignacion_vigente'),
+      ('R-SEG-10 tg_sesion_operador_mfa',        'tg_sesion_operador_mfa'),
+      ('R-SEG-10 tg_factor_operador_valido',     'tg_factor_operador_valido'),
+      ('R-SEG-11 tg_credencial_operador_corta_sesiones', 'tg_credencial_operador_corta_sesiones'),
+      ('R-SEG-12 ck_permiso_decision_exige_mfa', 'ck_permiso_decision_exige_mfa'),
       ('R-UIF-12 uq_oficial_titular_activo',     'uq_oficial_titular_activo'),
       ('R-LIC-04 ck_evaluacion_no_objecion',     'ck_evaluacion_no_objecion'),
       ('R-GRP-14 uq_solicitud_ingreso_pendiente','uq_solicitud_ingreso_pendiente'),

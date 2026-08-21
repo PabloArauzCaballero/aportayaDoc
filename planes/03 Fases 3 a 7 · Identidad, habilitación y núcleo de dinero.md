@@ -358,7 +358,7 @@ intermedia, aunque el gate sea uno solo.
 
 Los diez CU · `docs/Restricciones.md` § **R-BIL** (18 restricciones, la familia más
 grande) · skills `contabilidad-partida-doble`, `dinero-decimal`,
-`efectivo-puntos-atencion`, `qr-pagos`
+`qr-pagos`
 
 ## El invariante que gobierna esta fase
 

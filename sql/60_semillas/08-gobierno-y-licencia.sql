@@ -29,7 +29,7 @@ INSERT INTO matriz_riesgo_lft (version, dimension, factor, ponderacion, escala, 
   (1, 'CLIENTE', 'Actividad económica declarada', 20, '{"ASALARIADO": 5, "COMERCIO_MINORISTA": 10, "CAMBISTA": 25, "NO_DECLARADA": 25}'::jsonb, 'Instructivo EIF — enfoque basado en riesgo', current_date),
   (1, 'CLIENTE', 'Nivel de debida diligencia alcanzado', 15, '{"REFORZADA": 5, "AMPLIADA": 8, "ESTANDAR": 12, "SIMPLIFICADA": 15}'::jsonb, 'Instructivo EIF — enfoque basado en riesgo', current_date),
   (1, 'PRODUCTO', 'Producto contratado', 15, '{"GRUPO_PASANAKU": 10, "BILLETERA": 15, "TRANSFERENCIA_P2P": 20}'::jsonb, 'Instructivo EIF — enfoque basado en riesgo', current_date),
-  (1, 'CANAL', 'Canal de vinculación', 10, '{"PRESENCIAL": 5, "APP": 15, "AGENTE": 12}'::jsonb, 'Instructivo EIF — enfoque basado en riesgo', current_date),
+  (1, 'CANAL', 'Canal de vinculación', 10, '{"PRESENCIAL": 5, "APP": 15}'::jsonb, 'Instructivo EIF — enfoque basado en riesgo', current_date),
   (1, 'ZONA_GEOGRAFICA', 'Zona de residencia u operación', 15, '{"URBANA": 5, "RURAL": 8, "FRONTERA": 20, "ZONA_DE_RIESGO": 25}'::jsonb, 'Instructivo EIF — enfoque basado en riesgo', current_date)
 ON CONFLICT (version, dimension, factor) DO NOTHING;
 

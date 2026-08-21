@@ -100,4 +100,8 @@ devolvió nada" son mensajes distintos y se distinguen.
 ## Ver también
 
 `errores-api` · `observabilidad` · `glosario-dominio` · `disenar-frontend` · `arquitectura-atomica` · `contratos-api` · `revision-codigo` ·
+`seguridad-aplicacion` · [[Seguridad]] ·
+[[ADR-038 Acceso administrativo · segundo factor y recuperación asistida]] — el acceso al backoffice
+(ingreso, desafío TOTP, enrolamiento, recuperación, aprobaciones) está en
+[[Flujo de pantallas · backoffice administrador]] §2.0 ·
 `docs/Arquitectura/ADR-004 Frontend.md` · `docs/Arquitectura/Prompts/Prompt de frontend.md`

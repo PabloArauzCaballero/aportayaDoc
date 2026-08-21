@@ -35,11 +35,11 @@ de la API **niega por omisión** ([[ADR-024 Autenticación y sesión distribuida
 
 | Rol | Para qué entra | Permisos núcleo |
 | --- | --- | --- |
-| **ADMIN_PLATAFORMA** | Configurar la plataforma, roles, catálogos, tarifario | `CATALOGO_EDITAR`, `TARIFARIO_PUBLICAR`, administración de roles |
+| **ADMIN_PLATAFORMA** | Configurar la plataforma, roles, catálogos, tarifario | `CATALOGO_EDITAR`, `TARIFARIO_PUBLICAR`, `ACCESOS_ADMINISTRAR`, `SEGURIDAD_ACCESO_RESTABLECER`, `SEGURIDAD_FACTOR_REINSCRIBIR` |
 | **OFICIAL_CUMPLIMIENTO** · **ANALISTA_CUMPLIMIENTO** | Triar alertas, armar casos, reportar a la UIF | `CUMPLIMIENTO_ALERTAS`, `_CASOS`, `_REPORTAR` |
 | **AUDITOR_INTERNO** | Leer todo el rastro sin escribir nada | `AUDITORIA_LEER` |
 | **RESPONSABLE_RIESGOS** | Eventos de riesgo, alertas tempranas, indicadores | riesgo operativo, KPIs |
-| **RESPONSABLE_SEGURIDAD** | Incidentes de seguridad y continuidad | incidentes, pruebas de continuidad |
+| **RESPONSABLE_SEGURIDAD** | Incidentes de seguridad, continuidad y el acceso de los demás operadores | incidentes, pruebas de continuidad, `SEGURIDAD_ACCESO_RESTABLECER`, `SEGURIDAD_FACTOR_REINSCRIBIR` |
 | **SOPORTE** · **PUNTO_RECLAMO** | Atender reclamos y su segunda instancia | `RECLAMO_ATENDER` |
 | **TESORERIA** | Conciliar custodia/encaje, ejecutar desembolsos | `ENTREGA_EJECUTAR`, conciliación |
 | **CONTABILIDAD** | Libro, período, ERP, autorizar pagos | `CONTABILIDAD_ERP_*` |
@@ -64,9 +64,59 @@ notificación probada, plazo guardado, descargo, decisión motivada y apelación
 ## 1 · Acceso y tablero
 
 ### AF-01 · Iniciar sesión en el backoffice
-- **Actor:** cualquier operador. **MFA obligatorio** (escritorio, sin atajo biométrico);
-  la sesión emite un token cuyo rol se convierte en contexto de RLS.
-- **Implementa:** [[CU-04 Autenticar con MFA y registrar dispositivo]].
+- **Actor:** cualquier operador. **Implementa:**
+  [[CU-04 Autenticar con MFA y registrar dispositivo]].
+- **Dos factores en todo acceso, sin excepción.** Credencial + **TOTP** de aplicación
+  autenticadora. No hay atajo biométrico, no hay «recordar este equipo» y el dispositivo
+  marcado confiable **no exime**: lo que para el participante es comodidad, para el
+  operador convierte el robo del equipo en el robo del rol
+  ([[ADR-038 Acceso administrativo · segundo factor y recuperación asistida]]).
+- **No lo hace la pantalla: lo hace la base.** `R-SEG-10` impide insertar una [[sesion]]
+  de un usuario con rol de ámbito `GLOBAL` que no tenga [[factor_mfa]] `TOTP` confirmado,
+  y rechaza que su factor sea `SMS` o `WHATSAPP` —canales apagados
+  ([[ADR-035 Canales por defecto]]) y expuestos al intercambio de SIM—.
+- **La sesión emite un token cuyo rol se convierte en contexto de RLS**
+  ([[ADR-021 Sesión, RLS y pooling]]), caduca por **inactividad** además de por
+  vencimiento, y se cierra del lado del servidor: borrar el token del navegador no
+  revoca nada.
+- **Reautenticación por paso.** Entrar no autoriza para siempre: toda acción cuyo
+  [[permiso]] tenga `requiere_mfa` pide un desafío nuevo, corto y atado a esa operación.
+  `R-SEG-12` garantiza que la marca esté puesta donde corresponde —`AUTORIZAR`,
+  `APROBAR`, `EJECUTAR`, `REVERSAR`, `PUBLICAR`, `ENVIAR`, `CERRAR` y `LEER_TERCEROS`—,
+  para que «sensible» no sea criterio de quien programa.
+- **Sin factor no hay operador.** Una [[asignacion_rol]] recién otorgada
+  ([[CU-08 Asignar y revocar roles de operador]]) deja a la persona sin poder entrar
+  hasta que enrola su TOTP y guarda sus códigos de respaldo. Eso es lo correcto, no un
+  defecto: el alta termina en el enrolamiento, no en la asignación.
+
+### AF-01b · Recuperar la contraseña de un operador
+- **Actores:** el operador que la perdió · **otra identidad** con
+  `SEGURIDAD_ACCESO_RESTABLECER` (RESPONSABLE_SEGURIDAD o ADMIN_PLATAFORMA).
+  **Implementa:** [[CU-09 Cambiar credenciales y solicitar la baja]] §8.
+- **Nunca por autoservicio.** El motivo cabe en una línea: quien tomó el canal de
+  recuperación es exactamente quien lo va a usar. Hacen falta **tres cosas**, y las tres
+  quedan escritas: token de un solo uso al canal verificado, **verificación asistida**
+  con prueba de vida y documento, y **aprobación de otra persona** —jamás el titular—.
+- **El corte es total.** En la misma transacción del hash nuevo, `R-SEG-11` revoca
+  **todas** las [[sesion]] (sin la excepción «salvo la que hizo el cambio» que sí tiene
+  el participante, porque acá el que la hizo puede ser el atacante), quita `es_confiable`
+  a todos sus [[dispositivo]] e invalida los refrescos emitidos.
+- **Recuperar la clave no devuelve el segundo factor.** Son dos secretos y dos caminos:
+  quien obtuvo la contraseña sigue sin el TOTP, y `R-SEG-10` le cierra la sesión antes de
+  abrirla.
+
+### AF-01c · Reinscribir el segundo factor de un operador
+- **Actores:** el operador que perdió el teléfono · **otra identidad** con
+  `SEGURIDAD_FACTOR_REINSCRIBIR`. **Implementa:**
+  [[CU-09 Cambiar credenciales y solicitar la baja]] §9.
+- **A cuatro ojos, con causal escrita y verificación asistida.** Nadie se reinscribe a sí
+  mismo: el factor es justamente lo que queda en pie cuando la contraseña cae.
+- **Con enfriamiento.** Durante el plazo que fija la política —**guardado al inicio**, no
+  recalculado al consultar (`plazos-habiles`)— el operador entra y trabaja, pero **no
+  ejecuta** ninguna acción con `requiere_mfa`. Es la ventana de enfriamiento del
+  participante, aplicada del lado que puede mover plata ajena.
+- **Los códigos de respaldo son la salida ordinaria**, no el trámite: se entregan al
+  enrolar y existen para que perder el teléfono no active este procedimiento cada vez.
 
 ### AF-02 · Ver el tablero de indicadores
 - **Actor:** según rol (cada uno ve su familia de KPIs). **Implementa:**
@@ -193,12 +243,26 @@ El caso **no nace en el backoffice**. El participante lo abre desde la app
 - **Implementa:** [[CU-51 Ejecutar el cierre diario]] — sella el día; el saldo diario del libro
   se congela y se cuadra contra el banco.
 
-### AF-11 · Autorizar y ejecutar un desembolso / reverso
-- **Doble control:** CONTABILIDAD autoriza, TESORERIA ejecuta.
-- **Implementa:** [[CU-28 Emitir la orden de desembolso y ejecutar el intento]] ·
-  [[CU-14 Reversar una transacción]] (reverso, nunca `UPDATE` del libro).
-
----
+### AF-11 · Desembolsar: automático por defecto, humano por excepción
+- **Actores:** el sistema, para lo rutinario. **CONTABILIDAD** autoriza y **TESORERIA** ejecuta,
+  solo para las excepciones. **Implementa:**
+  [[CU-28 Emitir la orden de desembolso y ejecutar el intento]] y
+  [[CU-14 Reversar una transacción]].
+- **La entrega del turno y el retiro chico salen solos** cuando se cumplen las seis condiciones
+  de la política ([[Flujo de pantallas · backoffice administrador]] §3.3). Es el caso normal: la
+  entrega del pasanaku es un pago **esperado**, a un beneficiario **conocido**, en una fecha que
+  el grupo ya sabía, con ocho reglas bloqueantes verificándose antes de liberar el dinero.
+- **Al operador le llega lo excepcional**: monto sobre el umbral, primer pago a una cuenta nueva,
+  puntaje antifraude alto o alerta abierta, regla bloqueante en rojo, rechazo ambiguo del
+  proveedor. Ahí sí, doble control (`R-SEG-04`) y reautenticación por paso (`R-SEG-12`).
+- **Un retiro y una entrega no tienen el mismo riesgo** y no comparten umbral: el destino de la
+  entrega lo fijó el grupo; el del retiro lo elige la persona y puede ser nuevo. Una sola política
+  para los dos sería demasiado floja para uno o demasiado dura para el otro.
+- **Lo que nunca sale solo:** ROS, declaración de incumplimiento, sanción, levantamiento de un
+  bloqueo de autoridad y cualquier omisión de regla bloqueante.
+- **Pendiente antes de dinero real:** no objeción del comité vía
+  [[CU-47 Evaluar el riesgo del producto antes de lanzarlo]] y confirmación legal de la lectura
+  normativa ([[Cumplimiento]] brechas B-2 y B-10).
 
 ## 6 · Mini-módulo contable / ERP — lo esencial (CONTABILIDAD · carril B3/F13)
 
@@ -309,7 +373,9 @@ El caso **no nace en el backoffice**. El participante lo abre desde la app
 
 ```mermaid
 flowchart TD
-    L["AF-01 Login backoffice<br/>(MFA obligatorio)"] --> D["AF-02 Tablero por rol"]
+    L["AF-01 Login backoffice<br/>credencial + TOTP, siempre"] --> D["AF-02 Tablero por rol"]
+    REC["AF-01b Recuperar clave<br/>token + asistida + otra identidad"] --> L
+    RIN["AF-01c Reinscribir factor<br/>cuatro ojos + enfriamiento"] --> L
     D --> EST["AF-02b Estado de la<br/>plataforma y artefactos"]
     D --> VER["AF-02c Verificaciones<br/>aceptar / rechazar"]
     D --> CUMP["Cumplimiento<br/>AF-03..05"]
@@ -326,7 +392,7 @@ flowchart TD
     CUMP -. "arma / aprueba" .- AUD["AUDITOR_INTERNO<br/>solo lee"]
 
     classDef seg fill:#fde,stroke:#a05;
-    class TES,CTB,CUMP,QR seg;
+    class TES,CTB,CUMP,QR,REC,RIN seg;
 ```
 
 > Las líneas punteadas son **segregación de funciones**: dos roles distintos a cada lado de la
@@ -336,4 +402,6 @@ flowchart TD
 
 [[_CasosDeUso]] · [[Flujo de pantallas · backoffice administrador]] ·
 [[Flujo funcional · recorrido del usuario]] · [[ADR-031 Lecturas, réplica y rol auditor]] ·
-`roles-y-accesos` · `debido-proceso` · `gobierno-comites` · `contabilidad-partida-doble`
+[[ADR-038 Acceso administrativo · segundo factor y recuperación asistida]] · [[Seguridad]] ·
+`roles-y-accesos` · `debido-proceso` · `gobierno-comites` · `contabilidad-partida-doble` ·
+`seguridad-aplicacion`

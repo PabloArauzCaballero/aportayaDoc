@@ -42,11 +42,14 @@ Se reporta así, no en prosa:
 
 ### Seguridad
 
+- [ ] `python3 scripts/verificar_seguridad.py` → **TODO OK**, ejecutado, no supuesto.
 - [ ] Prueba negativa de permisos: con contexto ajeno, cero filas.
 - [ ] Ningún secreto en el repositorio, en la imagen ni en logs.
 - [ ] Rate limit en los bordes sensibles.
 - [ ] Datos personales minimizados y redactados en logs.
 - [ ] Dependencias e imagen escaneadas sin críticas abiertas.
+- [ ] Si toca acceso de operador: las pruebas de rechazo de `R-SEG-10`, `R-SEG-11` y
+      `R-SEG-12` en verde ([[Seguridad]] §6).
 
 ### Plazos y cumplimiento
 
@@ -90,7 +93,7 @@ Se reporta así, no en prosa:
 | "Está listo para producción" | "Pasan los 8 gates de la matriz; el de restore drill quedó pendiente" |
 | "Debería funcionar" | "No lo pude ejecutar porque falta X; queda sin verificar" |
 | "Ya está probado" | "14 criterios como pruebas, 6 rechazos de restricción, `./gradlew test` en verde" |
-| "Es seguro" | "Prueba negativa de RLS y de permisos en verde; sin escaneo de imagen todavía" |
+| "Es seguro" | "Prueba negativa de RLS y de permisos en verde, `verificar_seguridad.py` en TODO OK; sin escaneo de imagen todavía" |
 
 ## Ver también
 

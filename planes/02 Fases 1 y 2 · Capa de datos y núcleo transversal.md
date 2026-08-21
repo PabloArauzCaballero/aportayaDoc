@@ -39,7 +39,7 @@ permiso de más.
 # FASE 1 — Esquemas, roles y capa de datos
 
 > **Objetivo.** Que existan `plataforma/comun-dominio` con `Dinero` exacto y
-> `plataforma/comun-datos` con el acceso a las 306 tablas **generado** desde la base
+> `plataforma/comun-datos` con el acceso a las 304 tablas **generado** desde la base
 > viva, repartidas en catorce esquemas con un rol por servicio, de modo que un
 > servicio no pueda leer los datos de otro **aunque quiera**.
 

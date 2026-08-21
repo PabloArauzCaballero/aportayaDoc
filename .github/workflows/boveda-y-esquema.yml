@@ -7,6 +7,8 @@ name: Bóveda, esquema, semillas y despliegue
 #   3 · ningún servicio queda con una réplica, y el escalado cabe en el pool
 #   4 · el esquema aplica en limpio sobre PostgreSQL 16 y la prueba de humo pasa
 #   5 · las semillas de dev NO entran a una base que no esté marcada como dev
+#   6 · el estándar de ciberseguridad se cumple: ningún patrón prohibido, ningún
+#       secreto versionado, y el acceso administrativo con sus tres restricciones
 #
 # La quinta es la que importa el día que alguien apunte un despliegue al lugar
 # equivocado: la guarda tiene que fallar, y este workflow comprueba que falla.
@@ -26,7 +28,7 @@ permissions:
 
 jobs:
   boveda:
-    name: Bóveda, carriles y despliegue coherentes
+    name: Bóveda, seguridad, carriles y despliegue coherentes
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -36,6 +38,9 @@ jobs:
 
       - name: Dependencias
         run: python3 -m pip install --quiet pyyaml
+
+      - name: Verificar el estándar de ciberseguridad — docs/Seguridad.md
+        run: python3 scripts/verificar_seguridad.py
 
       - name: Verificar la bóveda
         run: python3 scripts/verificar_boveda.py

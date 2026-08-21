@@ -139,6 +139,45 @@
       ]
     },
     {
+      "tabla": "factor_mfa",
+      "conflicto": [],
+      "comentario": "USR000091 entra al backoffice, así que R-SEG-10 le exige TOTP confirmado: sin esta fila no puede abrir sesión, y eso es lo correcto (ADR-038). El secreto es un literal de demostración y no autentica nada.",
+      "filas": [
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000091"
+          },
+          "tipo": "TOTP",
+          "secreto_cifrado": "enc:v1:demo-totp-admin-dev",
+          "activo": true,
+          "es_principal": true,
+          "confirmado_en": {
+            "$sql": "now() - interval '30 days'"
+          },
+          "ultimo_uso_en": {
+            "$sql": "now() - interval '2 hours'"
+          },
+          "version_llave": 1
+        },
+        {
+          "usuario_id": {
+            "$ref": "usuario",
+            "codigo_publico": "USR000091"
+          },
+          "tipo": "RESPALDO",
+          "secreto_cifrado": "enc:v1:demo-respaldo-admin-dev",
+          "activo": true,
+          "es_principal": false,
+          "confirmado_en": {
+            "$sql": "now() - interval '30 days'"
+          },
+          "ultimo_uso_en": null,
+          "version_llave": 1
+        }
+      ]
+    },
+    {
       "tabla": "canal_vinculado",
       "conflicto": [
         "identificador",

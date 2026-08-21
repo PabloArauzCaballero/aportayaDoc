@@ -57,7 +57,7 @@ Ola 0.
 
 ## 1 · Por qué esto se puede paralelizar
 
-Porque **el esquema ya está completo**. Las 306 tablas existen desde el primer día
+Porque **el esquema ya está completo**. Las 304 tablas existen desde el primer día
 (`sql/aplicar.sql`), con sus claves, índices, restricciones y RLS.
 
 Eso cambia todo: un carril **no espera** a que otro implemente su caso de uso para

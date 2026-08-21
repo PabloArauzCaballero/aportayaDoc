@@ -47,12 +47,6 @@ INSERT INTO conciliacion_custodia (cuenta_custodia_id, cierre_diario_id, ejecuta
   ((SELECT id FROM cuenta_custodia WHERE contrato_referencia = 'FID-DEMO-001'), (SELECT id FROM cierre_diario ORDER BY fecha DESC LIMIT 1), (SELECT id FROM usuario WHERE codigo_publico = 'USR000008'), (current_date + interval '-1 days'), 9900.0, 9900.0, 0.0, TRUE, 'CUADRADA', now() - interval '17 hours')
 ON CONFLICT DO NOTHING;
 
--- Un arqueo con faltante de Bs 20: `diferencia` es derivada y negativa, y por eso abre el evento de riesgo operativo de más abajo.
-INSERT INTO arqueo_punto_atencion (punto_atencion_id, arqueado_por, fecha, saldo_inicial, total_recargas, total_retiros, saldo_teorico, saldo_contado, estado, observaciones, cerrado_en) VALUES
-  ((SELECT id FROM punto_atencion WHERE codigo = 'PA-SCZ-001'), (SELECT id FROM usuario WHERE codigo_publico = 'USR000008'), (current_date + interval '-44 days'), 0.0, 600.0, 0.0, 600.0, 580.0, 'DESCUADRADO', 'Faltante de Bs 20,00 al cierre. Se abre evento de riesgo operativo y se descuenta del corresponsal.', now() - interval '44 days'),
-  ((SELECT id FROM punto_atencion WHERE codigo = 'PA-LPZ-001'), (SELECT id FROM usuario WHERE codigo_publico = 'USR000008'), (current_date + interval '-44 days'), 0.0, 0.0, 0.0, 0.0, 0.0, 'CUADRADO', NULL, now() - interval '44 days')
-ON CONFLICT DO NOTHING;
-
 -- El faltante del arqueo, cuantificado. `perdida_neta` es derivada: bruta menos recuperación.
 INSERT INTO evento_riesgo_operativo (codigo, incidente_operativo_id, registrado_por, categoria_evento, factor_riesgo, reportado_central_riesgo_operativo, linea_negocio, descripcion, fecha_ocurrencia, fecha_deteccion, fecha_contabilizacion, perdida_bruta, recuperacion, moneda, causa_raiz, estado) VALUES
   ('ERO-DEMO-0001', NULL, (SELECT id FROM usuario WHERE codigo_publico = 'USR000009'), 'FRAUDE_EXTERNO', 'PERSONAS', FALSE, 'Recaudación en puntos de atención', 'Faltante de Bs 20,00 en el arqueo del corresponsal PA-SCZ-001. Se recuperó la totalidad con el descuento de la liquidación del punto.', now() - interval '44 days', now() - interval '44 days', now() - interval '43 days', 20.0, 20.0, 'BOB', 'Conteo incorrecto al cierre de caja del corresponsal.', 'CERRADO')

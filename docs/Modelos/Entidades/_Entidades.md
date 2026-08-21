@@ -2,12 +2,12 @@
 tags:
   - moc
   - indice
-entidades: 306
+entidades: 304
 ---
 
 # Índice de entidades
 
-Las **306 tablas** del modelo, agrupadas por módulo. «Sal.» y «Ent.» son claves foráneas salientes y entrantes.
+Las **304 tablas** del modelo, agrupadas por módulo. «Sal.» y «Ent.» son claves foráneas salientes y entrantes.
 
 [[Index|← Índice general]] · [[_Relaciones|Relaciones →]]
 
@@ -17,7 +17,7 @@ Las **306 tablas** del modelo, agrupadas por módulo. «Sal.» y «Ent.» son cl
 
 | Tabla | Columnas | Sal. | Ent. | Notas |
 | --- | --: | --: | --: | --- |
-| [[usuario]] | 18 | 0 | 211 | muy conectada |
+| [[usuario]] | 18 | 0 | 209 | muy conectada |
 | [[direccion_usuario]] | 8 | 1 | 0 | — |
 | [[perfil_financiero]] | 8 | 1 | 0 | — |
 | [[credencial_acceso]] | 8 | 1 | 0 | — |
@@ -262,9 +262,7 @@ Las **306 tablas** del modelo, agrupadas por módulo. «Sal.» y «Ent.» son cl
 | [[retencion_saldo]] | 12 | 3 | 2 | — |
 | [[reverso_transaccion]] | 10 | 3 | 0 | — |
 | [[instrumento_fondeo]] | 16 | 1 | 2 | — |
-| [[punto_atencion]] | 12 | 1 | 2 | — |
-| [[arqueo_punto_atencion]] | 13 | 2 | 0 | — |
-| [[orden_recarga]] | 17 | 6 | 0 | — |
+| [[orden_recarga]] | 16 | 5 | 0 | — |
 | [[orden_retiro]] | 20 | 7 | 1 | muy conectada |
 | [[transferencia_p2p]] | 11 | 5 | 0 | — |
 | [[cuenta_custodia]] | 14 | 0 | 2 | — |

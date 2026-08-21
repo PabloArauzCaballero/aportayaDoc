@@ -49,6 +49,18 @@ solo aparece cuando hay pantalla.
 El **pase de iOS** no es un paso del flujo: es una fase por bloque de pantallas
 ([[ADR-036 Android primero]]).
 
+> [!important] La seguridad no es un paso once
+> No hay una casilla «asegurar» al final porque lo que se agrega al final no protege
+> nada: atraviesa los diez. En el **2** la barrera va en la base y no en el servicio;
+> en el **3** la entrada es `strict()` y los errores no filtran la causa; en el **5**
+> ninguna consulta sale de `conContexto`; en el **7** el permiso se verifica contra el
+> recurso y no contra el rol; en el **8** la pantalla **refleja** permisos, no los
+> decide. El estándar completo con su correspondencia ISO está en [[Seguridad]], y la
+> versión corta para escribir código, en `seguridad-aplicacion`.
+>
+> El paso **9** no cierra sin `python3 scripts/verificar_seguridad.py` en **TODO OK**,
+> ejecutado y con la salida adjunta —no supuesto (`definicion-de-terminado`).
+
 > [!warning] Los tres pasos que más se saltean, y qué pasa cuando se saltean
 > - **Saltear el 0** → se descubre a mitad del código que la operación cruza dos
 >   servicios, y lo que estaba escrito como transacción hay que rehacerlo como saga.

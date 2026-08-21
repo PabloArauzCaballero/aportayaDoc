@@ -91,7 +91,7 @@ Un carril **lee sus skills antes de escribir el primer archivo**, no cuando se t
 | --- | --- | --- |
 | `arrancar-carril` | **Antes de leer ningún plan y antes del primer archivo** | Es el contrato operativo del puesto: qué posee, qué no toca, en qué orden lee. No está en la tabla de abajo porque no depende del carril: se carga siempre |
 
-### Las diecinueve de todo carril de backend
+### Las veinte de todo carril de backend
 
 Se cargan siempre, en este orden. Son el idioma común: sin ellas, cinco carriles
 producen cinco estilos.
@@ -101,10 +101,10 @@ producen cinco estilos.
 | **Método** (4) | `frontera-transaccional` · `implementar-desde-boveda` · `caso-de-uso` · `revision-codigo` |
 | **Forma del código** (5) | `arquitectura-atomica` · `codigo-limpio` · `back-spring` · `servicios-y-sagas` · `glosario-dominio` |
 | **Datos y dinero** (3) | `datos-jooq` · `dinero-decimal` · `contratos-api` |
-| **Corrección** (4) | `errores-api` · `idempotencia-reintentos` · `seguridad-sesion-rls` · `pruebas-cu` |
+| **Corrección** (5) | `errores-api` · `idempotencia-reintentos` · `seguridad-sesion-rls` · `seguridad-aplicacion` · `pruebas-cu` |
 | **Cierre** (3) | `observabilidad` · `git-flujo` · `definicion-de-terminado` |
 
-### Las once de todo carril de frontend
+### Las doce de todo carril de frontend
 
 | Grupo | Skills |
 | --- | --- |
@@ -112,6 +112,7 @@ producen cinco estilos.
 | **Diseño** (2) | `disenar-frontend` · `arquitectura-atomica` |
 | **Forma** (3) | `codigo-limpio` · `glosario-dominio` · `contratos-api` *(de lectura: los contratos son del backend)* |
 | **Dinero** (1) | `dinero-decimal` |
+| **Seguridad** (1) | `seguridad-aplicacion` |
 | **Cierre** (4) | `revision-codigo` · `git-flujo` · `definicion-de-terminado` · `observabilidad` |
 
 ### Y las propias de cada carril
@@ -126,7 +127,7 @@ suyas está trabajando de memoria.
 | `1B` contable | `contabilidad-partida-doble` |
 | `1C` habilitación | `kyc-onboarding` · `cumplimiento-uif` · `norma-nueva` · `motor-de-reglas` |
 | `1D` notificaciones | `notificaciones-consentimiento` · `trabajos-outbox` · `proveedores-externos` |
-| `2A` billetera | `contabilidad-partida-doble` · `efectivo-puntos-atencion` · `cumplimiento-uif` · `motor-de-reglas` · `resiliencia-rendimiento` |
+| `2A` billetera | `contabilidad-partida-doble` · `cumplimiento-uif` · `motor-de-reglas` · `resiliencia-rendimiento` |
 | `2B` tarifas | `facturacion-sin` · `semillas-catalogos` · `reembolsos-disputas` |
 | `2C` grupos | `gobernanza-grupo` · `sorteo-transparencia` · `plazos-habiles` · `emparejamiento-ingreso` |
 | `2D` auditoría | `extraccion-de-datos` · `indicadores-tablero` · `lecturas-proyecciones` |
@@ -295,7 +296,7 @@ cuatro divergencias reales:**
 | Los planes decían | Es | Dónde importaba |
 | :-: | :-: | --- |
 | `87 casos de uso` | **99** | el conteo del informe y el alcance de los carriles |
-| `306 tablas` | **307** | **el gate de salida de la Fase 0**, que verifica ese número |
+| `304 tablas` | **305** | **el gate de salida de la Fase 0**, que verifica ese número |
 | `566 relaciones` | **633** | la descripción del modelo |
 | `124 restricciones` | **138** | el gate de la fase 17: «cada restricción con prueba de rechazo» |
 

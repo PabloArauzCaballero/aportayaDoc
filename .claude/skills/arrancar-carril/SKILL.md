@@ -86,14 +86,14 @@ completo.** Si creés que sí, la respuesta está en §7.
 
 ## 4 · Qué skills cargás
 
-**Las diecinueve de todo carril de backend**, en este orden:
+**Las veinte de todo carril de backend**, en este orden:
 
 | Grupo | Skills |
 | --- | --- |
 | Método (4) | `frontera-transaccional` · `implementar-desde-boveda` · `caso-de-uso` · `revision-codigo` |
 | Forma (5) | `arquitectura-atomica` · `codigo-limpio` · `back-spring` · `servicios-y-sagas` · `glosario-dominio` |
 | Datos y dinero (3) | `datos-jooq` · `dinero-decimal` · `contratos-api` |
-| Corrección (4) | `errores-api` · `idempotencia-reintentos` · `seguridad-sesion-rls` · `pruebas-cu` |
+| Corrección (5) | `errores-api` · `idempotencia-reintentos` · `seguridad-sesion-rls` · `seguridad-aplicacion` · `pruebas-cu` |
 | Cierre (3) | `observabilidad` · `git-flujo` · `definicion-de-terminado` |
 
 **Más las propias del carril**, según la tabla normativa de `planes/19` §2. Y esta
@@ -237,7 +237,7 @@ afirmación** (`definicion-de-terminado`).
 ```markdown
 ### Cierre del carril <CARRIL> — servicio <SERVICIO>
 
-- [ ] Las 19 skills + las propias estaban cargadas antes del primer archivo
+- [ ] Las 20 skills + las propias estaban cargadas antes del primer archivo
 - [ ] Piezas declaradas por nivel y las 6 preguntas respondidas, por CU
 
 **Generado, no escrito a mano**

@@ -163,10 +163,11 @@ nativa (cámara, biometría) se queda en `apps/movil`.
 
 ---
 
-## 5 · Las 13 fases
+## 5 · Las 14 fases
 
 | Fase | Nombre | Producto | Superficie | Documento |
 | :-: | --- | --- | --- | --- |
+| **F0.0** | **Maqueta navegable** con backend simulado | ninguno todavía | el recorrido de los dos productos, presentable, antes de la primera línea de `apps/` | [[11 Fases F0 y F1 · Cimientos y sistema de diseño]] |
 | **F0** | Cimientos del frontend | los tres | andamiaje, cliente de API, ADR | [[11 Fases F0 y F1 · Cimientos y sistema de diseño]] |
 | **F1** | Sistema de diseño | `packages/ui` | tokens, átomos, moléculas, organismos | ídem |
 | **F2** | Shell móvil | `apps/movil` | navegación, sesión, tema, offline | [[12 Fases F2 a F5 · App móvil]] |

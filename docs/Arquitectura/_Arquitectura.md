@@ -74,6 +74,8 @@ está en [[Stack]]. El motivo por el que son catorce y no uno está en
 | [[ADR-035 Canales por defecto\|035]] | Por qué canal avisa la plataforma mientras no haya contrato | Bandeja interna + correo, con push como aviso · WhatsApp y SMS apagados | — |
 | [[ADR-036 Android primero\|036]] | En qué orden se construyen las dos plataformas móviles | Android primero · iOS por pase de paridad, por bloque de pantallas | — |
 | [[ADR-037 Alta disponibilidad y balanceo\|037]] | Cuántas réplicas, qué se replica abajo y cómo se reparte la carga | Tres niveles de criticidad · ninguno con menos de 2 réplicas · el tope de escalado atado al pool | — |
+| [[ADR-038 Acceso administrativo · segundo factor y recuperación asistida\|038]] | Cómo entra un operador al backoffice y cómo recupera el acceso si lo pierde | Dos factores en todo acceso · TOTP, nunca SMS · recuperación aprobada por otra identidad · lo hace cumplir la base | — |
+| [[ADR-039 Sin efectivo · la plataforma no opera dinero físico\|039]] | Si la plataforma opera dinero en efectivo por corresponsales | No: solo ingreso electrónico y salida a cuenta bancaria · `CU-57` obsoleto · dos tablas retiradas | — |
 
 ## Decisiones superadas
 

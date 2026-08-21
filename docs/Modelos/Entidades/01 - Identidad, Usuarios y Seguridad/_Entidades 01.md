@@ -14,7 +14,7 @@ Las **25 tablas** de este módulo. Justificación de negocio en [[01_identidad_u
 
 | Tabla | Columnas | FK sal. | FK ent. |
 | --- | --: | --: | --: |
-| [[usuario]] | 18 | 0 | 211 |
+| [[usuario]] | 18 | 0 | 209 |
 | [[direccion_usuario]] | 8 | 1 | 0 |
 | [[perfil_financiero]] | 8 | 1 | 0 |
 | [[credencial_acceso]] | 8 | 1 | 0 |

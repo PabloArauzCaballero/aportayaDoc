@@ -64,12 +64,12 @@ Norma (docs/Cumplimiento.md)  →  Caso de uso (esta carpeta)  →  Restricción
 | [[CU-01 Registro y apertura de billetera]] | Alta de usuario con debida diligencia simplificada | Usuario | ASFI ETF · UIF DDD |
 | [[CU-02 Elevar nivel de debida diligencia]] | Subir de nivel para operar más | Usuario · Analista | UIF EBR · límites BCB |
 | [[CU-03 Declaración PEP y beneficiario final]] | Declarar y verificar condición PEP | Usuario · Oficial de cumplimiento | UIF |
-| [[CU-04 Autenticar con MFA y registrar dispositivo]] | Acceso seguro y trazable | Usuario | ASFI Seguridad de la Información |
+| [[CU-04 Autenticar con MFA y registrar dispositivo]] | Acceso seguro y trazable; **segundo factor obligatorio para el operador** | Usuario · Operador | ASFI Seguridad · ISO 27001 A.8.2, A.8.5 |
 | [[CU-05 Aceptar contrato de adhesión y tarifario]] | Consentimiento con evidencia oponible | Usuario | ASFI Consumidor Financiero |
 | [[CU-06 Revisión periódica de conocimiento del cliente]] | Actualizar KYC según riesgo | Sistema · Analista | UIF |
 | [[CU-07 Ejercer derechos sobre datos personales]] | Acceso, rectificación y supresión | Titular | Protección de datos |
-| [[CU-08 Asignar y revocar roles de operador]] | Permiso mínimo, temporal y auditable | Administrador | ASFI Seguridad · segregación |
-| [[CU-09 Cambiar credenciales y solicitar la baja]] | Clave, recuperación y baja sin dejar deudas | Usuario · Soporte | ASFI Seguridad · Consumidor Financiero |
+| [[CU-08 Asignar y revocar roles de operador]] | Permiso mínimo, temporal y auditable; el alta cierra con el enrolamiento del TOTP | Administrador | ASFI Seguridad · segregación |
+| [[CU-09 Cambiar credenciales y solicitar la baja]] | Clave, recuperación y baja sin dejar deudas; la del operador la aprueba otra identidad | Usuario · Soporte · Seguridad | ASFI Seguridad · Consumidor Financiero |
 
 ### Billetera, custodia y saldo
 
