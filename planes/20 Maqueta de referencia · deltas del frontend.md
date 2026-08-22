@@ -42,6 +42,7 @@ afecta: [F1, F3, F4, F5, F6, F7, F8]
 | **D-11** | Toda notificación **se guarda en la bandeja**, y hay eventos que no notifican | F2, F5 |
 | **D-12** | *Mis aportes* tiene **dos vistas**: la lista y el calendario del mes | F4, F5 |
 | **D-13** | La invitación se **escanea o se escribe**, y el enlace lo emite **quien organiza** | F5 |
+| **D-14** | La portada abre con **dónde estás**, no con cuánto tenés | F4, F5 |
 
 Y una regla transversal, que es la que produjo casi todos los deltas:
 
@@ -430,6 +431,48 @@ enlace»* como pantalla del organizador, y el gate suma las cinco reglas de arri
 
 ---
 
+## D-14 · La portada abre con dónde estás, no con cuánto tenés
+
+Un pasanaku **ya es un juego**: tenés un lugar en una fila que se sorteó, el grupo se
+llena de a una persona, y cada mes que pagás a tiempo suma. Lo que faltaba no era
+inventar diversión: era dejar de esconderla debajo de un extracto bancario. La portada
+pasa a abrir con tres cosas, en este orden:
+
+| # | Bloque | Qué es, y por qué no es un adorno |
+| :-: | --- | --- |
+| 1 | **Racha** | Meses corridos sin que se te pase ninguna cuota, en ninguno de tus grupos. Es **el mismo hecho** que mide la insignia «Doce meses sin mora», y por eso el hito que muestra es ese y no un número redondo elegido a dedo |
+| 2 | **Riel del turno** | El orden **sorteado**, con tu lugar marcado y cuánto falta para que te toque. Se muestra el grupo donde estás más cerca de cobrar: es la pregunta que la persona se hace al abrir la app, y hasta ahora había que entrar al grupo para contestarla |
+| 3 | **Grupo en formación** | Cupos tomados sobre cupos totales, y cuántas personas faltan para que arranque. A quien lo organiza, el botón de invitar al lado (D-13) |
+
+El saldo **no desaparece**: queda arriba en una línea —«Disponible Bs 1.240,00»— y la
+tarjeta completa, con la custodia, lo retenido y lo puesto en pasanakus, baja a después
+de las acciones rápidas. El gate de F4 sigue cumpliéndose: *cuánto tengo*, *qué tengo
+que hacer hoy* y *cómo van mis grupos* se contestan sin desplazar. Lo que cambió es
+cuál de las tres es el titular.
+
+> **La regla que ordena todo esto: si el número no es un hecho, no va.** La racha son
+> meses reales sin atraso, el riel es el orden que salió del sorteo y los cupos son
+> personas que faltan. Nada de puntos por abrir la app, nada de niveles inventados.
+
+**Y lo que explícitamente no se hace.** Esto es plata de la gente y un producto
+regulado, así que la diversión va en avanzar y nunca en perder:
+
+- **La mora no se gamifica.** La racha rota se dice sin regañar y con la salida al lado
+  —«venías de 6 meses; poné al día la cuota y arranca otra»—. Una app que además reta
+  empuja a esconderse, y quien se esconde no regulariza.
+- **Sin tabla de posiciones entre participantes.** Un ranking expone a quien está en
+  mora dentro de su plazo, y todavía no hay incumplimiento declarado.
+- **Sin recompensa variable, sin sorpresa, sin urgencia inventada.** El único azar del
+  producto es el sorteo de turnos, y está a la vista con su semilla (D-5).
+- **Ningún juego empuja a poner más plata.** El progreso se gana cumpliendo lo que ya
+  firmaste, no aportando de más.
+
+**Cambio en F4 y F5:** la fila de la portada pasa a *«abre con racha, riel del turno y
+grupo en formación; el saldo va en una línea arriba y la tarjeta de custodia más
+abajo»*, y el gate suma las cuatro prohibiciones de arriba.
+
+---
+
 ## 2 · Componentes que suma `packages/ui` (F1)
 
 La maqueta usa nueve piezas que el inventario de [[11 Fases F0 y F1 · Cimientos y sistema de diseño]] no tenía. Se agregan a F1 **antes** de que los carriles compongan:
@@ -448,6 +491,10 @@ La maqueta usa nueve piezas que el inventario de [[11 Fases F0 y F1 · Cimientos
 | `BarraDePuntos` | átomo | Progreso del tour |
 | `PanelBienvenida` | organismo | Portada de cuenta nueva, con el bono y los pasos |
 | `EstadoVacio` | molécula | Cada lista sin datos dice qué hacer, no «no hay resultados» |
+| `TarjetaDeRacha` | molécula | Meses corridos al día, con su hito y su estado roto |
+| `RielDeTurnos` | molécula | El orden sorteado con tu lugar y cuánto falta |
+| `CalendarioDeCuotas` | organismo | El mes de los aportes por estado de pago (D-12) |
+| `CodigoQR` | átomo | Depósito e invitación: el mismo dibujo, distinto payload |
 
 Y dos reglas de estilo que la maqueta fija y `disenar-frontend` recoge:
 

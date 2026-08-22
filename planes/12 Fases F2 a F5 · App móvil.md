@@ -201,6 +201,15 @@ acá.**
       todavía no se abrió no se debe, y sumarla infla la deuda
 - [ ] La portada abre contestando tres cosas sin desplazar: cuánto tengo, qué tengo
       que hacer hoy y cómo van mis grupos
+- [ ] Y el **titular** de esas tres es *cómo voy*: racha de meses al día, riel del
+      turno sorteado y grupo en formación. El saldo va arriba en una línea y su
+      tarjeta completa —custodia, retenido, puesto en pasanakus— más abajo
+- [ ] **Si el número no es un hecho, no va**: no hay puntos por abrir la app, ni
+      niveles inventados, ni recompensa variable, ni urgencia fabricada
+- [ ] **La mora no se gamifica**: la racha rota se dice sin regañar y con la salida al
+      lado, y **no hay tabla de posiciones** entre participantes
+- [ ] Ningún elemento de juego **empuja a poner más plata**: el progreso se gana
+      cumpliendo lo firmado, no aportando de más
 - [ ] *Aportes pendientes* filtra por grupo y por fecha, y muestra el **recargo por
       mora desglosado** cuando lo hay
 - [ ] El banner de publicidad aparece **solo en la portada**, está rotulado, **no tiene

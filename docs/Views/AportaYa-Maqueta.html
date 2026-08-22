@@ -594,6 +594,59 @@ button.tarj:hover{border-color:var(--brand);box-shadow:var(--sh-2);transform:tra
 .camara__qr{width:44%;background:#E3EAE5;padding:7px;border-radius:7px;opacity:.9}
 .camara__qr svg{width:100%;height:auto;display:block}
 
+
+/* ── La portada como progreso ─────────────────────────────────────────────
+   Un pasanaku ya es un juego: tenés un lugar en una fila, el grupo se llena, y
+   cada mes que pagás a tiempo suma. Lo que faltaba no era inventar diversión,
+   era dejar de esconder la que ya está. Nada de esto es un premio inventado:
+   la racha son meses reales sin atraso, el riel es el orden sorteado y los
+   cupos son personas que faltan. Si el número no es un hecho, no va.         */
+.saldomini{
+  display:flex;align-items:center;gap:var(--s2);width:100%;cursor:pointer;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-pill);
+  padding:8px var(--s4);margin-bottom:var(--s3);font-family:var(--font-b);
+}
+.saldomini__l{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-3)}
+.saldomini__l svg{width:14px;height:14px}
+.saldomini__v{font-family:var(--font-d);font-size:15px;font-weight:600;color:var(--text);margin-left:auto;letter-spacing:-.01em}
+.saldomini__i{width:15px;height:15px;color:var(--text-3);display:block}
+
+.racha{
+  display:flex;gap:var(--s3);align-items:flex-start;width:100%;text-align:left;cursor:pointer;
+  background:var(--surface);border:1px solid var(--o200);border-radius:var(--r-lg);
+  padding:var(--s4);box-shadow:var(--sh-1);margin-bottom:var(--s3);font-family:var(--font-b);
+}
+.racha__f{width:44px;height:44px;flex:none;border-radius:14px;display:grid;place-items:center;
+  background:linear-gradient(160deg,var(--o400),var(--accent));color:var(--accent-ink)}
+.racha__f svg{width:23px;height:23px}
+.racha__c{min-width:0;flex:1}
+.racha__t{display:block;font-family:var(--font-d);font-size:15px;font-weight:600;color:var(--text);letter-spacing:-.01em}
+.racha__b{display:block;height:7px;border-radius:var(--r-pill);background:var(--surface-2);overflow:hidden;margin:9px 0 6px}
+.racha__b i{display:block;height:100%;border-radius:var(--r-pill);background:linear-gradient(90deg,var(--o400),var(--accent))}
+.racha__s{display:block;font-size:11.5px;color:var(--text-3);line-height:1.45}
+.racha--rota{border-color:var(--border)}
+.racha--rota .racha__f{background:var(--surface-2);color:var(--text-3)}
+
+/* El riel es el orden de turnos sorteado, no una barra de progreso decorativa:
+   cada punto es una persona y el tuyo está donde te tocó. */
+.riel{position:relative;display:flex;align-items:center;justify-content:space-between;
+  height:26px;margin:var(--s3) 0 var(--s2)}
+.riel::before{content:'';position:absolute;left:3px;right:3px;top:50%;height:3px;
+  margin-top:-1.5px;background:var(--surface-2);border-radius:2px}
+.riel__h{position:absolute;left:3px;top:50%;height:3px;margin-top:-1.5px;
+  background:var(--brand);border-radius:2px}
+.riel__d{position:relative;width:11px;height:11px;border-radius:50%;flex:none;
+  background:var(--surface);border:2px solid var(--border)}
+.riel__d[data-e="hecho"]{background:var(--brand);border-color:var(--brand)}
+.riel__d[data-e="mio"]{
+  width:24px;height:24px;border-color:var(--surface);
+  background:linear-gradient(160deg,var(--o400),var(--accent));color:var(--accent-ink);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 26%,transparent);
+  display:grid;place-items:center;font-family:var(--font-d);font-size:11px;font-weight:700;
+}
+.riel__pie{font-size:12.5px;color:var(--text-2);line-height:1.45}
+.riel__pie b{color:var(--text)}
+
 /* Panel de bienvenida: solo lo ve quien acaba de abrir la cuenta. */
 .bienve{
   position:relative;overflow:hidden;margin-top:var(--s4);padding:var(--s4);
@@ -1290,6 +1343,7 @@ const IC = {
   avanzar: sv('<path d="M9.5 6l6 6-6 6"/>'),
   lupa:    sv('<circle cx="10.8" cy="10.8" r="6.3"/><path d="M15.6 15.6L20.8 20.8"/>'),
   lista:   sv('<path d="M8.6 6.4h11.4M8.6 12h11.4M8.6 17.6h8"/><path d="M4.4 6.4h.1M4.4 12h.1M4.4 17.6h.1"/>'),
+  llama:   sv('<path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.4-.5-2-1-3-1.1-2.1-.2-4 2-6 .5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a7 7 0 11-14 0c0-1.2.4-2.3 1-3a2.5 2.5 0 002.5 2.5z"/>'),
   copiar:  sv('<rect x="8.6" y="8.6" width="11.8" height="11.8" rx="2.2"/><path d="M15.4 5.6H5.8a2.2 2.2 0 00-2.2 2.2v9.6"/>'),
   calen:   sv('<rect x="3.4" y="5.4" width="17.2" height="15.2" rx="2.2"/><path d="M3.4 10.2h17.2M8 3.4v3.4M16 3.4v3.4"/><path d="M7.8 14h.1M12 14h.1M16.2 14h.1M7.8 17.4h.1M12 17.4h.1"/>'),
 
@@ -1837,14 +1891,23 @@ inicio:{ruta:'billetera/inicio', titulo:'', tab:'inicio', render(){
     + (sinLeer ? '<span style="position:absolute;top:4px;right:5px;width:8px;height:8px;border-radius:50%;background:var(--accent);border:2px solid var(--bg)"></span>' : '')
     + '</button></div>'
 
-    + '<div id="i-saldo">' + esq('100%','216px','border-radius:var(--r-xl)') + '</div>'
+    /* El orden de la portada dice qué importa. Antes abría con el saldo, que es
+       lo que la persona ya sabe; ahora abre con dónde está parada en el juego
+       que de verdad está jugando: la racha, su lugar en la fila y el grupo que
+       se está llenando. El saldo no desaparece —está arriba en una línea— y la
+       tarjeta con la custodia queda más abajo, que es donde va una explicación. */
+    + '<div id="i-mini"></div>'
+    + '<div id="i-racha"></div>'
+    + '<div id="i-riel"></div>'
+    + '<div id="i-dest"></div>'
+    + '<div id="i-form"></div>'
 
     + '<div class="rapidos">'
     + '<button class="rapido" data-ir="recargar"><span>' + IC.entra + '</span>Recargar</button>'
     + '<button class="rapido" data-ir="aportes"><span>' + IC.aporte + '</span>Aportar</button>'
     + '<button class="rapido" data-ir="retirar"><span>' + IC.banco + '</span>Retirar</button></div>'
 
-    + '<div id="i-dest"></div>'
+    + '<div id="i-saldo">' + esq('100%','216px','border-radius:var(--r-xl)') + '</div>'
 
     + '<div class="seccion__t"><h3>Mis pasanakus</h3><button class="btn btn--txt" data-ir="grupos">Ver todos</button></div>'
     + '<div id="i-tira"><div class="tira">'
@@ -1886,16 +1949,84 @@ inicio:{ruta:'billetera/inicio', titulo:'', tab:'inicio', render(){
       + '<span class="destacado__t">No tenés aportes pendientes</span>'
       + '<span class="destacado__s">El próximo período se abre el 1 de septiembre</span></span></div>';
 
+  /* La racha es un hecho del historial, no un premio inventado: son los meses
+     corridos en que no se te pasó ninguna cuota, que es exactamente lo que mide
+     la insignia. Cuando se corta se dice sin regañar y con la salida al lado:
+     la mora ya duele sola, y una app que además reta empuja a esconderse. */
+  const ra = D.racha || {};
+  document.getElementById('i-racha').innerHTML = ra.nueva || (!ra.meses && !ra.roto) ? ''
+    : ra.roto
+    ? '<button class="racha racha--rota" data-ir="aportes">'
+      + '<span class="racha__f">' + IC.llama + '</span>'
+      + '<span class="racha__c"><span class="racha__t">Tu racha se cortó en ' + ra.roto + '</span>'
+      + '<span class="racha__s">Venías de <b>' + ra.venia + ' meses seguidos al día</b>. Se empieza de nuevo: '
+      + 'poné al día la cuota y arranca otra.</span></span></button>'
+    : '<button class="racha" data-ir="perfil">'
+      + '<span class="racha__f">' + IC.llama + '</span>'
+      + '<span class="racha__c"><span class="racha__t">' + ra.meses + ' meses seguidos al día</span>'
+      + '<span class="racha__b"><i style="width:' + Math.round(ra.meses / ra.meta * 100) + '%"></i></span>'
+      + '<span class="racha__s">Desde ' + ra.desde + ', sin un día de atraso en ninguno de tus grupos. '
+      + 'Te faltan <b>' + (ra.meta - ra.meses) + '</b> para la insignia «' + ra.insignia + '».</span></span></button>';
+
   await llamar('GET','/grupos?participante=USR000412',{nota:'los grupos donde la persona tiene un cupo vigente'});
+
+  /* El riel es el orden sorteado, con tu lugar marcado. Se muestra el grupo en
+     el que estás más cerca de cobrar: es la pregunta que una persona se hace al
+     abrir la app, y hasta ahora había que entrar al grupo para contestarla. */
+  const carrera = (D.grupos || []).filter(g => g.estado === 'ACTIVO' && g.miTurno && g.turnos.length)
+    .map(g => {
+      const hechos = g.turnos.filter(t => t.e === 'ENTREGADO').length;
+      return {g, hechos, cobre: hechos >= g.miTurno, faltan: Math.max(0, g.miTurno - 1 - hechos)};
+    }).sort((a, b) => (a.cobre - b.cobre) || (a.faltan - b.faltan))[0];
+
+  document.getElementById('i-riel').innerHTML = !carrera ? '' : (() => {
+    const {g, hechos, cobre, faltan} = carrera;
+    const bolsa = g.aporte * g.cupos;
+    const puntos = g.turnos.map((t, i) => {
+      const n = i + 1, e = n === g.miTurno ? 'mio' : n <= hechos ? 'hecho' : 'futuro';
+      return '<span class="riel__d" data-e="' + e + '">' + (e === 'mio' ? n : '') + '</span>';
+    }).join('');
+    return '<button class="tarj" data-grupo="' + g.codigo + '" style="width:100%;text-align:left;cursor:pointer;margin-bottom:var(--s3);font-family:var(--font-b)">'
+      + '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:var(--s3)">'
+      + '<span style="font-family:var(--font-d);font-weight:600;font-size:14px;color:var(--text)">' + g.nombre + '</span>'
+      + '<span style="font-size:11.5px;color:var(--text-3);white-space:nowrap">Turno ' + g.miTurno + ' de ' + g.cupos + '</span></div>'
+      + '<div class="riel"><span class="riel__h" style="width:' + Math.round(hechos / (g.cupos - 1) * 100) + '%"></span>' + puntos + '</div>'
+      + '<div class="riel__pie">'
+      + (cobre ? '<b>Ya cobraste tu turno.</b> Te quedan ' + (g.cupos - hechos) + ' aportes para cerrar el ciclo.'
+         : faltan === 0 ? '<b>Te toca ahora.</b> Cobrás <b class="num">' + bs(bolsa) + '</b> este período.'
+         : 'Falta ' + (faltan === 1 ? '<b>una entrega</b>' : '<b>' + faltan + ' entregas</b>') + ' para tu turno. '
+           + 'Cobrás <b class="num">' + bs(bolsa) + '</b>.')
+      + '</div></button>';
+  })();
+
+  /* Un grupo que se está llenando es lo más parecido a una partida por empezar:
+     lo que falta son personas, y quien organiza tiene el botón para conseguirlas. */
+  const form = (D.grupos || []).find(g => g.estado === 'EN_FORMACION');
+  document.getElementById('i-form').innerHTML = !form ? '' :
+    '<div class="tarj" style="margin-bottom:var(--s3)">'
+    + '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:var(--s3)">'
+    + '<span style="font-family:var(--font-d);font-weight:600;font-size:14px;color:var(--text)">' + form.nombre + '</span>'
+    + '<span class="chip chip--info"><i></i>En formación</span></div>'
+    + '<div class="racha__b" style="margin:var(--s3) 0 6px"><i style="width:' + Math.round(form.ocupados / form.cupos * 100)
+    + '%;background:var(--brand)"></i></div>'
+    + '<div class="riel__pie"><b>' + form.ocupados + ' de ' + form.cupos + ' cupos.</b> '
+    + (form.cupos - form.ocupados === 1 ? 'Falta una persona' : 'Faltan ' + (form.cupos - form.ocupados) + ' personas')
+    + ' para que se sortee el orden y arranque.</div>'
+    + (form.soyOrg ? '<button class="btn btn--acc" data-invitar="' + form.codigo + '" style="margin-top:var(--s3)">'
+        + IC.qr + 'Invitar con un QR</button>' : '')
+    + '</div>';
+
   document.getElementById('i-tira').innerHTML = !D.grupos.length
     ? '<button class="tira__vacio" data-ir="grupos"><span>' + IC.grupo + '</span>'
       + '<span><span class="tira__vt">Todavía no estás en ningún pasanaku</span>'
       + '<span class="tira__vs">Entrá con el código que te pasó tu grupo, o postulate a uno abierto.</span></span></button>'
     : '<div class="tira">' + D.grupos.map(g => {
-    const activo = g.estado === 'ACTIVO', pct = activo ? Math.round((g.miTurno - 1) / g.cupos * 100) : 0;
+    const activo = g.estado === 'ACTIVO';
+    const pct = Math.round((activo ? (g.miTurno - 1) / g.cupos : g.ocupados / g.cupos) * 100);
     return '<button class="gcard" data-grupo="' + g.codigo + '">'
       + '<span class="gcard__n">' + g.nombre + '</span>'
-      + '<span class="gcard__t">' + (activo ? 'Turno ' + g.miTurno + ' de ' + g.cupos : g.estadoTxt) + '</span>'
+      + '<span class="gcard__t">' + (activo ? 'Turno ' + g.miTurno + ' de ' + g.cupos
+          : g.ocupados + ' de ' + g.cupos + ' cupos') + '</span>'
       + '<span class="gcard__b"><i style="width:' + pct + '%"></i></span>'
       + '<span class="gcard__p"><span class="gcard__m num">' + bs(g.aporte) + '</span>'
       + (g.enMora ? '<span class="chip chip--warn" style="padding:1px 7px;font-size:10px"><i></i>' + g.enMora + ' en mora</span>'
@@ -1905,7 +2036,7 @@ inicio:{ruta:'billetera/inicio', titulo:'', tab:'inicio', render(){
   await llamar('GET','/billetera/movimientos?limite=5',{});
   document.getElementById('i-movs').innerHTML = D.movimientos.slice(0,4).map(m => fila(m)).join('')
     + bannerPauta(0);
-  cablearIr(); cablearPauta();
+  cablearIr(); cablearPauta(); cablearInvitar();
   document.querySelectorAll('[data-grupo]').forEach(b => b.onclick = () => { D.grupoActivo = b.dataset.grupo; irM('grupo'); });
   document.querySelectorAll('[data-pagar]').forEach(b => b.onclick = () => {
     const o = D.obligaciones.find(x => x.id === b.dataset.pagar);
@@ -3137,7 +3268,7 @@ Object.assign(D, {
       {n:'Ciclos completados',    peso:'0,15', v: 60, d:'4 pasanakus terminados sin incumplir'},
       {n:'Antigüedad',            peso:'0,10', v: 34, d:'17 meses con la cuenta activa y verificada'},
       {n:'Como organizadora',     peso:'0,05', v: 12, d:'1 grupo administrado, sin incidencias'},
-      {n:'Mora acumulada',        peso:'0,20', v:-10, d:'1 aporte pagado con 2 días de atraso, en junio'},
+      {n:'Mora acumulada',        peso:'0,20', v:-10, d:'1 aporte pagado con 2 días de atraso, en enero'},
       {n:'Incumplimientos',       peso:'0,20', v:  0, d:'Ninguno declarado'},
     ],
     insignias:[
@@ -3209,6 +3340,7 @@ function cuentaNueva(){
   D.movimientos = [{t:BONO.nombre, d:'hoy', s:'Campaña ' + BONO.campana + ' · para que pruebes sin poner plata',
                     m:BONO.monto, e:'entra', ic:'bolsa'}];
   D.obligaciones = [];
+  D.racha = {meses:0, meta:12, insignia:'Doce meses sin mora', nueva:1};
   D.grupos = [];
   D.grupoActivo = null;
   D.avisos = [{t:'Te regalamos ' + bs(BONO.monto) + ' para arrancar',
@@ -3237,6 +3369,14 @@ function enPasanakus(){
     .reduce((a, g) => a + g.aporte * (g.miTurno - 1), 0);
 }
 function pintarSaldo(){
+  /* «Cuánto tengo» sigue estando sin desplazar, pero en una línea: la tarjeta
+     entera —custodia, retenido, puesto en pasanakus— es la explicación, y la
+     explicación puede ir después de lo que la persona vino a ver. */
+  const mini = document.getElementById('i-mini');
+  if (mini) mini.innerHTML = '<button class="saldomini" data-ir="extracto">'
+    + '<span class="saldomini__l">' + IC.escudo + 'Disponible</span>'
+    + '<span class="saldomini__v num">' + bs(D.saldo) + '</span>'
+    + '<span class="saldomini__i">' + IC.avanzar + '</span></button>';
   const c = document.getElementById('i-saldo');
   if (!c) return;
   const ret = D.retenido || 0, juego = enPasanakus();
@@ -3516,6 +3656,10 @@ optimista:{
   aporte:{id:'8f21c4', periodo:'Agosto 2026', monto:25000, comision:0, vence:'lunes 25 de agosto',
           estado:'AL_DIA', dias:5, recargo:0},
   saldoInicial:8000,
+  /* Meses corridos sin que se te pase ninguna cuota, en ninguno de tus grupos.
+     Es el mismo hecho que mide la insignia «Doce meses sin mora», y por eso el
+     hito que muestra es ese y no un número redondo elegido a dedo. */
+  racha:{meses:6, meta:12, insignia:'Doce meses sin mora', desde:'febrero 2026'},
   movimientos:[
     {t:'Devolución de recarga',       d:'20 ago', s:'El banco revirtió el abono · REV-2291',  m: -28000, e:'sale',  ic:'reversa'},
     {t:'Recarga por QR',              d:'19 ago', s:'Banco Unión · QR-8841',                  m:  50000, e:'entra', ic:'qr'},
@@ -3543,7 +3687,7 @@ optimista:{
       {n:'Ciclos completados',    peso:'0,15', v: 60, d:'4 pasanakus terminados sin incumplir'},
       {n:'Antigüedad',            peso:'0,10', v: 34, d:'17 meses con la cuenta activa y verificada'},
       {n:'Como organizadora',     peso:'0,05', v: 12, d:'1 grupo administrado, sin incidencias'},
-      {n:'Mora acumulada',        peso:'0,20', v:-10, d:'1 aporte pagado con 2 días de atraso, en junio'},
+      {n:'Mora acumulada',        peso:'0,20', v:-10, d:'1 aporte pagado con 2 días de atraso, en enero'},
       {n:'Incumplimientos',       peso:'0,20', v:  0, d:'Ninguno declarado'},
     ],
     insignias:[
@@ -3744,6 +3888,7 @@ adverso:{
   aporte:{id:'8f21c4', periodo:'Agosto 2026', monto:25000, comision:0, vence:'venció el 18 de agosto',
           estado:'EN_MORA', dias:-2, recargo:500},
   saldoInicial:2000,
+  racha:{meses:0, meta:12, insignia:'Doce meses sin mora', roto:'agosto', venia:6},
   movimientos:[
     {t:'Recargo por mora',            d:'20 ago', s:'2 días de atraso · La Ramada · Bs 2,50 por día', m:  -500, e:'sale',  ic:'calmora'},
     {t:'Transferencia enviada',       d:'19 ago', s:'A Delia Huanca S. · misma billetera',    m: -12100, e:'sale',  ic:'enviar'},
