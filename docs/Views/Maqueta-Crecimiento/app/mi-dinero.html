@@ -1,0 +1,188 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AportaYa — Mi Dinero</title>
+<link rel="stylesheet" href="../../Sistema-Diseno/estilos.css">
+<link rel="stylesheet" href="../maqueta.css">
+<svg width="0" height="0" style="position:absolute"><defs>
+  <g id="mark"><path d="M92 30 C74 66 52 108 40 168" fill="none" stroke="#7CBE9C" stroke-width="13" stroke-linecap="round"/><path d="M108 30 C126 66 148 108 160 168" fill="none" stroke="#7CBE9C" stroke-width="13" stroke-linecap="round"/><path d="M100 58 C84 92 68 130 62 170" fill="none" stroke="#E5852B" stroke-width="12" stroke-linecap="round"/><path d="M100 58 C116 92 132 130 138 170" fill="none" stroke="#E5852B" stroke-width="12" stroke-linecap="round"/></g>
+</defs></svg>
+
+<div class="topbar"><div class="topbar-in">
+  <a class="brandmark" href="../index.html"><svg width="26" height="26" viewBox="0 0 200 200"><use href="#mark"/></svg><span>Aporta<span class="ya">Ya</span></span></a>
+  <nav class="navlinks">
+    <a href="../index.html">Índice</a>
+    <a class="on" href="mi-dinero.html">Mi Dinero</a>
+    <a href="objetivo-ahorro.html">Objetivo</a>
+    <a href="mercado-turnos.html">Turnos</a>
+    <a href="mis-vales.html">Vales</a>
+    <a href="que-hacer-con-tu-dinero.html">Tu turno llegó</a>
+    <a href="invertir.html">Invertir</a>
+  </nav>
+  <button class="theme-btn" onclick="toggleTheme()">◐ Tema</button>
+</div></div>
+
+<main>
+<section>
+  <div class="sec-head">
+    <span class="lvl app">App · Participante</span>
+    <p class="eyebrow">Centro financiero</p>
+    <h1>Mi Dinero</h1>
+    <p>Una sola pantalla que responde <em>cuánto tengo, cuánto voy a recibir y cuánto gané por estar acá</em>. Hoy el participante ve su saldo; lo que no ve es el valor que el ecosistema le generó. Esta pantalla lo hace visible y lo convierte en la métrica norte del producto.</p>
+    <p><span class="ref-doc">§23 Centro financiero</span> <span class="ref-doc">§24 Tu dinero trabajando</span> <span class="ref-doc">§36 Norte del producto</span></p>
+  </div>
+
+  <div class="phones">
+
+    <!-- ============ Pantalla 1 · Mi Dinero ============ -->
+    <div>
+      <div class="phone"><div class="pscreen">
+        <div class="statusbar"><span>9:41</span><span class="rt">📶 🔋</span></div>
+        <div class="pbody green-top">
+          <div class="phead">
+            <div class="hi">Mi dinero · Rosa Quispe</div>
+            <div class="bl">SALDO DISPONIBLE</div>
+            <div class="bv"><span class="cur">Bs</span> 1.240,00</div>
+            <div class="qa"><div class="b pri">↑ Recargar</div><div class="b gh">↓ Retirar</div></div>
+          </div>
+
+          <div class="plist">
+            <div style="font-family:var(--font-d);font-weight:600;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3);margin:0 2px 10px">Comprometido y por venir</div>
+
+            <div class="listitem" style="margin-bottom:9px">
+              <div class="avatar av40" style="background:#1C5A3A">PA</div>
+              <div class="info"><div class="nm">En pasanakus</div><div class="sub">2 grupos activos · aportado hasta hoy</div></div>
+              <div style="text-align:right"><div class="amt">Bs 4.250</div></div>
+            </div>
+
+            <div class="listitem" style="margin-bottom:9px">
+              <div class="avatar av40" style="background:#E5852B;color:#3A1E02">↓</div>
+              <div class="info"><div class="nm">Próximo turno</div><div class="sub">Familia Aporta · en 34 días</div></div>
+              <div style="text-align:right"><div class="amt">Bs 10.000</div></div>
+            </div>
+
+            <div style="font-family:var(--font-d);font-weight:600;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3);margin:18px 2px 10px">Lo que ganaste acá</div>
+
+            <div class="txrow"><div class="tic in">↕</div><div class="ti"><div class="tn">Mercado de turnos</div><div class="td">2 permutas aceptadas</div></div><div class="ta in">+450,00</div></div>
+            <div class="txrow"><div class="tic in">%</div><div class="ti"><div class="tn">Ahorro por alianzas</div><div class="td">3 compras con precio comunidad</div></div><div class="ta in">+820,00</div></div>
+            <div class="txrow"><div class="tic in">🎟</div><div class="ti"><div class="tn">Vales usados</div><div class="td">4 vales canjeados</div></div><div class="ta in">+310,00</div></div>
+            <div class="txrow"><div class="tic in">↩</div><div class="ti"><div class="tn">Cashback</div><div class="td">acreditado en billetera</div></div><div class="ta in">+170,00</div></div>
+            <div class="txrow" style="border-bottom:0"><div class="tic in">📈</div><div class="ti"><div class="tn">Inversiones</div><div class="td">Fondo conservador · valor actual</div></div><div class="ta in">+275,00</div></div>
+
+            <a class="btn btn-primary block" style="margin-top:16px;text-decoration:none" href="#trabajando">Ver cuánto generaste →</a>
+          </div>
+        </div>
+        <div class="tabbar"><a><span class="ic">🏠</span>Inicio</a><a><span class="ic">👥</span>Grupos</a><a><span class="cta">＋</span></a><a class="on"><span class="ic">💰</span>Mi dinero</a><a><span class="ic">👤</span>Perfil</a></div>
+      </div></div>
+      <p class="mini" style="text-align:center;margin-top:10px">Mi Dinero · comprometido, por venir y generado</p>
+    </div>
+
+    <!-- ============ Pantalla 2 · Tu dinero trabajando ============ -->
+    <div id="trabajando">
+      <div class="phone"><div class="pscreen">
+        <div class="statusbar"><span>9:41</span><span class="rt">📶 🔋</span></div>
+        <div class="appbar"><span class="bk">‹</span><span class="ti">Tu dinero trabajando</span><span class="ac">⋯</span></div>
+        <div class="pbody">
+
+          <div class="trabajando">
+            <div class="k">Valor generado total</div>
+            <div class="total"><span class="cur">Bs</span> 2.025</div>
+            <div style="font-size:12.5px;opacity:.8">Desde que entraste, en 11 meses</div>
+
+            <div class="barra">
+              <i style="width:40.5%;background:#7CBE9C"></i>
+              <i style="width:22.2%;background:#E5852B"></i>
+              <i style="width:15.3%;background:#F6BE85"></i>
+              <i style="width:13.6%;background:#3C9366"></i>
+              <i style="width:8.4%;background:#BCDFCC"></i>
+            </div>
+
+            <div class="desglose">
+              <div class="fila"><span class="pt" style="background:#7CBE9C"></span><span class="nm">Ahorro por descuentos</span><span class="vl">Bs 820</span></div>
+              <div class="fila"><span class="pt" style="background:#E5852B"></span><span class="nm">Mercado de turnos</span><span class="vl">Bs 450</span></div>
+              <div class="fila"><span class="pt" style="background:#F6BE85"></span><span class="nm">Beneficios por vales</span><span class="vl">Bs 310</span></div>
+              <div class="fila"><span class="pt" style="background:#3C9366"></span><span class="nm">Resultado de inversiones</span><span class="vl">Bs 275</span></div>
+              <div class="fila"><span class="pt" style="background:#BCDFCC"></span><span class="nm">Cashback</span><span class="vl">Bs 170</span></div>
+            </div>
+          </div>
+
+          <div class="alert ok" style="margin-top:14px">
+            <span class="ic">✓</span>
+            <div><div class="t">Equivale a 8 aportes de tu pasanaku</div><div class="m">Sin haber puesto un peso más de lo que ya ibas a ahorrar.</div></div>
+          </div>
+
+          <div class="clabel" style="margin:20px 0 10px">Lo que desbloqueaste</div>
+
+          <div class="demo-col">
+            <div class="insignia">
+              <div class="em">⏱</div>
+              <div class="info"><div class="nm">Puntual</div><div class="be">+1% extra en campañas seleccionadas</div></div>
+              <span class="badge ok"><span class="d"></span>Activa</span>
+            </div>
+            <div class="insignia">
+              <div class="em">🥇</div>
+              <div class="info"><div class="nm">Oro</div><div class="be">Mercado completo · comisión reducida</div></div>
+              <span class="badge ok"><span class="d"></span>Activa</span>
+            </div>
+            <div class="insignia locked">
+              <div class="em">💎</div>
+              <div class="info"><div class="nm">Diamante</div><div class="be">Faltan 2 pasanakus completados</div></div>
+              <span class="badge neutral">Bloqueada</span>
+            </div>
+          </div>
+
+          <div class="legal" style="margin-top:16px">
+            <span class="ic">ℹ</span>
+            <div>El <b>resultado de inversiones</b> es el valor actual de tu posición, no una ganancia asegurada: puede subir o bajar. Las demás líneas ya están realizadas.</div>
+          </div>
+
+        </div>
+      </div></div>
+      <p class="mini" style="text-align:center;margin-top:10px">Tu dinero trabajando · §24</p>
+    </div>
+
+    <!-- ============ Explicación ============ -->
+    <div class="phone-solo" style="flex:1;min-width:280px">
+      <div class="expl">
+        <div class="clabel" style="margin-top:0">Por qué esta pantalla es el norte</div>
+        <p style="font-size:14px;color:var(--text-2);margin-top:0">La métrica de la plataforma deja de ser <em>cuánto dinero pasó por los pasanakus</em> —que mide volumen, no valor— y pasa a ser <strong>cuánto valor económico adicional le generó la plataforma a cada persona</strong>. Es la única cifra que un participante puede comparar contra la comisión que paga.</p>
+
+        <div class="alert info" style="margin:16px 0">
+          <span class="ic">◆</span>
+          <div><div class="t">Cada línea tiene un origen auditable</div><div class="m">Ninguna cifra es una estimación de marketing: sale del libro de la billetera, del devengo de comisiones o del canje registrado de un vale.</div></div>
+        </div>
+
+        <div class="table-wrap"><div class="tbl-scroll"><table>
+          <thead><tr><th>Línea</th><th>De dónde sale</th></tr></thead>
+          <tbody>
+            <tr><td>Ahorro por descuentos</td><td>Precio de lista − precio comunidad, en compras con conversión confirmada por el partner</td></tr>
+            <tr><td>Mercado de turnos</td><td>Compensaciones netas cobradas, menos la comisión de la plataforma</td></tr>
+            <tr><td>Beneficios por vales</td><td>Suma del beneficio de cada <code class="code">VoucherRedemption</code></td></tr>
+            <tr><td>Cashback</td><td>Acreditaciones en billetera con origen en campaña</td></tr>
+            <tr><td>Inversiones</td><td>Valor actual reportado por el proveedor − capital aportado</td></tr>
+          </tbody>
+        </table></div></div>
+
+        <div class="nota" style="margin-top:16px">
+          <span class="ic">✎</span>
+          <div><b>Nota de maqueta.</b> El total no se guarda: se deriva, igual que el saldo de billetera (decisión 11 del modelo). Si una compra se reversa, la línea baja sola.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="mq-nav">
+    <a href="../index.html">← Índice de la maqueta</a>
+    <a href="objetivo-ahorro.html">Objetivo de ahorro →</a>
+  </div>
+</section>
+</main>
+
+<footer>
+  <span>AportaYa · Maqueta de Crecimiento Financiero y Alianzas</span>
+  <a href="../../Sistema-Diseno/README.md">Sistema de diseño</a>
+</footer>
+<div class="toast" id="toast"><span>✓</span><span id="toastMsg">Listo</span></div>
+<script src="../../Sistema-Diseno/script.js"></script>
+<script src="../maqueta.js"></script>

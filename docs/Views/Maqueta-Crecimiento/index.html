@@ -1,0 +1,405 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AportaYa — Maqueta de Crecimiento Financiero y Alianzas</title>
+<link rel="stylesheet" href="../Sistema-Diseno/estilos.css">
+<link rel="stylesheet" href="maqueta.css">
+<svg width="0" height="0" style="position:absolute"><defs>
+  <g id="mark"><path d="M92 30 C74 66 52 108 40 168" fill="none" stroke="#7CBE9C" stroke-width="13" stroke-linecap="round"/><path d="M108 30 C126 66 148 108 160 168" fill="none" stroke="#7CBE9C" stroke-width="13" stroke-linecap="round"/><path d="M100 58 C84 92 68 130 62 170" fill="none" stroke="#E5852B" stroke-width="12" stroke-linecap="round"/><path d="M100 58 C116 92 132 130 138 170" fill="none" stroke="#E5852B" stroke-width="12" stroke-linecap="round"/></g>
+</defs></svg>
+
+<div class="topbar"><div class="topbar-in">
+  <a class="brandmark" href="index.html"><svg width="26" height="26" viewBox="0 0 200 200"><use href="#mark"/></svg><span>Aporta<span class="ya">Ya</span></span></a>
+  <nav class="navlinks">
+    <a class="on" href="index.html">Índice</a>
+    <a href="#app">App</a>
+    <a href="#partner">Partner</a>
+    <a href="#backoffice">Backoffice</a>
+    <a href="#modelo">Modelo</a>
+    <a href="#fases">Fases</a>
+  </nav>
+  <button class="theme-btn" onclick="toggleTheme()">◐ Tema</button>
+</div></div>
+
+<main>
+
+<div class="mq-hero">
+  <p class="eyebrow">Maqueta · 12 pantallas navegables</p>
+  <h1>Crecimiento Financiero y Alianzas</h1>
+  <p>Cuatro pilares que llevan a AportaYa más allá de administrar el ahorro colectivo: un mercado donde la posición en el turno tiene valor, alianzas que convierten la demanda del grupo en mejores precios, vales que atraviesan las tres superficies del sistema, e inversión a través de entidades autorizadas.</p>
+  <div class="frase">Entrás para ahorrar. Cumplís para subir de nivel. Tu reputación desbloquea beneficios. Tu turno puede tener valor. Tu comunidad consigue mejores precios. Y cuando recibís tu ahorro, decidís si gastarlo, usarlo para crecer o invertirlo.</div>
+</div>
+
+<section style="padding-top:10px">
+  <div class="sec-head">
+    <p class="eyebrow">El cambio de premisa</p>
+    <h2>De «ahorrá hasta que llegue tu turno» a otra cosa</h2>
+  </div>
+  <div class="subgrid cols2">
+    <div class="demo" style="border-left:3px solid var(--border)">
+      <div class="clabel" style="margin-top:0">Hoy</div>
+      <p style="font-size:15px;color:var(--text-2);margin:0">«Ahorrá hasta que llegue tu turno.»</p>
+      <p class="help" style="margin-top:10px">El producto es un calendario con cuentas claras. El valor que entrega es <em>orden y confianza</em> — real, pero acotado: termina el día que la persona cobra.</p>
+    </div>
+    <div class="demo" style="border-left:3px solid var(--accent)">
+      <div class="clabel" style="margin-top:0">Con este módulo</div>
+      <p style="font-size:15px;color:var(--text);margin:0">«Mientras participás, tu comportamiento financiero desbloquea beneficios, oportunidades y mejores condiciones.»</p>
+      <p class="help" style="margin-top:10px">El producto pasa a generar <em>valor económico medible</em>: descuentos, compensaciones, cashback y mejores precios que la persona no conseguiría sola.</p>
+    </div>
+  </div>
+
+  <div class="clabel" style="margin-top:26px">Los cuatro pilares</div>
+  <div class="subgrid cols4">
+    <div class="demo" style="padding:20px">
+      <div style="font-size:26px;margin-bottom:8px">⇄</div>
+      <h3>Mercado de turnos</h3>
+      <p style="font-size:13px;color:var(--text-3);margin:6px 0 0">Quien necesita liquidez antes compensa a quien puede esperar, con el motor de riesgo de por medio.</p>
+    </div>
+    <div class="demo" style="padding:20px">
+      <div style="font-size:26px;margin-bottom:8px">📐</div>
+      <h3>Valor del turno</h3>
+      <p style="font-size:13px;color:var(--text-3);margin:6px 0 0">Cada posición tiene un rango estimado, calculado con la demanda real del grupo.</p>
+    </div>
+    <div class="demo" style="padding:20px">
+      <div style="font-size:26px;margin-bottom:8px">🤝</div>
+      <h3>Alianzas y vales</h3>
+      <p style="font-size:13px;color:var(--text-3);margin:6px 0 0">La intención de compra declarada se convierte en poder de negociación colectivo.</p>
+    </div>
+    <div class="demo" style="padding:20px">
+      <div style="font-size:26px;margin-bottom:8px">📈</div>
+      <h3>Inversión</h3>
+      <p style="font-size:13px;color:var(--text-3);margin:6px 0 0">Productos de entidades autorizadas, con perfil de riesgo y sin promesa de rendimiento.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= APP ================= -->
+<section id="app">
+  <div class="sec-head">
+    <span class="lvl app">Superficie 1 · App del participante</span>
+    <h2>Lo que ve quien ahorra</h2>
+    <p>Seis pantallas móviles. El hilo que las une es que ninguna le pide dinero nuevo a nadie: todas actúan sobre plata que la persona ya tiene o ya va a recibir.</p>
+  </div>
+  <div class="mq-grid">
+    <a class="mq-card" href="app/mi-dinero.html">
+      <div class="ic">💰</div><h3>Mi Dinero</h3>
+      <p>Centro financiero y la métrica «Tu dinero trabajando»: cuánto valor le generó la plataforma.</p>
+      <span class="ref">§23 · §24 · §36</span>
+    </a>
+    <a class="mq-card" href="app/objetivo-ahorro.html">
+      <div class="ic">🎯</div><h3>Objetivo de ahorro</h3>
+      <p>La pregunta que convierte intención en poder de negociación, con su consentimiento.</p>
+      <span class="ref">§5 · §17 · §30</span>
+    </a>
+    <a class="mq-card" href="app/mercado-turnos.html">
+      <div class="ic">⇄</div><h3>Mercado de turnos</h3>
+      <p>Valor estimado del turno, ofertas del grupo, permuta y validación de riesgo.</p>
+      <span class="ref">§3 · §4 · §18</span>
+    </a>
+    <a class="mq-card" href="app/mis-vales.html">
+      <div class="ic">🎟</div><h3>Mis vales</h3>
+      <p>Vales con QR dinámico, sus seis estados y las ofertas segmentadas del momento.</p>
+      <span class="ref">§9 · §10 · §14</span>
+    </a>
+    <a class="mq-card" href="app/que-hacer-con-tu-dinero.html">
+      <div class="ic">🔀</div><h3>Tu turno llegó</h3>
+      <p>Retirar, comprar, emprender o invertir — el momento de máxima decisión.</p>
+      <span class="ref">§19 · §27</span>
+    </a>
+    <a class="mq-card" href="app/invertir.html">
+      <div class="ic">📈</div><h3>Invertir</h3>
+      <p>Perfil de riesgo, marketplace de productos autorizados y qué puede hacer un vale financiero.</p>
+      <span class="ref">§20 · §21 · §22</span>
+    </a>
+  </div>
+</section>
+
+<!-- ================= PARTNER ================= -->
+<section id="partner">
+  <div class="sec-head">
+    <span class="lvl partner">Superficie 2 · Portal del comercio</span>
+    <h2>Lo que ve el aliado comercial</h2>
+    <p>Un portal aparte, con dominio propio y MFA obligatorio. El partner ve su demanda, sus campañas y sus conversiones — nunca la base de participantes.</p>
+  </div>
+  <div class="mq-grid">
+    <a class="mq-card" href="partner/dashboard.html">
+      <div class="ic">📊</div><h3>Dashboard</h3>
+      <p>Alcance, interesados, vales, conversión y ventas atribuidas, con el embudo completo.</p>
+      <span class="ref">§13 · §28</span>
+    </a>
+    <a class="mq-card" href="partner/publicaciones.html">
+      <div class="ic">📣</div><h3>Publicaciones</h3>
+      <p>Crear propuesta, flujo de aprobación y rendimiento por publicación.</p>
+      <span class="ref">§14 · §14.1 · §15</span>
+    </a>
+    <a class="mq-card" href="partner/vales.html">
+      <div class="ic">✅</div><h3>Validar vale</h3>
+      <p>El mostrador: escanear, validar, atribuir la venta y todo lo que impide el doble canje.</p>
+      <span class="ref">§12 · §31</span>
+    </a>
+    <a class="mq-card" href="partner/audiencia.html">
+      <div class="ic">👥</div><h3>Audiencia</h3>
+      <p>Demanda agregada, capital esperado y las tres reglas que hacen publicable ese panel.</p>
+      <span class="ref">§16 · §17 · §30</span>
+    </a>
+  </div>
+</section>
+
+<!-- ================= BACKOFFICE ================= -->
+<section id="backoffice">
+  <div class="sec-head">
+    <span class="lvl bo">Superficie 3 · Backoffice interno</span>
+    <h2>Lo que ve el equipo</h2>
+    <p>Nada llega a la app sin pasar por acá. Comercial y riesgo están deliberadamente separados: quien tiene meta de venta no aprueba límites de exposición.</p>
+  </div>
+  <div class="mq-grid">
+    <a class="mq-card" href="backoffice/alianzas.html">
+      <div class="ic">🤝</div><h3>Alianzas</h3>
+      <p>Dashboard comercial, alta y verificación de partners, ficha completa y matriz de roles.</p>
+      <span class="ref">§7 · §25 · §29</span>
+    </a>
+    <a class="mq-card" href="backoffice/campanas.html">
+      <div class="ic">📋</div><h3>Campañas y vales</h3>
+      <p>Cola de revisión con sus cinco controles, creación de campañas y emisión de vales.</p>
+      <span class="ref">§8 · §11 · §14.1</span>
+    </a>
+    <a class="mq-card" href="backoffice/riesgo.html">
+      <div class="ic">⚖️</div><h3>Riesgo de permutas</h3>
+      <p>Los nueve factores del motor, decisión humana con constancia, políticas y monetización.</p>
+      <span class="ref">§3.5 · §32</span>
+    </a>
+  </div>
+</section>
+
+<!-- ================= FLUJOS ================= -->
+<section id="flujos">
+  <div class="sec-head">
+    <p class="eyebrow">Recorridos completos</p>
+    <h2>Los dos flujos que atraviesan todo</h2>
+  </div>
+  <div class="subgrid cols2">
+    <div>
+      <div class="clabel" style="margin-top:0">Participante <span class="ref-doc">§27</span></div>
+      <div class="demo">
+        <div class="flujo" style="flex-direction:column;align-items:flex-start;gap:0">
+          <span class="e">Crea cuenta y verifica identidad</span>
+          <span class="fl">↓</span>
+          <span class="e">Declara su objetivo de ahorro</span>
+          <span class="fl">↓</span>
+          <span class="e">Entra a un pasanaku y cumple sus pagos</span>
+          <span class="fl">↓</span>
+          <span class="e on">Gana reputación e insignias</span>
+          <span class="fl">↓</span>
+          <span class="e on">Su posición adquiere valor de mercado</span>
+          <span class="fl">↓</span>
+          <span class="e">Puede permutar su turno si es elegible</span>
+          <span class="fl">↓</span>
+          <span class="e on">Se acerca la fecha de cobro</span>
+          <span class="fl">↓</span>
+          <span class="e">Retirar · Comprar · Emprender · Invertir</span>
+          <span class="fl">↓</span>
+          <span class="e fin">Todo queda en «Tu dinero trabajando»</span>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="clabel" style="margin-top:0">Partner <span class="ref-doc">§28</span></div>
+      <div class="demo">
+        <div class="flujo" style="flex-direction:column;align-items:flex-start;gap:0">
+          <span class="e">La empresa solicita registro</span>
+          <span class="fl">↓</span>
+          <span class="e">El backoffice valida NIT, poder y acuerdo</span>
+          <span class="fl">↓</span>
+          <span class="e on">Se crea la cuenta COMMERCIAL_PARTNER</span>
+          <span class="fl">↓</span>
+          <span class="e">Entra al portal y observa la demanda agregada</span>
+          <span class="fl">↓</span>
+          <span class="e">Propone una campaña</span>
+          <span class="fl">↓</span>
+          <span class="e on">El backoffice revisa los cinco controles</span>
+          <span class="fl">↓</span>
+          <span class="e">Se publica a los usuarios compatibles</span>
+          <span class="fl">↓</span>
+          <span class="e">Los usuarios reclaman vales</span>
+          <span class="fl">↓</span>
+          <span class="e on">El partner valida en mostrador</span>
+          <span class="fl">↓</span>
+          <span class="e fin">Se registra la conversión y se devenga la comisión</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= MODELO ================= -->
+<section id="modelo">
+  <div class="sec-head">
+    <p class="eyebrow">Lo que hay que agregar al modelo</p>
+    <h2>Entidades y roles nuevos</h2>
+    <p>Este módulo no modifica el núcleo existente: se apoya en <code class="code">usuario</code>, <code class="code">grupo</code>, <code class="code">cupo</code>, <code class="code">turno</code> y <code class="code">cuenta_billetera</code>, y agrega entidades propias. Las tablas de abajo son la lista de trabajo para llevarlo a la bóveda como módulos <strong>M15 a M18</strong> — M13 y M14 ya están ocupados.</p>
+  </div>
+
+  <div class="subgrid cols2">
+    <div>
+      <div class="clabel" style="margin-top:0">Entidades <span class="ref-doc">§26</span></div>
+      <div class="table-wrap"><div class="tbl-scroll"><table>
+        <thead><tr><th>Entidad</th><th>Qué guarda</th><th>Pilar</th></tr></thead>
+        <tbody>
+          <tr><td><code class="code">UserFinancialProfile</code></td><td>Perfil financiero y de riesgo vigente</td><td>Todos</td></tr>
+          <tr><td><code class="code">Badge</code> · <code class="code">UserBadge</code></td><td>Definición y obtención de insignias</td><td>Reputación</td></tr>
+          <tr><td><code class="code">TurnMarketplaceOffer</code></td><td>Oferta de permuta y su ciclo de estados</td><td>Turnos</td></tr>
+          <tr><td><code class="code">TurnExchange</code></td><td>Permuta ejecutada, con compensación y comisión</td><td>Turnos</td></tr>
+          <tr><td><code class="code">SavingGoal</code></td><td>Objetivo declarado, presupuesto y consentimiento</td><td>Alianzas</td></tr>
+          <tr><td><code class="code">Partner</code> · <code class="code">PartnerUser</code></td><td>Comercio aliado y sus usuarios del portal</td><td>Alianzas</td></tr>
+          <tr><td><code class="code">Partnership</code></td><td>Acuerdo comercial, comisión y vigencia</td><td>Alianzas</td></tr>
+          <tr><td><code class="code">CommercialCampaign</code></td><td>Campaña, segmento elegible y presupuesto</td><td>Alianzas</td></tr>
+          <tr><td><code class="code">CommercialPublication</code></td><td>Publicación y su flujo de aprobación</td><td>Alianzas</td></tr>
+          <tr><td><code class="code">Voucher</code></td><td>Definición del vale</td><td>Vales</td></tr>
+          <tr><td><code class="code">VoucherInstance</code></td><td>Vale individual asignado, con origen y estado</td><td>Vales</td></tr>
+          <tr><td><code class="code">VoucherRedemption</code></td><td>Canje: monto, beneficio y venta atribuida</td><td>Vales</td></tr>
+          <tr><td><code class="code">InvestmentPartner</code></td><td>Proveedor financiero habilitado</td><td>Inversión</td></tr>
+          <tr><td><code class="code">InvestmentProduct</code></td><td>Producto, riesgo, mínimo y horizonte</td><td>Inversión</td></tr>
+          <tr><td><code class="code">UserInvestment</code></td><td>Posición de la persona</td><td>Inversión</td></tr>
+          <tr><td><code class="code">InvestmentTransaction</code></td><td>Suscripción, rescate y valoración</td><td>Inversión</td></tr>
+        </tbody>
+      </table></div></div>
+    </div>
+    <div>
+      <div class="clabel" style="margin-top:0">Roles <span class="ref-doc">§25</span></div>
+      <div class="table-wrap"><div class="tbl-scroll"><table>
+        <thead><tr><th>Rol</th><th>Superficie</th></tr></thead>
+        <tbody>
+          <tr><td><code class="code">USER</code></td><td>App</td></tr>
+          <tr><td><code class="code">GROUP_ADMIN</code></td><td>App · organizador</td></tr>
+          <tr><td><code class="code">COMMERCIAL_PARTNER</code></td><td>Portal Partner</td></tr>
+          <tr><td><code class="code">PARTNER_MANAGER</code></td><td>Portal Partner</td></tr>
+          <tr><td><code class="code">BACKOFFICE_COMMERCIAL</code></td><td>Backoffice</td></tr>
+          <tr><td><code class="code">BACKOFFICE_RISK</code></td><td>Backoffice</td></tr>
+          <tr><td><code class="code">BACKOFFICE_ADMIN</code></td><td>Backoffice</td></tr>
+          <tr><td><code class="code">SUPER_ADMIN</code></td><td>Backoffice</td></tr>
+        </tbody>
+      </table></div></div>
+
+      <div class="clabel">Lo que este módulo hereda del modelo actual</div>
+      <div class="demo-col">
+        <div class="listitem"><div class="info"><div class="nm">Idempotencia de extremo a extremo</div><div class="sub">Permutas, canjes y órdenes de inversión llevan clave única</div></div></div>
+        <div class="listitem"><div class="info"><div class="nm">Bitácora encadenada por hash</div><div class="sub">Toda decisión manual de riesgo o aprobación deja fila</div></div></div>
+        <div class="listitem"><div class="info"><div class="nm">Precio congelado por grupo</div><div class="sub">La comisión de permuta no cambia a mitad del juego</div></div></div>
+        <div class="listitem"><div class="info"><div class="nm">El saldo se deriva, no se guarda</div><div class="sub">«Tu dinero trabajando» se calcula desde el libro</div></div></div>
+        <div class="listitem"><div class="info"><div class="nm">Debido proceso</div><div class="sub">Un bloqueo por riesgo se notifica con motivo y es apelable</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert warn" style="margin-top:20px">
+    <span class="ic">!</span>
+    <div><div class="t">Lo que esta maqueta todavía no resuelve</div><div class="m">Las fichas <code>.puml</code>, los casos de uso, las restricciones de base y el DDL de los módulos M15–M18 no existen aún. La maqueta define <em>qué se ve y con qué reglas</em>; llevarlo a la bóveda ejecutable —una nota por tabla, una por clave foránea, y la prueba de humo— es el paso siguiente.</div></div>
+  </div>
+
+  <div class="clabel">No duplicar lo que M14 ya resuelve</div>
+  <p style="font-size:14px;color:var(--text-2);max-width:74ch">La bóveda ya tiene <strong>M14 · Publicidad y Campañas</strong>. Se parece, pero cobra distinto: allá el comercio compra <em>visibilidad</em> y paga por pauta; acá compra <em>ventas</em> y paga comisión sobre la venta atribuida, y el participante se lleva un descuento real en vez de un anuncio. Son complementarios — y comparten media infraestructura, así que estas entidades se reutilizan en lugar de crearse de nuevo.</p>
+  <div class="table-wrap" style="margin-top:14px"><div class="tbl-scroll"><table>
+    <thead><tr><th>Lo que la maqueta llama</th><th>Reutiliza de M14</th></tr></thead>
+    <tbody>
+      <tr><td><code class="code">Partner</code></td><td><code class="code">socio_comercial</code> + <code class="code">anunciante</code></td></tr>
+      <tr><td><code class="code">CommercialCampaign</code></td><td><code class="code">campana_publicitaria</code></td></tr>
+      <tr><td><code class="code">CommercialPublication</code></td><td><code class="code">anuncio</code> · <code class="code">pieza_creativa</code></td></tr>
+      <tr><td>Flujo de aprobación (§14.1)</td><td><code class="code">revision_creativa</code></td></tr>
+      <tr><td>Segmento elegible</td><td><code class="code">segmento_audiencia</code></td></tr>
+      <tr><td>Métricas del embudo</td><td><code class="code">impresion_anuncio</code> · <code class="code">clic_anuncio</code> · <code class="code">conversion_anuncio</code></td></tr>
+      <tr><td>Facturación al partner</td><td><code class="code">cuenta_publicitaria</code> · <code class="code">factura_publicidad</code></td></tr>
+    </tbody>
+  </table></div></div>
+  <p class="help">Genuinamente nuevo, sin dónde apoyarse: todo el mercado de turnos, el vale con ciclo propio, el acuerdo con comisión sobre venta, el objetivo de ahorro, las insignias con efecto económico y el módulo de inversión.</p>
+
+  <div class="alert info" style="margin-top:16px">
+    <span class="ic">◆</span>
+    <div><div class="t">RN-18 sigue sin tocarse</div><div class="m">M14 es explícito: un anunciante siempre paga, nunca cobra, y el organizador no percibe ingreso por administrar. Acá vale lo mismo — la comisión de la venta atribuida y la del mercado de turnos las cobra la plataforma, nunca el organizador del grupo.</div></div>
+  </div>
+</section>
+
+<!-- ================= FASES ================= -->
+<section id="fases">
+  <div class="sec-head">
+    <p class="eyebrow">Orden de construcción</p>
+    <h2>Cuatro fases, no cuatro entregas simultáneas</h2>
+    <p>El orden no es por importancia: es por dependencia. La Fase 1 solo depende de nosotros; la Fase 4 depende de un tercero con licencia.</p>
+  </div>
+
+  <div class="subgrid cols4">
+    <div class="demo">
+      <span class="badge ok" style="margin-bottom:10px"><span class="d"></span>Fase 1</span>
+      <h3>Alianzas</h3>
+      <ul style="font-size:13px;color:var(--text-2);padding-left:17px;margin:8px 0 0;line-height:1.7">
+        <li>Intención de gasto</li>
+        <li>Rol <code class="code">COMMERCIAL_PARTNER</code></li>
+        <li>Backoffice de alianzas</li>
+        <li>Portal Partner básico</li>
+        <li>Publicaciones y vales</li>
+        <li>Métricas de campaña</li>
+      </ul>
+      <p class="help" style="margin-top:12px">Sin dependencias externas. Genera ingreso desde el primer partner.</p>
+    </div>
+    <div class="demo">
+      <span class="badge info" style="margin-bottom:10px"><span class="d"></span>Fase 2</span>
+      <h3>Mercado de turnos</h3>
+      <ul style="font-size:13px;color:var(--text-2);padding-left:17px;margin:8px 0 0;line-height:1.7">
+        <li>Intercambio de posiciones</li>
+        <li>Valor estimado del turno</li>
+        <li>Comisión de intercambio</li>
+        <li>Reglas por reputación</li>
+        <li>Motor de riesgo</li>
+      </ul>
+      <p class="help" style="margin-top:12px">Depende del fondo de garantía y de la reputación ya construidos.</p>
+    </div>
+    <div class="demo">
+      <span class="badge info" style="margin-bottom:10px"><span class="d"></span>Fase 3</span>
+      <h3>Escala</h3>
+      <ul style="font-size:13px;color:var(--text-2);padding-left:17px;margin:8px 0 0;line-height:1.7">
+        <li>Segmentación avanzada</li>
+        <li>Poder de compra colectivo</li>
+        <li>Cashback</li>
+        <li>Campañas automáticas</li>
+        <li>«Tu dinero trabajando»</li>
+      </ul>
+      <p class="help" style="margin-top:12px">Necesita volumen: sin masa de intención declarada, no hay qué negociar.</p>
+    </div>
+    <div class="demo">
+      <span class="badge warn" style="margin-bottom:10px"><span class="d"></span>Fase 4</span>
+      <h3>Inversión</h3>
+      <ul style="font-size:13px;color:var(--text-2);padding-left:17px;margin:8px 0 0;line-height:1.7">
+        <li>Integración con proveedores</li>
+        <li>Perfil de riesgo</li>
+        <li>Marketplace de instrumentos</li>
+        <li>Seguimiento de inversiones</li>
+        <li>Vales financieros permitidos</li>
+      </ul>
+      <p class="help" style="margin-top:12px">Bloqueada por contrato con entidad autorizada y por la habilitación que corresponda.</p>
+    </div>
+  </div>
+
+  <div class="alert info" style="margin-top:20px">
+    <span class="ic">◆</span>
+    <div><div class="t">Sobre la autorización regulatoria</div><div class="m">El README del repositorio ya registra que el producto requiere autorización de ASFI antes de operar con dinero real. Este módulo agrega dos frentes nuevos a esa conversación: el mercado de turnos, que con topes mal puestos se parece a intermediación crediticia, y el módulo de inversión, que solo puede existir sobre un proveedor habilitado. Ninguno de los dos es un detalle de implementación.</div></div>
+  </div>
+</section>
+
+<!-- ================= NORTE ================= -->
+<section>
+  <div class="mq-hero" style="background:linear-gradient(160deg,var(--g600),var(--g900))">
+    <p class="eyebrow">§36 · El norte</p>
+    <h2 style="color:#fff">La métrica que hay que mover</h2>
+    <p style="margin-bottom:18px">No «cuánto dinero pasó por los pasanakus» —eso mide volumen— sino <strong style="color:#fff">cuánto valor económico adicional generó la plataforma para sus usuarios</strong>: descuentos, vales, cashback, permutas, mejores precios negociados y resultados de inversión.</p>
+    <div class="frase">Mi dinero vale más dentro de esta comunidad.</div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <span>AportaYa · Maqueta de Crecimiento Financiero y Alianzas · 12 pantallas</span>
+  <a href="../Sistema-Diseno/README.md">Sistema de diseño</a>
+</footer>
+<div class="toast" id="toast"><span>✓</span><span id="toastMsg">Listo</span></div>
+<script src="../Sistema-Diseno/script.js"></script>
+<script src="maqueta.js"></script>

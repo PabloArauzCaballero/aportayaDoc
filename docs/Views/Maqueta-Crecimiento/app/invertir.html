@@ -1,0 +1,265 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AportaYa — Invertir</title>
+<link rel="stylesheet" href="../../Sistema-Diseno/estilos.css">
+<link rel="stylesheet" href="../maqueta.css">
+<svg width="0" height="0" style="position:absolute"><defs>
+  <g id="mark"><path d="M92 30 C74 66 52 108 40 168" fill="none" stroke="#7CBE9C" stroke-width="13" stroke-linecap="round"/><path d="M108 30 C126 66 148 108 160 168" fill="none" stroke="#7CBE9C" stroke-width="13" stroke-linecap="round"/><path d="M100 58 C84 92 68 130 62 170" fill="none" stroke="#E5852B" stroke-width="12" stroke-linecap="round"/><path d="M100 58 C116 92 132 130 138 170" fill="none" stroke="#E5852B" stroke-width="12" stroke-linecap="round"/></g>
+</defs></svg>
+
+<div class="topbar"><div class="topbar-in">
+  <a class="brandmark" href="../index.html"><svg width="26" height="26" viewBox="0 0 200 200"><use href="#mark"/></svg><span>Aporta<span class="ya">Ya</span></span></a>
+  <nav class="navlinks">
+    <a href="../index.html">Índice</a>
+    <a href="mi-dinero.html">Mi Dinero</a>
+    <a href="objetivo-ahorro.html">Objetivo</a>
+    <a href="mercado-turnos.html">Turnos</a>
+    <a href="mis-vales.html">Vales</a>
+    <a href="que-hacer-con-tu-dinero.html">Tu turno llegó</a>
+    <a class="on" href="invertir.html">Invertir</a>
+  </nav>
+  <button class="theme-btn" onclick="toggleTheme()">◐ Tema</button>
+</div></div>
+
+<main>
+<section>
+  <div class="sec-head">
+    <span class="lvl app">App · Participante</span>
+    <p class="eyebrow">Marketplace de inversión</p>
+    <h1>Invertir</h1>
+    <p>El módulo con más consecuencias regulatorias de todo el documento. AportaYa <strong>no ofrece inversiones</strong>: pone en pantalla productos de entidades autorizadas y transporta la orden. La diferencia entre esas dos frases es la diferencia entre necesitar una licencia de intermediario de valores y no necesitarla.</p>
+    <p><span class="ref-doc">§20 Módulo de inversiones</span> <span class="ref-doc">§21 Marketplace</span> <span class="ref-doc">§22 Vales de inversión</span></p>
+  </div>
+
+  <div class="alert warn" style="margin-bottom:24px">
+    <span class="ic">!</span>
+    <div><div class="t">Bloqueado por dependencia externa</div><div class="m">Nada de esta pantalla puede existir sin un proveedor autorizado con contrato firmado y sin la habilitación que corresponda ante el supervisor. Es la Fase 4 del MVP por una razón: no es la última porque sea la menos importante, sino porque es la única que no depende solo de nosotros.</div></div>
+  </div>
+
+  <div class="phones">
+
+    <!-- ============ Pantalla 1 · Perfil de riesgo ============ -->
+    <div>
+      <div class="phone"><div class="pscreen">
+        <div class="statusbar"><span>9:41</span><span class="rt">📶 🔋</span></div>
+        <div class="appbar"><span class="bk">‹</span><span class="ti">Tu perfil</span><span class="ac">2/6</span></div>
+        <div class="pbody">
+
+          <div class="bar" style="margin:4px 0 20px"><i style="width:33%"></i></div>
+
+          <h3 style="font-size:18px;color:var(--brand-ink);margin-bottom:6px">Si tu inversión bajara 10% en un mes, ¿qué harías?</h3>
+          <p style="font-size:13px;color:var(--text-3);margin:0 0 18px">No hay respuesta correcta. Sirve para no ofrecerte algo que no te deje dormir.</p>
+
+          <div class="caminos">
+            <a class="camino" data-aviso="Perfil conservador">
+              <span class="ic" style="background:var(--okbg)">🛟</span>
+              <span class="info"><span class="nm">Sacaría todo</span><span class="sub">Prefiero no perder capital</span></span>
+            </a>
+            <a class="camino" data-aviso="Perfil moderado">
+              <span class="ic" style="background:var(--warnbg)">⚖️</span>
+              <span class="info"><span class="nm">Esperaría</span><span class="sub">Sé que puede recuperarse</span></span>
+            </a>
+            <a class="camino" data-aviso="Perfil agresivo">
+              <span class="ic" style="background:var(--infobg)">📊</span>
+              <span class="info"><span class="nm">Pondría más</span><span class="sub">Está más barato que antes</span></span>
+            </a>
+          </div>
+
+          <div class="clabel" style="margin:22px 0 10px">Lo que ya respondiste</div>
+          <div class="demo-col">
+            <div class="listitem"><div class="info"><div class="nm">Horizonte</div><div class="sub">6 a 12 meses</div></div><span class="badge neutral">✎</span></div>
+            <div class="listitem"><div class="info"><div class="nm">Objetivo</div><div class="sub">Que no se me gaste solo</div></div><span class="badge neutral">✎</span></div>
+          </div>
+
+          <div class="legal" style="margin-top:16px">
+            <span class="ic">ℹ</span>
+            <div>El perfil lo define la <b>entidad autorizada</b>, no AportaYa. Nosotros solo transportamos tus respuestas.</div>
+          </div>
+        </div>
+      </div></div>
+      <p class="mini" style="text-align:center;margin-top:10px">Perfil de riesgo · §20.1</p>
+    </div>
+
+    <!-- ============ Pantalla 2 · Marketplace ============ -->
+    <div>
+      <div class="phone"><div class="pscreen">
+        <div class="statusbar"><span>9:41</span><span class="rt">📶 🔋</span></div>
+        <div class="appbar"><span class="bk">‹</span><span class="ti">Opciones</span><span class="ac">ⓘ</span></div>
+        <div class="pbody">
+
+          <div class="alert info" style="margin-bottom:14px">
+            <span class="ic">◆</span>
+            <div><div class="t">Tu perfil: conservador</div><div class="m">Ordenamos por lo que encaja con tus respuestas. Podés ver todo igual.</div></div>
+          </div>
+
+          <div class="demo-col">
+
+            <div class="prod">
+              <div class="top">
+                <span class="ic">🛟</span>
+                <div><h3>Fondo Conservador</h3><div class="prov">Entidad financiera asociada</div></div>
+              </div>
+              <span class="riesgo bajo"><span class="pts"><i></i><i></i><i></i></span>Riesgo bajo</span>
+              <div class="datos">
+                <div class="d"><div class="k">Horizonte</div><div class="v">6–12 m</div></div>
+                <div class="d"><div class="k">Mínimo</div><div class="v">Bs 500</div></div>
+                <div class="d"><div class="k">Rescate</div><div class="v">72 h</div></div>
+              </div>
+              <button class="btn btn-primary btn-sm block" style="margin-top:14px" onclick="showToast('Te lleva al proveedor autorizado')">Ver detalle</button>
+            </div>
+
+            <div class="prod">
+              <div class="top">
+                <span class="ic">📜</span>
+                <div><h3>Bonos</h3><div class="prov">Según emisor e instrumento</div></div>
+              </div>
+              <span class="riesgo medio"><span class="pts"><i></i><i></i><i></i></span>Riesgo medio</span>
+              <div class="datos">
+                <div class="d"><div class="k">Horizonte</div><div class="v">Según plazo</div></div>
+                <div class="d"><div class="k">Mínimo</div><div class="v">Bs 1.000</div></div>
+                <div class="d"><div class="k">Rescate</div><div class="v">Al vencer</div></div>
+              </div>
+              <button class="btn btn-ghost btn-sm block" style="margin-top:14px">Ver detalle</button>
+            </div>
+
+            <div class="prod">
+              <div class="top">
+                <span class="ic">📈</span>
+                <div><h3>Mercado de valores</h3><div class="prov">Vía partner autorizado</div></div>
+              </div>
+              <span class="riesgo alto"><span class="pts"><i></i><i></i><i></i></span>Riesgo variable</span>
+              <div class="datos">
+                <div class="d"><div class="k">Horizonte</div><div class="v">Largo</div></div>
+                <div class="d"><div class="k">Mínimo</div><div class="v">Bs 2.000</div></div>
+                <div class="d"><div class="k">Rescate</div><div class="v">Variable</div></div>
+              </div>
+              <div class="alert warn" style="margin-top:12px;padding:10px 12px">
+                <span class="ic">!</span><div><div class="m" style="font-size:12px">No encaja con tu perfil conservador. Podés verlo igual.</div></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div></div>
+      <p class="mini" style="text-align:center;margin-top:10px">Marketplace · §21</p>
+    </div>
+
+    <!-- ============ Pantalla 3 · Confirmación ============ -->
+    <div>
+      <div class="phone"><div class="pscreen">
+        <div class="statusbar"><span>9:41</span><span class="rt">📶 🔋</span></div>
+        <div class="appbar"><span class="bk">‹</span><span class="ti">Confirmar</span><span class="ac"></span></div>
+        <div class="pbody" style="display:flex;flex-direction:column">
+
+          <div style="text-align:center;padding:8px 0 16px">
+            <div style="font-size:12px;color:var(--text-3);letter-spacing:.04em;text-transform:uppercase;font-weight:600">Vas a invertir</div>
+            <div style="font-family:var(--font-d);font-weight:700;font-size:38px;letter-spacing:-.02em;color:var(--brand-ink);font-variant-numeric:tabular-nums">Bs 2.000</div>
+            <div style="font-size:13px;color:var(--text-2)">Fondo Conservador</div>
+          </div>
+
+          <div class="riesgo-panel">
+            <div class="cab"><span class="ti">Lo que tenés que saber</span></div>
+            <div class="cuerpo">
+              <div class="chk"><span class="mk dud">!</span><div class="tx">El valor puede bajar<div class="d">No hay rendimiento garantizado. Podés recibir menos de lo que pusiste.</div></div></div>
+              <div class="chk"><span class="mk si">✓</span><div class="tx">Quién lo administra<div class="d">La entidad autorizada, no AportaYa</div></div></div>
+              <div class="chk"><span class="mk si">✓</span><div class="tx">Cuándo podés sacarlo<div class="d">Rescate en 72 horas hábiles</div></div></div>
+              <div class="chk"><span class="mk si">✓</span><div class="tx">Comisión de apertura<div class="d">Bonificada con tu vale</div></div><span class="vl" style="color:var(--ok-texto)">Bs 0</span></div>
+            </div>
+          </div>
+
+          <div class="vale" style="margin-top:14px">
+            <div class="cab" style="padding-bottom:10px">
+              <div class="logo" style="background:#2E7FB8">FA</div>
+              <div class="info"><div class="com">Beneficio aplicado</div><div class="nm">Apertura sin costo</div></div>
+            </div>
+            <div class="corte"></div>
+            <div class="pie"><div class="cod"><div class="k">Origen</div><div class="v">3 pasanakus completados</div></div></div>
+          </div>
+
+          <div class="legal" style="margin-top:14px;border-left-color:var(--warn)">
+            <span class="ic">⚠</span>
+            <div>El vale <b>reduce el costo del servicio</b>. No aumenta ni asegura el rendimiento de la inversión: son dos cosas distintas y nunca se presentan juntas.</div>
+          </div>
+
+          <label class="check" style="align-items:flex-start;gap:11px;margin-top:16px">
+            <input type="checkbox" style="margin-top:2px">
+            <span style="font-size:13px">Leí y entiendo que puedo perder parte de lo que invierta</span>
+          </label>
+
+          <button class="btn btn-primary block" style="margin-top:14px" onclick="showToast('Orden enviada al proveedor')">Confirmar</button>
+        </div>
+      </div></div>
+      <p class="mini" style="text-align:center;margin-top:10px">Confirmación · §22 vales financieros</p>
+    </div>
+
+  </div>
+
+  <!-- ============ Reglas ============ -->
+  <div class="clabel" style="margin-top:34px">Qué puede y qué no puede hacer un vale en inversión <span class="ref-doc">§22</span></div>
+  <div class="priv">
+    <div class="col si">
+      <h3>✓ Permitido</h3>
+      <ul>
+        <li>Bonificar la comisión de apertura</li>
+        <li>Reducir la tarifa del servicio</li>
+        <li>Financiar un beneficio promocional que paga el partner</li>
+        <li>Dar acceso a educación financiera</li>
+        <li>Regalar una consulta con un asesor de la entidad</li>
+      </ul>
+    </div>
+    <div class="col no">
+      <h3>✕ Prohibido</h3>
+      <ul>
+        <li>Presentarse como algo que sube el rendimiento</li>
+        <li>Sugerir un retorno mínimo o garantizado</li>
+        <li>Compensar pérdidas del instrumento</li>
+        <li>Condicionarse a que la persona no rescate</li>
+        <li>Mostrarse en la misma tarjeta que la rentabilidad histórica</li>
+      </ul>
+    </div>
+  </div>
+  <p class="help">La línea que separa las dos columnas es siempre la misma: un vale actúa sobre <strong>el precio de nuestro servicio</strong>, nunca sobre <strong>el resultado del instrumento</strong>. Cuando esa frontera se difumina, el producto pasa a ofrecer un retorno — y eso ya es otra actividad regulada.</p>
+
+  <div class="subgrid cols2" style="margin-top:26px">
+    <div>
+      <div class="clabel" style="margin-top:0">Reparto de responsabilidades</div>
+      <div class="table-wrap"><div class="tbl-scroll"><table>
+        <thead><tr><th>Qué</th><th>Quién</th></tr></thead>
+        <tbody>
+          <tr><td>Define el producto y su riesgo</td><td>Entidad autorizada</td></tr>
+          <tr><td>Evalúa el perfil del cliente</td><td>Entidad autorizada</td></tr>
+          <tr><td>Custodia el dinero invertido</td><td>Entidad autorizada</td></tr>
+          <tr><td>Muestra el catálogo</td><td>AportaYa</td></tr>
+          <tr><td>Transporta la orden</td><td>AportaYa</td></tr>
+          <tr><td>Registra el movimiento en el libro</td><td>AportaYa</td></tr>
+          <tr><td>Cobra revenue share</td><td>AportaYa</td></tr>
+        </tbody>
+      </table></div></div>
+    </div>
+    <div>
+      <div class="clabel" style="margin-top:0">Entidades del módulo <span class="ref-doc">§26</span></div>
+      <div class="demo-col">
+        <div class="listitem"><div class="info"><div class="nm"><code class="code">InvestmentPartner</code></div><div class="sub">Proveedor financiero habilitado, con su registro y vigencia</div></div></div>
+        <div class="listitem"><div class="info"><div class="nm"><code class="code">InvestmentProduct</code></div><div class="sub">Producto ofrecido, con riesgo, mínimo y horizonte</div></div></div>
+        <div class="listitem"><div class="info"><div class="nm"><code class="code">UserInvestment</code></div><div class="sub">Posición de la persona, con capital y valor actual</div></div></div>
+        <div class="listitem"><div class="info"><div class="nm"><code class="code">InvestmentTransaction</code></div><div class="sub">Suscripción, rescate y valoración — append-only</div></div></div>
+        <div class="listitem"><div class="info"><div class="nm"><code class="code">UserFinancialProfile</code></div><div class="sub">Perfil de riesgo vigente y su fecha de revalidación</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mq-nav">
+    <a href="que-hacer-con-tu-dinero.html">← Tu turno llegó</a>
+    <a href="../partner/dashboard.html">Portal Partner →</a>
+  </div>
+</section>
+</main>
+
+<footer>
+  <span>AportaYa · Maqueta de Crecimiento Financiero y Alianzas</span>
+  <a href="../../Sistema-Diseno/README.md">Sistema de diseño</a>
+</footer>
+<div class="toast" id="toast"><span>✓</span><span id="toastMsg">Listo</span></div>
+<script src="../../Sistema-Diseno/script.js"></script>
+<script src="../maqueta.js"></script>

@@ -1,0 +1,166 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AportaYa Backoffice — Riesgo de permutas</title>
+<link rel="stylesheet" href="../../Sistema-Diseno/estilos.css">
+<link rel="stylesheet" href="../maqueta.css">
+<svg width="0" height="0" style="position:absolute"><defs>
+  <g id="mark"><path d="M92 30 C74 66 52 108 40 168" fill="none" stroke="#7CBE9C" stroke-width="13" stroke-linecap="round"/><path d="M108 30 C126 66 148 108 160 168" fill="none" stroke="#7CBE9C" stroke-width="13" stroke-linecap="round"/><path d="M100 58 C84 92 68 130 62 170" fill="none" stroke="#E5852B" stroke-width="12" stroke-linecap="round"/><path d="M100 58 C116 92 132 130 138 170" fill="none" stroke="#E5852B" stroke-width="12" stroke-linecap="round"/></g>
+</defs></svg>
+
+<div class="topbar"><div class="topbar-in">
+  <a class="brandmark" href="../index.html"><svg width="26" height="26" viewBox="0 0 200 200"><use href="#mark"/></svg><span>Aporta<span class="ya">Ya</span></span></a>
+  <nav class="navlinks">
+    <a href="../index.html">Índice</a>
+    <a href="alianzas.html">Alianzas</a>
+    <a href="campanas.html">Campañas y vales</a>
+    <a class="on" href="riesgo.html">Riesgo de permutas</a>
+  </nav>
+  <button class="theme-btn" onclick="toggleTheme()">◐ Tema</button>
+</div></div>
+
+<main>
+<section>
+  <div class="sec-head">
+    <span class="lvl bo">Backoffice · Riesgo</span>
+    <p class="eyebrow">Motor de riesgo del mercado de turnos</p>
+    <h1>Riesgo de permutas</h1>
+    <p>El mercado de turnos es el pilar que más se parece a un producto financiero, y el único que puede romper un pasanaku desde adentro. Adelantar a alguien significa entregarle la bolsa antes de que haya aportado lo suficiente: si después no paga, los que quedan atrás cobran menos o no cobran. Esta pantalla es lo que impide que eso pase.</p>
+    <p><span class="ref-doc">§3.5 Motor de riesgo</span> <span class="ref-doc">§32 Monetización</span></p>
+  </div>
+
+  <div class="consola">
+
+    <aside class="sidebar">
+      <div class="grupo">Alianzas</div>
+      <a href="alianzas.html">🤝 Partners</a>
+      <a href="campanas.html">📣 Campañas</a>
+      <a href="campanas.html#vales">🎟 Vales</a>
+      <a data-aviso="Acuerdos comerciales y comisiones">📄 Acuerdos</a>
+      <div class="grupo">Análisis</div>
+      <a data-aviso="Demanda declarada por categoría">🔎 Intención de compra</a>
+      <a data-aviso="Conversiones y ventas atribuidas">📈 Conversión</a>
+      <a data-aviso="Comisiones devengadas y facturadas">💵 Ingresos</a>
+      <div class="grupo">Mercado</div>
+      <a class="on">⚖️ Riesgo de permutas</a>
+      <a data-aviso="Proveedores de inversión habilitados">🏦 Proveedores de inversión</a>
+    </aside>
+
+    <div class="panel">
+
+      <div class="kpis">
+        <div class="stat"><div class="k">Permutas del mes</div><div class="v">412</div><div class="delta up">+38</div></div>
+        <div class="stat"><div class="k">Aprobadas automáticamente</div><div class="v">88<span class="cur">%</span></div><div class="delta up">363 de 412</div></div>
+        <div class="stat"><div class="k">Escaladas a revisión</div><div class="v">31</div><div class="delta down">7,5%</div></div>
+        <div class="stat"><div class="k">Bloqueadas por riesgo</div><div class="v">18</div><div class="delta down">4,4%</div></div>
+        <div class="stat"><div class="k">Mora post-permuta</div><div class="v">1,2<span class="cur">%</span></div><div class="delta up">vs 1,1% general</div></div>
+        <div class="stat"><div class="k">Comisión devengada</div><div class="v"><span class="cur">Bs</span> 9.840</div><div class="delta up">8% promedio</div></div>
+      </div>
+
+      <div class="alert ok" style="margin-top:18px">
+        <span class="ic">✓</span>
+        <div><div class="t">La mora post-permuta es la métrica que valida todo el pilar</div><div class="m">Si quienes adelantan turno incumplieran más que el resto, el mercado estaría trasladando riesgo al grupo y habría que endurecerlo o apagarlo. Hoy 1,2% contra 1,1% general: dentro del ruido.</div></div>
+      </div>
+
+      <!-- ===== Cola ===== -->
+      <div class="clabel">Escaladas a revisión humana</div>
+      <div class="riesgo-panel">
+        <div class="cab">
+          <span class="avatar av30" style="background:#237349">JM</span>
+          <span class="ti">Permuta #4903 · Grupo «Vecinos El Alto» · turno 9 → 3</span>
+          <span class="badge warn"><span class="d"></span>Escalada</span>
+        </div>
+        <div class="cuerpo">
+          <div class="chk"><span class="mk si">✓</span><div class="tx">Riesgo del que adelanta<div class="d">Calificación B · sin eventos adversos</div></div><span class="vl">B</span></div>
+          <div class="chk"><span class="mk no">✕</span><div class="tx">Cuotas pendientes tras cobrar<div class="d">Quedaría debiendo 9 de 12 aportes — el 75% de la bolsa</div></div><span class="vl">Bs 9.000</span></div>
+          <div class="chk"><span class="mk si">✓</span><div class="tx">Monto total comprometido<div class="d">Dentro del límite de su nivel de verificación</div></div><span class="vl">Bs 12.000</span></div>
+          <div class="chk"><span class="mk si">✓</span><div class="tx">Historial de cumplimiento<div class="d">22 aportes, 1 tardío hace 8 meses</div></div><span class="vl">95,5%</span></div>
+          <div class="chk"><span class="mk dud">!</span><div class="tx">Garantías disponibles<div class="d">Sin aval solidario; solo cobertura del fondo</div></div><span class="vl">Bs 3.000</span></div>
+          <div class="chk"><span class="mk no">✕</span><div class="tx">Riesgo agregado del grupo<div class="d">Subiría de 0,31 a 0,44 — supera el umbral de 0,40</div></div><span class="vl">0,44</span></div>
+          <div class="chk"><span class="mk dud">!</span><div class="tx">Cobertura disponible<div class="d">Cubre 33% de lo que quedaría expuesto</div></div><span class="vl">33%</span></div>
+          <div class="chk"><span class="mk si">✓</span><div class="tx">Mora vigente<div class="d">Ninguna, ni suya ni de la contraparte</div></div><span class="vl">0</span></div>
+          <div class="chk"><span class="mk no">✕</span><div class="tx">Salud financiera del grupo<div class="d">Es el tercer adelanto en este grupo en dos ciclos</div></div><span class="vl">3 / 2 ciclos</span></div>
+
+          <div class="alert err" style="margin-top:14px">
+            <span class="ic">✕</span>
+            <div><div class="t">Recomendación del motor: rechazar</div><div class="m">No por la persona —su historial es bueno— sino por el grupo: tres adelantos en dos ciclos concentran la exposición en la segunda mitad del calendario, justo donde la cobertura ya está más comprometida.</div></div>
+          </div>
+
+          <div style="display:flex;gap:9px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap">
+            <button class="btn btn-ghost btn-sm" onclick="showToast('Se pide aval solidario antes de resolver')">Pedir aval</button>
+            <button class="btn btn-ghost btn-sm" onclick="showToast('Aprobada con condiciones registradas')">Aprobar con condición</button>
+            <button class="btn btn-danger btn-sm" onclick="showToast('Bloqueada · se notifica a ambas partes')">Bloquear</button>
+          </div>
+          <p class="help" style="text-align:right;margin-top:9px">Toda decisión manual queda firmada, con motivo, en la bitácora encadenada.</p>
+        </div>
+      </div>
+
+      <div class="nota">
+        <span class="ic">✎</span>
+        <div><b>Por qué la decisión no puede ser solo automática.</b> Un motor que aprueba o rechaza sin instancia humana convierte un rechazo en un veredicto sin apelación — y el modelo ya tiene debido proceso para las sanciones (decisión 7). La misma lógica aplica acá: el 88% se resuelve solo, el resto lo mira una persona y deja constancia del motivo.</div>
+      </div>
+
+      <!-- ===== Políticas ===== -->
+      <div class="clabel">Parámetros de política <span class="ref-doc">§3.3 · §32</span></div>
+      <div class="subgrid cols2">
+        <div>
+          <div class="table-wrap"><div class="tbl-scroll"><table>
+            <thead><tr><th>Nivel</th><th>Puede</th><th>Tope de adelanto</th><th>Comisión</th></tr></thead>
+            <tbody>
+              <tr><td><span class="nivel nuevo"><span class="p"></span>Nuevo</span></td><td>—</td><td class="num">—</td><td class="num">—</td></tr>
+              <tr><td><span class="nivel bronce"><span class="p"></span>Bronce</span></td><td>Ceder</td><td class="num">—</td><td class="num">10%</td></tr>
+              <tr><td><span class="nivel plata"><span class="p"></span>Plata</span></td><td>Ceder y adelantar</td><td class="num">3 posiciones</td><td class="num">10%</td></tr>
+              <tr><td><span class="nivel oro"><span class="p"></span>Oro</span></td><td>Mercado completo</td><td class="num">Sin tope</td><td class="num">8%</td></tr>
+              <tr><td><span class="nivel diamante"><span class="p"></span>Diamante</span></td><td>Mercado completo</td><td class="num">Sin tope</td><td class="num">6%</td></tr>
+            </tbody>
+          </table></div></div>
+          <p class="help">La comisión se congela por grupo al crearse, igual que el tarifario. Cambiar esta tabla afecta a los grupos nuevos, nunca a los que están jugando.</p>
+        </div>
+        <div>
+          <div class="demo-col">
+            <div class="listitem"><div class="info"><div class="nm">Tope de compensación</div><div class="sub">Máximo sobre la bolsa del turno</div></div><div style="text-align:right"><div class="amt">5%</div></div></div>
+            <div class="listitem"><div class="info"><div class="nm">Umbral de riesgo agregado</div><div class="sub">Por encima, se escala o se bloquea</div></div><div style="text-align:right"><div class="amt">0,40</div></div></div>
+            <div class="listitem"><div class="info"><div class="nm">Permutas por grupo y ciclo</div><div class="sub">Tope duro, no configurable por grupo</div></div><div style="text-align:right"><div class="amt">2</div></div></div>
+            <div class="listitem"><div class="info"><div class="nm">Vigencia de una oferta</div><div class="sub">Después expira sola</div></div><div style="text-align:right"><div class="amt">72 h</div></div></div>
+            <div class="listitem"><div class="info"><div class="nm">Cobertura mínima exigida</div><div class="sub">Sobre lo que quedaría expuesto</div></div><div style="text-align:right"><div class="amt">60%</div></div></div>
+          </div>
+
+          <div class="alert warn" style="margin-top:14px">
+            <span class="ic">!</span>
+            <div><div class="t">El tope de compensación es el límite regulatorio del pilar</div><div class="m">Sin tope, la compensación por adelantar cinco meses se vuelve una tasa de interés. En ese momento el producto deja de ser un intercambio entre pares y pasa a ser intermediación crediticia — con todo lo que eso implica en licencias.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== Monetización ===== -->
+      <div class="clabel">De dónde sale el ingreso del módulo <span class="ref-doc">§32</span></div>
+      <div class="table-wrap"><div class="tbl-scroll"><table>
+        <thead><tr><th>Fuente</th><th>Se cobra sobre</th><th>A cargo de</th><th>Estado</th></tr></thead>
+        <tbody>
+          <tr><td>Mercado de turnos</td><td>La compensación de cada permuta ejecutada</td><td>Quien adelanta</td><td><span class="badge info"><span class="d"></span>Fase 2</span></td></tr>
+          <tr><td>Alianzas</td><td>La venta atribuida a un vale validado</td><td>El partner</td><td><span class="badge ok"><span class="d"></span>Fase 1</span></td></tr>
+          <tr><td>Publicaciones destacadas</td><td>Posición en el listado</td><td>El partner</td><td><span class="badge info"><span class="d"></span>Fase 3</span></td></tr>
+          <tr><td>Vales patrocinados</td><td>Campaña pagada por adelantado</td><td>El partner</td><td><span class="badge info"><span class="d"></span>Fase 3</span></td></tr>
+          <tr><td>Suscripción comercial</td><td>Plan mensual del portal</td><td>El partner</td><td><span class="badge neutral">Por definir</span></td></tr>
+          <tr><td>Servicios financieros</td><td>Revenue share con el proveedor</td><td>El proveedor</td><td><span class="badge warn"><span class="d"></span>Fase 4 · bloqueada</span></td></tr>
+        </tbody>
+      </table></div></div>
+      <p class="help">Ninguna fila cobra al participante por participar: el ingreso viene de la permuta que él eligió hacer, o del comercio que quiere llegarle. Es la misma regla que ya rige el pasanaku — <strong>quien cobra es la plataforma por un servicio, con tarifario público</strong>.</p>
+
+    </div>
+  </div>
+
+  <div class="mq-nav">
+    <a href="campanas.html">← Campañas y vales</a>
+    <a href="../index.html">Índice de la maqueta →</a>
+  </div>
+</section>
+</main>
+
+<footer>
+  <span>AportaYa · Maqueta de Crecimiento Financiero y Alianzas</span>
+  <a href="../../Sistema-Diseno/README.md">Sistema de diseño</a>
+</footer>
+<div class="toast" id="toast"><span>✓</span><span id="toastMsg">Listo</span></div>
+<script src="../../Sistema-Diseno/script.js"></script>
+<script src="../maqueta.js"></script>

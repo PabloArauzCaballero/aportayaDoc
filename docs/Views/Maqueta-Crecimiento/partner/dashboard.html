@@ -1,0 +1,160 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AportaYa Partners — Dashboard</title>
+<link rel="stylesheet" href="../../Sistema-Diseno/estilos.css">
+<link rel="stylesheet" href="../maqueta.css">
+<svg width="0" height="0" style="position:absolute"><defs>
+  <g id="mark"><path d="M92 30 C74 66 52 108 40 168" fill="none" stroke="#7CBE9C" stroke-width="13" stroke-linecap="round"/><path d="M108 30 C126 66 148 108 160 168" fill="none" stroke="#7CBE9C" stroke-width="13" stroke-linecap="round"/><path d="M100 58 C84 92 68 130 62 170" fill="none" stroke="#E5852B" stroke-width="12" stroke-linecap="round"/><path d="M100 58 C116 92 132 130 138 170" fill="none" stroke="#E5852B" stroke-width="12" stroke-linecap="round"/></g>
+</defs></svg>
+
+<div class="topbar"><div class="topbar-in">
+  <a class="brandmark" href="../index.html"><svg width="26" height="26" viewBox="0 0 200 200"><use href="#mark"/></svg><span>Aporta<span class="ya">Ya</span></span></a>
+  <nav class="navlinks">
+    <a href="../index.html">Índice</a>
+    <a class="on" href="dashboard.html">Dashboard</a>
+    <a href="publicaciones.html">Publicaciones</a>
+    <a href="vales.html">Validar vale</a>
+    <a href="audiencia.html">Audiencia</a>
+  </nav>
+  <button class="theme-btn" onclick="toggleTheme()">◐ Tema</button>
+</div></div>
+
+<main>
+<section>
+  <div class="sec-head">
+    <span class="lvl partner">Portal Partner · partners.aportaya.bo</span>
+    <p class="eyebrow">Consola del comercio aliado</p>
+    <h1>Dashboard</h1>
+    <p>Un portal aparte de la app, con su propio dominio y su propio MFA. El comercio no entra a AportaYa: entra a una consola que le muestra <em>su</em> demanda, <em>sus</em> campañas y <em>sus</em> conversiones — nunca la base de participantes.</p>
+    <p><span class="ref-doc">§13 Portal Partner</span> <span class="ref-doc">§28 Flujo del partner</span></p>
+  </div>
+
+  <div class="navbar" style="margin-bottom:20px">
+    <span class="n">Aporta<span class="ya">Ya</span> Partners</span>
+    <span class="badge ok" style="margin-left:6px"><span class="d"></span>Verificado</span>
+    <span class="links">
+      <a class="on">Dashboard</a><a href="publicaciones.html">Publicaciones</a><a href="vales.html">Vales</a><a href="audiencia.html">Audiencia</a>
+    </span>
+    <span style="display:flex;align-items:center;gap:9px;font-size:13px">
+      <span class="avatar av30" style="background:#E5852B;color:#3A1E02">MC</span> MotoCenter
+    </span>
+  </div>
+
+  <div class="consola">
+
+    <aside class="sidebar">
+      <div class="grupo">Comercial</div>
+      <a class="on">📊 Dashboard</a>
+      <a href="publicaciones.html">📣 Mis publicaciones</a>
+      <a href="publicaciones.html#crear">✚ Crear propuesta</a>
+      <a href="vales.html">🎟 Vales</a>
+      <div class="grupo">Analítica</div>
+      <a href="publicaciones.html#rendimiento">📈 Rendimiento</a>
+      <a href="audiencia.html">👥 Audiencia</a>
+      <a data-aviso="Ventas atribuidas y conciliación">💵 Ventas</a>
+      <div class="grupo">Cuenta</div>
+      <a data-aviso="Comisiones y liquidaciones">🧾 Facturación</a>
+      <a data-aviso="Datos comerciales del partner">🏪 Perfil comercial</a>
+      <a data-aviso="Canal con el equipo de alianzas">💬 Soporte</a>
+    </aside>
+
+    <div class="panel">
+
+      <div class="kpis">
+        <div class="stat"><div class="k">Campañas activas</div><div class="v">4</div><div class="delta up">+1 este mes</div></div>
+        <div class="stat"><div class="k">Alcanzados</div><div class="v">8.450</div><div class="delta up">+12,4%</div></div>
+        <div class="stat"><div class="k">Interesados</div><div class="v">1.240</div><div class="delta up">14,7% del alcance</div></div>
+        <div class="stat"><div class="k">Vales emitidos</div><div class="v">830</div><div class="delta up">+96 esta semana</div></div>
+        <div class="stat"><div class="k">Vales usados</div><div class="v">291</div><div class="delta up">35,06% de conversión</div></div>
+        <div class="stat"><div class="k">Ventas atribuidas</div><div class="v"><span class="cur">Bs</span> 342.000</div><div class="delta up">+Bs 48.200</div></div>
+      </div>
+
+      <div class="clabel">Del alcance a la venta</div>
+      <div class="demo">
+        <div class="embudo">
+          <div class="paso"><span class="nm">Alcanzados</span><span class="tr"><i style="width:100%"></i></span><span class="vl">8.450</span><span class="pc">100%</span></div>
+          <div class="paso"><span class="nm">Abrieron la oferta</span><span class="tr"><i style="width:57%"></i></span><span class="vl">4.820</span><span class="pc">57,0%</span></div>
+          <div class="paso"><span class="nm">Se interesaron</span><span class="tr"><i style="width:14.7%"></i></span><span class="vl">1.240</span><span class="pc">14,7%</span></div>
+          <div class="paso"><span class="nm">Reclamaron vale</span><span class="tr"><i style="width:9.8%"></i></span><span class="vl">830</span><span class="pc">9,8%</span></div>
+          <div class="paso"><span class="nm">Usaron el vale</span><span class="tr"><i style="width:3.4%"></i></span><span class="vl">291</span><span class="pc">3,4%</span></div>
+        </div>
+        <div class="nota">
+          <span class="ic">✎</span>
+          <div><b>El salto que importa es el último.</b> Un vale reclamado es una intención; un vale validado en caja es una venta. La comisión de la plataforma se devenga sobre el segundo, nunca sobre el primero — si no, el incentivo sería inundar de cupones a gente que no compra.</div>
+        </div>
+      </div>
+
+      <div class="subgrid cols2" style="margin-top:24px">
+        <div>
+          <div class="clabel" style="margin-top:0">Campañas activas</div>
+          <div class="demo-col">
+            <div class="listitem">
+              <div class="avatar av40" style="background:#E5852B;color:#3A1E02">🏍</div>
+              <div class="info"><div class="nm">Tu primera moto</div><div class="sub">8% off · vence 30/11 · 34 de 50 cupos</div><div class="prog"><i style="width:32%"></i></div></div>
+              <div style="text-align:right"><span class="badge ok"><span class="d"></span>Activa</span></div>
+            </div>
+            <div class="listitem">
+              <div class="avatar av40" style="background:#1C5A3A">🔧</div>
+              <div class="info"><div class="nm">Service gratis primer año</div><div class="sub">Beneficio en servicio · sin tope</div><div class="prog"><i style="width:61%"></i></div></div>
+              <div style="text-align:right"><span class="badge ok"><span class="d"></span>Activa</span></div>
+            </div>
+            <div class="listitem">
+              <div class="avatar av40" style="background:#6C7B72">🪖</div>
+              <div class="info"><div class="nm">Casco de regalo</div><div class="sub">En revisión desde hace 2 días</div></div>
+              <div style="text-align:right"><span class="badge warn"><span class="d"></span>Pendiente</span></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="clabel" style="margin-top:0">Lo que viene</div>
+          <div class="demo-col">
+            <div class="alert info"><span class="ic">◆</span><div><div class="t">1.482 personas van a cobrar en 90 días</div><div class="m">Declararon interés en motocicletas. Bs 8,4 millones de capital esperado.</div></div></div>
+            <div class="alert warn"><span class="ic">⏱</span><div><div class="t">Tu campaña vence en 12 días</div><div class="m">Quedan 34 cupos sin reclamar. Podés extender la vigencia o ampliar el segmento.</div></div></div>
+            <div class="alert ok"><span class="ic">✓</span><div><div class="t">Liquidación de agosto conciliada</div><div class="m">Bs 10.260 de comisión sobre Bs 342.000 en ventas atribuidas.</div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="clabel">Lo que este portal nunca muestra</div>
+      <div class="priv">
+        <div class="col si">
+          <h3>✓ Lo que ve MotoCenter</h3>
+          <ul>
+            <li>Cuánta gente entra en su segmento</li>
+            <li>Rangos de presupuesto y ciudades</li>
+            <li>Ventanas de cobro agregadas</li>
+            <li>Sus propias conversiones y ventas</li>
+            <li>Nombre solo de quien reclamó un vale <em>y</em> aceptó ser contactado</li>
+          </ul>
+        </div>
+        <div class="col no">
+          <h3>✕ Lo que no ve nunca</h3>
+          <ul>
+            <li>Nombre, documento, teléfono o correo sin consentimiento</li>
+            <li>Historial financiero individual</li>
+            <li>Score o calificación de riesgo</li>
+            <li>Saldo de billetera</li>
+            <li>A qué pasanaku pertenece cada persona</li>
+          </ul>
+        </div>
+      </div>
+      <p class="help">Esta separación no es una cortesía: es lo que permite que la intención de compra se pueda comercializar sin convertir la base de usuarios en un producto. <span class="ref-doc">§30</span></p>
+
+    </div>
+  </div>
+
+  <div class="mq-nav">
+    <a href="../app/invertir.html">← Invertir</a>
+    <a href="publicaciones.html">Publicaciones →</a>
+  </div>
+</section>
+</main>
+
+<footer>
+  <span>AportaYa · Maqueta de Crecimiento Financiero y Alianzas</span>
+  <a href="../../Sistema-Diseno/README.md">Sistema de diseño</a>
+</footer>
+<div class="toast" id="toast"><span>✓</span><span id="toastMsg">Listo</span></div>
+<script src="../../Sistema-Diseno/script.js"></script>
+<script src="../maqueta.js"></script>

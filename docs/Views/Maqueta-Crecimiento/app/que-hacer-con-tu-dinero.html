@@ -1,0 +1,191 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AportaYa — ¿Qué querés hacer con tu dinero?</title>
+<link rel="stylesheet" href="../../Sistema-Diseno/estilos.css">
+<link rel="stylesheet" href="../maqueta.css">
+<svg width="0" height="0" style="position:absolute"><defs>
+  <g id="mark"><path d="M92 30 C74 66 52 108 40 168" fill="none" stroke="#7CBE9C" stroke-width="13" stroke-linecap="round"/><path d="M108 30 C126 66 148 108 160 168" fill="none" stroke="#7CBE9C" stroke-width="13" stroke-linecap="round"/><path d="M100 58 C84 92 68 130 62 170" fill="none" stroke="#E5852B" stroke-width="12" stroke-linecap="round"/><path d="M100 58 C116 92 132 130 138 170" fill="none" stroke="#E5852B" stroke-width="12" stroke-linecap="round"/></g>
+</defs></svg>
+
+<div class="topbar"><div class="topbar-in">
+  <a class="brandmark" href="../index.html"><svg width="26" height="26" viewBox="0 0 200 200"><use href="#mark"/></svg><span>Aporta<span class="ya">Ya</span></span></a>
+  <nav class="navlinks">
+    <a href="../index.html">Índice</a>
+    <a href="mi-dinero.html">Mi Dinero</a>
+    <a href="objetivo-ahorro.html">Objetivo</a>
+    <a href="mercado-turnos.html">Turnos</a>
+    <a href="mis-vales.html">Vales</a>
+    <a class="on" href="que-hacer-con-tu-dinero.html">Tu turno llegó</a>
+    <a href="invertir.html">Invertir</a>
+  </nav>
+  <button class="theme-btn" onclick="toggleTheme()">◐ Tema</button>
+</div></div>
+
+<main>
+<section>
+  <div class="sec-head">
+    <span class="lvl app">App · Participante</span>
+    <p class="eyebrow">El momento del turno</p>
+    <h1>¿Qué querés hacer con tu dinero?</h1>
+    <p>El día que llega el turno es el único momento en que una persona tiene, a la vez, el dinero en la mano y la decisión sin tomar. Todo el resto del ecosistema —alianzas, vales, inversión— existe para tener algo que ofrecer <em>en esta pantalla</em>. Preguntar antes es adivinar; preguntar después es tarde.</p>
+    <p><span class="ref-doc">§19 Inversión del dinero</span> <span class="ref-doc">§27 Flujo del usuario</span></p>
+  </div>
+
+  <div class="phones">
+
+    <!-- ============ Pantalla 1 · La bifurcación ============ -->
+    <div>
+      <div class="phone"><div class="pscreen">
+        <div class="statusbar"><span>9:41</span><span class="rt">📶 🔋</span></div>
+        <div class="pbody green-top">
+          <div class="phead" style="padding-bottom:28px">
+            <div class="hi">Llegó tu turno 🎉</div>
+            <div class="bl">SE ACREDITÓ EN TU BILLETERA</div>
+            <div class="bv"><span class="cur">Bs</span> 10.000,00</div>
+            <div style="font-size:12px;opacity:.8;margin-top:8px">Familia Aporta · turno 2 de 10</div>
+          </div>
+
+          <div class="plist">
+            <div style="font-family:var(--font-d);font-weight:600;font-size:15px;color:var(--brand-ink);margin:2px 2px 4px">¿Qué querés hacer?</div>
+            <p style="font-size:12.5px;color:var(--text-3);margin:0 2px 14px">Es tuyo. Podés retirarlo entero ahora mismo.</p>
+
+            <div class="caminos">
+              <a class="camino" data-aviso="Retiro a cuenta bancaria verificada">
+                <span class="ic" style="background:var(--g100)">🏦</span>
+                <span class="info"><span class="nm">Retirar</span><span class="sub">A tu cuenta o en efectivo</span></span>
+                <span class="ch">›</span>
+              </a>
+              <a class="camino" href="mis-vales.html">
+                <span class="ic" style="background:var(--o100)">🛍</span>
+                <span class="info"><span class="nm">Comprar</span><span class="sub">4 ofertas para tu objetivo</span></span>
+                <span class="ch">›</span>
+              </a>
+              <a class="camino" data-aviso="Oportunidades para negocios de la comunidad">
+                <span class="ic" style="background:var(--warnbg)">🧰</span>
+                <span class="info"><span class="nm">Emprender</span><span class="sub">Mercadería y equipamiento</span></span>
+                <span class="ch">›</span>
+              </a>
+              <a class="camino" href="invertir.html">
+                <span class="ic" style="background:var(--infobg)">📈</span>
+                <span class="info"><span class="nm">Invertir</span><span class="sub">Con entidades autorizadas</span></span>
+                <span class="ch">›</span>
+              </a>
+            </div>
+
+            <div class="legal" style="margin-top:16px">
+              <span class="ic">ℹ</span>
+              <div>No tenés que elegir ahora. El dinero <b>ya es tuyo y está disponible</b>; esto es solo un atajo a lo que la comunidad consiguió.</div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <p class="mini" style="text-align:center;margin-top:10px">Cuatro caminos · §19.2</p>
+    </div>
+
+    <!-- ============ Pantalla 2 · Repartir ============ -->
+    <div>
+      <div class="phone"><div class="pscreen">
+        <div class="statusbar"><span>9:41</span><span class="rt">📶 🔋</span></div>
+        <div class="appbar"><span class="bk">‹</span><span class="ti">Repartir tu turno</span><span class="ac"></span></div>
+        <div class="pbody">
+
+          <p style="font-size:13px;color:var(--text-3);margin:2px 2px 16px">No hace falta que sea todo a un solo lado.</p>
+
+          <div class="demo" style="padding:16px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+              <span style="font-size:13.5px;font-weight:600">🏦 Retirar</span>
+              <span style="font-family:var(--font-d);font-weight:700;font-variant-numeric:tabular-nums">Bs 6.000</span>
+            </div>
+            <div class="bar"><i style="width:60%"></i></div>
+          </div>
+
+          <div class="demo" style="padding:16px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+              <span style="font-size:13.5px;font-weight:600">🛍 Comprar</span>
+              <span style="font-family:var(--font-d);font-weight:700;font-variant-numeric:tabular-nums">Bs 2.000</span>
+            </div>
+            <div class="bar"><i style="width:20%"></i></div>
+          </div>
+
+          <div class="demo" style="padding:16px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+              <span style="font-size:13.5px;font-weight:600">📈 Invertir</span>
+              <span style="font-family:var(--font-d);font-weight:700;font-variant-numeric:tabular-nums">Bs 2.000</span>
+            </div>
+            <div class="bar"><i style="width:20%"></i></div>
+          </div>
+
+          <div class="alert info" style="margin-top:6px">
+            <span class="ic">◆</span>
+            <div><div class="t">Queda Bs 0 sin asignar</div><div class="m">Lo que no asignes se queda en tu billetera, disponible.</div></div>
+          </div>
+
+          <div class="clabel" style="margin:18px 0 9px">Antes de invertir</div>
+          <div class="riesgo-panel">
+            <div class="cab"><span class="ti">Tu perfil de riesgo</span><span class="badge info"><span class="d"></span>Conservador</span></div>
+            <div class="cuerpo">
+              <div class="chk"><span class="mk si">✓</span><div class="tx">Horizonte declarado<div class="d">6 a 12 meses</div></div></div>
+              <div class="chk"><span class="mk si">✓</span><div class="tx">Tolerancia a pérdidas<div class="d">Baja — preferís no perder capital</div></div></div>
+              <div class="chk"><span class="mk dud">!</span><div class="tx">Liquidez requerida<div class="d">Podrías necesitar el dinero antes</div></div></div>
+            </div>
+          </div>
+
+          <button class="btn btn-primary block" style="margin-top:14px" onclick="showToast('Repartido · nada sale sin tu confirmación')">Confirmar</button>
+        </div>
+      </div></div>
+      <p class="mini" style="text-align:center;margin-top:10px">Repartir en vez de elegir · §21</p>
+    </div>
+
+    <!-- ============ Explicación ============ -->
+    <div class="phone-solo" style="flex:1;min-width:280px">
+      <div class="expl">
+        <div class="clabel" style="margin-top:0">La regla que sostiene esta pantalla</div>
+
+        <div class="alert ok" style="margin-bottom:16px">
+          <span class="ic">✓</span>
+          <div><div class="t">Retirar es siempre la primera opción</div><div class="m">La promesa de marca es <em>«tu plata, a tu alcance»</em>. Si esta pantalla empujara a no retirar, el producto contradiría su propio posicionamiento — y un supervisor lo leería como retención indebida de fondos de terceros.</div></div>
+        </div>
+
+        <p style="font-size:14px;color:var(--text-2)">Lo que hace que las otras tres opciones no sean fricción es que <strong>no piden dinero nuevo</strong>: piden decidir sobre dinero que la persona ya tiene, con una oferta que solo existe porque el grupo la negoció.</p>
+
+        <div class="clabel">Qué cambia según lo que eligió antes</div>
+        <div class="table-wrap"><div class="tbl-scroll"><table>
+          <thead><tr><th>Objetivo declarado</th><th>Qué se le muestra primero</th></tr></thead>
+          <tbody>
+            <tr><td>Motocicleta / Vehículo</td><td>Campañas de concesionarios con turno próximo</td></tr>
+            <tr><td>Mercadería para negocio</td><td>Emprender — distribuidores e importadoras</td></tr>
+            <tr><td>Pago de deuda</td><td>Retirar, sin oferta comercial encima</td></tr>
+            <tr><td>Ahorro / Inversión</td><td>Invertir, con perfil de riesgo primero</td></tr>
+            <tr><td>Todavía no lo sé</td><td>Las cuatro, sin jerarquía</td></tr>
+          </tbody>
+        </table></div></div>
+
+        <div class="alert warn" style="margin-top:16px">
+          <span class="ic">!</span>
+          <div><div class="t">Pago de deuda no recibe oferta comercial</div><div class="m">Mostrarle un celular en cuotas a alguien que declaró que va a pagar deudas es exactamente el patrón que la normativa de protección al consumidor financiero busca impedir. Es una regla de producto, no un detalle de diseño.</div></div>
+        </div>
+
+        <div class="nota" style="margin-top:16px">
+          <span class="ic">✎</span>
+          <div><b>Nota de maqueta.</b> Esta pantalla también revalida el objetivo declarado meses atrás: si cambió, se actualiza <code>SavingGoal</code> y las campañas se recalculan.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="mq-nav">
+    <a href="mis-vales.html">← Mis vales</a>
+    <a href="invertir.html">Invertir →</a>
+  </div>
+</section>
+</main>
+
+<footer>
+  <span>AportaYa · Maqueta de Crecimiento Financiero y Alianzas</span>
+  <a href="../../Sistema-Diseno/README.md">Sistema de diseño</a>
+</footer>
+<div class="toast" id="toast"><span>✓</span><span id="toastMsg">Listo</span></div>
+<script src="../../Sistema-Diseno/script.js"></script>
+<script src="../maqueta.js"></script>

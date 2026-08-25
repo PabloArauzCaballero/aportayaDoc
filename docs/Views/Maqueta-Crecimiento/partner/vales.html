@@ -1,0 +1,175 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AportaYa Partners — Validar vale</title>
+<link rel="stylesheet" href="../../Sistema-Diseno/estilos.css">
+<link rel="stylesheet" href="../maqueta.css">
+<svg width="0" height="0" style="position:absolute"><defs>
+  <g id="mark"><path d="M92 30 C74 66 52 108 40 168" fill="none" stroke="#7CBE9C" stroke-width="13" stroke-linecap="round"/><path d="M108 30 C126 66 148 108 160 168" fill="none" stroke="#7CBE9C" stroke-width="13" stroke-linecap="round"/><path d="M100 58 C84 92 68 130 62 170" fill="none" stroke="#E5852B" stroke-width="12" stroke-linecap="round"/><path d="M100 58 C116 92 132 130 138 170" fill="none" stroke="#E5852B" stroke-width="12" stroke-linecap="round"/></g>
+</defs></svg>
+
+<div class="topbar"><div class="topbar-in">
+  <a class="brandmark" href="../index.html"><svg width="26" height="26" viewBox="0 0 200 200"><use href="#mark"/></svg><span>Aporta<span class="ya">Ya</span></span></a>
+  <nav class="navlinks">
+    <a href="../index.html">Índice</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="publicaciones.html">Publicaciones</a>
+    <a class="on" href="vales.html">Validar vale</a>
+    <a href="audiencia.html">Audiencia</a>
+  </nav>
+  <button class="theme-btn" onclick="toggleTheme()">◐ Tema</button>
+</div></div>
+
+<main>
+<section>
+  <div class="sec-head">
+    <span class="lvl partner">Portal Partner</span>
+    <p class="eyebrow">Validación en el mostrador</p>
+    <h1>Validar vale</h1>
+    <p>El momento en que un beneficio deja de ser una promesa y se convierte en una venta atribuida. Es también el único punto del sistema donde un error cuesta plata real: un vale validado dos veces es un descuento regalado, y uno rechazado por error es un cliente perdido en la caja.</p>
+    <p><span class="ref-doc">§12 Vales del partner</span> <span class="ref-doc">§31 Seguridad</span></p>
+  </div>
+
+  <div class="consola">
+
+    <aside class="sidebar">
+      <div class="grupo">Comercial</div>
+      <a href="dashboard.html">📊 Dashboard</a>
+      <a href="publicaciones.html">📣 Mis publicaciones</a>
+      <a href="publicaciones.html#crear">✚ Crear propuesta</a>
+      <a class="on">🎟 Vales</a>
+      <div class="grupo">Analítica</div>
+      <a href="publicaciones.html#rendimiento">📈 Rendimiento</a>
+      <a href="audiencia.html">👥 Audiencia</a>
+      <a data-aviso="Ventas atribuidas y conciliación">💵 Ventas</a>
+      <div class="grupo">Cuenta</div>
+      <a data-aviso="Comisiones y liquidaciones">🧾 Facturación</a>
+      <a data-aviso="Datos comerciales del partner">🏪 Perfil comercial</a>
+      <a data-aviso="Canal con el equipo de alianzas">💬 Soporte</a>
+    </aside>
+
+    <div class="panel">
+
+      <div class="subgrid cols2">
+
+        <!-- ===== Validador ===== -->
+        <div>
+          <div class="form-org" style="max-width:100%">
+            <h3>Escaneá o escribí el código</h3>
+            <p class="desc">Sucursal 4to anillo · cajero: R. Menacho</p>
+            <div class="form-grid">
+              <div style="text-align:center;padding:10px 0">
+                <div style="width:132px;height:132px;background:#fff;border-radius:14px;padding:9px;margin:0 auto;border:2px dashed var(--field-border)">
+                  <img src="../qr.svg" alt="Lector de QR" style="width:100%;height:100%;display:block;opacity:.35">
+                </div>
+                <p class="help" style="margin-top:10px">Apuntá al QR del cliente</p>
+              </div>
+              <div>
+                <label class="field-label">O ingresá el código</label>
+                <input class="input" value="MOTO-8XK2" style="font-family:var(--mono);letter-spacing:.1em;font-size:16px">
+              </div>
+              <div>
+                <label class="field-label">Monto de la venta</label>
+                <div class="input-group"><span class="addon">Bs</span><input class="input" value="12.000"></div>
+                <p class="help">Sirve para atribuir la venta. Se concilia contra tu facturación.</p>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-primary" onclick="showToast('Vale validado · marcado como UTILIZADO')">Validar y usar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== Resultados ===== -->
+        <div>
+          <div class="clabel" style="margin-top:0">Qué puede pasar</div>
+          <div class="demo-col">
+
+            <div class="alert ok">
+              <span class="ic">✓</span>
+              <div>
+                <div class="t">Vale válido · 8% de descuento</div>
+                <div class="m">Tu primera moto · vence 30/11/2026 · una unidad. Descuento a aplicar sobre Bs 12.000: <strong>Bs 960</strong>.</div>
+              </div>
+            </div>
+
+            <div class="alert err">
+              <span class="ic">✕</span>
+              <div><div class="t">Ya fue utilizado</div><div class="m">Canjeado el 04/08/2026 a las 16:22 en la sucursal Centro. Un vale se valida una sola vez, y el segundo intento queda registrado.</div></div>
+            </div>
+
+            <div class="alert err">
+              <span class="ic">✕</span>
+              <div><div class="t">Vencido</div><div class="m">Expiró el 30/06/2026. No se puede reactivar desde el mostrador: hay que pedirlo al equipo de alianzas.</div></div>
+            </div>
+
+            <div class="alert warn">
+              <span class="ic">!</span>
+              <div><div class="t">Código expirado por tiempo</div><div class="m">El QR rota cada 30 segundos. Pedile al cliente que refresque la pantalla.</div></div>
+            </div>
+
+            <div class="alert err">
+              <span class="ic">✕</span>
+              <div><div class="t">No es de este comercio</div><div class="m">Pertenece a otra campaña. Un partner solo puede validar sus propios vales.</div></div>
+            </div>
+
+          </div>
+
+          <div class="clabel">Contra el doble canje <span class="ref-doc">§31</span></div>
+          <div class="demo" style="padding:18px">
+            <div class="chk"><span class="mk si">✓</span><div class="tx">QR dinámico<div class="d">Rota cada 30 s: una captura de pantalla no sirve</div></div></div>
+            <div class="chk"><span class="mk si">✓</span><div class="tx">Token firmado<div class="d">El código lleva firma; no se puede inventar uno válido</div></div></div>
+            <div class="chk"><span class="mk si">✓</span><div class="tx">Clave de idempotencia<div class="d">Dos toques al botón no generan dos canjes</div></div></div>
+            <div class="chk"><span class="mk si">✓</span><div class="tx">Registro de IP y dispositivo<div class="d">Cada validación queda con su origen</div></div></div>
+            <div class="chk"><span class="mk si">✓</span><div class="tx">MFA para el portal<div class="d">Obligatorio para todo usuario partner</div></div></div>
+            <div class="chk"><span class="mk si">✓</span><div class="tx">Límite de intentos<div class="d">Rate limiting por sucursal y por código</div></div></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ===== Historial ===== -->
+      <div class="clabel">Vales emitidos</div>
+      <div class="table-wrap">
+        <div class="table-toolbar">
+          <div class="searchbar" style="flex:1;min-width:180px"><span>🔍</span><input placeholder="Buscar por código…"></div>
+          <div class="filterbar">
+            <span class="chip active">Todos</span><span class="chip">Disponibles</span><span class="chip">Usados</span><span class="chip">Vencidos</span>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="showToast('Exportando CSV')">⬇ Exportar</button>
+        </div>
+        <div class="tbl-scroll"><table>
+          <thead><tr><th>Código</th><th>Campaña</th><th>Estado</th><th>Emitido</th><th>Canjeado</th><th>Venta</th><th>Beneficio</th></tr></thead>
+          <tbody>
+            <tr><td><code class="code">MOTO-8XK2</code></td><td>Tu primera moto</td><td><span class="badge ok"><span class="d"></span>Disponible</span></td><td class="num">02/09</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+            <tr><td><code class="code">MOTO-3PL9</code></td><td>Tu primera moto</td><td><span class="badge neutral">Usado</span></td><td class="num">28/08</td><td class="num">04/09</td><td class="num">Bs 13.400</td><td class="num">Bs 1.072</td></tr>
+            <tr><td><code class="code">MOTO-7QW1</code></td><td>Tu primera moto</td><td><span class="badge warn"><span class="d"></span>Reservado</span></td><td class="num">05/09</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+            <tr><td><code class="code">SERV-1AA4</code></td><td>Service gratis</td><td><span class="badge neutral">Usado</span></td><td class="num">19/08</td><td class="num">27/08</td><td class="num">Bs 9.900</td><td class="num">Bs 640</td></tr>
+            <tr><td><code class="code">MOTO-5ZZ8</code></td><td>Tu primera moto</td><td><span class="badge err"><span class="d"></span>Vencido</span></td><td class="num">12/06</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+          </tbody>
+        </table></div>
+        <div class="table-foot"><span>830 vales emitidos · 291 usados</span><div class="pager"><button class="on">1</button><button>2</button><button>3</button><button>…</button></div></div>
+      </div>
+
+      <div class="nota">
+        <span class="ic">✎</span>
+        <div><b>El beneficio se guarda en el canje, no se recalcula.</b> Si mañana la campaña cambia del 8% al 6%, el vale ya usado sigue valiendo los Bs 1.072 que valió ese día. Es la misma regla que congela el tarifario por grupo: el precio no cambia a mitad del trato.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="mq-nav">
+    <a href="publicaciones.html">← Publicaciones</a>
+    <a href="audiencia.html">Audiencia →</a>
+  </div>
+</section>
+</main>
+
+<footer>
+  <span>AportaYa · Maqueta de Crecimiento Financiero y Alianzas</span>
+  <a href="../../Sistema-Diseno/README.md">Sistema de diseño</a>
+</footer>
+<div class="toast" id="toast"><span>✓</span><span id="toastMsg">Listo</span></div>
+<script src="../../Sistema-Diseno/script.js"></script>
+<script src="../maqueta.js"></script>

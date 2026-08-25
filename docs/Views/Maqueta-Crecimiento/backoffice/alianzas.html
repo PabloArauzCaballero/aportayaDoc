@@ -1,0 +1,225 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AportaYa Backoffice — Alianzas</title>
+<link rel="stylesheet" href="../../Sistema-Diseno/estilos.css">
+<link rel="stylesheet" href="../maqueta.css">
+<svg width="0" height="0" style="position:absolute"><defs>
+  <g id="mark"><path d="M92 30 C74 66 52 108 40 168" fill="none" stroke="#7CBE9C" stroke-width="13" stroke-linecap="round"/><path d="M108 30 C126 66 148 108 160 168" fill="none" stroke="#7CBE9C" stroke-width="13" stroke-linecap="round"/><path d="M100 58 C84 92 68 130 62 170" fill="none" stroke="#E5852B" stroke-width="12" stroke-linecap="round"/><path d="M100 58 C116 92 132 130 138 170" fill="none" stroke="#E5852B" stroke-width="12" stroke-linecap="round"/></g>
+</defs></svg>
+
+<div class="topbar"><div class="topbar-in">
+  <a class="brandmark" href="../index.html"><svg width="26" height="26" viewBox="0 0 200 200"><use href="#mark"/></svg><span>Aporta<span class="ya">Ya</span></span></a>
+  <nav class="navlinks">
+    <a href="../index.html">Índice</a>
+    <a class="on" href="alianzas.html">Alianzas</a>
+    <a href="campanas.html">Campañas y vales</a>
+    <a href="riesgo.html">Riesgo de permutas</a>
+  </nav>
+  <button class="theme-btn" onclick="toggleTheme()">◐ Tema</button>
+</div></div>
+
+<main>
+<section>
+  <div class="sec-head">
+    <span class="lvl bo">Backoffice · Equipo interno</span>
+    <p class="eyebrow">Nueva pestaña del backoffice</p>
+    <h1>Alianzas</h1>
+    <p>Donde el equipo comercial da de alta partners, negocia condiciones y mide si el programa de alianzas genera valor o solo ruido. Es también el punto donde se decide qué llega a la app: nada se publica sin pasar por acá.</p>
+    <p><span class="ref-doc">§7 Backoffice de alianzas</span> <span class="ref-doc">§29 Dashboard comercial</span> <span class="ref-doc">§25 Roles</span></p>
+  </div>
+
+  <div class="consola">
+
+    <aside class="sidebar">
+      <div class="grupo">Alianzas</div>
+      <a class="on">🤝 Partners</a>
+      <a href="campanas.html">📣 Campañas</a>
+      <a href="campanas.html#vales">🎟 Vales</a>
+      <a data-aviso="Acuerdos comerciales y comisiones">📄 Acuerdos</a>
+      <div class="grupo">Análisis</div>
+      <a data-aviso="Demanda declarada por categoría">🔎 Intención de compra</a>
+      <a data-aviso="Conversiones y ventas atribuidas">📈 Conversión</a>
+      <a data-aviso="Comisiones devengadas y facturadas">💵 Ingresos</a>
+      <div class="grupo">Mercado</div>
+      <a href="riesgo.html">⚖️ Riesgo de permutas</a>
+      <a data-aviso="Proveedores de inversión habilitados">🏦 Proveedores de inversión</a>
+    </aside>
+
+    <div class="panel">
+
+      <!-- ===== Dashboard comercial ===== -->
+      <div class="kpis">
+        <div class="stat"><div class="k">Partners activos</div><div class="v">42</div><div class="delta up">+5 este trimestre</div></div>
+        <div class="stat"><div class="k">Campañas activas</div><div class="v">67</div><div class="delta up">+11</div></div>
+        <div class="stat"><div class="k">Vales emitidos</div><div class="v">18.940</div><div class="delta up">+2.310</div></div>
+        <div class="stat"><div class="k">Vales usados</div><div class="v">6.117</div><div class="delta up">32,3% de conversión</div></div>
+        <div class="stat"><div class="k">Ventas atribuidas</div><div class="v"><span class="cur">Bs</span> 8,4 M</div><div class="delta up">+Bs 1,2 M</div></div>
+        <div class="stat"><div class="k">Comisiones generadas</div><div class="v"><span class="cur">Bs</span> 252.000</div><div class="delta up">3% promedio</div></div>
+      </div>
+
+      <div class="subgrid cols2" style="margin-top:22px">
+        <div>
+          <div class="clabel" style="margin-top:0">Categorías más demandadas</div>
+          <div class="demo">
+            <div class="segbar">
+              <div class="s"><span class="nm">Motocicletas</span><span class="tr"><i style="width:100%"></i></span><span class="vl">1.482</span></div>
+              <div class="s"><span class="nm">Tecnología</span><span class="tr"><i style="width:84%"></i></span><span class="vl">1.240</span></div>
+              <div class="s"><span class="nm">Electrodomésticos</span><span class="tr"><i style="width:61%"></i></span><span class="vl">903</span></div>
+              <div class="s"><span class="nm">Materiales</span><span class="tr"><i style="width:47%"></i></span><span class="vl">698</span></div>
+              <div class="s"><span class="nm">Mercadería</span><span class="tr"><i style="width:39%"></i></span><span class="vl">574</span></div>
+              <div class="s"><span class="nm">Educación</span><span class="tr"><i style="width:24%"></i></span><span class="vl">352</span></div>
+            </div>
+            <p class="help" style="margin-top:12px">Ordena la agenda comercial: los rubros sin partner arriba de la lista son la lista de a quién salir a buscar.</p>
+          </div>
+        </div>
+        <div>
+          <div class="clabel" style="margin-top:0">Dinero próximo a liberarse</div>
+          <div class="demo">
+            <div class="segbar">
+              <div class="s"><span class="nm">Próximos 30 días</span><span class="tr"><i style="width:44%"></i></span><span class="vl">Bs 4,1 M</span></div>
+              <div class="s"><span class="nm">31 – 60 días</span><span class="tr"><i style="width:63%"></i></span><span class="vl">Bs 5,8 M</span></div>
+              <div class="s"><span class="nm">61 – 90 días</span><span class="tr"><i style="width:71%"></i></span><span class="vl">Bs 6,5 M</span></div>
+            </div>
+            <div class="alert info" style="margin-top:14px">
+              <span class="ic">◆</span>
+              <div><div class="t">Bs 16,4 M en 90 días</div><div class="m">Es el argumento de negociación. No es proyección de marketing: son turnos con fecha en el calendario de grupos activos.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== Partners ===== -->
+      <div class="clabel">Partners</div>
+      <div class="table-wrap">
+        <div class="table-toolbar">
+          <div class="searchbar" style="flex:1;min-width:180px"><span>🔍</span><input placeholder="Buscar partner…"></div>
+          <div class="filterbar">
+            <span class="chip active">Activos</span><span class="chip">Pendientes</span><span class="chip">Suspendidos</span>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="showToast('Alta de partner')">✚ Nuevo partner</button>
+        </div>
+        <div class="tbl-scroll"><table>
+          <thead><tr><th>Partner</th><th>Rubro</th><th>Estado</th><th>Campañas</th><th>Conversión</th><th>Ventas</th><th>Comisión</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><div style="display:flex;align-items:center;gap:9px"><span class="avatar av30" style="background:#E5852B;color:#3A1E02">MC</span><div><strong>MotoCenter</strong><div class="mini">NIT 1023456789</div></div></div></td>
+              <td>Motocicletas</td>
+              <td><span class="badge ok"><span class="d"></span>Activo</span></td>
+              <td class="num">4</td><td class="num">35,1%</td><td class="num">Bs 342.000</td><td class="num">3,0%</td>
+            </tr>
+            <tr>
+              <td><div style="display:flex;align-items:center;gap:9px"><span class="avatar av30" style="background:#1C5A3A">TS</span><div><strong>TecnoStore</strong><div class="mini">NIT 2098741230</div></div></div></td>
+              <td>Tecnología</td>
+              <td><span class="badge ok"><span class="d"></span>Activo</span></td>
+              <td class="num">7</td><td class="num">39,5%</td><td class="num">Bs 1.164.800</td><td class="num">2,5%</td>
+            </tr>
+            <tr>
+              <td><div style="display:flex;align-items:center;gap:9px"><span class="avatar av30" style="background:#6C7B72">FC</span><div><strong>Ferretería El Constructor</strong><div class="mini">NIT 3011229887</div></div></div></td>
+              <td>Materiales</td>
+              <td><span class="badge ok"><span class="d"></span>Activo</span></td>
+              <td class="num">2</td><td class="num">41,2%</td><td class="num">Bs 208.400</td><td class="num">3,5%</td>
+            </tr>
+            <tr>
+              <td><div style="display:flex;align-items:center;gap:9px"><span class="avatar av30" style="background:#2E7FB8">EA</span><div><strong>Electro Andina</strong><div class="mini">NIT 4077553311</div></div></div></td>
+              <td>Electrodomésticos</td>
+              <td><span class="badge warn"><span class="d"></span>Verificación pendiente</span></td>
+              <td class="num">0</td><td class="num">—</td><td class="num">—</td><td class="num">—</td>
+            </tr>
+            <tr>
+              <td><div style="display:flex;align-items:center;gap:9px"><span class="avatar av30" style="background:#D64545">VX</span><div><strong>ViajesX</strong><div class="mini">NIT 5099887766</div></div></div></td>
+              <td>Turismo</td>
+              <td><span class="badge err"><span class="d"></span>Suspendido</span></td>
+              <td class="num">0</td><td class="num">12,1%</td><td class="num">Bs 41.200</td><td class="num">—</td>
+            </tr>
+          </tbody>
+        </table></div>
+        <div class="table-foot"><span>42 partners activos · 3 pendientes · 1 suspendido</span><div class="pager"><button class="on">1</button><button>2</button></div></div>
+      </div>
+
+      <div class="alert err" style="margin-top:14px">
+        <span class="ic">✕</span>
+        <div><div class="t">ViajesX está suspendido</div><div class="m">Siete reclamos por vales rechazados en mostrador con el argumento de que «ya no estaba vigente». La suspensión corta la emisión de vales nuevos, pero <strong>los vales ya emitidos siguen siendo obligación del partner</strong> hasta su vencimiento.</div></div>
+      </div>
+
+      <!-- ===== Ficha de partner ===== -->
+      <div class="clabel">Ficha del partner <span class="ref-doc">§7.2</span></div>
+      <div class="subgrid cols2">
+        <div class="form-org" style="max-width:100%">
+          <h3>Datos comerciales</h3>
+          <p class="desc">Lo que se verifica antes de aprobar.</p>
+          <div class="form-grid">
+            <div class="subgrid cols2">
+              <div><label class="field-label">Nombre comercial <span class="req">*</span></label><input class="input" value="MotoCenter"></div>
+              <div><label class="field-label">Razón social <span class="req">*</span></label><input class="input" value="Motores del Oriente S.R.L."></div>
+            </div>
+            <div class="subgrid cols2">
+              <div><label class="field-label">NIT <span class="req">*</span></label><input class="input" value="1023456789"></div>
+              <div><label class="field-label">Rubro <span class="req">*</span></label><select class="select"><option selected>Motocicletas</option><option>Vehículos</option><option>Tecnología</option></select></div>
+            </div>
+            <div><label class="field-label">Descripción</label><textarea class="textarea" rows="2">Concesionario de motocicletas 0 km con tres sucursales en Santa Cruz.</textarea></div>
+            <div class="subgrid cols2">
+              <div><label class="field-label">Contacto principal</label><input class="input" value="Ana Rivera"></div>
+              <div><label class="field-label">Teléfono</label><input class="input" value="+591 7XXXXXXX"></div>
+            </div>
+            <div class="subgrid cols2">
+              <div><label class="field-label">Ciudad</label><select class="select"><option selected>Santa Cruz</option><option>La Paz</option></select></div>
+              <div><label class="field-label">Responsable interno</label><select class="select"><option selected>P. Arauz · Alianzas</option></select></div>
+            </div>
+            <div class="subgrid cols2">
+              <div><label class="field-label">Comisión acordada</label><div class="input-group"><span class="addon">%</span><input class="input" value="3,0"></div></div>
+              <div><label class="field-label">Vigencia del acuerdo</label><input class="input" value="01/01/2026 – 31/12/2026"></div>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-ghost">Suspender</button>
+            <button class="btn btn-primary" onclick="showToast('Partner actualizado')">Guardar</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="clabel" style="margin-top:0">Estado de verificación</div>
+          <div class="riesgo-panel">
+            <div class="cab"><span class="ti">Antes de aprobar</span><span class="badge ok"><span class="d"></span>Verificado</span></div>
+            <div class="cuerpo">
+              <div class="chk"><span class="mk si">✓</span><div class="tx">NIT activo en el padrón<div class="d">Verificado el 12/01/2026</div></div></div>
+              <div class="chk"><span class="mk si">✓</span><div class="tx">Representante legal acreditado<div class="d">Poder vigente en expediente</div></div></div>
+              <div class="chk"><span class="mk si">✓</span><div class="tx">Acuerdo comercial firmado<div class="d">Comisión, vigencia y términos</div></div></div>
+              <div class="chk"><span class="mk si">✓</span><div class="tx">MFA activo en los usuarios del portal<div class="d">2 de 2 usuarios</div></div></div>
+              <div class="chk"><span class="mk dud">!</span><div class="tx">Domicilio comercial sin visita<div class="d">Pendiente para rubros de ticket alto</div></div></div>
+            </div>
+          </div>
+
+          <div class="clabel">Quién puede hacer qué <span class="ref-doc">§25</span></div>
+          <div class="table-wrap"><div class="tbl-scroll"><table>
+            <thead><tr><th>Rol</th><th>Alcance</th></tr></thead>
+            <tbody>
+              <tr><td><code class="code">COMMERCIAL_PARTNER</code></td><td>Propone campañas, valida vales, ve su analítica</td></tr>
+              <tr><td><code class="code">PARTNER_MANAGER</code></td><td>Administra los usuarios de un partner</td></tr>
+              <tr><td><code class="code">BACKOFFICE_COMMERCIAL</code></td><td>Da de alta partners, aprueba campañas, emite vales</td></tr>
+              <tr><td><code class="code">BACKOFFICE_RISK</code></td><td>Define límites y resuelve permutas escaladas</td></tr>
+              <tr><td><code class="code">BACKOFFICE_ADMIN</code></td><td>Configura tarifas, segmentos y políticas</td></tr>
+              <tr><td><code class="code">SUPER_ADMIN</code></td><td>Todo, con auditoría reforzada</td></tr>
+            </tbody>
+          </table></div></div>
+          <p class="help">Comercial y riesgo están separados a propósito: quien tiene la meta de vender no puede ser quien aprueba el límite de exposición.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="mq-nav">
+    <a href="../partner/audiencia.html">← Audiencia</a>
+    <a href="campanas.html">Campañas y vales →</a>
+  </div>
+</section>
+</main>
+
+<footer>
+  <span>AportaYa · Maqueta de Crecimiento Financiero y Alianzas</span>
+  <a href="../../Sistema-Diseno/README.md">Sistema de diseño</a>
+</footer>
+<div class="toast" id="toast"><span>✓</span><span id="toastMsg">Listo</span></div>
+<script src="../../Sistema-Diseno/script.js"></script>
+<script src="../maqueta.js"></script>

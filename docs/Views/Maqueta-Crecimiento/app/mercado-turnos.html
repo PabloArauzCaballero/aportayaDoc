@@ -1,0 +1,289 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AportaYa — Mercado de turnos</title>
+<link rel="stylesheet" href="../../Sistema-Diseno/estilos.css">
+<link rel="stylesheet" href="../maqueta.css">
+<svg width="0" height="0" style="position:absolute"><defs>
+  <g id="mark"><path d="M92 30 C74 66 52 108 40 168" fill="none" stroke="#7CBE9C" stroke-width="13" stroke-linecap="round"/><path d="M108 30 C126 66 148 108 160 168" fill="none" stroke="#7CBE9C" stroke-width="13" stroke-linecap="round"/><path d="M100 58 C84 92 68 130 62 170" fill="none" stroke="#E5852B" stroke-width="12" stroke-linecap="round"/><path d="M100 58 C116 92 132 130 138 170" fill="none" stroke="#E5852B" stroke-width="12" stroke-linecap="round"/></g>
+</defs></svg>
+
+<div class="topbar"><div class="topbar-in">
+  <a class="brandmark" href="../index.html"><svg width="26" height="26" viewBox="0 0 200 200"><use href="#mark"/></svg><span>Aporta<span class="ya">Ya</span></span></a>
+  <nav class="navlinks">
+    <a href="../index.html">Índice</a>
+    <a href="mi-dinero.html">Mi Dinero</a>
+    <a href="objetivo-ahorro.html">Objetivo</a>
+    <a class="on" href="mercado-turnos.html">Turnos</a>
+    <a href="mis-vales.html">Vales</a>
+    <a href="que-hacer-con-tu-dinero.html">Tu turno llegó</a>
+    <a href="invertir.html">Invertir</a>
+  </nav>
+  <button class="theme-btn" onclick="toggleTheme()">◐ Tema</button>
+</div></div>
+
+<main>
+<section>
+  <div class="sec-head">
+    <span class="lvl app">App · Participante</span>
+    <p class="eyebrow">Mercado de turnos y valorización</p>
+    <h1>Tu posición vale algo</h1>
+    <p>Cobrar en el mes 2 y cobrar en el mes 7 no es lo mismo, y todo el mundo en un pasanaku lo sabe: por eso el orden se sortea. Lo que nunca existió es una forma <em>ordenada</em> de que quien necesita adelantar le compense a quien puede esperar. Eso es este mercado.</p>
+    <p><span class="ref-doc">§3 Mercado de turnos</span> <span class="ref-doc">§4 Valorización del turno</span> <span class="ref-doc">§18 Insignias</span></p>
+  </div>
+
+  <div class="phones">
+
+    <!-- ============ Pantalla 1 · Tu turno ============ -->
+    <div>
+      <div class="phone"><div class="pscreen">
+        <div class="statusbar"><span>9:41</span><span class="rt">📶 🔋</span></div>
+        <div class="appbar"><span class="bk">‹</span><span class="ti">Tu turno</span><span class="ac">⋯</span></div>
+        <div class="pbody">
+
+          <div style="text-align:center;padding:6px 0 4px">
+            <div style="font-size:12px;color:var(--text-3);letter-spacing:.04em;text-transform:uppercase;font-weight:600">Familia Aporta · tu posición</div>
+            <div style="font-family:var(--font-d);font-weight:700;font-size:44px;letter-spacing:-.03em;color:var(--brand-ink);line-height:1.1">2<span style="font-size:20px;color:var(--text-3)"> de 10</span></div>
+            <div style="font-size:13px;color:var(--text-2)">Cobrás <strong style="font-variant-numeric:tabular-nums">Bs 10.000</strong> el 15 de octubre</div>
+          </div>
+
+          <div class="turnos">
+            <div class="t pagado"><div class="cj">1</div><div class="lb">✓</div></div>
+            <div class="t mio"><div class="cj">2</div><div class="lb">vos</div></div>
+            <div class="t"><div class="cj">3</div><div class="lb"></div></div>
+            <div class="t"><div class="cj">4</div><div class="lb"></div></div>
+            <div class="t"><div class="cj">5</div><div class="lb"></div></div>
+            <div class="t"><div class="cj">6</div><div class="lb"></div></div>
+            <div class="t objetivo"><div class="cj">7</div><div class="lb">⇄</div></div>
+            <div class="t"><div class="cj">8</div><div class="lb"></div></div>
+            <div class="t"><div class="cj">9</div><div class="lb"></div></div>
+            <div class="t"><div class="cj">10</div><div class="lb"></div></div>
+          </div>
+
+          <div class="demo" style="padding:16px;margin-top:16px">
+            <div style="font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3);font-weight:700;font-family:var(--font-d)">Si cedieras tu turno hoy</div>
+            <div class="medidor">
+              <div class="valor"><span class="cur">Bs</span> 180 – 320</div>
+              <div class="escala" style="margin-top:10px"><div class="rango" style="left:22%;right:38%"></div></div>
+              <div class="marcas"><span>Bs 0</span><span>Bs 500</span></div>
+            </div>
+            <div class="demo-row" style="margin-top:12px;gap:8px">
+              <span class="badge warn"><span class="d"></span>Demanda alta</span>
+              <span class="badge neutral">4 interesados</span>
+            </div>
+            <p class="help" style="margin-top:10px">Es un rango estimado con las ofertas abiertas del grupo, no un precio garantizado.</p>
+          </div>
+
+          <button class="btn btn-primary block" style="margin-top:14px" onclick="showToast('Vas a publicar tu turno 2')">Ceder mi turno</button>
+          <button class="btn btn-ghost block" style="margin-top:9px" onclick="showToast('Abriendo el mercado del grupo')">Ver ofertas del grupo</button>
+
+          <div class="legal" style="margin-top:14px">
+            <span class="ic">ℹ</span>
+            <div>Cambiar de turno <b>no cambia lo que aportás ni lo que cobrás</b>: son los mismos Bs 1.000 por mes y la misma bolsa de Bs 10.000. Cambia <em>cuándo</em>.</div>
+          </div>
+
+        </div>
+      </div></div>
+      <p class="mini" style="text-align:center;margin-top:10px">Valor estimado del turno · §4.2</p>
+    </div>
+
+    <!-- ============ Pantalla 2 · Mercado ============ -->
+    <div>
+      <div class="phone"><div class="pscreen">
+        <div class="statusbar"><span>9:41</span><span class="rt">📶 🔋</span></div>
+        <div class="appbar"><span class="bk">‹</span><span class="ti">Mercado del grupo</span><span class="ac">⚙</span></div>
+        <div class="pbody">
+
+          <div class="segmented" style="margin-bottom:14px"><button class="on">Quieren adelantar</button><button>Quieren esperar</button></div>
+
+          <div class="oferta">
+            <div class="top">
+              <div class="avatar av40" style="background:#237349">MC</div>
+              <div class="info"><div class="nm">Marco C. <span class="nivel oro" style="margin-left:4px"><span class="p"></span>Oro</span></div><div class="sub">14 aportes puntuales · 2 pasanakus completados</div></div>
+            </div>
+            <div class="canje">
+              <div class="lado"><div class="k">Te da</div><div class="v">7</div></div>
+              <div class="flecha">⇄</div>
+              <div class="lado"><div class="k">Te pide</div><div class="v">2</div></div>
+            </div>
+            <div class="pie">
+              <div class="comp">Te paga <b>Bs 250</b> por esperar 5 meses</div>
+              <button class="btn btn-primary btn-sm" onclick="abrirSheet('sh1')">Ver</button>
+            </div>
+          </div>
+
+          <div class="oferta">
+            <div class="top">
+              <div class="avatar av40" style="background:#3C9366">LV</div>
+              <div class="info"><div class="nm">Lucía V. <span class="nivel plata" style="margin-left:4px"><span class="p"></span>Plata</span></div><div class="sub">9 aportes puntuales · 1 pasanaku completado</div></div>
+            </div>
+            <div class="canje">
+              <div class="lado"><div class="k">Te da</div><div class="v">5</div></div>
+              <div class="flecha">⇄</div>
+              <div class="lado"><div class="k">Te pide</div><div class="v">2</div></div>
+            </div>
+            <div class="pie">
+              <div class="comp">Te paga <b>Bs 140</b> por esperar 3 meses</div>
+              <button class="btn btn-ghost btn-sm" onclick="showToast('Detalle de la oferta de Lucía')">Ver</button>
+            </div>
+          </div>
+
+          <div class="empty" style="margin-top:14px;padding:26px 18px">
+            <h3 style="font-size:15px">Y nada más por ahora</h3>
+            <p style="font-size:13px">Las ofertas duran 72 horas. Te avisamos si aparece una que te sirva.</p>
+          </div>
+
+        </div>
+
+        <!-- bottom sheet: detalle y confirmación -->
+        <div class="sheet" id="sh1" style="display:none">
+          <div class="handle"></div>
+          <h4>Aceptar la permuta</h4>
+          <div class="chk" style="border-bottom:1px solid var(--border)">
+            <span class="mk si">✓</span>
+            <div class="tx">Pasás del turno <b>2</b> al turno <b>7</b><div class="d">Cobrás en marzo en vez de octubre</div></div>
+          </div>
+          <div class="chk">
+            <span class="mk si">✓</span>
+            <div class="tx">Recibís la compensación al confirmarse<div class="d">Se acredita en tu billetera, no al final</div></div>
+            <span class="vl" style="color:var(--ok-texto)">+Bs 250</span>
+          </div>
+          <div class="chk">
+            <span class="mk dud">i</span>
+            <div class="tx">Comisión de la plataforma<div class="d">La paga quien adelanta, no vos</div></div>
+            <span class="vl">Bs 0</span>
+          </div>
+          <div style="display:flex;gap:9px;margin-top:14px">
+            <button class="btn btn-ghost" style="flex:1" onclick="cerrarSheet('sh1')">Ahora no</button>
+            <button class="btn btn-primary" style="flex:1.4" onclick="cerrarSheet('sh1');showToast('Enviado a validación de riesgo')">Aceptar</button>
+          </div>
+          <p class="help" style="text-align:center;margin-top:9px">Queda sujeto a la revisión de riesgo del grupo.</p>
+        </div>
+
+      </div></div>
+      <p class="mini" style="text-align:center;margin-top:10px">Ofertas abiertas · tocá "Ver"</p>
+    </div>
+
+    <!-- ============ Pantalla 3 · En validación ============ -->
+    <div>
+      <div class="phone"><div class="pscreen">
+        <div class="statusbar"><span>9:41</span><span class="rt">📶 🔋</span></div>
+        <div class="appbar"><span class="bk">‹</span><span class="ti">Permuta #4821</span><span class="ac"></span></div>
+        <div class="pbody">
+
+          <div class="stepwiz" style="margin:8px 0 20px">
+            <div class="st done"><span class="num">✓</span></div><div class="line"></div>
+            <div class="st done"><span class="num">✓</span></div><div class="line"></div>
+            <div class="st now"><span class="num">3</span><span class="lb">Riesgo</span></div><div class="line"></div>
+            <div class="st"><span class="num">4</span></div>
+          </div>
+
+          <div class="alert info" style="margin-bottom:16px">
+            <span class="ic">⏳</span>
+            <div><div class="t">Los dos aceptaron. Falta la revisión.</div><div class="m">Revisamos que el cambio no deje al grupo peor parado. Suele tardar menos de un minuto.</div></div>
+          </div>
+
+          <div class="riesgo-panel">
+            <div class="cab"><span class="ti">Qué estamos mirando</span></div>
+            <div class="cuerpo">
+              <div class="chk"><span class="mk si">✓</span><div class="tx">Marco no tiene mora<div class="d">14 de 14 aportes a tiempo</div></div></div>
+              <div class="chk"><span class="mk si">✓</span><div class="tx">Cuotas que le quedan tras cobrar<div class="d">Sigue debiendo 8 de 10 aportes</div></div><span class="vl">Bs 8.000</span></div>
+              <div class="chk"><span class="mk si">✓</span><div class="tx">Tiene garantía suficiente<div class="d">Cobertura del fondo + aval vigente</div></div></div>
+              <div class="chk"><span class="mk dud">!</span><div class="tx">Riesgo agregado del grupo<div class="d">Sube de 0,18 a 0,23 — dentro del límite</div></div><span class="vl">0,23</span></div>
+              <div class="chk"><span class="mk si">✓</span><div class="tx">Identidad verificada<div class="d">Nivel 2 · cédula y selfie</div></div></div>
+            </div>
+          </div>
+
+          <div class="nota" style="margin-top:14px">
+            <span class="ic">✎</span>
+            <div><b>Esto no lo ve el participante así.</b> Se muestra acá para dejar explícito qué evalúa el motor. En la app real es una línea: <em>"Revisando…"</em> y después el resultado.</div>
+          </div>
+
+          <div class="clabel" style="margin:18px 0 9px">Si algo falla</div>
+          <div class="alert err">
+            <span class="ic">✕</span>
+            <div><div class="t">Bloqueada por riesgo</div><div class="m">Adelantar a Marco dejaría al grupo con más expuesto del que la cobertura aguanta. La compensación no se cobra y nadie pierde nada.</div></div>
+          </div>
+
+        </div>
+      </div></div>
+      <p class="mini" style="text-align:center;margin-top:10px">Validación · §3.5 motor de riesgo</p>
+    </div>
+
+  </div>
+
+  <!-- ============ Reglas ============ -->
+  <div class="clabel" style="margin-top:34px">Quién puede entrar al mercado <span class="ref-doc">§3.2 · §3.3</span></div>
+  <div class="table-wrap"><div class="tbl-scroll"><table>
+    <thead><tr><th>Nivel</th><th>Acceso</th><th>Cómo se llega</th><th>Comisión</th></tr></thead>
+    <tbody>
+      <tr><td><span class="nivel nuevo"><span class="p"></span>Nuevo</span></td><td>No habilitado</td><td>Sin historial todavía</td><td>—</td></tr>
+      <tr><td><span class="nivel bronce"><span class="p"></span>Bronce</span></td><td>Solo ceder turnos</td><td>Primer pasanaku en curso, sin mora</td><td class="num">10%</td></tr>
+      <tr><td><span class="nivel plata"><span class="p"></span>Plata</span></td><td>Solicitar adelanto limitado</td><td>1 pasanaku completado</td><td class="num">10%</td></tr>
+      <tr><td><span class="nivel oro"><span class="p"></span>Oro</span></td><td>Mercado completo</td><td>3 pasanakus sin incumplimientos</td><td class="num">8%</td></tr>
+      <tr><td><span class="nivel diamante"><span class="p"></span>Diamante</span></td><td>Mercado completo · mayor límite</td><td>Alto cumplimiento y volumen acumulado</td><td class="num">6%</td></tr>
+    </tbody>
+  </table></div></div>
+  <p class="help">Ceder siempre se habilita antes que adelantar: ceder no agrega riesgo al grupo, adelantar sí. Esa asimetría es la que ordena toda la tabla.</p>
+
+  <div class="clabel" style="margin-top:26px">Ciclo de vida de una oferta <span class="ref-doc">§3.4</span></div>
+  <div class="demo">
+    <div class="flujo">
+      <span class="e">BORRADOR</span><span class="fl">→</span>
+      <span class="e">PUBLICADA</span><span class="fl">→</span>
+      <span class="e">EN_NEGOCIACION</span><span class="fl">→</span>
+      <span class="e on">ACEPTADA</span><span class="fl">→</span>
+      <span class="e on">EN_VALIDACION</span><span class="fl">→</span>
+      <span class="e">APROBADA</span><span class="fl">→</span>
+      <span class="e fin">EJECUTADA</span>
+    </div>
+    <p class="help" style="margin-top:14px">Salidas posibles en cualquier punto:</p>
+    <div class="flujo" style="margin-top:8px">
+      <span class="e mal">RECHAZADA</span><span class="fl">·</span>
+      <span class="e mal">EXPIRADA</span><span class="fl">·</span>
+      <span class="e mal">CANCELADA</span><span class="fl">·</span>
+      <span class="e mal">BLOQUEADA_POR_RIESGO</span>
+    </div>
+    <div class="nota">
+      <span class="ic">✎</span>
+      <div><b>Por qué <code>EN_VALIDACION</code> va después de <code>ACEPTADA</code> y no antes.</b> Validar antes obligaría a correr el motor de riesgo contra cada interesado hipotético. Validar después significa que una permuta pactada puede caerse — y por eso el dinero recién se mueve en <code>EJECUTADA</code>.</div>
+    </div>
+  </div>
+
+  <div class="subgrid cols2" style="margin-top:26px">
+    <div>
+      <div class="clabel" style="margin-top:0">Qué mueve el valor de un turno <span class="ref-doc">§4.3</span></div>
+      <div class="segbar">
+        <div class="s"><span class="nm">Meses adelantados</span><span class="tr"><i style="width:92%"></i></span><span class="vl">alto</span></div>
+        <div class="s"><span class="nm">Monto de la bolsa</span><span class="tr"><i style="width:78%"></i></span><span class="vl">alto</span></div>
+        <div class="s"><span class="nm">Interesados abiertos</span><span class="tr"><i style="width:64%"></i></span><span class="vl">medio</span></div>
+        <div class="s"><span class="nm">Riesgo del comprador</span><span class="tr"><i style="width:55%"></i></span><span class="vl">medio</span></div>
+        <div class="s"><span class="nm">Reputación del vendedor</span><span class="tr"><i style="width:38%"></i></span><span class="vl">bajo</span></div>
+        <div class="s"><span class="nm">Tiempo restante del grupo</span><span class="tr"><i style="width:30%"></i></span><span class="vl">bajo</span></div>
+      </div>
+      <p class="help">El rango que ve el participante nunca es un precio fijado por la plataforma: es el resumen de lo que otros están ofreciendo, con topes de política.</p>
+    </div>
+    <div>
+      <div class="clabel" style="margin-top:0">Topes que impone la plataforma</div>
+      <div class="demo-col">
+        <div class="alert warn"><span class="ic">!</span><div><div class="t">Tope de compensación</div><div class="m">No puede superar un porcentaje de la bolsa. Sin tope, el mercado se convierte en préstamo con tasa encubierta — y eso cambia el régimen regulatorio del producto.</div></div></div>
+        <div class="alert warn"><span class="ic">!</span><div><div class="t">Tope de permutas por ciclo</div><div class="m">Un grupo donde todos permutan todo el tiempo dejó de ser un pasanaku.</div></div></div>
+        <div class="alert info"><span class="ic">◆</span><div><div class="t">Congelado por grupo</div><div class="m">La comisión vigente al crearse el grupo es la que rige hasta que termine, igual que el tarifario (decisión 13 del modelo).</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mq-nav">
+    <a href="objetivo-ahorro.html">← Objetivo de ahorro</a>
+    <a href="mis-vales.html">Mis vales →</a>
+  </div>
+</section>
+</main>
+
+<footer>
+  <span>AportaYa · Maqueta de Crecimiento Financiero y Alianzas</span>
+  <a href="../../Sistema-Diseno/README.md">Sistema de diseño</a>
+</footer>
+<div class="toast" id="toast"><span>✓</span><span id="toastMsg">Listo</span></div>
+<script src="../../Sistema-Diseno/script.js"></script>
+<script src="../maqueta.js"></script>

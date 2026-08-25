@@ -1,0 +1,213 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AportaYa Backoffice — Campañas y vales</title>
+<link rel="stylesheet" href="../../Sistema-Diseno/estilos.css">
+<link rel="stylesheet" href="../maqueta.css">
+<svg width="0" height="0" style="position:absolute"><defs>
+  <g id="mark"><path d="M92 30 C74 66 52 108 40 168" fill="none" stroke="#7CBE9C" stroke-width="13" stroke-linecap="round"/><path d="M108 30 C126 66 148 108 160 168" fill="none" stroke="#7CBE9C" stroke-width="13" stroke-linecap="round"/><path d="M100 58 C84 92 68 130 62 170" fill="none" stroke="#E5852B" stroke-width="12" stroke-linecap="round"/><path d="M100 58 C116 92 132 130 138 170" fill="none" stroke="#E5852B" stroke-width="12" stroke-linecap="round"/></g>
+</defs></svg>
+
+<div class="topbar"><div class="topbar-in">
+  <a class="brandmark" href="../index.html"><svg width="26" height="26" viewBox="0 0 200 200"><use href="#mark"/></svg><span>Aporta<span class="ya">Ya</span></span></a>
+  <nav class="navlinks">
+    <a href="../index.html">Índice</a>
+    <a href="alianzas.html">Alianzas</a>
+    <a class="on" href="campanas.html">Campañas y vales</a>
+    <a href="riesgo.html">Riesgo de permutas</a>
+  </nav>
+  <button class="theme-btn" onclick="toggleTheme()">◐ Tema</button>
+</div></div>
+
+<main>
+<section>
+  <div class="sec-head">
+    <span class="lvl bo">Backoffice · Equipo interno</span>
+    <p class="eyebrow">Aprobación, campañas y emisión</p>
+    <h1>Campañas y vales</h1>
+    <p>Acá se decide qué ve el participante. Toda propuesta de partner pasa por esta cola, y todo vale que existe en la app nació de una campaña aprobada en esta pantalla — nunca de una acción directa del comercio.</p>
+    <p><span class="ref-doc">§8 Campañas</span> <span class="ref-doc">§11 Vales desde backoffice</span> <span class="ref-doc">§14.1 Aprobación</span></p>
+  </div>
+
+  <div class="consola">
+
+    <aside class="sidebar">
+      <div class="grupo">Alianzas</div>
+      <a href="alianzas.html">🤝 Partners</a>
+      <a class="on">📣 Campañas</a>
+      <a href="#vales">🎟 Vales</a>
+      <a data-aviso="Acuerdos comerciales y comisiones">📄 Acuerdos</a>
+      <div class="grupo">Análisis</div>
+      <a data-aviso="Demanda declarada por categoría">🔎 Intención de compra</a>
+      <a data-aviso="Conversiones y ventas atribuidas">📈 Conversión</a>
+      <a data-aviso="Comisiones devengadas y facturadas">💵 Ingresos</a>
+      <div class="grupo">Mercado</div>
+      <a href="riesgo.html">⚖️ Riesgo de permutas</a>
+      <a data-aviso="Proveedores de inversión habilitados">🏦 Proveedores de inversión</a>
+    </aside>
+
+    <div class="panel">
+
+      <!-- ===== Cola de revisión ===== -->
+      <div class="clabel" style="margin-top:0">Cola de revisión <span class="badge warn" style="margin-left:6px"><span class="d"></span>3 pendientes</span></div>
+
+      <div class="riesgo-panel">
+        <div class="cab">
+          <span class="avatar av30" style="background:#E5852B;color:#3A1E02">MC</span>
+          <span class="ti">MotoCenter · «Casco de regalo»</span>
+          <span class="badge warn"><span class="d"></span>Hace 2 días</span>
+        </div>
+        <div class="cuerpo">
+          <div class="chk"><span class="mk si">✓</span><div class="tx">El beneficio es real<div class="d">Casco homologado incluido, sin subir el precio de lista</div></div></div>
+          <div class="chk"><span class="mk si">✓</span><div class="tx">El precio de lista es verificable<div class="d">Coincide con el publicado en su sitio</div></div></div>
+          <div class="chk"><span class="mk si">✓</span><div class="tx">El segmento no discrimina<div class="d">Nivel Bronce o superior, sin filtros sensibles</div></div></div>
+          <div class="chk"><span class="mk dud">!</span><div class="tx">Stock declarado sin respaldo<div class="d">120 unidades, sin comprobante de inventario</div></div></div>
+          <div class="chk"><span class="mk si">✓</span><div class="tx">Condiciones legibles<div class="d">Sin letra chica que anule el beneficio</div></div></div>
+          <div style="display:flex;gap:9px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap">
+            <button class="btn btn-ghost btn-sm" onclick="showToast('Rechazada · se notifica al partner')">Rechazar</button>
+            <button class="btn btn-ghost btn-sm" onclick="showToast('Devuelta con observaciones')">Pedir cambios</button>
+            <button class="btn btn-primary btn-sm" onclick="showToast('Publicada · visible para 903 personas')">Aprobar y publicar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="nota">
+        <span class="ic">✎</span>
+        <div><b>Los cinco puntos de la revisión no son burocracia.</b> Cada uno corresponde a una forma concreta de engañar: inflar el precio de lista para fabricar un descuento, prometer stock que no existe, segmentar de forma que excluya por criterios que no se pueden justificar, o esconder en las condiciones lo que anula el beneficio. Si la revisión no mira esto, el sello de AportaYa deja de significar algo.</div>
+      </div>
+
+      <!-- ===== Campaña ===== -->
+      <div class="clabel">Crear campaña <span class="ref-doc">§8</span></div>
+      <div class="form-org" style="max-width:100%">
+        <h3>Nueva campaña</h3>
+        <p class="desc">Una campaña agrupa publicaciones y define quién es elegible.</p>
+        <div class="form-grid">
+          <div class="subgrid cols2">
+            <div><label class="field-label">Partner <span class="req">*</span></label><select class="select"><option selected>MotoCenter</option><option>TecnoStore</option><option>Ferretería El Constructor</option></select></div>
+            <div><label class="field-label">Nombre <span class="req">*</span></label><input class="input" value="Tu primera moto"></div>
+          </div>
+          <div class="subgrid cols3">
+            <div><label class="field-label">Categoría <span class="req">*</span></label><select class="select"><option selected>Motocicletas</option><option>Tecnología</option></select></div>
+            <div><label class="field-label">Beneficio <span class="req">*</span></label><div class="input-group"><span class="addon">%</span><input class="input" value="8"></div></div>
+            <div><label class="field-label">Tope por vale</label><div class="input-group"><span class="addon">Bs</span><input class="input" value="960"></div></div>
+          </div>
+
+          <div>
+            <label class="field-label">Usuarios elegibles <span class="req">*</span></label>
+            <div class="demo-row" style="gap:8px;margin-top:4px">
+              <span class="chip active">Nivel Oro o superior</span>
+              <span class="chip active">Turno dentro de 60 días</span>
+              <span class="chip active">Objetivo: vehículo o motocicleta</span>
+              <span class="chip">Ciudad: Santa Cruz</span>
+              <span class="chip">Sin mora vigente</span>
+              <span class="chip">Acepta recibir ofertas</span>
+            </div>
+            <div class="alert info" style="margin-top:12px">
+              <span class="ic">◆</span>
+              <div><div class="t">Alcanza a 1.482 personas</div><div class="m">De ellas, 801 aceptaron recibir ofertas. A las otras 681 la campaña no les llega, aunque cumplan el resto.</div></div>
+            </div>
+          </div>
+
+          <div class="subgrid cols3">
+            <div><label class="field-label">Desde</label><input class="input" value="01/09/2026"></div>
+            <div><label class="field-label">Hasta</label><input class="input" value="30/11/2026"></div>
+            <div><label class="field-label">Stock</label><div class="stepper"><button>−</button><input value="50"><button>+</button></div></div>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-ghost">Guardar borrador</button>
+          <button class="btn btn-primary" onclick="showToast('Campaña creada')">Crear campaña</button>
+        </div>
+      </div>
+
+      <!-- ===== Vales ===== -->
+      <div class="clabel" id="vales">Emisión de vales <span class="ref-doc">§11</span></div>
+      <div class="subgrid cols2">
+        <div class="form-org" style="max-width:100%">
+          <h3>Emitir vales</h3>
+          <p class="desc">Genera las instancias que van a aparecer en la app.</p>
+          <div class="form-grid">
+            <div><label class="field-label">Campaña</label><select class="select"><option selected>Tu primera moto · MotoCenter</option></select></div>
+            <div class="subgrid cols2">
+              <div><label class="field-label">Cantidad</label><input class="input" value="50"></div>
+              <div><label class="field-label">Límite por persona</label><input class="input" value="1"></div>
+            </div>
+            <div>
+              <label class="field-label">Tipo de código</label>
+              <div class="segmented"><button class="on">Único por persona</button><button>Código masivo</button></div>
+              <p class="help">El código único permite saber quién canjeó qué. El masivo es un solo código compartido: más simple, pero no distingue a nadie y se filtra fuera de la app.</p>
+            </div>
+            <div class="subgrid cols2">
+              <div><label class="field-label">Vence el</label><input class="input" value="30/11/2026"></div>
+              <div><label class="field-label">Presupuesto tope</label><div class="input-group"><span class="addon">Bs</span><input class="input" value="48.000"></div></div>
+            </div>
+            <div>
+              <label class="check"><input type="checkbox" checked> Generar QR dinámico por vale</label>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-ghost">Simular</button>
+            <button class="btn btn-primary" onclick="showToast('50 vales emitidos')">Emitir</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="clabel" style="margin-top:0">Presupuesto de la campaña</div>
+          <div class="demo">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px">
+              <span style="font-size:13px;color:var(--text-2)">Comprometido si se canjean todos</span>
+              <span style="font-family:var(--font-d);font-weight:700;font-variant-numeric:tabular-nums">Bs 48.000</span>
+            </div>
+            <div class="bar" style="height:10px"><i style="width:33%"></i></div>
+            <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:12px;color:var(--text-3)">
+              <span>Consumido: Bs 15.680 (16 vales)</span><span>Tope: Bs 48.000</span>
+            </div>
+            <div class="alert warn" style="margin-top:14px">
+              <span class="ic">!</span>
+              <div><div class="t">El tope corta la emisión, no el canje</div><div class="m">Si el presupuesto se agota, dejan de emitirse vales nuevos. Los que ya están en manos de alguien se respetan igual — cancelarlos sería incumplirle a la persona.</div></div>
+            </div>
+          </div>
+
+          <div class="clabel">Acciones sobre una campaña viva</div>
+          <div class="demo-col">
+            <div class="listitem"><div class="info"><div class="nm">Suspender emisión</div><div class="sub">Deja de emitir; los vales vigentes siguen valiendo</div></div><button class="btn btn-ghost btn-sm">Suspender</button></div>
+            <div class="listitem"><div class="info"><div class="nm">Extender vigencia</div><div class="sub">Solo hacia adelante, nunca acortar</div></div><button class="btn btn-ghost btn-sm">Extender</button></div>
+            <div class="listitem"><div class="info"><div class="nm">Ampliar segmento</div><div class="sub">Puede sumar personas, no quitarlas</div></div><button class="btn btn-ghost btn-sm">Ampliar</button></div>
+            <div class="listitem"><div class="info"><div class="nm">Exportar redenciones</div><div class="sub">Métricas agregadas, sin datos personales</div></div><button class="btn btn-ghost btn-sm" onclick="showToast('Exportando')">Exportar</button></div>
+          </div>
+          <p class="help">Todas las acciones son <em>expansivas</em>: una campaña publicada puede mejorar para el participante, nunca empeorar. Recortarla exige suspenderla y proponer otra.</p>
+        </div>
+      </div>
+
+      <div class="clabel">Campañas vivas</div>
+      <div class="table-wrap">
+        <div class="tbl-scroll"><table>
+          <thead><tr><th>Campaña</th><th>Partner</th><th>Estado</th><th>Elegibles</th><th>Emitidos</th><th>Usados</th><th>Presupuesto</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Tu primera moto</strong></td><td>MotoCenter</td><td><span class="badge ok"><span class="d"></span>Publicada</span></td><td class="num">801</td><td class="num">460</td><td class="num">182</td><td class="num">33%</td></tr>
+            <tr><td><strong>Precio comunidad · iPhone 17</strong></td><td>TecnoStore</td><td><span class="badge ok"><span class="d"></span>Publicada</span></td><td class="num">1.240</td><td class="num">830</td><td class="num">291</td><td class="num">61%</td></tr>
+            <tr><td><strong>Cemento y agregados</strong></td><td>El Constructor</td><td><span class="badge ok"><span class="d"></span>Publicada</span></td><td class="num">698</td><td class="num">312</td><td class="num">129</td><td class="num">44%</td></tr>
+            <tr><td><strong>Casco de regalo</strong></td><td>MotoCenter</td><td><span class="badge warn"><span class="d"></span>En revisión</span></td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+            <tr><td><strong>Paquete Cusco</strong></td><td>ViajesX</td><td><span class="badge err"><span class="d"></span>Suspendida</span></td><td class="num">—</td><td class="num">88</td><td class="num">11</td><td class="num">9%</td></tr>
+          </tbody>
+        </table></div>
+        <div class="table-foot"><span>67 campañas activas</span><div class="pager"><button class="on">1</button><button>2</button><button>3</button></div></div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="mq-nav">
+    <a href="alianzas.html">← Alianzas</a>
+    <a href="riesgo.html">Riesgo de permutas →</a>
+  </div>
+</section>
+</main>
+
+<footer>
+  <span>AportaYa · Maqueta de Crecimiento Financiero y Alianzas</span>
+  <a href="../../Sistema-Diseno/README.md">Sistema de diseño</a>
+</footer>
+<div class="toast" id="toast"><span>✓</span><span id="toastMsg">Listo</span></div>
+<script src="../../Sistema-Diseno/script.js"></script>
+<script src="../maqueta.js"></script>

@@ -1,0 +1,272 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AportaYa Partners — Publicaciones</title>
+<link rel="stylesheet" href="../../Sistema-Diseno/estilos.css">
+<link rel="stylesheet" href="../maqueta.css">
+<svg width="0" height="0" style="position:absolute"><defs>
+  <g id="mark"><path d="M92 30 C74 66 52 108 40 168" fill="none" stroke="#7CBE9C" stroke-width="13" stroke-linecap="round"/><path d="M108 30 C126 66 148 108 160 168" fill="none" stroke="#7CBE9C" stroke-width="13" stroke-linecap="round"/><path d="M100 58 C84 92 68 130 62 170" fill="none" stroke="#E5852B" stroke-width="12" stroke-linecap="round"/><path d="M100 58 C116 92 132 130 138 170" fill="none" stroke="#E5852B" stroke-width="12" stroke-linecap="round"/></g>
+</defs></svg>
+
+<div class="topbar"><div class="topbar-in">
+  <a class="brandmark" href="../index.html"><svg width="26" height="26" viewBox="0 0 200 200"><use href="#mark"/></svg><span>Aporta<span class="ya">Ya</span></span></a>
+  <nav class="navlinks">
+    <a href="../index.html">Índice</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a class="on" href="publicaciones.html">Publicaciones</a>
+    <a href="vales.html">Validar vale</a>
+    <a href="audiencia.html">Audiencia</a>
+  </nav>
+  <button class="theme-btn" onclick="toggleTheme()">◐ Tema</button>
+</div></div>
+
+<main>
+<section>
+  <div class="sec-head">
+    <span class="lvl partner">Portal Partner</span>
+    <p class="eyebrow">Propuestas, aprobación y rendimiento</p>
+    <h1>Mis publicaciones</h1>
+    <p>El partner <strong>propone</strong>; la plataforma <strong>aprueba</strong>. Esa asimetría es lo que evita que la app se llene de ofertas engañosas y lo que hace que el sello de AportaYa signifique algo para el participante.</p>
+    <p><span class="ref-doc">§14 Publicaciones</span> <span class="ref-doc">§14.1 Flujo de aprobación</span> <span class="ref-doc">§15 Progreso</span></p>
+  </div>
+
+  <div class="consola">
+
+    <aside class="sidebar">
+      <div class="grupo">Comercial</div>
+      <a href="dashboard.html">📊 Dashboard</a>
+      <a class="on">📣 Mis publicaciones</a>
+      <a href="#crear">✚ Crear propuesta</a>
+      <a href="vales.html">🎟 Vales</a>
+      <div class="grupo">Analítica</div>
+      <a href="#rendimiento">📈 Rendimiento</a>
+      <a href="audiencia.html">👥 Audiencia</a>
+      <a data-aviso="Ventas atribuidas y conciliación">💵 Ventas</a>
+      <div class="grupo">Cuenta</div>
+      <a data-aviso="Comisiones y liquidaciones">🧾 Facturación</a>
+      <a data-aviso="Datos comerciales del partner">🏪 Perfil comercial</a>
+      <a data-aviso="Canal con el equipo de alianzas">💬 Soporte</a>
+    </aside>
+
+    <div class="panel">
+
+      <!-- ===== Listado ===== -->
+      <div class="table-wrap">
+        <div class="table-toolbar">
+          <div class="searchbar" style="flex:1;min-width:180px"><span>🔍</span><input placeholder="Buscar publicación…"></div>
+          <div class="filterbar">
+            <span class="chip active">Activas</span><span class="chip">En revisión</span><span class="chip">Vencidas</span>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="showToast('Nueva propuesta')">✚ Crear propuesta</button>
+        </div>
+        <div class="tbl-scroll"><table>
+          <thead><tr><th>Publicación</th><th>Estado</th><th>Vigencia</th><th>Cupos</th><th>Vales</th><th>Conversión</th><th>Ventas</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>Tu primera moto</strong><div class="mini" style="margin-top:2px">Motocicletas · 8% off</div></td>
+              <td><span class="badge ok"><span class="d"></span>Publicada</span></td>
+              <td class="num">01/09 – 30/11</td>
+              <td class="num">16 / 50</td>
+              <td class="num">460</td>
+              <td class="num">39,5%</td>
+              <td class="num">Bs 1.164.800</td>
+            </tr>
+            <tr>
+              <td><strong>Service gratis primer año</strong><div class="mini" style="margin-top:2px">Servicio · sin tope</div></td>
+              <td><span class="badge ok"><span class="d"></span>Publicada</span></td>
+              <td class="num">15/08 – 31/12</td>
+              <td class="num">—</td>
+              <td class="num">278</td>
+              <td class="num">28,1%</td>
+              <td class="num">Bs 96.400</td>
+            </tr>
+            <tr>
+              <td><strong>Casco de regalo</strong><div class="mini" style="margin-top:2px">Accesorios · con compra</div></td>
+              <td><span class="badge warn"><span class="d"></span>Pendiente de revisión</span></td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+            </tr>
+            <tr>
+              <td><strong>Financiación 0%</strong><div class="mini" style="margin-top:2px">Devuelta con observaciones</div></td>
+              <td><span class="badge err"><span class="d"></span>Cambios pedidos</span></td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+            </tr>
+          </tbody>
+        </table></div>
+        <div class="table-foot"><span>4 publicaciones</span><div class="pager"><button class="on">1</button></div></div>
+      </div>
+
+      <div class="alert err" style="margin-top:14px">
+        <span class="ic">✕</span>
+        <div><div class="t">«Financiación 0%» fue devuelta</div><div class="m">Ofrecer financiación dentro de la app implica una actividad crediticia que MotoCenter no tiene habilitada, y que AportaYa no puede intermediar. Se puede republicar como descuento por pago al contado.</div></div>
+      </div>
+
+      <!-- ===== Flujo de aprobación ===== -->
+      <div class="clabel">Cómo se aprueba una propuesta <span class="ref-doc">§14.1</span></div>
+      <div class="demo">
+        <div class="flujo">
+          <span class="e">BORRADOR</span><span class="fl">→</span>
+          <span class="e on">PENDIENTE_REVISION</span><span class="fl">→</span>
+          <span class="e fin">PUBLICADA</span>
+        </div>
+        <div class="flujo" style="margin-top:11px">
+          <span class="e mal">RECHAZADA</span><span class="fl">·</span>
+          <span class="e mal">CAMBIOS_SOLICITADOS</span><span class="fl">·</span>
+          <span class="e">SUSPENDIDA</span><span class="fl">·</span>
+          <span class="e">VENCIDA</span>
+        </div>
+        <div class="nota">
+          <span class="ic">✎</span>
+          <div><b>Una vez que hay vales emitidos, el partner deja de poder editar.</b> Cambiar el beneficio de una campaña con 460 vales en la calle es cambiarle el trato a 460 personas que ya decidieron en base a él. Para modificarla hay que suspenderla y proponer una nueva — los vales ya emitidos siguen siendo válidos hasta su vencimiento.</div>
+        </div>
+      </div>
+
+      <!-- ===== Crear propuesta ===== -->
+      <div class="clabel" id="crear">Crear propuesta</div>
+      <div class="form-org" style="max-width:100%">
+        <h3>Nueva publicación</h3>
+        <p class="desc">La revisa el equipo de alianzas antes de que la vea nadie.</p>
+        <div class="form-grid">
+          <div class="subgrid cols2">
+            <div>
+              <label class="field-label">Nombre <span class="req">*</span></label>
+              <input class="input" value="iPhone 17 · precio comunidad">
+            </div>
+            <div>
+              <label class="field-label">Categoría <span class="req">*</span></label>
+              <select class="select"><option>Motocicletas</option><option selected>Tecnología</option><option>Electrodomésticos</option><option>Vehículos</option></select>
+            </div>
+          </div>
+          <div class="subgrid cols3">
+            <div>
+              <label class="field-label">Precio de lista</label>
+              <div class="input-group"><span class="addon">Bs</span><input class="input" value="11.500"></div>
+            </div>
+            <div>
+              <label class="field-label">Precio comunidad</label>
+              <div class="input-group"><span class="addon">Bs</span><input class="input" value="10.700"></div>
+            </div>
+            <div>
+              <label class="field-label">Beneficio</label>
+              <div class="input-group"><span class="addon">Bs</span><input class="input" value="800" disabled></div>
+              <p class="help ok">Se calcula solo.</p>
+            </div>
+          </div>
+          <div>
+            <label class="field-label">Quién puede verla <span class="req">*</span></label>
+            <div class="demo-row" style="gap:8px;margin-top:4px">
+              <span class="chip active">Turno en ≤ 45 días</span>
+              <span class="chip active">Objetivo: tecnología</span>
+              <span class="chip active">Nivel Plata o superior</span>
+              <span class="chip">Ciudad: Santa Cruz</span>
+              <span class="chip">Presupuesto ≥ Bs 8.000</span>
+            </div>
+            <p class="help">Estimado: <strong>1.240 personas</strong> entran en este segmento. No vas a saber quiénes son.</p>
+          </div>
+          <div class="subgrid cols3">
+            <div>
+              <label class="field-label">Desde</label>
+              <input class="input" value="01/09/2026">
+            </div>
+            <div>
+              <label class="field-label">Hasta</label>
+              <input class="input" value="30/11/2026">
+            </div>
+            <div>
+              <label class="field-label">Stock</label>
+              <div class="stepper"><button>−</button><input value="50"><button>+</button></div>
+            </div>
+          </div>
+          <div>
+            <label class="field-label">Condiciones</label>
+            <textarea class="textarea" rows="3">No acumulable con otras promociones. Un vale por persona. Sujeto a stock.</textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-ghost">Guardar borrador</button>
+          <button class="btn btn-primary" onclick="showToast('Enviada a revisión del equipo de alianzas')">Enviar a revisión</button>
+        </div>
+      </div>
+
+      <!-- ===== Rendimiento ===== -->
+      <div class="clabel" id="rendimiento">Rendimiento de una publicación <span class="ref-doc">§15</span></div>
+      <div class="demo">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px">
+          <span class="avatar av40" style="background:#1C5A3A">📱</span>
+          <div style="flex:1;min-width:180px"><h3 style="margin:0">Samsung Galaxy S26</h3><div class="mini" style="margin-top:2px">Publicada el 12/07/2026</div></div>
+          <span class="badge ok"><span class="d"></span>Activa</span>
+        </div>
+
+        <div class="kpis" style="margin-bottom:18px">
+          <div class="stat"><div class="k">Impresiones</div><div class="v">12.430</div></div>
+          <div class="stat"><div class="k">Abrieron</div><div class="v">4.820</div><div class="delta up">38,8%</div></div>
+          <div class="stat"><div class="k">Guardaron</div><div class="v">1.037</div><div class="delta up">21,5% de quien abrió</div></div>
+          <div class="stat"><div class="k">Vales reclamados</div><div class="v">460</div><div class="delta up">44,4% de quien guardó</div></div>
+          <div class="stat"><div class="k">Vales usados</div><div class="v">182</div><div class="delta up">39,5% de los reclamados</div></div>
+          <div class="stat"><div class="k">Ventas atribuidas</div><div class="v"><span class="cur">Bs</span> 1.164.800</div></div>
+        </div>
+
+        <div class="embudo">
+          <div class="paso"><span class="nm">Impresiones</span><span class="tr"><i style="width:100%"></i></span><span class="vl">12.430</span><span class="pc">100%</span></div>
+          <div class="paso"><span class="nm">Abrieron</span><span class="tr"><i style="width:38.8%"></i></span><span class="vl">4.820</span><span class="pc">38,8%</span></div>
+          <div class="paso"><span class="nm">Guardaron</span><span class="tr"><i style="width:8.3%"></i></span><span class="vl">1.037</span><span class="pc">8,3%</span></div>
+          <div class="paso"><span class="nm">Reclamaron</span><span class="tr"><i style="width:3.7%"></i></span><span class="vl">460</span><span class="pc">3,7%</span></div>
+          <div class="paso"><span class="nm">Compraron</span><span class="tr"><i style="width:1.5%"></i></span><span class="vl">182</span><span class="pc">1,5%</span></div>
+        </div>
+
+        <div class="nota">
+          <span class="ic">✎</span>
+          <div><b>Ticket promedio Bs 6.400 sobre 182 ventas.</b> La conversión que el partner mira no es la del embudo entero (1,5%) sino la de vale reclamado a vale usado (39,5%): esa es la que le dice si el segmento estaba bien elegido o si repartió cupones a gente que nunca iba a comprar.</div>
+        </div>
+      </div>
+
+      <div class="clabel">Qué puede hacer el partner y qué no <span class="ref-doc">§12</span></div>
+      <div class="priv">
+        <div class="col si">
+          <h3>✓ Puede</h3>
+          <ul>
+            <li>Proponer publicaciones y promociones nuevas</li>
+            <li>Solicitar aprobación</li>
+            <li>Consultar los vales que emitió</li>
+            <li>Validar un vale y marcarlo como usado</li>
+            <li>Ver conversiones, monto vendido y campañas activas</li>
+            <li>Descargar sus reportes</li>
+          </ul>
+        </div>
+        <div class="col no">
+          <h3>✕ No puede</h3>
+          <ul>
+            <li>Modificar una campaña aprobada con vales emitidos</li>
+            <li>Publicar sin pasar por revisión</li>
+            <li>Emitir vales por su cuenta fuera de una campaña</li>
+            <li>Ampliar un segmento después de publicar</li>
+            <li>Anular un vale ya validado</li>
+            <li>Exportar datos individuales de participantes</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="mq-nav">
+    <a href="dashboard.html">← Dashboard</a>
+    <a href="vales.html">Validar vale →</a>
+  </div>
+</section>
+</main>
+
+<footer>
+  <span>AportaYa · Maqueta de Crecimiento Financiero y Alianzas</span>
+  <a href="../../Sistema-Diseno/README.md">Sistema de diseño</a>
+</footer>
+<div class="toast" id="toast"><span>✓</span><span id="toastMsg">Listo</span></div>
+<script src="../../Sistema-Diseno/script.js"></script>
+<script src="../maqueta.js"></script>

@@ -1,0 +1,263 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AportaYa — Mis vales</title>
+<link rel="stylesheet" href="../../Sistema-Diseno/estilos.css">
+<link rel="stylesheet" href="../maqueta.css">
+<svg width="0" height="0" style="position:absolute"><defs>
+  <g id="mark"><path d="M92 30 C74 66 52 108 40 168" fill="none" stroke="#7CBE9C" stroke-width="13" stroke-linecap="round"/><path d="M108 30 C126 66 148 108 160 168" fill="none" stroke="#7CBE9C" stroke-width="13" stroke-linecap="round"/><path d="M100 58 C84 92 68 130 62 170" fill="none" stroke="#E5852B" stroke-width="12" stroke-linecap="round"/><path d="M100 58 C116 92 132 130 138 170" fill="none" stroke="#E5852B" stroke-width="12" stroke-linecap="round"/></g>
+</defs></svg>
+
+<div class="topbar"><div class="topbar-in">
+  <a class="brandmark" href="../index.html"><svg width="26" height="26" viewBox="0 0 200 200"><use href="#mark"/></svg><span>Aporta<span class="ya">Ya</span></span></a>
+  <nav class="navlinks">
+    <a href="../index.html">Índice</a>
+    <a href="mi-dinero.html">Mi Dinero</a>
+    <a href="objetivo-ahorro.html">Objetivo</a>
+    <a href="mercado-turnos.html">Turnos</a>
+    <a class="on" href="mis-vales.html">Vales</a>
+    <a href="que-hacer-con-tu-dinero.html">Tu turno llegó</a>
+    <a href="invertir.html">Invertir</a>
+  </nav>
+  <button class="theme-btn" onclick="toggleTheme()">◐ Tema</button>
+</div></div>
+
+<main>
+<section>
+  <div class="sec-head">
+    <span class="lvl app">App · Participante</span>
+    <p class="eyebrow">Vales y ofertas de la comunidad</p>
+    <h1>Mis vales</h1>
+    <p>El vale es la pieza que atraviesa las tres superficies del sistema: nace en el backoffice o lo propone un partner, se emite al participante que cumple el segmento, y muere cuando el comercio lo valida. Cada uno de esos tres lados ve el mismo objeto con permisos distintos.</p>
+    <p><span class="ref-doc">§9 Vales transversales</span> <span class="ref-doc">§10 Lado del usuario</span> <span class="ref-doc">§14 Publicaciones</span></p>
+  </div>
+
+  <div class="phones">
+
+    <!-- ============ Pantalla 1 · Lista ============ -->
+    <div>
+      <div class="phone"><div class="pscreen">
+        <div class="statusbar"><span>9:41</span><span class="rt">📶 🔋</span></div>
+        <div class="appbar"><span class="bk">‹</span><span class="ti">Mis vales</span><span class="ac">🔍</span></div>
+        <div class="pbody">
+
+          <div style="display:flex;align-items:baseline;gap:8px;padding:2px 2px 12px;flex-wrap:wrap">
+            <div style="font-family:var(--font-d);font-weight:700;font-size:26px;letter-spacing:-.02em;color:var(--brand-ink);font-variant-numeric:tabular-nums;white-space:nowrap">Bs 1.140</div>
+            <div style="font-size:12.5px;color:var(--text-3)">en beneficios sin usar</div>
+          </div>
+
+          <div class="segmented" style="margin-bottom:14px"><button class="on">Disponibles</button><button>Usados</button><button>Vencidos</button></div>
+
+          <div class="demo-col">
+
+            <div class="vale">
+              <span class="sello"><span class="badge ok"><span class="d"></span>Disponible</span></span>
+              <div class="cab">
+                <div class="logo" style="background:#E5852B;color:#3A1E02">MC</div>
+                <div class="info"><div class="com">MotoCenter</div><div class="nm">Tu primera moto</div></div>
+              </div>
+              <div class="ben"><span class="big">8%</span><span class="sub">de descuento · hasta Bs 960</span></div>
+              <div class="corte"></div>
+              <div class="pie">
+                <div class="cod"><div class="k">Código</div><div class="v">MOTO-8XK2</div></div>
+                <div class="exp">Vence<br>30/11/2026</div>
+              </div>
+            </div>
+
+            <div class="vale">
+              <span class="sello"><span class="badge warn"><span class="d"></span>Reservado</span></span>
+              <div class="cab">
+                <div class="logo" style="background:#1C5A3A">TS</div>
+                <div class="info"><div class="com">TecnoStore</div><div class="nm">Precio comunidad · iPhone 17</div></div>
+              </div>
+              <div class="ben"><span class="big">Bs 800</span><span class="sub">sobre el precio de lista</span></div>
+              <div class="corte"></div>
+              <div class="pie">
+                <div class="cod"><div class="k">Código</div><div class="v">TEC-4M1P</div></div>
+                <div class="exp">Reservado<br>por 48 h</div>
+              </div>
+            </div>
+
+            <div class="vale usado">
+              <span class="sello"><span class="badge neutral">Usado</span></span>
+              <div class="cab">
+                <div class="logo" style="background:#6C7B72">FC</div>
+                <div class="info"><div class="com">Ferretería El Constructor</div><div class="nm">Cemento y agregados</div></div>
+              </div>
+              <div class="ben"><span class="big">12%</span><span class="sub">canjeado el 04/07/2026</span></div>
+              <div class="corte"></div>
+              <div class="pie">
+                <div class="cod"><div class="k">Ahorrado</div><div class="v">Bs 310</div></div>
+                <div class="exp">Validado<br>en tienda</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+        <div class="tabbar"><a><span class="ic">🏠</span>Inicio</a><a><span class="ic">👥</span>Grupos</a><a><span class="cta">＋</span></a><a class="on"><span class="ic">🎟</span>Vales</a><a><span class="ic">👤</span>Perfil</a></div>
+      </div></div>
+      <p class="mini" style="text-align:center;margin-top:10px">Mis vales · seis estados posibles</p>
+    </div>
+
+    <!-- ============ Pantalla 2 · Usar el vale ============ -->
+    <div>
+      <div class="phone"><div class="pscreen">
+        <div class="statusbar"><span>9:41</span><span class="rt">📶 🔋</span></div>
+        <div class="appbar"><span class="bk">‹</span><span class="ti">Usar vale</span><span class="ac"></span></div>
+        <div class="pbody" style="display:flex;flex-direction:column">
+
+          <div style="text-align:center;padding:6px 0 14px">
+            <div class="avatar av56" style="background:#E5852B;color:#3A1E02;margin:0 auto 12px">MC</div>
+            <div style="font-family:var(--font-d);font-weight:600;font-size:17px;color:var(--brand-ink)">Tu primera moto</div>
+            <div style="font-size:13px;color:var(--text-3)">MotoCenter · Av. Cristo Redentor 4to anillo</div>
+          </div>
+
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px;text-align:center;box-shadow:var(--sh-1)">
+            <div style="width:150px;height:150px;background:#fff;border-radius:12px;padding:9px;margin:0 auto;border:1px solid var(--border)">
+              <img src="../qr.svg" alt="Código QR del vale" style="width:100%;height:100%;display:block">
+            </div>
+            <div style="font-family:var(--mono);font-size:16px;font-weight:600;letter-spacing:.12em;margin-top:13px;color:var(--text)">MOTO-8XK2</div>
+            <div style="font-size:12px;color:var(--text-3);margin-top:4px">Mostrá esto en caja</div>
+          </div>
+
+          <div class="alert warn" style="margin-top:14px">
+            <span class="ic">⏱</span>
+            <div><div class="t">El código cambia cada 30 segundos</div><div class="m">Así nadie puede reusar una captura de pantalla.</div></div>
+          </div>
+
+          <div class="clabel" style="margin:18px 0 8px">Condiciones</div>
+          <ul style="font-size:13px;color:var(--text-2);margin:0;padding-left:19px;line-height:1.7">
+            <li>Válido en motocicletas 0 km de la marca participante</li>
+            <li>No acumulable con otras promociones</li>
+            <li>Un vale por persona</li>
+            <li>Sujeto a stock: quedan 34 de 50</li>
+          </ul>
+
+          <button class="btn btn-primary block" style="margin-top:auto" onclick="showToast('Ubicación de las 3 sucursales')">Cómo llegar</button>
+          <button class="btn btn-link block" style="width:100%" onclick="showToast('Vale liberado para otro participante')">Ya no lo quiero</button>
+        </div>
+      </div></div>
+      <p class="mini" style="text-align:center;margin-top:10px">Canje · QR dinámico contra doble uso</p>
+    </div>
+
+    <!-- ============ Pantalla 3 · Ofertas para vos ============ -->
+    <div>
+      <div class="phone"><div class="pscreen">
+        <div class="statusbar"><span>9:41</span><span class="rt">📶 🔋</span></div>
+        <div class="appbar"><span class="bk">‹</span><span class="ti">Para vos</span><span class="ac">⚙</span></div>
+        <div class="pbody">
+
+          <div class="alert info" style="margin-bottom:14px">
+            <span class="ic">◆</span>
+            <div><div class="t">Cobrás en 34 días</div><div class="m">Estas ofertas son para gente que, como vos, va a cobrar pronto y busca tecnología.</div></div>
+          </div>
+
+          <div class="demo-col">
+
+            <div class="pub">
+              <div class="img">📱</div>
+              <div class="cont">
+                <div class="marca">TecnoStore</div>
+                <h3>iPhone 17 · 128 GB</h3>
+                <div class="precios"><span class="ahora">Bs 10.700</span><span class="antes">Bs 11.500</span></div>
+                <div class="ahorro">Ahorrás Bs 800</div>
+                <div class="elegible">
+                  Podés porque:
+                  <ul><li>Cobrás dentro de 45 días</li><li>Tu objetivo es tecnología</li><li>Sos nivel Plata o superior</li></ul>
+                </div>
+                <div class="acciones">
+                  <button class="btn btn-primary btn-sm" style="flex:1" onclick="showToast('Vale reservado por 48 horas')">Reclamar vale</button>
+                  <button class="icon-btn" onclick="showToast('Guardado')">♡</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="pub">
+              <div class="img">🏍</div>
+              <div class="cont">
+                <div class="marca">MotoCenter</div>
+                <h3>Motos 0 km · línea urbana</h3>
+                <div class="precios"><span class="ahora">8% off</span></div>
+                <div class="ahorro">Hasta Bs 960 de ahorro</div>
+                <div class="elegible">Quedan 34 de 50 cupos · vence 30/11</div>
+                <div class="acciones">
+                  <button class="btn btn-ghost btn-sm" style="flex:1">Ya lo tenés</button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="legal" style="margin-top:14px">
+            <span class="ic">🔒</span>
+            <div>TecnoStore no sabe que sos vos. Sabe que <b>1.240 personas</b> con tu perfil van a cobrar pronto — por eso te hace este precio.</div>
+          </div>
+
+        </div>
+      </div></div>
+      <p class="mini" style="text-align:center;margin-top:10px">Publicaciones segmentadas · §14</p>
+    </div>
+
+  </div>
+
+  <!-- ============ Reglas ============ -->
+  <div class="subgrid cols2" style="margin-top:34px">
+    <div>
+      <div class="clabel" style="margin-top:0">Estados del vale <span class="ref-doc">§10</span></div>
+      <div class="demo">
+        <div class="flujo">
+          <span class="e on">DISPONIBLE</span><span class="fl">→</span>
+          <span class="e on">RESERVADO</span><span class="fl">→</span>
+          <span class="e fin">UTILIZADO</span>
+        </div>
+        <div class="flujo" style="margin-top:11px">
+          <span class="e mal">EXPIRADO</span><span class="fl">·</span>
+          <span class="e mal">CANCELADO</span><span class="fl">·</span>
+          <span class="e mal">BLOQUEADO</span>
+        </div>
+        <div class="nota">
+          <span class="ic">✎</span>
+          <div><b><code>RESERVADO</code> es el estado que hace que el stock signifique algo.</b> Sin él, 200 personas reclaman 50 cupos y 150 llegan a la tienda para que les digan que no. La reserva descuenta stock y caduca sola a las 48 h.</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="clabel" style="margin-top:0">Cómo se consigue un vale <span class="ref-doc">§10.1</span></div>
+      <div class="demo" style="padding:18px">
+        <div class="demo-row" style="gap:7px">
+          <span class="chip">Nivel de reputación</span>
+          <span class="chip">Insignia</span>
+          <span class="chip">Completar un pasanaku</span>
+          <span class="chip">Pagar puntual</span>
+          <span class="chip">Recibir tu turno</span>
+          <span class="chip">Campaña comercial</span>
+          <span class="chip">Promoción temporal</span>
+          <span class="chip">Referidos</span>
+          <span class="chip">Compra previa</span>
+          <span class="chip">Partner directo</span>
+          <span class="chip">Evento</span>
+          <span class="chip">Beneficio premium</span>
+          <span class="chip">Sorteo</span>
+          <span class="chip">Canje de puntos</span>
+          <span class="chip">Permuta aprobada</span>
+          <span class="chip">Acción administrativa</span>
+        </div>
+        <p class="help" style="margin-top:12px">Dieciséis orígenes, un solo objeto. Cada <code class="code">VoucherInstance</code> guarda de cuál vino: es lo que después permite medir qué palanca genera canjes de verdad y cuál solo reparte cupones.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="mq-nav">
+    <a href="mercado-turnos.html">← Mercado de turnos</a>
+    <a href="que-hacer-con-tu-dinero.html">Tu turno llegó →</a>
+  </div>
+</section>
+</main>
+
+<footer>
+  <span>AportaYa · Maqueta de Crecimiento Financiero y Alianzas</span>
+  <a href="../../Sistema-Diseno/README.md">Sistema de diseño</a>
+</footer>
+<div class="toast" id="toast"><span>✓</span><span id="toastMsg">Listo</span></div>
+<script src="../../Sistema-Diseno/script.js"></script>
+<script src="../maqueta.js"></script>
