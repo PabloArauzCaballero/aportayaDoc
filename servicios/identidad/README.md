@@ -23,6 +23,8 @@ Modulo 01 de la boveda — Identidad, Usuarios y Seguridad.
 
 | CU-09 | Cambiar credenciales y solicitar la baja | ⬜ sin implementar |
 
+| CU-01 | Registro y apertura de billetera | ⬜ sin implementar |
+
 ## Eventos que emite
 
 | Tema | Cuando |

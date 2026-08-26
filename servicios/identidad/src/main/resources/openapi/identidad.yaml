@@ -36,8 +36,17 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/EntradaRegistro' }
       responses:
-        '201':
-          description: Cuenta abierta, con los topes que le corresponden al nivel
+        '202':
+          description: >-
+            Alta aceptada. El usuario queda PENDIENTE_VERIFICACION y NO opera
+            todavia: la debida diligencia la hace `cumplimiento` y la billetera la
+            abre `nucleo-financiero` al consumir `identidad.usuario_registrado`.
+
+            Es 202 y no 201 a proposito. El caso de uso describe la salida con
+            `cuentaBilleteraId` y `nivelDiligencia`, pero esa cuenta todavia no
+            existe cuando esta operacion responde: prometerla seria decirle al
+            cliente que ya tiene algo que nadie abrio. Los dos campos viajan cuando
+            estan, no antes.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/SalidaRegistro' }
@@ -162,9 +171,14 @@ components:
     SalidaRegistro:
       type: object
       additionalProperties: false
-      required: [usuarioId, cuentaBilleteraId, nivelDiligencia, limites]
+      # Solo `usuarioId` y `estado` son obligatorios: son lo unico que existe al
+      # responder. La cuenta y sus topes llegan cuando `nucleo-financiero` termina.
+      required: [usuarioId, estado]
       properties:
-        usuarioId:         { type: string, format: uuid }
+        usuarioId: { type: string, format: uuid }
+        estado:
+          type: string
+          enum: [PENDIENTE_VERIFICACION, ACTIVO]
         cuentaBilleteraId: { type: string, format: uuid }
         nivelDiligencia:
           type: string
