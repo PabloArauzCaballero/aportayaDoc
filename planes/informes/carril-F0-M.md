@@ -27,7 +27,7 @@ frontend) · **Máquina** Legion
 | --- | --- | :-: |
 | Monorepo yarn 4 con espacios de trabajo, `tsconfig.base.json` y alias `@aportaya/*` | `yarn install` resuelve 1.132 paquetes; `yarn typecheck` en verde en los dos paquetes | ✅ |
 | `turbo.json` — orquestador de `build`, `lint`, `typecheck`, `test:front`, `test:a11y` | `yarn lint` → 2 tareas, 2 exitosas | ✅ |
-| Expo SDK 54 con **Expo Router** (enrutamiento por archivos) | `npx expo export --platform android` → **1.285 módulos**, Hermes de 3,81 MB | ✅ |
+| Expo SDK 54 con **Expo Router** (enrutamiento por archivos) | `npx expo export --platform android` → **1.027 módulos**, Hermes de 2,71 MB, **sin el simulado adentro** | ✅ |
 | Servidor simulado **derivado de los contratos**, compartido: `packages/simulado` | 21 pruebas en verde, entre ellas la de contrato de CU-01 | ✅ |
 | Capa de dominio sobre el cliente generado, con traza, idempotencia y refresco | `useSaldo` y `useRegistro`; `llamar()` es la única salida a la red | ✅ |
 | Una pantalla real contra MSW con sus **cuatro estados** | `PantallaDeSaldo` · 5 pruebas: cargando, éxito, vacío, error y sin red | ✅ |
@@ -46,7 +46,8 @@ yarn lint                                    2 tareas, 2 exitosas
 yarn typecheck                               2 tareas, 2 exitosas
 yarn test:front                              5 suites · 21 pruebas · 0 falladas
 yarn test:a11y                               1 suite · 2 pruebas · 0 falladas
-npx expo export --platform android           1.285 modulos · Hermes 3,81 MB
+npx expo export --platform android           produccion 1.027 modulos · 2,71 MB · sin msw
+npx expo export --platform android --dev     desarrollo 1.406 modulos · con el simulado
 npx expo start --port 8099                   packager-status:running
 curl .expo/.virtual-metro-entry.bundle       HTTP 200 · 8.275.052 bytes (android, dev)
 python3 scripts/verificar_seguridad.py       sin hallazgos nuevos en apps/ ni packages/
@@ -120,11 +121,11 @@ Regla cero: ninguno silencioso.
 
 | Hueco | Dónde | Por qué importa |
 | --- | --- | --- |
-| **`verificar_seguridad.py` rechaza al propio troncal.** Todo `permitAll()` es falla y no hay forma de declarar la excepción; la configuración de seguridad del carril 0 abre la sonda de salud y las rutas públicas, y por eso el gate está en rojo | `scripts/verificar_seguridad.py` vs. `plataforma/comun-web/.../ConfiguracionDeSeguridad.java` | Es decisión del dueño del troncal: o el verificador gana una marca declarada, o la configuración cambia. **No lo toqué**: `scripts/` y `plataforma/` no son de este carril |
-| `verificar_boveda.py` sigue en rojo por un wikilink de `docs/Views/AportaYa-Maqueta.md` a una nota de `planes/`, que está fuera de la bóveda | `docs/Views/` | Es parte del gate de salida de `F0-W`. Ya estaba declarado en el informe del carril 0 |
-| La validación de respuesta contra el esquema **no corre en el dispositivo** | `src/dominio/` | El motor de JavaScript de la app no tiene `eval`, y el validador compila con `new Function`. Corre en Jest sobre las mismas respuestas que ve la app. Resolverlo de verdad pide validadores precompilados, y eso es trabajo de F12 |
-| El código del simulado **queda dentro del paquete exportado** | `npx expo export` | El interruptor de `app.json` impide que se ejecute, pero no que se empaquete. Sacarlo pide un perfil de compilación que lo elimine, y los perfiles de EAS son de F12 |
-| Jest avisa «a worker process has failed to exit gracefully» al correr dos corredores en paralelo | `apps/movil` | Con detección de handles abiertos **no aparece ninguno** y las 21 pruebas pasan. Queda anotado: no se declara resuelto lo que no se entendió |
+| ~~`verificar_seguridad.py` rechazaba al propio troncal~~ | — | **Resuelto el 2026-08-26.** El verificador gana una marca declarada: un `permitAll()` con `SEGURIDAD-DECLARADO:` y un motivo de al menos 15 caracteres **en el comentario pegado a la sentencia** deja de ser falla y pasa a aviso contado. Sin marca sigue siendo falla, y las excepciones se listan siempre: una excepción invisible es un agujero con permiso |
+| ~~`verificar_boveda.py` en rojo por un wikilink hacia `planes/`~~ | — | **Resuelto el 2026-08-26.** La bóveda tiene su raíz en `docs/`: un `[[...]]` hacia `planes/` no resuelve ni en Obsidian ni en el verificador. Pasa a referencia literal |
+| La validación de respuesta contra el esquema **no corre en el dispositivo** | `src/dominio/` | **Sigue abierto.** El motor de JavaScript de la app no tiene `eval` y el validador compila con `new Function`. Corre en Jest sobre las mismas respuestas que ve la app. Resolverlo de verdad pide validadores precompilados, y eso es trabajo de F12 |
+| ~~El simulado quedaba dentro del paquete exportado~~ | — | **Resuelto el 2026-08-26.** El `require` va literalmente dentro de `if (__DEV__)`: Metro pliega la constante y descarta la dependencia antes de armar el grafo. **Producción: 1.027 módulos, 2,71 MB, cero rastros de `msw`. Desarrollo: 1.406 módulos, con el simulado adentro.** Detrás de una variable no funcionaba —el pliegue no puede probar nada— y por eso el primer intento no cambió un byte |
+| ~~Jest avisaba «a worker process has failed to exit gracefully»~~ | — | **Resuelto el 2026-08-26, y era un defecto de verdad.** Cada `QueryClient` de prueba dejaba vivo su temporizador de recolección de cinco minutos. `gcTime: 0` en consultas y mutaciones, y `clear()` + `unmount()` en el `afterEach`. No aparecía con detección de handles porque esa opción fuerza ejecución en serie |
 
 ## Lo que queda abierto, y de quién es
 
@@ -140,10 +141,11 @@ Regla cero: ninguno silencioso.
 ## Frases prohibidas sin evidencia
 
 No se dice «está listo». Lo que hay es: **21 pruebas en verde repartidas en tres
-corredores, 1.285 módulos empaquetados por Metro para Android, tres clientes TypeScript
-generados del contrato, una pantalla con sus cuatro estados probados contra el mismo
-simulado que ve la app, y la prueba que demuestra que agregar una pantalla no toca
-ningún archivo compartido.**
+corredores y sin un solo aviso del corredor, 1.027 módulos empaquetados por Metro para
+Android sin un rastro del servidor simulado, tres clientes TypeScript generados del
+contrato, una pantalla con sus cuatro estados probados contra el mismo simulado que ve
+la app, y la prueba que demuestra que agregar una pantalla no toca ningún archivo
+compartido.**
 
 ## Ver también
 

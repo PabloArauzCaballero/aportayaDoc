@@ -61,6 +61,7 @@ module.exports = {
     {
       ...comun,
       displayName: 'front-unit',
+      setupFilesAfterEnv: ['<rootDir>/pruebas/preparar.tsx'],
       testMatch: ['<rootDir>/pruebas/unidad/**/*.spec.ts', '<rootDir>/pruebas/contrato/**/*.spec.ts'],
     },
     {

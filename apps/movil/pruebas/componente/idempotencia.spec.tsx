@@ -1,8 +1,7 @@
 import { HttpResponse, http } from 'msw'
 import { renderHook, waitFor } from '@testing-library/react-native'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import type { ReactNode } from 'react'
 import { useRegistro } from '../../src/dominio/registro'
+import { clienteDePrueba, envoltorioCon } from '../dibujar'
 import { servidorDePruebas } from '../servidorDePruebas'
 
 /**
@@ -20,13 +19,6 @@ const ENTRADA = {
   aceptaContratos: ['11111111-1111-4111-8111-111111111111'],
 }
 
-function envoltorio() {
-  const cliente = new QueryClient({ defaultOptions: { mutations: { retry: false } } })
-  return function Envoltorio({ children }: { children: ReactNode }) {
-    return <QueryClientProvider client={cliente}>{children}</QueryClientProvider>
-  }
-}
-
 describe('CU-01 · clave de idempotencia', () => {
   it('el reintento del mismo registro reutiliza la clave', async () => {
     const claves: string[] = []
@@ -37,7 +29,7 @@ describe('CU-01 · clave de idempotencia', () => {
       }),
     )
 
-    const { result } = await renderHook(() => useRegistro(), { wrapper: envoltorio() })
+    const { result } = await renderHook(() => useRegistro(), { wrapper: envoltorioCon(clienteDePrueba()) })
 
     result.current.mutate(ENTRADA)
     await waitFor(() => expect(result.current.isError).toBe(true))
@@ -59,7 +51,7 @@ describe('CU-01 · clave de idempotencia', () => {
       }),
     )
 
-    const { result } = await renderHook(() => useRegistro(), { wrapper: envoltorio() })
+    const { result } = await renderHook(() => useRegistro(), { wrapper: envoltorioCon(clienteDePrueba()) })
     result.current.mutate(ENTRADA)
     await waitFor(() => expect(cabeceras).toHaveLength(1))
 

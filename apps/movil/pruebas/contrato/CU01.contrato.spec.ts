@@ -1,7 +1,6 @@
 import Ajv2020 from 'ajv/dist/2020'
 import agregarFormatos from 'ajv-formats'
-import { setupServer } from 'msw/native'
-import { contratoDe, fijarEscenario, manejadoresDeTodos, reiniciarEscenarios } from '@aportaya/simulado'
+import { contratoDe, fijarEscenario } from '@aportaya/simulado'
 
 /**
  * La prueba de contrato de CU-01.
@@ -12,21 +11,17 @@ import { contratoDe, fijarEscenario, manejadoresDeTodos, reiniciarEscenarios } f
  * que alguien espero.
  */
 const GATEWAY = 'http://localhost/api/v1'
-const servidor = setupServer(...manejadoresDeTodos())
 
+// El servidor simulado lo levanta `preparar.tsx`, uno para todos los corredores.
+// Dos instancias de MSW en la misma corrida se pisan los interceptores, y la que
+// falla nunca es la que tiene el defecto.
 const ajv = agregarFormatos(new Ajv2020({ strict: false, allErrors: true }))
 
 beforeAll(() => {
-  servidor.listen({ onUnhandledRequest: 'error' })
   for (const titulo of ['identidad', 'nucleo-financiero']) {
     ajv.addSchema(contratoDe(titulo) as unknown as object, titulo)
   }
 })
-afterEach(() => {
-  servidor.resetHandlers()
-  reiniciarEscenarios()
-})
-afterAll(() => servidor.close())
 
 function validarContra(contrato: string, esquema: string, valor: unknown): void {
   const validar = ajv.getSchema(`${contrato}#/components/schemas/${esquema}`)

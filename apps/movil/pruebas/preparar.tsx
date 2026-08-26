@@ -1,4 +1,5 @@
 import { reiniciarEscenarios } from '@aportaya/simulado'
+import { soltarClientes } from './dibujar'
 import { servidorDePruebas } from './servidorDePruebas'
 
 // `error` y no `bypass`: en pruebas, una peticion que el contrato no declara es
@@ -6,6 +7,7 @@ import { servidorDePruebas } from './servidorDePruebas'
 beforeAll(() => servidorDePruebas.listen({ onUnhandledRequest: 'error' }))
 afterEach(() => {
   servidorDePruebas.resetHandlers()
+  soltarClientes()
   // Un escenario que sobrevive a su prueba contamina la siguiente, y la que
   // falla no es la que tiene el defecto.
   reiniciarEscenarios()
