@@ -1,6 +1,5 @@
 package bo.aportaya.grupos.aplicacion;
 
-import bo.aportaya.grupos.dominio.SorteoDeterminista;
 import bo.aportaya.grupos.infraestructura.SorteoRepositorio;
 import bo.aportaya.plataforma.datos.Datos;
 import bo.aportaya.plataforma.dominio.CodigoError;
@@ -8,6 +7,7 @@ import bo.aportaya.plataforma.dominio.ContextoSesion;
 import bo.aportaya.plataforma.dominio.ErrorDeNegocio;
 import bo.aportaya.plataforma.dominio.Ids;
 import bo.aportaya.plataforma.dominio.Reloj;
+import bo.aportaya.plataforma.dominio.SorteoVerificable;
 import bo.aportaya.plataforma.mensajeria.EventoDominio;
 import bo.aportaya.plataforma.mensajeria.Outbox;
 import java.math.BigDecimal;
@@ -59,7 +59,7 @@ public class CU60Sortear {
         // Azar criptografico: una semilla que se puede adivinar es un sorteo que se
         // puede adivinar, y el compromiso no protegeria de nada.
         String semilla = ids.nuevo().toString() + ids.nuevo();
-        String hash = SorteoDeterminista.comprometer(semilla, entropias);
+        String hash = SorteoVerificable.hashDelCompromiso(semilla, entropias);
 
         return datos.conContexto(ctx, dsl -> {
             // AP-CU60-01: no se sortea un grupo a medio armar.
@@ -110,7 +110,7 @@ public class CU60Sortear {
                 throw new ErrorDeNegocio(CodigoError.de(60, 3), "Todavia no llego la fecha comprometida para revelar.");
             }
 
-            if (!SorteoDeterminista.verifica(semilla, entropias, compromiso.hash())) {
+            if (!SorteoVerificable.verificarCompromiso(semilla, entropias, compromiso.hash())) {
                 // Jamas se publica un resultado cuyo hash no cierra. El sorteo se
                 // anula y se recomienza con semilla nueva; el anterior queda visible.
                 sorteos.anular(dsl, sorteoId, ahora);
@@ -125,7 +125,8 @@ public class CU60Sortear {
                 return new Revelacion(sorteoId, List.of(), false);
             }
 
-            List<UUID> enOrden = SorteoDeterminista.ordenar(sorteos.cuposPorNumero(dsl, compromiso.grupoId()), semilla);
+            List<UUID> enOrden =
+                    SorteoVerificable.barajarDeterminista(semilla, sorteos.cuposPorNumero(dsl, compromiso.grupoId()));
             sorteos.crearTurnos(dsl, compromiso.grupoId(), periodosEnOrden, enOrden, montoEstimado);
             sorteos.revelar(dsl, sorteoId, semilla, comoJson(enOrden), ahora);
 

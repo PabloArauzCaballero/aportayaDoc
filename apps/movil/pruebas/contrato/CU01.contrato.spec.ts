@@ -1,6 +1,6 @@
 import Ajv2020 from 'ajv/dist/2020'
 import agregarFormatos from 'ajv-formats'
-import { contratoDe, fijarEscenario } from '@aportaya/simulado'
+import { contratoDe, fijarEscenario, type Contrato, type Operacion } from '@aportaya/simulado'
 
 /**
  * La prueba de contrato de CU-01.
@@ -22,6 +22,26 @@ beforeAll(() => {
     ajv.addSchema(contratoDe(titulo) as unknown as object, titulo)
   }
 })
+
+/**
+ * El estado de éxito **sale del contrato**, no de un número escrito acá.
+ *
+ * Fijarlo a mano convierte una decisión legítima del servicio dueño —CU-01 pasó de
+ * `201` a `202` cuando la verificación de identidad dejó de ser sincrónica— en una
+ * prueba en rojo que no denuncia ningún defecto. Lo que sí se verifica es que el
+ * simulado responda **el** código declarado, y que sea de éxito.
+ */
+function estadoDeExitoDe(contrato: string, ruta: string, metodo: string): number {
+  const documento = contratoDe(contrato) as Contrato
+  const operacion = documento.paths?.[ruta]?.[metodo] as Operacion | undefined
+  if (!operacion) throw new Error(`${contrato} no declara ${metodo.toUpperCase()} ${ruta}`)
+  const estado = Object.keys(operacion.responses ?? {})
+    .map(Number)
+    .filter((c) => c >= 200 && c < 300)
+    .sort((a, b) => a - b)[0]
+  if (estado === undefined) throw new Error(`${metodo.toUpperCase()} ${ruta} no declara respuesta de éxito`)
+  return estado
+}
 
 function validarContra(contrato: string, esquema: string, valor: unknown): void {
   const validar = ajv.getSchema(`${contrato}#/components/schemas/${esquema}`)
@@ -51,7 +71,7 @@ async function registrar(cabeceras: Record<string, string> = {}) {
 describe('CU-01 · registro y apertura de billetera', () => {
   it('la respuesta simulada de exito cumple SalidaRegistro', async () => {
     const respuesta = await registrar()
-    expect(respuesta.status).toBe(201)
+    expect(respuesta.status).toBe(estadoDeExitoDe('identidad', '/usuarios', 'post'))
     validarContra('identidad', 'SalidaRegistro', await respuesta.json())
   })
 
@@ -67,9 +87,13 @@ describe('CU-01 · registro y apertura de billetera', () => {
   it('el importe de un limite viaja como CADENA decimal, nunca como numero', async () => {
     const respuesta = await registrar()
     const cuerpo = (await respuesta.json()) as {
-      limites: { monto: { monto: unknown; moneda: string } }[]
+      limites?: { monto: { monto: unknown; moneda: string } }[]
     }
-    for (const limite of cuerpo.limites) {
+    // El contrato declara `limites` opcional, pero el simulado emite todas las
+    // propiedades declaradas: si no viene ninguno, el generador dejó de hacerlo y
+    // esta prueba tiene que enterarse.
+    expect(cuerpo.limites ?? []).not.toHaveLength(0)
+    for (const limite of cuerpo.limites ?? []) {
       expect(typeof limite.monto.monto).toBe('string')
       expect(limite.monto.monto).toMatch(/^-?\d+\.\d{2}$/)
     }
@@ -81,7 +105,9 @@ describe('consultarSaldo · nucleo-financiero', () => {
 
   it('la respuesta simulada cumple SaldoBilletera', async () => {
     const respuesta = await fetch(`${GATEWAY}/billetera/${cuenta}/saldo`)
-    expect(respuesta.status).toBe(200)
+    expect(respuesta.status).toBe(
+      estadoDeExitoDe('nucleo-financiero', '/billetera/{cuentaId}/saldo', 'get'),
+    )
     validarContra('nucleo-financiero', 'SaldoBilletera', await respuesta.json())
   })
 

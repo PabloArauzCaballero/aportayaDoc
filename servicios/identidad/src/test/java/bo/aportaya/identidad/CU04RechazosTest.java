@@ -176,10 +176,10 @@ class CU04RechazosTest extends BaseDeCU04 {
     }
 
     private boolean constraintExiste(String nombre) {
-        return contar("SELECT count(*)::int FROM pg_constraint WHERE conname = '" + nombre + "'") > 0;
+        return contar("SELECT count(*)::int FROM pg_constraint WHERE conname = ?", nombre) > 0;
     }
 
-    private int contar(String consulta) {
-        return ((Number) dsl.fetchOne(consulta).get(0)).intValue();
+    private int contar(String consulta, Object... ligaduras) {
+        return ((Number) dsl.fetchOne(consulta, ligaduras).get(0)).intValue();
     }
 }

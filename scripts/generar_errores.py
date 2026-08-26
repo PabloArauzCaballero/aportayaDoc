@@ -16,6 +16,13 @@ import re
 import sys
 from pathlib import Path
 
+# Estos informes se imprimen con acentos y flechas. En Windows la consola entrega
+# stdout en cp1252 y el generador muere con UnicodeEncodeError despues de haber
+# escrito los archivos — en tres de las cinco maquinas del parque.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
+
 RAIZ = Path(__file__).resolve().parent.parent
 HUMO = RAIZ / "sql/50_verificacion/prueba_humo.sql"
 REGLAS = RAIZ / "sql/40_reglas/restricciones.sql"

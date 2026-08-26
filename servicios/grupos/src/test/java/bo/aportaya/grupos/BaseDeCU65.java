@@ -101,8 +101,12 @@ abstract class BaseDeCU65 {
 
     protected String estadoDelCupoDe(UUID participante) {
         Object estado = dsl.fetchOne(
-                        "SELECT estado FROM grupos.cupo WHERE liberado_en IS NOT NULL AND grupo_id = "
-                                + "(SELECT grupo_id FROM grupos.participante WHERE id = ?) LIMIT 1",
+                        """
+                        SELECT estado FROM grupos.cupo
+                         WHERE liberado_en IS NOT NULL
+                           AND grupo_id = (SELECT grupo_id FROM grupos.participante WHERE id = ?)
+                         LIMIT 1
+                        """,
                         participante)
                 .get(0);
         return String.valueOf(estado);

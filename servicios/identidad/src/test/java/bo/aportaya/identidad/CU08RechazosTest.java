@@ -111,7 +111,7 @@ class CU08RechazosTest extends BaseDeCU08 {
     }
 
     private boolean constraintExiste(String nombre) {
-        return ((Number) dsl.fetchOne("SELECT count(*)::int FROM pg_constraint WHERE conname = '" + nombre + "'")
+        return ((Number) dsl.fetchOne("SELECT count(*)::int FROM pg_constraint WHERE conname = ?", nombre)
                                 .get(0))
                         .intValue()
                 > 0;

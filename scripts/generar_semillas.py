@@ -43,7 +43,15 @@ Valores especiales dentro de una fila:
 import json
 import pathlib
 import shutil
+
+
 import sys
+
+# Estos informes se imprimen con acentos y flechas. En Windows la consola entrega
+# stdout en cp1252 y el generador muere con UnicodeEncodeError despues de haber
+# escrito los archivos — en tres de las cinco maquinas del parque.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
 from modelo import cargar, clase_de  # noqa: E402

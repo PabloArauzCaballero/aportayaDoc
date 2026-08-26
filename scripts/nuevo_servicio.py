@@ -22,8 +22,15 @@ import argparse
 import pathlib
 import sys
 
+# Estos informes se imprimen con acentos y flechas. En Windows la consola entrega
+# stdout en cp1252 y el generador muere con UnicodeEncodeError despues de haber
+# escrito los archivos — en tres de las cinco maquinas del parque.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
 from modelo import (ESQUEMA, ESQUEMA_CATALOGO, ESQUEMA_COMUN, MODULOS,  # noqa: E402
+
                     PREFIJOS, RUTAS_PUBLICAS, paquete_de, rol_de, servicio_de)
 
 R = pathlib.Path(__file__).resolve().parent.parent

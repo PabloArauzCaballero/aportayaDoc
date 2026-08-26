@@ -161,8 +161,13 @@ abstract class BaseDeCU01 {
     }
 
     protected boolean constraintExiste(String nombre) {
-        return ((Number) dsl.fetchOne("SELECT (SELECT count(*) FROM pg_constraint WHERE conname = '" + nombre
-                                        + "') + (SELECT count(*) FROM pg_trigger WHERE tgname = '" + nombre + "')")
+        return ((Number) dsl.fetchOne(
+                                        """
+                                        SELECT (SELECT count(*) FROM pg_constraint WHERE conname = ?)
+                                             + (SELECT count(*) FROM pg_trigger WHERE tgname = ?)
+                                        """,
+                                        nombre,
+                                        nombre)
                                 .get(0))
                         .intValue()
                 > 0;

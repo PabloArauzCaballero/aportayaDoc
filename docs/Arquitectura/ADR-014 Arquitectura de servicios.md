@@ -33,7 +33,7 @@ existan?**
 
 | # | Servicio | Módulo de la bóveda | Prefijo de ruta |
 | :-: | --- | --- | --- |
-| 1 | `identidad` | 01 identidad y usuarios | `/identidad` `/usuarios` `/sesion` `/roles` |
+| 1 | `identidad` | 01 identidad y usuarios | `/identidad` `/usuarios` `/sesion` `/sesiones` `/roles` |
 | 2 | `grupos` | 02 grupos y turnos | `/grupos` `/turnos` `/acuerdos` |
 | 3 | **`nucleo-financiero`** | 10 billetera y custodia **+** 03 contabilidad | `/billetera` `/custodia` `/puntos-atencion` `/contabilidad` |
 | 4 | `aportes` | 03 aportes, pagos y QR | `/aportes` `/pagos` `/qr` `/conciliacion` |

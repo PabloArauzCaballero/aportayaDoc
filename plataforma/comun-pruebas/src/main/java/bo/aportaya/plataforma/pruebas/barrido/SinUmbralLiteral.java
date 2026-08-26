@@ -34,7 +34,7 @@ public final class SinUmbralLiteral {
         for (Path archivo : TamanoDeArchivo.fuentesJava(raiz)) {
             // «fuera de seeders/ y PRUEBAS»: una prueba de dinero necesita escribir
             // importes, y prohibirselos la obligaria a armarlos por concatenacion.
-            if (archivo.toString().contains("/src/test/")) {
+            if (TamanoDeArchivo.enBarras(archivo).contains("/src/test/")) {
                 continue;
             }
             List<String> lineas = leer(archivo);

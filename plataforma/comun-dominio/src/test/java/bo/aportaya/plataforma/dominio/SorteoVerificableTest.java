@@ -126,9 +126,9 @@ class SorteoVerificableTest {
     @Test
     @DisplayName("Ningun turno queda cautivo de una posicion: en muchas semillas, cada cupo pasa por todas")
     void elRepartoNoTieneUnFavorito() {
-        // No es una prueba de uniformidad estadistica —eso lo garantiza el muestreo por
-        // rechazo—, es la comprobacion de que no hay un indice pegado. Un sorteo donde el
-        // cupo 1 nunca sale ultimo seria uniforme en el papel y arreglado en la practica.
+        // No es una prueba de uniformidad estadistica, es la comprobacion de que no hay
+        // un indice pegado. Un sorteo donde el cupo 1 nunca sale ultimo seria uniforme en
+        // el papel y arreglado en la practica.
         int cupos = 6;
         List<Integer> lista = IntStream.rangeClosed(1, cupos).boxed().toList();
         boolean[][] visto = new boolean[cupos][cupos];
