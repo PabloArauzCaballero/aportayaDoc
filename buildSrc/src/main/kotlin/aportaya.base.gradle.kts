@@ -1,6 +1,7 @@
 // Convenciones comunes a todo modulo Java del monorepo: plataforma y servicios.
 plugins {
     `java-library`
+    jacoco
     id("com.diffplug.spotless")
 }
 
@@ -48,15 +49,38 @@ val entornoDocker = listOf("DOCKER_HOST", "DOCKER_CONTEXT", "DOCKER_API_VERSION"
 // cualquier motor desde 2020 y satisface el minimo de los actuales.
 val apiDeDocker = "1.41"
 
+val saltada = Regex("""<testcase name="([^"]*)"[^>]*>\s*<skipped""")
+
 tasks.withType<Test>().configureEach {
     entornoDocker.forEach { (clave, valor) -> valor.orNull?.let { environment(clave, it) } }
     systemProperty("api.version", apiDeDocker)
     environment("DOCKER_API_VERSION", apiDeDocker)
+
+    // Ninguna prueba saltada. No es celo: jqwik reporta una propiedad como SALTADA
+    // cuando no puede correrla, y el build queda verde con mil casos de cuadre que
+    // nunca se ejecutaron. Una prueba saltada miente mejor que una que falta.
+    val resultados = reports.junitXml.outputLocation
+    val corredor = name
+    doLast {
+        val carpeta = resultados.get().asFile
+        if (!carpeta.isDirectory) return@doLast
+        val saltadas = carpeta.walkTopDown()
+            .filter { it.isFile && it.name.endsWith(".xml") }
+            .flatMap { archivo -> saltada.findAll(archivo.readText()).map { it.groupValues[1] } }
+            .toList()
+        require(saltadas.isEmpty()) {
+            "$corredor dejo ${saltadas.size} prueba(s) saltada(s); ninguna @Disabled:\n" +
+                saltadas.joinToString("\n") { "  $it" }
+        }
+    }
 }
 
 // Los cinco corredores. Uno solo con todo adentro es un corredor que nadie corre
 // en local porque tarda cinco minutos.
 tasks.named<Test>("test") {
+    // Sin filtro de motores: corren Jupiter, jqwik y ArchUnit. Nombrar dos deja
+    // fuera al tercero, y un servicio entero se queda sin pruebas de arquitectura
+    // sin que nadie lo note.
     useJUnitPlatform()
     exclude(
         "**/CU*Test.class",
@@ -99,6 +123,51 @@ corredor(
 corredor("contractTest", "Contratos entre pares de servicios", listOf("**/*ContratoTest.class"), "60s")
 corredor("sagaTest", "Sagas con dobles de los servicios participantes", listOf("**/*SagaTest.class"), "120s")
 corredor("e2eTest", "Punta a punta sobre compose --profile todo", listOf("**/*E2ETest.class"), "300s")
+
+// Cobertura como PISO, no como meta. No se excluye codigo dificil para subir el
+// numero: la pregunta de ADR-026 es «que del dinero no esta probado», y un porcentaje
+// alto conseguido excluyendo lo dificil la contesta al reves.
+// El modulo lo declara con `extra["pisoDeCobertura"] = 0.95`; sin declaracion, no
+// hay piso todavia y la tarea no corre.
+fun piso(): Double = (project.findProperty("pisoDeCobertura") as? Number)?.toDouble() ?: 0.0
+
+tasks.named<JacocoReport>("jacocoTestReport") {
+    dependsOn("test")
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+}
+
+// Se configura la tarea que el plugin YA cablea contra el .exec de `test`. Una
+// JacocoCoverageVerification registrada a mano no tiene datos de ejecucion y se
+// saltea sola — verde, y sin haber medido nada.
+tasks.named<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
+    dependsOn("test")
+    onlyIf { piso() > 0.0 }
+    violationRules {
+        rule {
+            limit {
+                counter = "LINE"
+                minimum = piso().toBigDecimal()
+            }
+        }
+        rule {
+            limit {
+                counter = "BRANCH"
+                minimum = piso().toBigDecimal()
+            }
+        }
+    }
+}
+
+val cobertura = tasks.register("cobertura") {
+    group = "verification"
+    description = "El piso de cobertura del ambito de este modulo"
+    dependsOn("jacocoTestCoverageVerification")
+}
+
+tasks.named("check") { dependsOn(cobertura) }
 
 // Barrido: las reglas propias que no son de arquitectura viven en
 // plataforma/comun-pruebas como pruebas, no como convencion de revision — y cada

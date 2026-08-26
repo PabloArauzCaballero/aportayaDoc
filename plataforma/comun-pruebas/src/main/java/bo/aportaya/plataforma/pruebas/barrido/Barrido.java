@@ -2,6 +2,7 @@ package bo.aportaya.plataforma.pruebas.barrido;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -28,6 +29,16 @@ public final class Barrido {
         return new Barrido(raiz);
     }
 
+    /**
+     * Codigo de produccion solamente. La regla sin-umbral-literal dice, literal,
+     * «fuera de seeders/ y PRUEBAS»: una prueba de dinero necesita escribir importes,
+     * y prohibirselos la obligaria a construirlos por concatenacion para nada.
+     */
+    private Path soloProduccion() {
+        Path principal = raiz.resolve("main/java");
+        return Files.isDirectory(principal) ? principal : raiz;
+    }
+
     /** tamano-archivo: 300 lineas o mas bloquean. */
     public void ningunArchivoBloquea() {
         assertThat(describir(TamanoDeArchivo.bloqueantes(raiz)))
@@ -37,7 +48,7 @@ public final class Barrido {
 
     /** sin-umbral-literal: la cifra va a seeders/ y se lee del catalogo. */
     public void ningunUmbralEnElCodigo() {
-        assertThat(describir(SinUmbralLiteral.revisar(raiz)))
+        assertThat(describir(SinUmbralLiteral.revisar(soloProduccion())))
                 .as("sin-umbral-literal (invariante 10): umbrales y tarifas son catalogo, no constantes")
                 .isEmpty();
     }

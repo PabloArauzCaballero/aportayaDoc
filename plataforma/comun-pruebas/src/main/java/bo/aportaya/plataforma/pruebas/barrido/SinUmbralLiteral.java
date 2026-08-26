@@ -32,6 +32,11 @@ public final class SinUmbralLiteral {
     public static List<Hallazgo> revisar(Path raiz) {
         List<Hallazgo> hallazgos = new ArrayList<>();
         for (Path archivo : TamanoDeArchivo.fuentesJava(raiz)) {
+            // «fuera de seeders/ y PRUEBAS»: una prueba de dinero necesita escribir
+            // importes, y prohibirselos la obligaria a armarlos por concatenacion.
+            if (archivo.toString().contains("/src/test/")) {
+                continue;
+            }
             List<String> lineas = leer(archivo);
             for (int i = 0; i < lineas.size(); i++) {
                 String linea = lineas.get(i);

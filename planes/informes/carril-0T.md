@@ -3,17 +3,17 @@ tags:
   - plan
   - informe
   - carril
-titulo: "Carril 0T — cimientos del repositorio"
+titulo: "Carril 0T — cimientos, capa de datos y núcleo transversal"
 ola: 0
-fase: 0
+fase: 0-2
 modulo: troncal
 rama: pablo/feature/carril-0T-cimientos
 estado: en curso
 ---
 
-# Carril 0T — cimientos del repositorio
+# Carril 0T — cimientos, capa de datos y núcleo transversal
 
-**Fase** 0 · **Casos de uso** ninguno (esta fase construye el piso) · **Máquina** Mac M5
+**Fases** 0, 1 y 2 · **Casos de uso** ninguno (este carril construye el piso) · **Máquina** Mac M5
 
 > Tramo **T0** de [[17 Plan de acción secuencial · coordinación de cinco máquinas]] §5.
 > Es **bloqueante**: ningún otro carril trabaja hasta que su gate esté ejecutado.
@@ -45,6 +45,48 @@ estado: en curso
 | Una prueba de humo de `sagaTest` | este carril, más adelante | Fase 2, cuando exista la primera saga. Escribir una saga falsa para marcar una casilla es bajar el gate |
 | `apps/backoffice` compilando el cliente TypeScript | **P4 Dell A** | Ola F0 · Delta 2. No es de este carril |
 | `verificar_boveda.py` en verde | **no es de este carril** | Falla por un wikilink roto en `docs/Views/AportaYa-Maqueta.md` (cambio de maqueta sin commitear): apunta a `planes/20`, y `planes/` no es parte de la bóveda |
+
+## Fase 1 · `comun-dominio` — los diez átomos
+
+| Átomo | Estado | Nota |
+| --- | :-: | --- |
+| `Dinero` · `Moneda` | ✅ | Escala 2, moneda pegada al importe, `dividir` exige regla de redondeo |
+| `Periodo` | ✅ | Solape detectado aunque toque por un solo día |
+| `PlazoHabil` · `CalendarioHabil` | ✅ | Calendario **inyectado**; corre a favor del cliente, nunca hacia atrás |
+| `ContextoSesion` · `SinContextoDeSesion` | ✅ | Sin rol no hay contexto; `sistema` es un rol, no una excepción |
+| `ClaveIdempotencia` | ✅ | Derivada del hecho: `aporte:<id>` |
+| `CodigoError` | ✅ | `AP-CU<NN>-<nn>` validado al construir |
+| `Prorrateo` | ✅ | Reparto por total acumulado |
+| `Reloj` · `Ids` | ✅ | Los dos se inyectan; el azar es criptográfico |
+| `Traza` | ✅ | Atraviesa los catorce servicios |
+
+**Evidencia:** `41 pruebas · 0 saltadas · 0 falladas` · cobertura de **ramas 100 %** y
+**líneas 99,4 %** sobre un piso declarado de 95 % · ninguna dependencia de Spring ni
+de jOOQ (lo verifica ArchUnit).
+
+### Un defecto que encontró la prueba de ejemplo, no la de propiedad
+
+`Prorrateo` redondeaba cada parte por separado y volcaba el residuo en la primera:
+repartir 90,00 entre tres daba **30,02 · 29,99 · 29,99**. La suma cuadraba —por eso
+las mil pruebas de propiedad pasaban— y aun así estaba mal: dos participantes ponían
+un centavo de menos y uno tres de más. Ahora se reparte por total acumulado y ninguna
+parte se aleja más de un centavo de su proporción justa.
+
+**Es el argumento entero a favor de tener las dos.** La propiedad prueba que no se
+pierde plata; el ejemplo prueba que el reparto es justo.
+
+### Dos trampas del entorno, desactivadas en el troncal
+
+1. **jqwik reportaba sus propiedades como SALTADAS** al convivir con `@Test` en la
+   misma clase: tres mil casos de cuadre que nunca corrieron, con el build en verde.
+   Las propiedades viven ahora en su propia clase, y **el build falla si cualquier
+   corredor deja una prueba saltada** — que era la única forma de que esto no
+   volviera a pasar en silencio.
+2. **El daemon de Gradle no arrancaba en frío.** `gradle-daemon-jvm.properties` pedía
+   Java 21 sin decir de dónde bajarlo: funcionaba mientras el daemon siguiera vivo y
+   fallaba con `No defined toolchain download url` en el primer arranque limpio — es
+   decir, en las otras cuatro máquinas. Regenerado con las URLs de las seis
+   plataformas.
 
 ## Decisiones tomadas, y por qué
 
