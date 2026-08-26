@@ -138,6 +138,156 @@ Los tres se arreglaron en la fuente de verdad —`docs/Restricciones.md` y
 
 **Total de `plataforma/`: 73 pruebas · 0 saltadas · 0 falladas.**
 
+## Carril 1A · `identidad` — CU-04 terminado
+
+**`POST /sesiones` · Autenticar con MFA y registrar dispositivo.** Recorre el
+pipeline entero: contrato OpenAPI → interfaz generada → controlador → organismo con
+`@Transactional` → `conContexto` → escritura → outbox → `COMMIT`.
+
+**Evidencia (los tres CU):** `65 pruebas · 0 saltadas · 0 falladas` en `identidad`, de las cuales
+**los 7 criterios de aceptación de la bóveda** y **una prueba de rechazo por cada uno
+de los 9 `R-XXX-nn` citados**. `verificar_criterios.py` → «sin divergencias».
+
+### Dos decisiones que valen más que el código
+
+1. **El caso de uso no lanza para rechazar.** El caso de uso pide que el intento
+   fallido quede escrito; si el organismo lanzara, la transacción revertiría y se
+   llevaría consigo el `intento_autenticacion` que acaba de escribir. Devuelve un
+   `ResultadoDeAutenticacion` y la página lo traduce a `422` **después del `COMMIT`**.
+2. **CU-04 no lleva clave de idempotencia, y es deliberado.** Cada intento *es* un
+   hecho distinto. Colapsar dos en uno borraría justo lo que hay que poder contar.
+
+### Lo que el motor encontró y el código no
+
+Escribiendo las pruebas, la base rechazó cuatro cosas que yo había dado por buenas:
+columnas inventadas en cinco tablas, `ip_origen` que es `inet` y no cadena, y
+`ck_asignacion_no_autoasignada` — nadie se asigna un rol a sí mismo (`R-SEG-07`).
+**Ninguna la habría visto una revisión de código.**
+
+### Lo que queda de 1A, y por qué
+
+| CU | Estado | Por qué |
+| :-: | :-: | --- |
+| CU-04 | ✅ | — |
+| CU-01 | bloqueado | Escribe en `cumplimiento` (debida diligencia, calificación de riesgo, expediente) y en `nucleo_financiero` (cuenta de billetera y su espejo contable). Es una **saga**, no una transacción local, y necesita los contratos de los carriles 1B y 1C |
+| CU-05 | bloqueado | `aceptacion_contrato` y `contrato_adhesion` viven en `cumplimiento`. El caso de uso dice `openapi/identidad.yaml` pero sus tablas son de otro servicio: **hueco declarado**, hay que decidir de quién es antes de escribirlo |
+| **CU-08** | ✅ | Asignar y revocar roles de operador. 6 criterios + 7 rechazos |
+| **CU-09** | ✅ | Cambiar credenciales y solicitar la baja. 8 criterios + 9 rechazos |
+
+## Carril 2C · `grupos` — siete casos de uso
+
+| CU | Qué resuelve | Evidencia |
+| :-: | --- | --- |
+| **CU-59** | Calendario de días no hábiles · el cálculo | 4 criterios + 5 rechazos |
+| **CU-60** | Sortear los turnos, con compromiso y revelación | 4 criterios + 4 rechazos |
+| **CU-62** | Permutar turnos entre participantes | 3 criterios + 3 rechazos |
+| **CU-63** | Proponer y votar un acuerdo | 4 criterios + 4 rechazos |
+| **CU-64** | Traspasar un cupo | 3 criterios + 4 rechazos |
+| **CU-65** | Retirarse de un grupo | 3 criterios + 3 rechazos |
+| **CU-69** | Invitar a un contacto | 4 criterios + 6 rechazos |
+
+**`grupos`: 92 pruebas · 0 saltadas · 0 falladas.**
+**Monorepo entero: 323 pruebas · 0 saltadas · 0 falladas.**
+
+> El commit de CU-69 dice «329 pruebas». La cifra correcta es **323**: conté un
+> informe de ejecución que incluía una clase dos veces.
+
+### Un intento mío de violar el invariante 11, atrapado antes de la prueba
+
+En CU-69 escribí `yaEsParticipante` como una consulta que unía
+`grupos.participante` con `identidad.usuario` para resolver un teléfono. **Este
+servicio no lee el esquema de otro.** La respuesta llega resuelta desde afuera, igual
+que el token de invitación —que lo emite `identidad`, dueño de `token_verificacion`—
+y que los importes de CU-65.
+
+Que lo haya escrito sin pensarlo es el argumento entero a favor de
+`AislamientoEsquemaTest`: la disciplina no alcanza, y la revisión de código tampoco.
+
+### La decisión que más pesa: el sorteo lo puede recomputar cualquiera
+
+El índice de cada paso de Fisher-Yates **no sale de un generador del lenguaje** sino
+de `SHA256(semilla || ":" || paso)`. Con `Random(semilla)` el resultado dependería de
+la implementación de la JVM y «cualquiera puede recomputarlo» valdría solo para quien
+tenga esta misma JVM. Con SHA-256 lo recomputa un participante con veinte líneas de
+Python, y el procedimiento está escrito paso a paso en el javadoc.
+
+El compromiso publica **solo el hash**. Sin esa separación, quien ejecuta el sorteo
+podría probar semillas hasta que salga el orden que le conviene.
+
+### Lo que el modelo me corrigió
+
+| Qué creí | Qué dice el modelo |
+| --- | --- |
+| Un período tiene varios turnos | `uq_turno_periodo` es único sobre `periodo_id` **a secas**: cada período tiene UN beneficiario. Es lo que hace que un pasanaku sea un pasanaku |
+| `quorum_decisiones` es un porcentaje | Es `numeric(4,3)`: una **fracción**. 60 desborda; el sesenta por ciento es 0,600 |
+| Los tipos de acuerdo son los del CU | El `.puml` manda: `CONDONACION_MORA`, no `CONDONACION`; y `TRASPASO_CUPO` y `REPETIR_SORTEO` **no existen** |
+
+### El patrón de los CU que cruzan servicios, y cómo se resolvió
+
+Cinco casos de uso resultaron asignados a un servicio que **no puede escribir donde el
+caso de uso dice que escribe**. No es error de ninguno: la asignación CU↔servicio se
+hizo por módulo del `.puml` y hay casos de uso que cruzan módulos. Cada uno se
+resolvió, y la resolución es la misma tres veces:
+
+| CU | Cruza a | Decisión |
+| :-: | --- | --- |
+| **CU-01** | `cumplimiento`, `nucleo_financiero`, `auditoria` | **Coreografía por eventos.** No es saga |
+| **CU-20** | `tarifas`, `nucleo_financiero` | **Coreografía por eventos.** Igual |
+| **CU-59** | `catalogo` | **Es siembra**, no endpoint. Ya estaba sembrado |
+| **CU-05** | `cumplimiento` | **Cambia de dueño**: es del carril 1C |
+| **CU-64/65/68/69** | varios, solo lectura | Los datos ajenos **llegan resueltos** por parámetro |
+
+#### Por qué CU-01 y CU-20 no son sagas
+
+La tentación era llamarlas saga. **El propio proyecto dice que no:** `estado_saga`
+existe solo en `aportes`, `entregas`, `garantia` y `tarifas`, y el recetario §8b acota
+la saga a «cuando **hay dinero en vuelo**». En una apertura de cuenta y en la creación
+de un grupo no hay dinero en vuelo: hay una cuenta que se abre en cero y un precio que
+se congela.
+
+Lo que sí hay es **coreografía**, que es exactamente para lo que existe el outbox. El
+servicio dueño hace su parte en una transacción local y emite; los otros consumen y
+hacen la suya. Cada uno escribe en su esquema, y ninguno necesita permiso sobre el
+ajeno.
+
+**Y el estado intermedio no es un rodeo, es la verdad:** el usuario nace
+`PENDIENTE_VERIFICACION` y el grupo nace `BORRADOR` porque, hasta que los otros
+respondan, ni el usuario puede operar ni el grupo puede recibir a nadie. Por eso las
+dos operaciones responden **`202` y no `201`**: el contrato de CU-01 prometía
+`cuentaBilleteraId` en la respuesta, y esa cuenta todavía no existe cuando la
+operación contesta. **No se promete en el contrato lo que la arquitectura no puede
+entregar sincrónicamente.**
+
+#### CU-05 cambia de dueño
+
+`aceptacion_contrato` y `contrato_adhesion` viven **enteros** en `cumplimiento`.
+Asignado a `identidad` obliga a una llamada entre servicios para algo que en
+`cumplimiento` es una transacción local. **Pasa al carril 1C**, y con eso deja de ser
+del Mac.
+
+## Estado final de los carriles del Mac
+
+| Tramo | Carril | Estado |
+| --- | --- | :-: |
+| T0 | **Fase 0** · cimientos | ✅ |
+| T1 | **Fase 1** · átomos, `conContexto`, los cuatro invariantes | ✅ |
+| T1 | **Fase 2** · `comun-web`, `comun-mensajeria`, barridos | ✅ |
+| T2 | **Carril 1A** · `identidad` — CU-01, 04, 08, 09 | ✅ (CU-05 pasó a 1C) |
+| T3 | **Carril 2C** · `grupos` — CU-20, 59, 60, 62, 63, 64, 65, 68, 69 | ✅ |
+| T4–T7 | **F3–F5** · app móvil | pendiente |
+| T8 | **F12** · E2E y tiendas | pendiente |
+
+**371 pruebas · 0 saltadas · 0 falladas** · 13 casos de uso verificados contra la
+bóveda, sin divergencias.
+
+### Lo que queda, y por qué queda
+
+| Qué | Por qué |
+| --- | --- |
+| `e2eTest` y el perfil `todo` de compose | Fase 17. Levantar quince contenedores para probar dos servicios cuesta más de lo que rinde |
+| `sagaTest` con una saga real | Ninguno de los dos carriles del Mac tiene saga: no hay dinero en vuelo en ninguno de sus trece casos de uso. La primera saga es CU-21, del carril 3A |
+| La app móvil (F3–F5) y F12 | Son los tramos T4 a T8. Dependen del cliente TypeScript, que ya está generado y compila |
+
 ## Decisiones tomadas, y por qué
 
 | Decisión | Por qué | Dónde |

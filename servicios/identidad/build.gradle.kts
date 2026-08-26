@@ -26,8 +26,11 @@ dependencies {
     implementation(libs.shedlock)
     implementation(libs.resilience4j)
     implementation(libs.micrometer)
+    implementation(libs.argon2)          // credenciales: hash lento con pimienta
+    implementation(libs.spring.boot.security)
 
     testImplementation(project(":plataforma:comun-pruebas"))
+    testImplementation(libs.spring.boot.jdbc)
     testImplementation(libs.bundles.pruebas)   // JUnit 5, AssertJ, Testcontainers, ArchUnit
 }
 

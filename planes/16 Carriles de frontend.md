@@ -132,8 +132,21 @@ por carril es directo (una pantalla = un archivo, sin router central):
 | :-: | :-: | --- |
 | **M** | F2 | `navegacion/` (tab bar, `ProveedorSesion`, deep links) · `pantallas/notificaciones/bandeja` |
 | **M1** | F3 | `pantallas/identidad/`: bienvenida · registro · verificación básica · contrato · sesión · mfa · dispositivo · **verificación profunda** · perfil · contraseña · baja |
-| **M2** | F4 | `pantallas/billetera/`: inicio (saldo) · recargar · retirar · cuenta-bancaria · extracto · pagar-aporte (saga) · confirmación |
-| **M3** | F5 | `pantallas/pasanaku/`: unirse · postular · grupo/[codigo] · **organizador** · **crear** 🔒 · sorteo · reputación · reseñar · **reclamo** · **denunciar** |
+| **M2** | F4 | `pantallas/billetera/`: inicio (saldo) · recargar · retirar · cuenta-bancaria · extracto · pagar-aporte (saga) · confirmación · **aportes/[id]/no-puedo-pagar** · **entregas/mi-turno/cobro** · `pantallas/alianzas/`: **mis-vales** · **vales/[id]/uso** |
+| **M3** | F5 | `pantallas/pasanaku/`: unirse · postular · **solicitudes/[id]** · **grupo/[codigo]/solicitudes** · grupo/[codigo] · **grupo/[codigo]/mi-turno** · **grupo/[codigo]/ofertas** · **grupo/[codigo]/ofertas/nueva** · **organizador** · **nivel** · **crear** 🔒 · sorteo · reputación · reseñar · `pantallas/soporte/`: **ayuda** · **reclamos/nuevo** |
+
+> **Las once pantallas en negrita las suman los deltas D-15 a D-22** de
+> [[20 Maqueta de referencia · deltas del frontend]]. Tres cosas que conviene ver antes de
+> repartir:
+>
+> 1. **`alianzas/` es carpeta nueva de M2**, no de M3. Un vale es un descuento sobre plata
+>    que la persona ya tiene; no es un asunto del grupo.
+> 2. **`soporte/` es carpeta nueva de M3.** Podría discutirse que va en M1 —es una
+>    pantalla de cuenta—, pero el reclamo nace casi siempre de algo del pasanaku, y el
+>    plazo de CU-52 se prueba junto al resto de los plazos del grupo.
+> 3. **`grupo/[codigo]/solicitudes` es la primera pantalla de M3 que solo ve un rol.**
+>    El guard no es del shell —no depende del nivel de verificación— sino de `soyOrg` en
+>    ese grupo, así que lo pinta M3 con `AP-CU68-07` y su explicación.
 
 > **El gate básica/profunda es del shell, no de cada pantalla.** El `ProveedorSesion` de **M**
 > expone el nivel de verificación; las acciones de nivel profundo (crear grupo, habilitarse
@@ -149,8 +162,8 @@ Router (una ruta = un archivo) y el organismo `TablaDeDatos` como pieza de traba
 | Carril | Fase | Rutas que posee (`apps/backoffice/src/rutas/…`) |
 | :-: | :-: | --- |
 | **B** | F6 | shell: `layout/`, `proveedores/`, `organismos/TablaDeDatos`, tablero, **`operacion/estado`** (estado de plataforma) |
-| **B1** | F7 | `operacion/`: conciliación · cierre-diario · desembolsos (autorizar/ejecutar) · reclamos · **políticas-resolución** · roles · tarifario · reportes · **fondeo (QR)** · **mensajería** |
-| **B2** | F8 | `cumplimiento/`: **verificaciones como expediente** (aprobar/observar/rechazar con causal del catálogo) · alertas · casos/ROS · uif · gobierno |
+| **B1** | F7 | `operacion/`: conciliación · cierre-diario · desembolsos (autorizar/ejecutar) · reclamos · **solicitudes-escaladas** (D-15) · **políticas-resolución** · roles · tarifario · reportes · **fondeo (QR)** · **mensajería** |
+| **B2** | F8 | `cumplimiento/`: **verificaciones como expediente** (aprobar/observar/rechazar con causal del catálogo) · **organizadores** (habilitaciones, D-16) · alertas · casos/ROS · uif · gobierno |
 | **B5** | F8.D | `sistemas/`: estado de servicios · slo · despliegues · base-de-datos · respaldos · proveedores · outbox · webhooks · **accesos** · **incidentes** |
 | **B3** | F13 | `contabilidad/`: período · presupuesto · compras/CxP · cobros · activos · estados (mini-contable esencial) |
 | **B4** | F14 | `publicidad/`: partners · anunciantes · campañas (aprobar) · moderación · liquidación |

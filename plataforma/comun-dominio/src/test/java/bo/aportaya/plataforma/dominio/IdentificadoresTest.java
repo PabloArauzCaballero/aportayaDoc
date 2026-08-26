@@ -58,7 +58,10 @@ class IdentificadoresTest {
             assertThat(vistos.add(ids.nuevo())).isTrue();
         }
         assertThat(ids.nuevo().version()).isEqualTo(4);
-        assertThat(Traza.nueva(ids).id()).isNotBlank();
+
+        Traza traza = Traza.nueva(ids);
+        assertThat(traza.id()).isNotBlank();
+        assertThat(traza).hasToString(traza.id());
     }
 
     @Test

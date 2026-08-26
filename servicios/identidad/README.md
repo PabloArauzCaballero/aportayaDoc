@@ -17,7 +17,13 @@ Modulo 01 de la boveda — Identidad, Usuarios y Seguridad.
 
 | CU | Nombre | Estado |
 | --- | --- | --- |
-| | *(los llena `nuevo_cu.py`)* | |
+| CU-04 | Autenticar con MFA y registrar dispositivo | ⬜ sin implementar |
+
+| CU-08 | Asignar y revocar roles de operador | ⬜ sin implementar |
+
+| CU-09 | Cambiar credenciales y solicitar la baja | ⬜ sin implementar |
+
+| CU-01 | Registro y apertura de billetera | ⬜ sin implementar |
 
 ## Eventos que emite
 

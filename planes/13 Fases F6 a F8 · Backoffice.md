@@ -111,6 +111,11 @@ componentes de dominio, no comparte layout (ADR-004).
 - [ ] Reclamo favorable sin reparación ⇒ **no se puede cerrar** (probado)
 - [ ] Oficio sin archivo ⇒ no se ejecuta (probado)
 - [ ] El cierre diario lista las excepciones que lo bloquean
+- [ ] **Cola de solicitudes de ingreso escaladas** (D-15): cuando un organizador deja
+      vencer las 48 horas, el pedido llega acá. Sin esta cola, el plazo que la app le
+      promete al postulante no lo sostiene nadie
+- [ ] Los reclamos ahora **tienen puerta de entrada en la app** (D-18): el volumen deja
+      de ser hipotético, y el plazo se muestra **guardado**, no recalculado
 
 ---
 
@@ -170,6 +175,23 @@ reglas de automatización con **vista previa en lenguaje llano** y confirmación
 que caduca · **tablero de indicadores** con meta, variación y lo provisorio marcado
 como tal.
 
+**Lo que suma D-16** ([[20 Maqueta de referencia · deltas del frontend]]). La habilitación
+de organizadores tenía una línea en la lista de arriba y pasa a tener pantalla propia,
+`cumplimiento/organizadores`, porque es **la respuesta institucional a quién autoriza a
+alguien a administrar plata ajena**: no otro participante, no el grupo, sino este
+escritorio.
+
+| Bloque | Qué muestra |
+| --- | --- |
+| Cola de postulaciones | Nivel pedido, **puntaje congelado al postular**, requisitos cumplidos sobre el total y el motivo del faltante |
+| Los cuatro niveles | Las 14 filas de `requisito_habilitacion` con sus umbrales, **traídas del contrato de `2E`** — nunca escritas en la pantalla |
+| **Lo que no puede pasar** | Aprobar sin firma · rechazar sin decir qué faltó · evaluar con requisitos posteriores a la postulación · dejar grupos huérfanos al suspender · habilitar con incumplimiento en curso |
+
+Y una regla que se lee antes de aprobar la primera: **la suspensión por capacitación
+vencida frena grupos nuevos pero no toca los vigentes.** Dejar grupos huérfanos es peor
+que tener un organizador con el curso vencido, y es contraintuitivo, así que va escrito
+en la pantalla y no en un instructivo.
+
 ## Las cuatro reglas de esta fase
 
 1. **Nada que dependa de una simulación se activa sin ella**: reglas de cumplimiento
@@ -196,6 +218,16 @@ como tal.
 - [ ] Indicador provisorio marcado como tal; indicador bajo el mínimo de casos,
       suprimido
 - [ ] Todo reporte muestra **el permiso que exige** antes de ejecutarse
+- [ ] **La habilitación de organizadores muestra la lista de requisitos evaluados**, no
+      un veredicto (D-16), y los umbrales **llegan del contrato de `2E`**: ninguno escrito
+      en la pantalla
+- [ ] Aprobar una habilitación **sin dejar firma es imposible**: lo impide
+      `ck_solicitud_ingreso_resuelta` en su equivalente de organizador, y la interfaz no
+      ofrece el camino
+- [ ] Rechazar una habilitación exige **motivo y fecha desde la que se puede volver a
+      postular** — un rechazo sin camino de vuelta es una expulsión encubierta
+- [ ] Un organizador **suspendido por capacitación vencida sigue administrando** sus
+      grupos vigentes, y la pantalla lo dice
 
 ---
 

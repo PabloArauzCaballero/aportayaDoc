@@ -36,8 +36,17 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/EntradaRegistro' }
       responses:
-        '201':
-          description: Cuenta abierta, con los topes que le corresponden al nivel
+        '202':
+          description: >-
+            Alta aceptada. El usuario queda PENDIENTE_VERIFICACION y NO opera
+            todavia: la debida diligencia la hace `cumplimiento` y la billetera la
+            abre `nucleo-financiero` al consumir `identidad.usuario_registrado`.
+
+            Es 202 y no 201 a proposito. El caso de uso describe la salida con
+            `cuentaBilleteraId` y `nivelDiligencia`, pero esa cuenta todavia no
+            existe cuando esta operacion responde: prometerla seria decirle al
+            cliente que ya tiene algo que nadie abrio. Los dos campos viajan cuando
+            estan, no antes.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/SalidaRegistro' }
@@ -46,6 +55,32 @@ paths:
           # AP-CU01-01 KYC_RECHAZADO · AP-CU01-02 COINCIDENCIA_EN_LISTA
           # AP-CU01-03 CUENTA_YA_EXISTE (R-BIL-04) · AP-CU01-04 CONTRATO_NO_ACEPTADO
           # AP-CU01-05 SERVICIO_NO_AUTORIZADO (R-LIC-01)
+
+  /sesiones:
+    post:
+      operationId: autenticar                 # CU-04
+      summary: Autenticar con MFA y registrar dispositivo
+      description: >-
+        Ruta publica: es el momento en que todavia no hay sesion. NO lleva
+        Idempotency-Key a proposito — cada intento es un hecho distinto y queda
+        registrado en intento_autenticacion, incluidos los fallidos.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaAutenticacion' }
+      responses:
+        '200':
+          description: Sesion abierta
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaAutenticacion' }
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU04-01 CREDENCIAL_INVALIDA · AP-CU04-02 CUENTA_BLOQUEADA
+          # AP-CU04-03 FACTOR_REQUERIDO   · AP-CU04-04 TOKEN_VENCIDO
+          # AP-CU04-05 DEMASIADOS_INTENTOS · AP-CU04-06 FACTOR_NO_ENROLADO
+          # AP-CU04-07 FACTOR_NO_ADMISIBLE (R-SEG-10)
 
 components:
   parameters:
@@ -78,6 +113,32 @@ components:
         mensaje:  { type: string }
         detalle:  { type: object }
         trazaId:  { type: string }
+    FactorPresentado:
+      type: object
+      additionalProperties: false
+      required: [tipo, valor]
+      properties:
+        tipo:  { type: string, enum: [OTP, BIOMETRIA, TOTP] }
+        valor: { type: string, maxLength: 12 }
+    EntradaAutenticacion:
+      type: object
+      additionalProperties: false
+      required: [telefonoE164, huellaDispositivo]
+      properties:
+        telefonoE164:      { type: string, pattern: '^\+591\d{8}$' }
+        credencial:        { type: string, minLength: 8, maxLength: 128 }
+        huellaDispositivo: { type: string, maxLength: 128 }
+        plataforma:        { type: string, enum: [ANDROID, IOS, WEB] }
+        factor:            { $ref: '#/components/schemas/FactorPresentado' }
+    SalidaAutenticacion:
+      type: object
+      additionalProperties: false
+      required: [requiereFactorAdicional, dispositivoConfiable]
+      properties:
+        sesionId:                { type: string, format: uuid }
+        expiraEn:                { type: string, format: date-time }
+        requiereFactorAdicional: { type: boolean }
+        dispositivoConfiable:    { type: boolean }
     Documento:
       type: object
       additionalProperties: false
@@ -110,9 +171,14 @@ components:
     SalidaRegistro:
       type: object
       additionalProperties: false
-      required: [usuarioId, cuentaBilleteraId, nivelDiligencia, limites]
+      # Solo `usuarioId` y `estado` son obligatorios: son lo unico que existe al
+      # responder. La cuenta y sus topes llegan cuando `nucleo-financiero` termina.
+      required: [usuarioId, estado]
       properties:
-        usuarioId:         { type: string, format: uuid }
+        usuarioId: { type: string, format: uuid }
+        estado:
+          type: string
+          enum: [PENDIENTE_VERIFICACION, ACTIVO]
         cuentaBilleteraId: { type: string, format: uuid }
         nivelDiligencia:
           type: string

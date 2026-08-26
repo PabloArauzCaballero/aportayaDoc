@@ -24,6 +24,16 @@ aportaya:
   jwt:
     jwks-uri: ${JWKS_URI}           # ADR-024: cada servicio valida la firma el mismo
   zona-horaria: America/La_Paz      # plazos habiles
+  seguridad:
+    # Fuera de la base a proposito: filtrar la tabla de credenciales no alcanza si
+    # la pimienta no esta ahi. Si falta la variable, el proceso NO levanta.
+    pimienta: ${SEGURIDAD_PIMIENTA}
+  acceso:
+    # Del catalogo cuando exista umbral_operativo; por ahora, configuracion — nunca
+    # una constante dentro del codigo (invariante 10).
+    intentos-maximos: 5
+    duracion-bloqueo: PT30M
+    vigencia-sesion: PT12H
 
 management:
   endpoint:

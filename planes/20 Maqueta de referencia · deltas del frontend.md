@@ -4,9 +4,9 @@ tags:
   - frontend
   - maqueta
 titulo: "Maqueta de referencia — deltas del frontend"
-fecha: 2026-08-20
+fecha: 2026-08-25
 depende_de: [F0, F1]
-afecta: [F1, F3, F4, F5, F6, F7, F8]
+afecta: [F1, F3, F4, F5, F6, F7, F8, "2B", "2C", "2E", "4B", "5B"]
 ---
 
 # Maqueta de referencia — deltas del frontend
@@ -16,6 +16,14 @@ afecta: [F1, F3, F4, F5, F6, F7, F8]
 > mandando sobre *qué* hace cada pantalla; la maqueta manda sobre *cómo se ve y cómo
 > se comporta*. Cuando la maqueta y un plan de fase no coincidan, gana la maqueta y
 > **se corrige el plan**, no al revés.
+
+> [!important] Los deltas D-15 a D-22 tocan también el **backend**
+> Los primeros catorce deltas eran de frontend: la maqueta mostraba con más desglose algo
+> que el backend ya resolvía. Los ocho nuevos no. Cambian una **transacción** (D-15: el
+> canje ya no ocupa cupo), un **contrato** (D-19: el descuento por nivel es un concepto de
+> tarifa, no un cálculo del cliente) y una **respuesta** (D-22: aportes devuelve el ciclo
+> completo). Los carriles de backend afectados están en la columna derecha de la tabla, en
+> negrita, y **no pueden enterarse cuando el frontend llegue a componer**.
 
 > [!warning] Lo que la maqueta **no** es
 > No es diseño final ni código a copiar: es HTML de una sola pieza con un simulador de
@@ -43,6 +51,14 @@ afecta: [F1, F3, F4, F5, F6, F7, F8]
 | **D-12** | *Mis aportes* tiene **dos vistas**: la lista y el calendario del mes | F4, F5 |
 | **D-13** | La invitación se **escanea o se escribe**, y el enlace lo emite **quien organiza** | F5 |
 | **D-14** | La portada abre con **dónde estás**, no con cuánto tenés | F4, F5 |
+| **D-15** | Canjear la invitación **no da cupo**: abre una solicitud que el organizador resuelve | F5, **2C**, **F7** |
+| **D-16** | Ser organizador es una **habilitación con requisitos medibles**, y la otorga cumplimiento | F5, F7, **2E** |
+| **D-17** | *No voy a poder pagar* existe como **botón**, y cambia la etapa de cobranza | F4, F5, **4B** |
+| **D-18** | El **Punto de Reclamo** tiene puerta en la app, con el plazo guardado al ingresar | F5, F7 |
+| **D-19** | Subir de nivel **no paga un bono en efectivo**: levanta topes y baja la comisión | F4, F5, **2B** |
+| **D-20** | El **mercado de turnos** tiene dos lados, y el riesgo se evalúa después de aceptar | F5, **2C** |
+| **D-21** | El **vale** lo paga el comercio y no toca la custodia | F4, **5B** |
+| **D-22** | El calendario llega **hasta que se cierra el último pasanaku** | F4, F5 |
 
 Y una regla transversal, que es la que produjo casi todos los deltas:
 
@@ -297,9 +313,18 @@ grupo por votación.
 
 **3 · La confirmación explícita.** Una casilla que dice el compromiso en números, y
 recién ahí el botón. Al confirmar, el token se marca canjeado **en la misma
-transacción** que ocupa el cupo: no existe la ventana donde dos personas entran con la
-misma invitación. Si el último cupo se lo llevó otro, se dice así (`AP-CU68-04`) y la
+transacción** que abre la solicitud de ingreso: no existe la ventana donde dos personas
+usan la misma invitación. Si ya no quedan cupos, se dice así (`AP-CU68-04`) y la
 invitación queda viva.
+
+> [!warning] Corregido por D-15 — leer los dos juntos
+> Hasta la versión 2 de la maqueta, este punto decía que el token se canjeaba «en la
+> misma transacción **que ocupa el cupo**». Eso contradice
+> [[CU-68 Postular a un grupo y ser emparejado]] §4, donde el organizador revisa y
+> acepta o rechaza, y contradice la restricción `ck_solicitud_ingreso_resuelta`, que
+> impide cerrar una solicitud sin `revisada_por` ni `fecha_resolucion`. **Lo que se
+> consume en esa transacción es el token; el cupo lo da el organizador después.**
+> El botón de confirmar dice *Pedir mi cupo*, no *Entrar al grupo*.
 
 ---
 
@@ -371,17 +396,36 @@ exigible*— llevada al calendario, donde la tentación de sumar todo es mayor p
   mes con su cantidad de cuotas, después la grilla, y abajo las cuotas del mes —o las del
   día que se toque, que se elige y se suelta.
 - **Se navega solo entre los meses que tienen cuotas.** Una flecha que lleva a un mes
-  vacío no informa nada y hace dudar de si la app perdió los datos.
+  vacío no informa nada y hace dudar de si la app perdió los datos. Con el ciclo entero
+  cargado (D-22) eso ya no recorta nada: todos los meses del pasanaku tienen cuota.
 - **Un día puede tener cuotas de dos grupos.** El fondo del día lo pinta el estado más
   urgente y los puntos dicen cuántas son y de qué color es cada una: un solo color por día
   escondería una cuota vencida detrás de otra al día.
-- **La semana empieza el lunes**, y *hoy* se marca con un aro y no con relleno — el
-  relleno ya está diciendo el estado de pago.
+- **La semana empieza el lunes**, y *hoy* se marca con un **aro** y no con relleno — el
+  relleno ya está diciendo el estado de pago. El aro es `box-shadow` además del borde,
+  para que gane sobre el borde de estado sin taparlo.
+- **El color de la celda no puede ser solo relleno.** Una celda mide unos 36 px, y a ese
+  tamaño los tintes de chip (`--ok-bg`, `--warn-bg`, `--err-bg`) son todos el mismo
+  claro: verde pálido y amarillo pálido no se distinguen. Cada estado lleva **relleno más
+  borde del color del estado**; el contorno es lo que separa una celda de la de al lado.
+- **La leyenda se pinta con las mismas reglas que la celda.** Un cuadrado de color sólido
+  al pie no se parece a nada de lo que hay arriba: explicaría un calendario distinto del
+  que se está viendo. La leyenda incluye también la marca de *hoy*.
 - **La tarjeta de la cuota es la misma en las dos vistas.** Se llega distinto; no se
   informa distinto ni se puede hacer menos.
 
+**El selector entre las dos vistas tiene que verse elegido.** Es un `SelectorSegmentado`,
+y la maqueta se equivocó una vez de una forma que conviene no repetir: pintaba la pista con
+`--field` y el segmento activo con `--surface`, que en tema claro son **el mismo
+`#FFFFFF`** y en oscuro dos verdes a tres unidades de distancia. Lo único que los separaba
+era una sombra al 10 %, así que no se veía cuál vista estaba puesta ni que aquello fuera un
+interruptor. **Regla para `packages/ui`: el estado elegido de un segmentado no puede
+depender de que dos tokens de fondo sean distintos.** Va con relleno de marca —
+`--verde-solido` sobre `--sobre-verde-solido`— que es el mismo que el resto del sistema usa
+para «esto está seleccionado».
+
 **Cambio en F4 y F5:** la fila de *aportes pendientes* pasa a *«Mis aportes: lista y
-calendario del mes, con selector entre las dos»*, y el gate de F4 suma las tres reglas de
+calendario del mes, con selector entre las dos»*, y el gate de F4 suma las reglas de
 arriba.
 
 ---
@@ -473,6 +517,392 @@ abajo»*, y el gate suma las cuatro prohibiciones de arriba.
 
 ---
 
+## D-15 · Canjear la invitación no da cupo: abre una solicitud
+
+Este delta **corrige a D-10** y es el más caro de descubrir tarde, porque toca la
+transacción, no la pantalla.
+
+**Lo que hace el canje.** Consume el token de un solo uso y crea una
+[[solicitud_ingreso]] en estado `PENDIENTE`, con `grupo_id`, `usuario_id`, el canal por
+el que llegó (QR o código) y el puntaje explicable congelado. **No ocupa cupo.** El cupo
+lo ocupa la resolución del organizador, y la restricción
+`ck_solicitud_ingreso_resuelta` exige que esa resolución venga con `revisada_por` y
+`fecha_resolucion`: un `UPDATE` que cierre la solicitud sin decir quién la cerró es
+rechazado por la base, no por la aplicación.
+
+**Por qué, si el token ya es de un solo uso.** Porque un QR se reenvía. Quien lo emite
+conoce al invitado; quien lo recibe de tercera mano, no. Y hay una regla del modelo que
+sin este paso no la aplica nadie: `criterio_emparejamiento.max_morosos_por_grupo = 1`.
+Si el cupo se toma solo, el segundo moroso entra igual y el grupo se entera cuando ya
+está adentro.
+
+### Las tres pantallas
+
+| Pantalla | Ruta | Quién la ve |
+| --- | --- | --- |
+| Confirmación del canje | `pasanaku/unirse` | Quien pide · el botón dice ***Pedir mi cupo***, no *Entrar al grupo* |
+| **Tu pedido de cupo** | `pasanaku/solicitudes/[id]` | Quien pidió, mientras espera |
+| **Quién quiere entrar** | `pasanaku/grupo/[codigo]/solicitudes` | Solo quien organiza · guard duro con `AP-CU68-07` |
+
+### Lo que exige *Tu pedido de cupo*
+
+Esperar sin saber qué se espera es un limbo, y un limbo con plata de por medio se lee
+como que algo salió mal. La pantalla dice cuatro cosas y ninguna es decorativa:
+
+1. **Quién decide**, con nombre. No «el sistema».
+2. **Cuánto tiene para decidir**: 48 horas, calculadas y **guardadas al crear la
+   solicitud**. No se recalculan al consultar — misma regla que los plazos de reclamo y
+   de descargo.
+3. **Qué ve de vos quien decide**, en dos columnas explícitas. Ve nombre, puntaje con
+   sus factores, ciclos completados e incumplimientos declarados. **No ve** saldo,
+   movimientos, en qué otros grupos estás, ni tu documento. Decide sobre tu historial
+   de cumplimiento, no sobre tu plata.
+4. **Las tres salidas**, antes de que ocurran: aceptada (recién ahí se genera la primera
+   obligación), sin cupo al resolver (lista de espera, con tu lugar en la fila) y
+   rechazada (motivo escrito y **desde cuándo podés volver a pedir**).
+
+**Mientras espera no se le cobra nada y no se le aparta saldo.** Hay que decirlo en la
+pantalla: es la primera duda de cualquiera que ve un pedido pendiente.
+
+### Lo que exige *Quién quiere entrar*
+
+- **El puntaje llega descompuesto**, en motivos a favor y en contra, nunca como número
+  suelto. Un `712` no le dice nada a quien organiza; «2 pasanakus completos, 14 aportes
+  en fecha, es su primer grupo de este monto» sí.
+- **Rechazar exige motivo escrito, y el sistema no deja confirmar en blanco.** No es
+  burocracia: sin motivo no hay nada que apelar, y el debido proceso del modelo se apoya
+  en que toda decisión que perjudica a alguien se pueda mostrar. El motivo viaja al
+  postulante tal cual se escribió, junto con la fecha desde la que puede volver a pedir.
+- **La cola muestra el plazo de cada pedido**, y el que vence hoy va en rojo. El plazo
+  corre contra el organizador, no contra el postulante.
+- **Aceptar es idempotente.** Dos toques del mismo botón no ocupan dos cupos.
+
+**Cambio en F5 y 2C:** la fila de *unirse con código* pasa a *«canje que abre solicitud,
+seguimiento del pedido y cola de resolución del organizador»*. El contrato de **2C** suma
+`POST /grupos/{cod}/solicitudes-ingreso` y
+`POST /grupos/{cod}/solicitudes-ingreso/{id}/resolucion`. **F7** suma la vista de
+solicitudes escaladas cuando el organizador deja vencer el plazo.
+
+---
+
+## D-16 · Organizar es una habilitación, y no la da otro usuario
+
+**La pregunta que contesta:** ¿qué se le pide a alguien para administrar la plata de un
+grupo, y quién se lo aprueba?
+
+**La respuesta corta:** catorce requisitos medibles en cuatro niveles, y lo aprueba el
+**equipo de cumplimiento**, no otro participante y no el grupo. Administrar plata de
+terceros es la actividad que el regulador mira; la habilitación es la evidencia de que
+se le dio a alguien que cumplía una lista que se puede mostrar.
+
+### Los cuatro niveles
+
+Los umbrales **no se escriben en la pantalla ni en el código**: son las catorce filas de
+`requisito_habilitacion` de `seeders/minimos/17-organizador-y-emparejamiento.json`, y son
+acumulativas — para Senior hay que cumplir además todo lo de Estándar.
+
+| Nivel | Antigüedad | Reputación | Capacitación | Garantía | Qué habilita |
+| --- | --- | --- | --- | --- | --- |
+| `APRENDIZ` | 3 meses | 600 | 1 módulo | — | 1 grupo · hasta Bs 500 de aporte |
+| `ESTANDAR` | 6 meses | 650 | 2 módulos | — | 3 grupos · hasta Bs 1.500 |
+| `SENIOR` | 12 meses | 720 | 2 módulos | Bs 2.000 | 8 grupos · hasta Bs 5.000 |
+| `MAESTRO` | 24 meses | 800 | 3 módulos, con LGI/FT | Bs 5.000 | Sin tope |
+
+Todos exigen además **debida diligencia reforzada vigente**: quien maneja plata de otros
+se conoce mejor que quien maneja la propia.
+
+### Lo que exige la pantalla del participante
+
+- **Lista de cumplidos y faltantes, no un sí o un no.** Lo pide
+  [[CU-90 Postular a organizador y habilitarse]] §2, y la razón es que un «no calificás»
+  sin decir qué falta es una puerta cerrada sin picaporte. Cada requisito se muestra con
+  **tu valor al lado del umbral** y el código de la fila (`HAB_APRENDIZ_REPUTACION`), que
+  es lo que permite discutir el criterio en vez de discutir el resultado.
+- **El puntaje se congela al postular.** Si los requisitos cambian entre la postulación y
+  la resolución, se evalúa con los vigentes al momento de postular: no se mueve el arco
+  con la pelota en el aire.
+- **Los cinco pasos a la vista**: pedir · evaluar · aprobar la capacitación · firmar el
+  contrato · quedar con un nivel. Sin firma no se crean grupos, aunque esté aprobado.
+- **Capacitación vencida suspende, no elimina.** No abre grupos nuevos, pero **sigue
+  administrando los que tiene**: dejar grupos huérfanos es peor que tener un organizador
+  con el curso vencido. Hay que decirlo en la pantalla porque es contraintuitivo.
+
+### Lo que exige la vista de backoffice
+
+`cumplimiento/organizadores`, en el backoffice **financiero** (grupo «Cumplimiento», fase **F8.C**), con
+la cola de postulaciones pendientes y, por cada una, el nivel pedido, el puntaje
+congelado y cuántos requisitos cumple sobre el total. Y un bloque de **lo que no puede
+pasar**, que es el que se lee antes de aprobar la primera:
+
+| No puede pasar | Por qué |
+| --- | --- |
+| Aprobar sin dejar firma | La restricción de base rechaza el `UPDATE` sin `revisada_por` |
+| Rechazar sin decir qué faltó | Un rechazo sin camino de vuelta es una expulsión encubierta |
+| Evaluar con requisitos posteriores a la postulación | Mover el arco con la pelota en el aire |
+| Dejar grupos huérfanos al suspender | La suspensión frena grupos nuevos, no los vigentes |
+| Habilitar con incumplimiento en curso | Rechazo automático hasta que se resuelva y pase la ventana |
+
+**Cambio en F5, F7 y 2E:** F5 suma `pasanaku/organizador`; **F8.C** suma
+`cumplimiento/organizadores`; el contrato de **2E** expone los requisitos evaluados con su
+código, no solo el veredicto.
+
+---
+
+## D-17 · *No voy a poder pagar* es un botón
+
+Todo el aparato del incumplimiento —fondo de garantía, escalera de cobranza, matriz de
+sanción, descargo, apelación— ya estaba en el modelo y **vivía únicamente en el
+backoffice**. El que debe no veía nada de eso: veía un recargo creciendo.
+
+**La decisión de producto:** avisar antes existe como acción. No perdona la deuda —el
+importe es el mismo— pero **cambia la etapa de cobranza en la que entra**, y con eso
+cambian los canales, la frecuencia, el tope de contactos y si interviene una persona.
+
+### Las cuatro salidas, cada una con su costo a la vista
+
+| Salida | Qué hace | Costo que se muestra |
+| --- | --- | --- |
+| Pagar en dos partes | Mitad ahora, mitad en 15 días; el fondo cubre la diferencia | Sin recargo si cumple las dos fechas |
+| Plan de regularización | Hasta 3 cuotas, lo aprueba quien organiza, queda escrito con fechas | Congela el recargo mientras se cumpla |
+| Que el fondo cubra la cuota | El grupo no ve el faltante; queda deuda con el fondo | Suma deuda con el fondo y baja el puntaje |
+| Ceder el cupo | Alguien de la lista de espera toma el lugar | Cierra la participación en ese grupo |
+
+**Ninguna opción se ofrece sin decir qué cuesta.** Una lista de salidas sin costos es una
+lista de trampas.
+
+### La escalera, que no la decide nadie
+
+Las seis etapas de `estrategia_cobranza` se muestran completas, con sus canales y su tope
+de contactos por semana. El punto de mostrarla no es informar: es que **nadie decide a
+mano cuánto insistirle a quien debe**. La etapa la fija el atraso.
+
+| Etapa | Días | Canales | Tope semanal | Persona | Quita |
+| --- | --- | --- | :-: | :-: | :-: |
+| Preventiva | −3 a 0 | Push · WhatsApp · en la app | 1 | no | no |
+| Temprana | 1 a 7 | Push · WhatsApp · SMS | 3 | no | no |
+| Administrativa | 8 a 30 | WhatsApp · SMS · llamada | 3 | **sí** | no |
+| Prejudicial | 31 a 90 | WhatsApp · llamada · correo | 2 | sí | **sí** |
+| Judicial | 91 a 365 | Correo · llamada | 1 | sí | sí |
+| Castigo | 366 a 1.095 | Solo correo | 1 | sí | sí |
+
+Y los dos plazos del debido proceso, **guardados el día que empiezan**: 5 días hábiles de
+descargo y 5 de apelación, con la apelación resuelta por **otra persona**. Los feriados
+no cuentan, y ninguno de los dos se recalcula al consultar.
+
+**Cierra con el fondo de garantía, y no es un consuelo:** el grupo cobra igual, el que
+sigue en el turno recibe su bolsa completa y a tiempo, y lo que queda abierto es una
+deuda con el fondo, no un agujero entre vecinos. Es la diferencia entre este producto y
+un pasanaku de cuaderno, y el momento de decirlo es justo cuando la persona está por no
+pagar.
+
+**Cambio en F4, F5 y 4B:** la tarjeta de cuota exigible suma la acción *No voy a poder
+pagar*; el gate de F5 suma que **el participante ve su propio expediente**, no solo el
+operador.
+
+---
+
+## D-18 · El Punto de Reclamo tiene puerta en la app
+
+El backoffice tenía la bandeja de reclamos desde el principio. Lo que no existía era
+**la puerta por donde entran**. Un Punto de Reclamo es una exigencia formal de la RNSF
+Libro 4 Título I, y el canal en la app es uno de sus tipos (`punto_reclamo.tipo`).
+
+**Lo que hace distinta a esta pantalla de un formulario de contacto:** el plazo se
+calcula y **se guarda cuando el reclamo entra**. Después no se recalcula nunca, aunque el
+caso se mire seis semanas más tarde. Es `reclamo_cliente.plazo_respuesta`, y es la
+columna que hace auditable el cumplimiento.
+
+| Lo que la pantalla entrega al enviar | Por qué |
+| --- | --- |
+| **Número correlativo único** (`REC-2026-08-0157`) | `codigo` es `UNIQUE`; con ese número se sigue el caso por cualquier canal |
+| **Fecha límite concreta**, no «a la brevedad» | 5 días hábiles administrativos, guardados |
+| Que puede extenderse a 10 **avisando dentro del plazo** | `plazo_prorrogado_hasta` + `prorroga_comunicada_al_cliente_en` |
+| Que más de 10 se le informa **por escrito a la ASFI** | `prorroga_comunicada_al_organismo_en` |
+| Que existe **segunda instancia** y después la ASFI | Y que reclamar acá primero **no le hace perder ese derecho** |
+
+**Los cuatro canales son el mismo Punto de Reclamo.** App, WhatsApp, teléfono y oficina
+entran al mismo expediente con el mismo número y el mismo plazo. Si cada canal abriera su
+propio caso, el reporte mensual a la ASFI contaría cuatro reclamos donde hay uno.
+
+**Y la pantalla distingue cuatro cosas que la gente confunde**, porque cada una tiene otro
+camino y otros plazos: consulta (no abre expediente), reclamo (abre caso con plazo),
+denuncia (sobre la conducta de otro, puede ser anónima) y desconocimiento de cargo (va por
+CU-19, con plazos propios).
+
+> **Nadie de AportaYa pide la contraseña ni el PIN para atender un reclamo.** La frase va
+> en la pantalla, no en un instructivo: el canal de soporte es donde más se intenta la
+> suplantación.
+
+**Cambio en F5 y F7:** F5 suma `soporte/ayuda` y `soporte/reclamos/nuevo`; el gate de F5
+ya exigía el plazo guardado y ahora tiene dónde verificarlo desde el lado del cliente.
+
+---
+
+## D-19 · Subir de nivel no paga un bono en efectivo
+
+**La pregunta:** ¿cuánto se le da a alguien que sube de nivel?
+
+**La respuesta de la maqueta es una aritmética, no una cifra**, porque una cifra sola no
+se puede discutir. Dos datos mandan.
+
+**Primero, cuánto hay para repartir.** La única comisión que cobra la plataforma es la de
+la entrega: `COM_ENTREGA`, 0,3 % de la bolsa con piso Bs 10 y techo Bs 50, una vez por
+turno cobrado. Todo lo demás está en Bs 0. En un grupo de Bs 10.000 son **Bs 30 por
+persona y por ciclo**. Un bono de Bs 20 se come dos tercios de eso.
+
+**Segundo, y es el que decide:** el saldo de la billetera es **pasivo exigible con
+respaldo uno a uno** en `cuenta_custodia`. Regalar Bs 20 de saldo obliga a depositar
+Bs 20 reales, o el encaje deja de cuadrar en la próxima conciliación. No es una
+promoción: es emitir dinero electrónico sin haberlo recibido.
+
+| Modelo de premio | Lo que cuesta | Veredicto |
+| --- | --- | --- |
+| Bs 20 en efectivo al subir | 66 % del ingreso del ciclo **y** hay que respaldarlo en custodia | **No** |
+| 50 % de descuento en la comisión del próximo turno | Sale del margen, no de la custodia | **Sí** |
+| Vale que paga un comercio aliado | Bs 0 para la plataforma | **Sí** (ver D-21) |
+
+**Y el premio que ya existía y nadie mostraba:** subir de nivel **levanta los topes**. De
+`SIMPLIFICADA` a `REFORZADA` el saldo máximo va de Bs 2.000 a Bs 50.000. Eso no cuesta
+plata, lo paga el propio historial de la persona, y es lo que realmente estaba pidiendo
+quien pedía «un premio».
+
+**Dónde se ve el descuento aplicado.** En el cobro del turno, con el desglose completo:
+bolsa, comisión, descuento por nivel, acreditado. Y con una advertencia que la pantalla
+dice sola: **en una bolsa chica la comisión toca el piso y el descuento vale poco**. En
+la demo, sobre Bs 3.000 la comisión da Bs 9 y manda el piso de Bs 10, así que el 25 % son
+Bs 2,50. La pantalla lo dice y agrega la tabla con bolsas de Bs 10.000 y Bs 20.000.
+Inflar la bolsa de ejemplo para que el número luciera mejor sería mentir sobre el
+tarifario.
+
+**Cambio en F4, F5 y 2B:** F5 suma `pasanaku/nivel`; F4 suma el desglose del cobro con la
+línea de descuento; el contrato de **2B** expone el descuento **como concepto de tarifa
+con su regla**, no como un ajuste calculado en el cliente.
+
+---
+
+## D-20 · El mercado de turnos tiene dos lados
+
+Un turno temprano da liquidez antes; uno tardío obliga a esperar. Esa diferencia tiene
+precio, y el mercado existe para que se pacte de forma ordenada en vez de arreglarse por
+WhatsApp entre dos personas.
+
+**La asimetría que ordena todo:** quien quiere **adelantar, paga**; quien acepta
+**esperar, cobra**. Y de ahí sale qué se habilita antes: ceder no le agrega riesgo al
+grupo, adelantar sí.
+
+| Pantalla | Ruta | Qué resuelve |
+| --- | --- | --- |
+| **Tu turno** | `pasanaku/grupo/[codigo]/mi-turno` | Qué vale ceder, con demanda e interesados |
+| **Ceder mi turno** | `.../ofertas/nueva` | Publicar: hasta dónde me corro y cuánto pido |
+| **Ofertas del grupo** | `.../ofertas` | Aceptar la de otro, con la validación de riesgo |
+
+### Las cinco reglas que el carril no puede negociar
+
+1. **El valor se muestra como rango y se dice que es estimado.** Publicar un número
+   exacto sería fijar precio en un mercado de dos partes, y convertiría una estimación en
+   una promesa.
+2. **El tope de compensación es regulatorio, no comercial.** 5 % de la bolsa. Sin ese
+   techo, compensar cinco meses de espera es una tasa de interés, y prestar plata es otra
+   licencia — la de «pagos y plataformas de pago» no la cubre. **La pantalla marca el
+   tope antes de que se pise**, no después: el botón de publicar se bloquea con
+   `AP-CU62-05` y el motivo escrito.
+3. **`EN_VALIDACION` va después de `ACEPTADA`, nunca antes.** Validar antes obligaría a
+   correr el motor de riesgo contra cada interesado hipotético. La consecuencia es
+   incómoda y hay que asumirla: **una permuta pactada puede caerse**, y por eso el dinero
+   recién se mueve en `EJECUTADA`.
+4. **El motor mira al que adelanta, no al que espera.** Los cinco factores —cuotas que le
+   quedan por aportar, historial, mora abierta, riesgo agregado del grupo, tope de
+   compensación— se muestran con su valor y su umbral. Cuando bloquea, el motivo es sobre
+   la exposición del grupo, no sobre la persona: «lo dejaría cobrando la bolsa con 6
+   cuotas por aportar».
+5. **Hay tope de permutas por ciclo** (2). Si no, el orden del grupo se vuelve un mercado
+   permanente y el sorteo deja de significar algo.
+
+**El acceso depende del nivel.** Por debajo de 480 puntos la pantalla **no se abre y
+explica por qué**, con el enlace a *Tu nivel*: ceder un turno compromete a todo el grupo,
+así que se pide historial antes que confianza.
+
+**Cambio en F5 y 2C:** F5 suma las tres pantallas; el contrato de **2C** expone la oferta
+con sus once estados y la aceptación como operación idempotente que devuelve el veredicto
+de riesgo con sus factores.
+
+---
+
+## D-21 · El vale lo paga el comercio, y por eso puede ser grande
+
+Es la contracara de D-19. El descuento de un vale **no sale de la plataforma ni de la
+custodia**: lo pone el comercio aliado, que a cambio llega a alguien que va a tener plata
+en la mano en pocas semanas. Por eso puede ser mucho más grande que cualquier bono que la
+plataforma pudiera regalar.
+
+| Lo que exige la pantalla | Por qué |
+| --- | --- |
+| **QR que rota cada 30 segundos** | Un vale es plata: con código fijo, una foto compartida vale lo mismo que el vale |
+| El código corto al lado del QR | Misma razón que en la invitación: quien no puede escanear, dicta |
+| **Estado en fila propia** | Disponible, reservado, utilizado, expirado, cancelado, bloqueado |
+| De dónde salió el vale | Campaña, insignia, ciclo completado, referido — el origen es parte del beneficio |
+| Las condiciones, completas | Sucursales, acumulable o no, tope por persona |
+| **El rechazo por doble canje** | `AP-VAL-03` · es la protección que hace que un comercio acepte poner el descuento |
+
+**Dos reglas del canje que el carril hereda del módulo de alianzas:**
+
+1. **El beneficio se congela en el canje.** Si mañana la campaña baja del 8 % al 6 %, el
+   vale ya usado siguió valiendo lo de ese día — misma regla que el tarifario congelado
+   por grupo.
+2. **El presupuesto corta la emisión, nunca el canje.** Un vale en manos de alguien es una
+   obligación asumida.
+
+Y una que es de esta pantalla: **al canjear se muestra cuánto se ahorró en bolivianos**,
+y que **no se descontó nada del saldo**. Si no se dice, la mitad de la gente va a creer
+que el vale le sacó plata de la billetera.
+
+**Cambio en F4 y 5B:** F4 suma `alianzas/mis-vales` y `alianzas/vales/[id]/uso` en los
+accesos rápidos de la portada; **5B** expone el canje como operación idempotente con
+firma, y la validación del lado del comercio vive en el portal partner, fuera de este
+repositorio de app.
+
+---
+
+## D-22 · El calendario llega hasta que se cierra el último pasanaku
+
+**El defecto:** los escenarios de la maqueta traían a mano solo las cuotas que la demo
+necesitaba contar —la del mes, la siguiente y una pagada—, así que el calendario se
+quedaba sin meses a los dos toques de flecha. **Un pasanaku de doce períodos se veía como
+si durara tres.**
+
+**La corrección, y de dónde sale el dato.** Un pasanaku tiene duración conocida desde el
+día que se sortea: un período por cupo. Y esa duración ya está escrita —`turnos[].mes`
+dice en qué mes cobra cada turno—, así que las cuotas que faltan **no se inventan, se
+derivan**. Quedan exactamente tantas cuotas como turnos.
+
+En el frontend real esto **no es una función del cliente**: `GET /aportes/obligaciones`
+tiene que devolver el ciclo completo, con las futuras marcadas como tales. Derivarlo en
+la app sería recalcular en el cliente algo que el período ya fijó al abrirse.
+
+| Regla | Detalle |
+| --- | --- |
+| Rango del calendario | De la primera cuota del pasanaku más viejo a la última del más nuevo |
+| Estado por período | Anterior al mes en curso `PAGADA` · el mes en curso `PENDIENTE` · posterior `FUTURA` |
+| Lo escrito a mano manda | Si el período ya tiene una obligación con su mora y su recargo, **no se pisa** |
+| Ubicación | «Mes 6 de 14, hasta que se cierre el último pasanaku» |
+| **Volver a hoy** | Con catorce meses, regresar a flechazos es inaceptable |
+
+### El efecto sobre la lista, que hay que resolver y no ignorar
+
+Con el ciclo completo, la lista pasaría a mostrar once tarjetas, nueve de ellas «todavía
+no se abre», enterrando las dos que importan. La lista contesta *qué pago ahora*, así que:
+
+- muestra **entera** la parte exigible —pendiente y vencida—;
+- asoma **las dos próximas** que todavía no se abren;
+- y cierra con una línea que dice **cuántas quedan y hasta cuándo**, con el paso al
+  calendario, que es donde vive la pregunta *cómo vengo*.
+
+**Cambio en F4 y 2C/3A:** el gate de F4 suma que el calendario cubre el ciclo completo y
+que la lista no se deja invadir por lo que todavía no se debe; el contrato de aportes
+devuelve el ciclo entero.
+
+---
+
 ## 2 · Componentes que suma `packages/ui` (F1)
 
 La maqueta usa nueve piezas que el inventario de [[11 Fases F0 y F1 · Cimientos y sistema de diseño]] no tenía. Se agregan a F1 **antes** de que los carriles compongan:
@@ -495,6 +925,16 @@ La maqueta usa nueve piezas que el inventario de [[11 Fases F0 y F1 · Cimientos
 | `RielDeTurnos` | molécula | El orden sorteado con tu lugar y cuánto falta |
 | `CalendarioDeCuotas` | organismo | El mes de los aportes por estado de pago (D-12) |
 | `CodigoQR` | átomo | Depósito e invitación: el mismo dibujo, distinto payload |
+| `ListaDeRequisitos` | organismo | Cumplidos y faltantes con tu valor al lado del umbral (D-16) |
+| `RelojDePlazo` | molécula | Un plazo guardado, con lo que falta y de qué norma sale (D-15, D-17, D-18) |
+| `TarjetaDeSolicitud` | organismo | Pedido de ingreso con puntaje descompuesto y las dos acciones (D-15) |
+| `OpcionConCosto` | molécula | Una salida y lo que cuesta elegirla, en la misma tarjeta (D-17) |
+| `EscaleraDeEtapas` | molécula | Tramos contiguos con su canal y su tope (D-17) |
+| `Vale` | organismo | Cupón con muesca, QR rotativo, estado y condiciones (D-21) |
+| `MedidorDeRango` | molécula | Valor estimado entre un mínimo y un máximo, con su escala (D-20) |
+| `TarjetaDeOferta` | organismo | Permuta: lo que te dan, lo que te piden y la compensación (D-20) |
+| `PanelDeFactores` | organismo | Veredicto con los factores que lo produjeron y sus umbrales (D-20) |
+| `DesgloseDeCobro` | molécula | Bruto, comisión, descuento y neto, en filas con total separado (D-19) |
 
 Y dos reglas de estilo que la maqueta fija y `disenar-frontend` recoge:
 
@@ -503,6 +943,13 @@ Y dos reglas de estilo que la maqueta fija y `disenar-frontend` recoge:
    ya dicen la dirección.
 2. **Los movimientos se agrupan por día**, con el neto del día y el **saldo corrido**
    al costado de cada línea. Una lista plana de importes no es un extracto.
+3. **Un estado elegido no puede depender de que dos tokens de fondo sean distintos.**
+   `--field` y `--surface` son el mismo blanco en tema claro y dos verdes casi iguales en
+   oscuro; un segmentado que los usaba para pista y segmento activo quedaba invisible en
+   los dos temas. Lo elegido va con relleno de marca (D-12).
+4. **Un color de estado en una superficie chica lleva relleno y borde.** Por debajo de
+   unos 40 px, los tintes al 12–15 % son indistinguibles entre sí. Y la muestra de la
+   leyenda se pinta con **las mismas reglas** que la pieza que explica (D-12).
 
 ---
 

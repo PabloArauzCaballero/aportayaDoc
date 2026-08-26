@@ -17,7 +17,23 @@ Modulo 02 de la boveda — Grupos, Cupos, Turnos y Gobernanza.
 
 | CU | Nombre | Estado |
 | --- | --- | --- |
-| | *(los llena `nuevo_cu.py`)* | |
+| CU-59 | Mantener el calendario de días no hábiles | ⬜ sin implementar |
+
+| CU-60 | Sortear los turnos | ⬜ sin implementar |
+
+| CU-63 | Proponer y votar un acuerdo | ⬜ sin implementar |
+
+| CU-62 | Permutar turnos entre participantes | ⬜ sin implementar |
+
+| CU-65 | Retirarse de un grupo | ⬜ sin implementar |
+
+| CU-64 | Traspasar un cupo | ⬜ sin implementar |
+
+| CU-69 | Invitar a un contacto y registrar sus referencias | ⬜ sin implementar |
+
+| CU-68 | Postular a un grupo y ser emparejado | ⬜ sin implementar |
+
+| CU-20 | Crear grupo y congelar tarifario | ⬜ sin implementar |
 
 ## Eventos que emite
 
