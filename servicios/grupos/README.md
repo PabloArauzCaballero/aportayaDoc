@@ -33,6 +33,8 @@ Modulo 02 de la boveda — Grupos, Cupos, Turnos y Gobernanza.
 
 | CU-68 | Postular a un grupo y ser emparejado | ⬜ sin implementar |
 
+| CU-20 | Crear grupo y congelar tarifario | ⬜ sin implementar |
+
 ## Eventos que emite
 
 | Tema | Cuando |

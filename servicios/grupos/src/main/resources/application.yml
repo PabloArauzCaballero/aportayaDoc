@@ -24,6 +24,10 @@ aportaya:
   jwt:
     jwks-uri: ${JWKS_URI}           # ADR-024: cada servicio valida la firma el mismo
   zona-horaria: America/La_Paz      # plazos habiles
+  grupos:
+    # Fraccion, no porcentaje: quorum_decisiones es numeric(4,3). Del catalogo
+    # cuando exista; por ahora configuracion, nunca una constante en el codigo.
+    quorum-por-omision: 0.600
 
 management:
   endpoint:

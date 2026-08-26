@@ -295,6 +295,33 @@ paths:
           # AP-CU68-05 CONCENTRACION_DE_RIESGO · AP-CU68-06 SOLICITUD_DUPLICADA
           # AP-CU68-07 PROPUESTA_EXPIRADA
 
+  /grupos:
+    post:
+      operationId: crearGrupo                  # CU-20
+      summary: Crear el grupo y disparar el congelamiento del tarifario
+      description: >-
+        El grupo nace BORRADOR y emite `grupos.grupo_creado`; `tarifas` congela el
+        precio y `nucleo-financiero` abre la cuenta del grupo al consumirlo. Pasa a
+        ABIERTO_A_INSCRIPCION cuando los dos respondieron.
+
+        Que nazca en borrador no es un rodeo: un grupo sin precio congelado no puede
+        recibir a nadie, porque el precio es justamente lo que cada participante
+        acepta al firmar el reglamento. Dejarlo abierto antes seria pedirle a alguien
+        que se comprometa a un costo que todavia no existe.
+
+        La cuenta del grupo tiene por titular al GRUPO y nunca al organizador
+        (R-GRP-04): si fuera del organizador, la plata del grupo estaria a nombre de
+        una persona.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      responses:
+        '202':
+          description: Grupo creado en borrador, a la espera del precio congelado
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU20-01 SIN_TARIFARIO_VIGENTE     · AP-CU20-02 ORGANIZADOR_NO_HABILITADO
+          # AP-CU20-03 TARIFA_YA_CONGELADA       · AP-CU20-04 SERVICIO_NO_AUTORIZADO
+
 components:
   parameters:
     ClaveIdempotencia:
