@@ -35,8 +35,8 @@ la especificación visual de las pantallas que [[Flujo de pantallas · app del p
 
 Nueve cambios, y todos salieron de la misma pregunta: *«¿y esto qué es?»*. Están
 recogidos como deltas de planificación en
-[[20 Maqueta de referencia · deltas del frontend]], que es lo que corrige las fases del
-frontend para que lo construido coincida con esto.
+`planes/20 Maqueta de referencia · deltas del frontend.md`, que es lo que corrige las
+fases del frontend para que lo construido coincida con esto.
 
 | # | Cambio | Dónde se ve |
 | :-: | --- | --- |
