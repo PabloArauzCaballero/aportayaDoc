@@ -88,6 +88,44 @@ pierde plata; el ejemplo prueba que el reparto es justo.
    decir, en las otras cuatro máquinas. Regenerado con las URLs de las seis
    plataformas.
 
+## Fase 1 · `comun-datos` y el invariante 3
+
+`conContexto(ctx, fn)` fija `app.usuario_id`, `app.rol` y `app.traza` con
+`set_config(..., true)` —que es `SET LOCAL`— dentro de la transacción en curso.
+
+Tres decisiones, y las tres tienen su prueba:
+
+| Decisión | Por qué | Prueba |
+| --- | --- | --- |
+| **No lleva `@Transactional`** | La transacción la abre el caso de uso, y una sola vez. Si esta clase la abriera por su cuenta, «una transacción por caso de uso» sería una frase | `DatosTest` · sin transacción lanza `SinTransaccion` |
+| **Falla si no hay transacción abierta** | `SET LOCAL` suelto **no fija nada** y PostgreSQL solo emite un WARNING: la consulta correría sin política de fila y devolvería filas de todos, sin error y sin rastro | idem |
+| **`TransactionAwareDataSourceProxy`** | Sin él, jOOQ pide una conexión nueva al pool y la consulta corre fuera de la transacción que acaba de hacer `SET LOCAL` | `ContextoDeFilaRepositorioTest` |
+
+**Evidencia:** `5 pruebas · 0 saltadas · 0 falladas`, tres de ellas contra PostgreSQL
+real: fila propia ⇒ 1, fila ajena ⇒ **0 filas y ningún error**, rol privilegiado ⇒
+todas, y el contexto muere en el `COMMIT`.
+
+### El hallazgo más caro del carril: RLS no estaba en vigor
+
+Al escribir esa prueba apareció que `svc_identidad` **veía cero filas de su propia
+tabla**. Tirando del hilo:
+
+| # | Qué | Consecuencia |
+| :-: | --- | --- |
+| 1 | `fn_seg_aplicar_rls()` recorría `WHERE n.nspname = 'public'` | Se escribió antes de que [[ADR-017 Propiedad de datos por servicio]] partiera el modelo en catorce esquemas. Desde entonces **no encontraba ni una tabla**: de las **86** con `usuario_id` o `cuenta_billetera_id`, ninguna tenía política de fila |
+| 2 | La verificación de `R-SEG-03` —«tablas con datos de titular sin RLS forzada»— filtraba por el **mismo** `public` | Devolvía cero filas siempre. **La comprobación que debía denunciar el agujero lo estaba tapando** |
+| 3 | Las políticas se escriben `FOR ALL TO rol_aplicacion`, y `rol_aplicacion` **no tenía un solo miembro** | Los servicios se conectan como `svc_<esquema>`. Una política que no le aplica a nadie no protege: la tabla queda abierta o cerrada por accidente, nunca por diseño |
+
+Los tres se arreglaron en la fuente de verdad —`docs/Restricciones.md` y
+`scripts/generar_ddl.py`—, no en el SQL generado.
+
+**Antes:** 6 tablas con RLS activa. **Después:** **92 tablas, 92 políticas**, y
+`bd:reset` sigue en 165 OK / 0 FALLA.
+
+> `rol_aplicacion` tiene cero privilegios de tabla, no puede iniciar sesión y no
+> tiene `BYPASSRLS`: concederlo no abre nada. Es la marca que hace que las políticas
+> apliquen, y se verificó contra la base antes de tocarla.
+
 ## Decisiones tomadas, y por qué
 
 | Decisión | Por qué | Dónde |

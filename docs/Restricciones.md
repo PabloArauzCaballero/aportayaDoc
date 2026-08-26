@@ -1283,13 +1283,21 @@ DECLARE
       'certificado_reputacion','insignia_otorgada','declaracion_origen_fondos'];
   cond TEXT;
 BEGIN
+  -- Se recorren TODOS los esquemas de servicio, no `public`. Decia
+  -- `n.nspname = 'public'` y se escribio antes de que ADR-017 partiera el modelo en
+  -- catorce esquemas: desde entonces no encontraba ni una tabla, y las 86 que
+  -- llevan usuario_id o cuenta_billetera_id quedaban SIN politica de fila. No
+  -- fallaba nada: el invariante 3 simplemente no estaba en vigor.
   FOR r IN
-      SELECT c.relname AS t,
+      SELECT n.nspname AS esq,
+             c.relname AS t,
              EXISTS (SELECT 1 FROM pg_attribute a
                       WHERE a.attrelid = c.oid AND a.attname = 'usuario_id'
                         AND NOT a.attisdropped) AS por_usuario
         FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
-       WHERE n.nspname = 'public' AND c.relkind IN ('r','p')
+       WHERE n.nspname NOT IN ('pg_catalog','information_schema','pg_toast')
+         AND n.nspname NOT LIKE 'pg_temp%'
+         AND c.relkind IN ('r','p')
          AND EXISTS (SELECT 1 FROM pg_attribute a
                       WHERE a.attrelid = c.oid AND NOT a.attisdropped
                         AND a.attname IN ('usuario_id','cuenta_billetera_id'))
@@ -1299,17 +1307,20 @@ BEGIN
     ELSIF r.por_usuario THEN
       cond := 'usuario_id = fn_seg_usuario_actual() OR fn_seg_rol_privilegiado()';
     ELSE
+      -- La billetera vive en nucleo_financiero, no en el esquema de la tabla que la
+      -- referencia: la subconsulta se califica o no resuelve.
       cond := format('fn_seg_rol_privilegiado() OR EXISTS ('
-                     'SELECT 1 FROM cuenta_billetera c WHERE c.id = %I.cuenta_billetera_id '
-                     'AND c.usuario_id = fn_seg_usuario_actual())', r.t);
+                     'SELECT 1 FROM nucleo_financiero.cuenta_billetera c '
+                     'WHERE c.id = %I.%I.cuenta_billetera_id '
+                     'AND c.usuario_id = fn_seg_usuario_actual())', r.esq, r.t);
     END IF;
 
-    EXECUTE format('ALTER TABLE %I ENABLE ROW LEVEL SECURITY', r.t);
-    EXECUTE format('ALTER TABLE %I FORCE ROW LEVEL SECURITY', r.t);
-    EXECUTE format('DROP POLICY IF EXISTS pol_%s_titular ON %I', r.t, r.t);
+    EXECUTE format('ALTER TABLE %I.%I ENABLE ROW LEVEL SECURITY', r.esq, r.t);
+    EXECUTE format('ALTER TABLE %I.%I FORCE ROW LEVEL SECURITY', r.esq, r.t);
+    EXECUTE format('DROP POLICY IF EXISTS pol_%s_titular ON %I.%I', r.t, r.esq, r.t);
     EXECUTE format(
-      'CREATE POLICY pol_%s_titular ON %I FOR ALL TO rol_aplicacion '
-      'USING (%s) WITH CHECK (%s)', r.t, r.t, cond, cond);
+      'CREATE POLICY pol_%s_titular ON %I.%I FOR ALL TO rol_aplicacion '
+      'USING (%s) WITH CHECK (%s)', r.t, r.esq, r.t, cond, cond);
   END LOOP;
 END $$ LANGUAGE plpgsql;
 
@@ -2793,9 +2804,14 @@ SELECT t.id, t.moneda, c.moneda AS moneda_cuenta
  WHERE c.moneda <> t.moneda;
 
 -- 11) R-SEG-03 · tablas con datos de titular sin RLS forzada
-SELECT c.relname FROM pg_class c
+--     Recorre todos los esquemas de servicio. Filtraba por `public`, igual que la
+--     funcion que aplica RLS, asi que devolvia cero filas SIEMPRE: la verificacion
+--     que debia denunciar el agujero lo estaba tapando.
+SELECT n.nspname || '.' || c.relname FROM pg_class c
   JOIN pg_namespace n ON n.oid = c.relnamespace
- WHERE n.nspname = 'public' AND c.relkind = 'r'
+ WHERE n.nspname NOT IN ('pg_catalog','information_schema','pg_toast')
+   AND n.nspname NOT LIKE 'pg_temp%'
+   AND c.relkind = 'r'
    AND EXISTS (SELECT 1 FROM pg_attribute a
                 WHERE a.attrelid = c.oid AND a.attname = 'usuario_id'
                   AND NOT a.attisdropped)

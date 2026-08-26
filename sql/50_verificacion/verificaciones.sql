@@ -78,9 +78,14 @@ SELECT t.id, t.moneda, c.moneda AS moneda_cuenta
  WHERE c.moneda <> t.moneda;
 
 -- 11) R-SEG-03 · tablas con datos de titular sin RLS forzada
-SELECT c.relname FROM pg_class c
+--     Recorre todos los esquemas de servicio. Filtraba por `public`, igual que la
+--     funcion que aplica RLS, asi que devolvia cero filas SIEMPRE: la verificacion
+--     que debia denunciar el agujero lo estaba tapando.
+SELECT n.nspname || '.' || c.relname FROM pg_class c
   JOIN pg_namespace n ON n.oid = c.relnamespace
- WHERE n.nspname = 'public' AND c.relkind = 'r'
+ WHERE n.nspname NOT IN ('pg_catalog','information_schema','pg_toast')
+   AND n.nspname NOT LIKE 'pg_temp%'
+   AND c.relkind = 'r'
    AND EXISTS (SELECT 1 FROM pg_attribute a
                 WHERE a.attrelid = c.oid AND a.attname = 'usuario_id'
                   AND NOT a.attisdropped)

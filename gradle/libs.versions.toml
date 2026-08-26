@@ -41,6 +41,9 @@ spring-cloud-gateway = { module = "org.springframework.cloud:spring-cloud-starte
 jooq       = { module = "org.jooq:jooq", version.ref = "jooq" }
 postgresql = { module = "org.postgresql:postgresql" }
 snakeyaml  = { module = "org.yaml:snakeyaml" }   # leer los contratos en las pruebas
+# jOOQ trae anotaciones JAXB en sus clases de configuracion; sin la API en el
+# classpath, javac avisa y -Werror convierte el aviso en error.
+jakarta-xml-bind = { module = "jakarta.xml.bind:jakarta.xml.bind-api" }
 # Solo para buildSrc: el generador de clases y el driver que necesita para leer la base viva.
 codegen-jooq      = { module = "org.jooq:jooq-codegen", version.ref = "jooq" }
 driver-postgresql = { module = "org.postgresql:postgresql", version.ref = "driver-postgresql" }
@@ -67,6 +70,7 @@ testcontainers-junit   = { module = "org.testcontainers:junit-jupiter" }
 testcontainers-postgres = { module = "org.testcontainers:postgresql" }
 testcontainers-kafka   = { module = "org.testcontainers:kafka" }
 archunit               = { module = "com.tngtech.archunit:archunit-junit5", version.ref = "archunit" }
+mockito                = { module = "org.mockito:mockito-core" }
 jqwik                  = { module = "net.jqwik:jqwik", version.ref = "jqwik" }
 
 [bundles]
@@ -80,6 +84,7 @@ pruebas = [
     "testcontainers-junit",
     "testcontainers-postgres",
     "archunit",
+    "mockito",
 ]
 
 [plugins]

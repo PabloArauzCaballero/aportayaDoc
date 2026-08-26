@@ -4,7 +4,6 @@ plugins { id("aportaya.libreria") }
 
 dependencies {
     api(project(":plataforma:comun-dominio"))
-    api(project(":plataforma:comun-datos"))
     api(libs.bundles.pruebas)
     api(libs.testcontainers.kafka)
     api(libs.jqwik)

@@ -698,7 +698,13 @@ def escribir_esquemas():
               f"-- outbox y bitacoras: INSERTA, y nada mas. No lee el rastro ajeno.",
               f"GRANT USAGE ON SCHEMA {ESQUEMA_COMUN} TO {r};",
               f"ALTER DEFAULT PRIVILEGES IN SCHEMA {ESQUEMA_COMUN}",
-              f"  GRANT INSERT ON TABLES TO {r};", ""]
+              f"  GRANT INSERT ON TABLES TO {r};",
+              f"-- Las politicas de fila se escriben FOR ALL TO rol_aplicacion",
+              f"-- (sql/40_reglas). Sin esta membresia no le aplican a {r}, y una",
+              f"-- politica que no aplica no protege: la tabla queda abierta o",
+              f"-- cerrada por accidente, nunca por diseno. rol_aplicacion no otorga",
+              f"-- ningun privilegio propio; es la marca que hace aplicar RLS.",
+              f"GRANT rol_aplicacion TO {r};", ""]
 
     L.append("-- 4) search_path por rol: cada servicio ve SU esquema y el catalogo.")
     L.append("--    Refuerza el GRANT: una consulta a una tabla ajena no solo es")
