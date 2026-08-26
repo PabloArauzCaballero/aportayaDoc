@@ -23,6 +23,8 @@ Modulo 02 de la boveda — Grupos, Cupos, Turnos y Gobernanza.
 
 | CU-63 | Proponer y votar un acuerdo | ⬜ sin implementar |
 
+| CU-62 | Permutar turnos entre participantes | ⬜ sin implementar |
+
 ## Eventos que emite
 
 | Tema | Cuando |

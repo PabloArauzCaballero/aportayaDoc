@@ -162,6 +162,25 @@ paths:
           # AP-CU63-03 VOTO_YA_EMITIDO · AP-CU63-04 VOTACION_CERRADA
           # AP-CU63-05 PARTE_INTERESADA
 
+  /turnos/permutas:
+    post:
+      operationId: solicitarPermuta            # CU-62
+      summary: Solicitar la permuta de dos turnos
+      description: >-
+        Sin aceptacion de la contraparte no hay nada: la solicitud nace PENDIENTE.
+        Si alguna parte tiene deuda no se permuta — adelantar el cobro de un moroso
+        lo paga el grupo entero.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      responses:
+        '201':
+          description: Solicitud creada, a la espera de la contraparte
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU62-01 TURNO_NO_PERMUTABLE  · AP-CU62-02 SOLICITANTE_EN_MORA
+          # AP-CU62-03 CONTRAPARTE_EN_MORA  · AP-CU62-04 REGLAMENTO_NO_PERMITE
+          # AP-CU62-05 ACUERDO_SIN_QUORUM
+
 components:
   parameters:
     ClaveIdempotencia:

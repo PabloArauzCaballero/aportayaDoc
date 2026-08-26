@@ -105,6 +105,28 @@ final class FixturaDeGrupos {
         return creados;
     }
 
+    /** Turnos PROGRAMADOS, uno por periodo, en el orden en que llegan los cupos. */
+    List<UUID> turnos(UUID grupoId, List<UUID> periodos, List<UUID> cupos) {
+        List<UUID> creados = new ArrayList<>();
+        for (int i = 0; i < periodos.size(); i++) {
+            UUID id = UUID.randomUUID();
+            dsl.execute(
+                    """
+                    INSERT INTO grupos.turno
+                        (id, grupo_id, periodo_id, cupo_id, orden_asignado, estado,
+                         criterio_asignacion, monto_estimado_cobro)
+                    VALUES (?, ?, ?, ?, ?, 'PROGRAMADO', 'SORTEO', 500.00)
+                    """,
+                    id,
+                    grupoId,
+                    periodos.get(i),
+                    cupos.get(i),
+                    (short) (i + 1));
+            creados.add(id);
+        }
+        return creados;
+    }
+
     /** Un periodo por turno: cada periodo tiene un solo beneficiario. */
     List<UUID> periodos(UUID grupoId, int cuantos, BigDecimal objetivo) {
         List<UUID> creados = new ArrayList<>();
