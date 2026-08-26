@@ -1,0 +1,48 @@
+---
+import '../estilos/andamiaje.css'
+
+interface Props {
+  titulo: string
+  descripcion: string
+  /** Las rutas con datos de personas no se indexan, aunque sean públicas. */
+  indexable?: boolean
+}
+
+const { titulo, descripcion, indexable = true } = Astro.props
+const canonica = new URL(Astro.url.pathname, Astro.site ?? 'https://aportaya.bo')
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{titulo} · AportaYa</title>
+    <meta name="description" content={descripcion} />
+    <link rel="canonical" href={canonica.toString()} />
+    {!indexable && <meta name="robots" content="noindex, nofollow" />}
+  </head>
+  <body>
+    <a href="#contenido" class="saltar">Saltar al contenido</a>
+    <main id="contenido">
+      <slot />
+    </main>
+    <style>
+      /* El enlace de salto existe para quien navega con teclado o lector: se ve
+         solo cuando toma el foco, y sin él hay que tabular todo el encabezado en
+         cada página. */
+      .saltar {
+        position: absolute;
+        left: -9999px;
+      }
+      .saltar:focus {
+        left: var(--espacio-md);
+        top: var(--espacio-md);
+        background: var(--color-fondo);
+        padding: var(--espacio-sm);
+        border: 2px solid var(--color-acento);
+        border-radius: var(--radio-md);
+      }
+    </style>
+  </body>
+</html>

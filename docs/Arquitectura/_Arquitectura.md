@@ -77,6 +77,8 @@ está en [[Stack]]. El motivo por el que son catorce y no uno está en
 | [[ADR-038 Acceso administrativo · segundo factor y recuperación asistida\|038]] | Cómo entra un operador al backoffice y cómo recupera el acceso si lo pierde | Dos factores en todo acceso · TOTP, nunca SMS · recuperación aprobada por otra identidad · lo hace cumplir la base | — |
 | [[ADR-039 Sin efectivo · la plataforma no opera dinero físico\|039]] | Si la plataforma opera dinero en efectivo por corresponsales | No: solo ingreso electrónico y salida a cuenta bancaria · `CU-57` obsoleto · dos tablas retiradas | — |
 | [[ADR-040 Fronteras de transparencia, reputación y riesgo\|040]] | Cómo cruzan la frontera de servicio la transparencia, la reputación y el riesgo | Proyección local por eventos en vez de llamadas · el átomo del sorteo baja a `plataforma` con su protocolo público · `CU-97` se parte en dos servicios · la restricción efectiva vive en `identidad` | — |
+| [[ADR-041 Sitio público · el tercer producto\|041]] | Si existe una tercera superficie sin sesión y con qué se construye | Sí: Astro con islas de React y adaptador de Node · **estático por omisión**, SSR declarado página por página · enmienda ADR-004 | — |
+| [[ADR-042 Política de rastreadores de IA\|042]] | Qué agentes automáticos pueden leer el sitio y para qué | Búsqueda sí, entrenamiento no · `/verificar/` y `/publico/` fuera del índice para todos · `robots.txt` generado y con prueba | — |
 
 ## Decisiones superadas
 

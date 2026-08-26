@@ -1,0 +1,31 @@
+---
+import Base from '../layouts/Base.astro'
+import { CalculadoraDePlazo } from '../componentes/CalculadoraDePlazo'
+
+/**
+ * **La única ruta dinámica del andamiaje.** Consulta un servicio en vivo, así que no
+ * se puede prerenderizar: el resultado depende del calendario de días no hábiles, que
+ * cambia cuando se declara un feriado.
+ *
+ * Todo lo demás del sitio es estático. `prerender = false` se escribe página por
+ * página, y cada vez hay que poder decir por qué.
+ */
+export const prerender = false
+---
+
+<Base
+  titulo="Plazos en días hábiles"
+  descripcion="Calculá cuándo vence un plazo contado en días hábiles, con el detalle de qué días se saltearon y por qué."
+>
+  <h1>Plazos en días hábiles</h1>
+  <p>
+    Un plazo que no se puede explicar no se puede defender. Por eso el cálculo muestra
+    también <strong>qué días se saltearon y por qué</strong>.
+  </p>
+
+  <!--
+    `client:load` y no `client:visible`: es el contenido principal de la página y
+    está arriba de todo. Diferirlo solo agregaría un salto visible.
+  -->
+  <CalculadoraDePlazo client:load />
+</Base>

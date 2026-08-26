@@ -1,0 +1,17 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "types": ["vitest/globals", "@testing-library/jest-dom"],
+    "baseUrl": "../..",
+    "paths": {
+      "@aportaya/simulado": ["packages/simulado/src/index.ts"],
+      "@aportaya/simulado/*": ["packages/simulado/src/*"],
+      "clientes/typescript/*": ["clientes/typescript/*"],
+      "@/*": ["apps/web/src/*"]
+    }
+  },
+  "include": [".astro/types.d.ts", "src/**/*", "pruebas/**/*", "*.mjs", "*.ts"],
+  "exclude": ["dist", "node_modules"]
+}
