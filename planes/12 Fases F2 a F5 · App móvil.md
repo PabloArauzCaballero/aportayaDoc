@@ -152,6 +152,16 @@ acá.**
 | 33 | Extracto | El abono con **el motivo escrito** |
 | 57 | Mapa/lista de puntos | Dónde recargar o retirar en efectivo |
 
+**Y las pantallas que suman los deltas D-17, D-19, D-21 y D-22**, que no salen de un CU
+de billetera sino de la maqueta:
+
+| Ruta | Pantalla | Lo que exige |
+| --- | --- | --- |
+| `aportes/[id]/no-puedo-pagar` | *No voy a poder pagar* (D-17) | Cuatro salidas **con su costo a la vista**, la escalera de cobranza completa y los dos plazos de 5 días hábiles, guardados |
+| `alianzas/mis-vales` | *Mis vales* (D-21) | Total ahorrable, los seis estados, y de dónde salió cada vale |
+| `alianzas/vales/[id]/uso` | *Usar el vale* (D-21) | QR **rotativo cada 30 s**, código corto al lado, condiciones, y el rechazo por doble canje `AP-VAL-03` |
+| `entregas/mi-turno/cobro` | *Cobrás tu turno* (D-19) | Bolsa, comisión, **descuento por nivel** y neto — las cuatro líneas vienen del contrato de `2B` |
+
 ## Las cinco reglas de esta fase
 
 1. **El cliente no calcula ni un centavo.** Muestra lo que el servidor devolvió.
@@ -164,7 +174,15 @@ acá.**
 6. **No existe un botón «pagar mi aporte»** (D-4). Una persona está en varios grupos:
    la tarjeta de saldo lleva a *aportes pendientes*, filtrable por grupo y por fecha,
    y el pago de una cuota es el detalle de esa cuota.
-7. **La publicidad va rotulada, no se cierra y vive en una sola pantalla** (D-7): la
+7. **Un descuento nunca se convierte en saldo** (D-19). Bajar una comisión sale del
+   margen; acreditar saldo obliga a depositar el respaldo en `cuenta_custodia`. La
+   diferencia no es contable: es la que separa una promoción de emitir dinero
+   electrónico sin haberlo recibido. La app no acredita nada por nivel, muestra que se
+   cobró menos.
+8. **El calendario cubre el ciclo entero** (D-22) y **la lista no** — la lista muestra
+   la parte exigible completa, asoma dos futuras y cuenta el resto. Meter once cuotas en
+   una lista de cosas por hacer entierra las dos que importan.
+9. **La publicidad va rotulada, no se cierra y vive en una sola pantalla** (D-7): la
    portada, al pie. Un espacio que el usuario apaga no se le puede vender a nadie: lo
    que se apaga es la **segmentación**, sin que cambie ninguna condición de la cuenta.
    A cambio, el formato es único y lo impone la plataforma —dos líneas y una
@@ -218,6 +236,26 @@ acá.**
 - [ ] Apagar la segmentación **no cambia** comisiones, límites ni acceso a grupos
 - [ ] Retiro sin conexión ⇒ bloqueado con motivo, **nunca encolado**
 - [ ] Número de cuenta enmascarado en pantalla, en logs y en capturas
+- [ ] **El calendario cubre el ciclo completo del grupo** (D-22): un grupo de 12 cupos
+      muestra 12 cuotas y se navega de la primera a la última, con la posición a la vista
+      («mes 6 de 14») y un atajo para volver a hoy
+- [ ] Con el ciclo cargado, **la lista sigue contestando qué pagar ahora**: exigible
+      entera, dos futuras asomadas y una línea que dice cuántas quedan y hasta cuándo
+- [ ] **Los cuatro estados del calendario se distinguen a 36 px** (D-12): cada uno lleva
+      relleno **y borde** del color del estado, no solo el tinte de chip. Verificado en
+      claro y en oscuro
+- [ ] **La leyenda se pinta con las mismas reglas que la celda**, e incluye la marca de
+      *hoy*. Un cuadrado de color sólido al pie explica un calendario que no es el que
+      está arriba
+- [ ] **El segmentado se ve elegido en los dos temas** (D-12): el estado activo no puede
+      depender de que `--field` y `--surface` difieran, porque en claro son el mismo
+      blanco. Va con relleno de marca
+- [ ] *Cobrás tu turno* muestra las cuatro líneas del cobro y **el descuento por nivel
+      viene del servidor** (D-19): ningún porcentaje cableado en la app
+- [ ] El vale muestra **cuánto se ahorró y que no se descontó del saldo** (D-21), y el
+      segundo canje del mismo vale se rechaza con `AP-VAL-03`
+- [ ] La cuota exigible ofrece ***No voy a poder pagar*** (D-17), y cada salida dice
+      **qué cuesta elegirla**
 
 ---
 
@@ -238,6 +276,18 @@ Es el producto propiamente dicho: el grupo.
 | **Reclamos** | 52, 53, 55 | *Ayuda → Reclamo*: **código, plazo y estado siempre a la vista** · elevación a segunda instancia · aviso de incidente que lo afecta |
 | **Reputación** | 70, 71, 74, 75, 76 | Puntaje **con su desglose**, insignias **con pantalla propia** (qué mide, cómo se gana, para qué sirve, cuánta gente la tiene), **perfil público de terceros** desde el orden de turnos (D-6), certificado compartible, reseñas |
 
+**Y seis pantallas que suman los deltas D-15 a D-20.** Tres de ellas no tenían superficie
+de cliente: existían solo del lado del operador.
+
+| Ruta | Pantalla | Delta | Lo que exige |
+| --- | --- | :-: | --- |
+| `pasanaku/solicitudes/[id]` | *Tu pedido de cupo* | D-15 | Quién decide **con nombre**, el plazo de 48 h guardado, **qué ve y qué no ve de vos** en dos columnas, y las tres salidas antes de que ocurran |
+| `pasanaku/grupo/[codigo]/solicitudes` | *Quién quiere entrar* | D-15 | Guard duro por `soyOrg` con `AP-CU68-07` · puntaje **descompuesto en motivos** · **rechazar exige motivo escrito** y el sistema no deja confirmar en blanco |
+| `pasanaku/organizador` | *Organizar un grupo* | D-16 | Los 14 requisitos como **cumplidos y faltantes**, con tu valor al lado del umbral y el código de la fila · los cinco pasos · que **la capacitación vencida suspende pero no quita los grupos vigentes** |
+| `soporte/ayuda` · `soporte/reclamos/nuevo` | *Ayuda* y *Hacer un reclamo* | D-18 | Los **cuatro canales son el mismo Punto de Reclamo** · número correlativo y fecha límite **en el momento** · la diferencia entre consulta, reclamo, denuncia y desconocimiento de cargo |
+| `pasanaku/nivel` | *Tu nivel* | D-19 | Qué habilita cada nivel · y por qué el premio **no es plata**: la aritmética contra `COM_ENTREGA` y el respaldo uno a uno de la custodia |
+| `.../mi-turno` · `.../ofertas` · `.../ofertas/nueva` | Mercado de turnos | D-20 | Valor **como rango y dicho estimado** · tope del 5 % marcado **antes** de pisarlo · `EN_VALIDACION` **después** de `ACEPTADA` · los cinco factores con su umbral · guard por puntaje mínimo que **explica por qué** |
+
 ## Las cuatro reglas de esta fase
 
 1. **El debido proceso se ve.** CU-25: la persona ve qué se le imputa, con qué
@@ -250,7 +300,18 @@ Es el producto propiamente dicho: el grupo.
 4. **La transparencia es una función, no un eslogan.** CU-61: el sorteo se ve entero
    —compromiso previo, semilla de fuente externa tomada después, ejecución y hash— y
    se reproduce en pantalla. Un veredicto de una línea no es verificable.
-5. **Del perfil de otro se muestra su comportamiento, nada más.** Puntaje, nivel,
+5. **Entrar a un grupo lo decide una persona, no el token** (D-15). Canjear la
+   invitación abre una solicitud; el cupo lo da quien organiza. El botón dice *Pedir mi
+   cupo*. Y quien resuelve ve historial de cumplimiento, **nunca la plata** del que pide.
+6. **Nada que le quite algo a alguien se confirma sin motivo escrito** (D-15, D-16). Vale
+   para rechazar un ingreso y para rechazar una habilitación: sin motivo no hay nada que
+   apelar, y el motivo viaja **tal cual se escribió**, con la fecha desde la que se puede
+   volver a intentar.
+7. **Un umbral no se escribe en la app** (D-16, D-20). Los 14 requisitos de habilitación,
+   el tope de compensación y el puntaje mínimo del mercado son **dato de catálogo** que
+   llega por contrato. Si un número de política aparece cableado en una pantalla, el
+   carril no cierra.
+8. **Del perfil de otro se muestra su comportamiento, nada más.** Puntaje, nivel,
    ciclos, aportes a tiempo e insignias. Ni documento, ni teléfono, ni saldo. Y a
    quien está en mora dentro de su plazo **no se le llama deudor**: todavía no hay
    incumplimiento declarado.
@@ -286,7 +347,29 @@ Es el producto propiamente dicho: el grupo.
 - [ ] Un grupo **en formación no muestra orden de turnos** ni botón de verificar el
       sorteo: todavía no se sorteó, y lo que le falta son personas
 - [ ] Cada insignia abre su pantalla con qué mide y cómo se gana
-- [ ] Las 26 pantallas tienen sus cuatro estados
+- [ ] **Canjear la invitación no ocupa cupo** (D-15): tras el canje, `GET /grupos?
+      participante=` **no** trae el grupo, y el botón dice *Pedir mi cupo*
+- [ ] *Tu pedido de cupo* muestra las **dos columnas** de qué ve y qué no ve quien
+      decide, y el plazo **no se recalcula** al volver a la pantalla
+- [ ] **Rechazar un ingreso en blanco es imposible desde la interfaz** (D-15), y el
+      motivo viaja con la fecha desde la que se puede volver a pedir
+- [ ] Los 14 requisitos de habilitación llegan **del contrato de `2E`**, con su código y
+      su umbral (D-16). Ningún umbral cableado en la app — lint sobre números mágicos
+- [ ] La pantalla de organizador dice que **la capacitación vencida suspende pero deja
+      administrar los grupos vigentes** (D-16)
+- [ ] El reclamo entrega **número correlativo y fecha límite concreta en el momento**
+      (D-18), y dice que la segunda instancia y la ASFI siguen disponibles
+- [ ] Los **cuatro canales entran al mismo expediente** con el mismo número (D-18): si
+      cada canal abriera su caso, el reporte mensual a la ASFI contaría de más
+- [ ] *Tu nivel* explica el premio **con su aritmética** (D-19), y no promete ningún
+      bono en efectivo
+- [ ] En el mercado de turnos, **publicar por encima del tope se bloquea antes** con
+      `AP-CU62-05` y su motivo (D-20) — no se acepta y se rechaza después
+- [ ] La validación de riesgo corre **después** de aceptar, y su veredicto muestra
+      **los cinco factores con su umbral** (D-20)
+- [ ] Por debajo del puntaje mínimo, el mercado **no se abre y explica por qué**, con
+      enlace a *Tu nivel* — nunca un «no disponible» seco
+- [ ] Las 32 pantallas tienen sus cuatro estados
 
 ## Ver también
 

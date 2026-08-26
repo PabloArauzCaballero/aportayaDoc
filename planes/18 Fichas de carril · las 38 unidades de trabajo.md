@@ -40,7 +40,28 @@ puestos (delta 2). Todo lo demás es un carril por fase.
 | **Entrega, y quién espera** | Qué produce este carril que otro carril **no puede inventar**. Es la lista que hay que tener escrita antes de declarar el carril terminado |
 | **Excepción de propiedad** | Solo aparece cuando el carril posee algo fuera de la fórmula de abajo |
 | **Gate propio** | Lo que se verifica **además** del gate de salida de su fase |
+| **Gate que suma D-nn** | Lo que agregó un delta de la maqueta después de escrita la ficha. Se verifica igual que el gate propio |
 | **Dónde se rompe** | El modo de falla característico. No es un riesgo genérico: es lo que efectivamente sale mal en ese carril |
+
+> [!important] Ocho carriles tienen gate agregado por los deltas D-15 a D-22
+> Los primeros catorce deltas de [[20 Maqueta de referencia · deltas del frontend]] eran
+> de presentación: la maqueta desglosaba más, pero el backend ya resolvía lo mismo. **Los
+> ocho nuevos no.** Tres de ellos cambian una transacción, un contrato o una respuesta, y
+> si un carril de backend se entera cuando el frontend llega a componer, hay que rehacer
+> las dos puntas.
+>
+> | Carril | Deltas | Qué le cambia |
+> | :-: | --- | --- |
+> | **`2C`** grupos y turnos | D-15 · D-20 · D-22 | El canje **no ocupa cupo**; la oferta de permuta y su veredicto de riesgo; aportes devuelve el ciclo completo |
+> | **`2E`** organizador | D-16 | El contrato devuelve **cada requisito con su umbral**, no un veredicto |
+> | **`2B`** tarifas | D-19 | El descuento por nivel es **concepto de tarifa**, no cálculo del cliente |
+> | **`4B`** garantía | D-17 | Aviso anticipado de dificultad, y el expediente **legible por su titular** |
+> | **`5B`** publicidad | D-21 | El vale, con sus cuatro reglas de canje |
+> | **`F4`** móvil billetera | D-12 · D-17 · D-19 · D-21 · D-22 | Calendario del ciclo completo, vales, desglose del cobro |
+> | **`F5`** móvil pasanaku | D-15…D-18 · D-20 | Solicitud de ingreso, habilitación, mora, soporte, mercado |
+> | **`F7`** backoffice operación | D-15 · D-16 · D-18 | Habilitaciones, solicitudes escaladas, reclamos con puerta real |
+>
+> **Al tomar cualquiera de esos ocho, se lee el delta antes que la ficha.**
 
 ### La fórmula de propiedad — no se repite en cada ficha
 
@@ -475,6 +496,21 @@ tramo: se programa contra el contrato).
 ([[informe]]): cotizar → devengar → cobrar → asentar → facturar, en una transacción,
 con el importe exacto en `DECIMAL(14,2)` y sin un solo `number` en el camino.
 
+**Gate que suma D-19** ([[20 Maqueta de referencia · deltas del frontend]]). El descuento
+de comisión por nivel de reputación **es un concepto de tarifa con su regla**, no un
+ajuste que calcula la app:
+
+- Se expresa como fila de `regla_tarifa` sobre `COM_ENTREGA`, con el nivel como condición
+  y su vigencia. Cambiar el porcentaje es un seeder, no un despliegue.
+- **La cotización devuelve el desglose**: bruto, descuento aplicado con su motivo, y neto.
+  `F4` pinta esas líneas; no las deriva.
+- **El piso y el techo siguen mandando.** Sobre una bolsa chica la comisión toca el piso
+  de Bs 10 y el descuento vale poco: eso es correcto y se muestra tal cual. Redondear para
+  que el beneficio luzca mejor es falsear el tarifario.
+- **Un descuento nunca se convierte en acreditación.** Se cobra menos; no se emite saldo.
+  Emitir saldo obliga a respaldarlo en `cuenta_custodia` (ver D-19), y ahí deja de ser una
+  promoción comercial para pasar a ser emisión de dinero electrónico.
+
 **Dónde se rompe.** Al recotizar. El precio se **congela** al cotizar y se cobra el
 congelado, aunque el tarifario haya cambiado entre medio. Recotizar al cobrar es cómo
 un usuario paga una comisión distinta de la que aceptó — y CU-34 exige preaviso
@@ -517,6 +553,15 @@ móvil pasanaku** (P1, T6).
 **Gate propio.** CU-60: el sorteo se **reproduce** desde su semilla guardada y da el
 mismo resultado. Es lo que después verifica públicamente CU-61 sin sesión, y si no es
 reproducible, la transparencia del producto es decorativa.
+
+**Gate que suman los deltas nuevos.** Estos tres **no son de frontend**: cambian la
+transacción y el contrato, y llegar tarde a ellos obliga a rehacer `F5`.
+
+| Delta | Qué cambia acá |
+| :-: | --- |
+| **D-15** | El canje de la invitación (CU-69) **consume el token pero no ocupa cupo**: crea `solicitud_ingreso` en `PENDIENTE`. El cupo lo ocupa la resolución, y `ck_solicitud_ingreso_resuelta` exige `revisada_por` y `fecha_resolucion`. **Prueba obligatoria:** un `UPDATE` que cierre la solicitud sin esos dos campos tiene que ser rechazado **por la base**. Endpoints nuevos: `POST /grupos/{cod}/solicitudes-ingreso` y `POST …/{id}/resolucion`, los dos idempotentes |
+| **D-20** | La oferta de permuta (CU-62) expone **los once estados**, y la aceptación devuelve el **veredicto de riesgo con sus factores y umbrales**, no solo un booleano. `EN_VALIDACION` ocurre **después** de `ACEPTADA`; el dinero se mueve solo en `EJECUTADA`. Tope de compensación y tope de permutas por ciclo son **dato de catálogo**, no constantes |
+| **D-22** | `GET /aportes/obligaciones` devuelve **el ciclo completo** con las futuras marcadas. Derivarlo en el cliente sería recalcular lo que el período ya fijó al abrirse |
 
 **Dónde se rompe.** En el calendario. CU-59 alimenta cada plazo del sistema, y los
 plazos **se guardan al inicio y no se recalculan nunca** (`plazos-habiles`). Un feriado
@@ -585,6 +630,21 @@ apunta al catálogo, catálogo cerrado de acciones) y el ejecutor de tareas. Los
   producir efectos sin haber corrido contra datos históricos primero.
 - **Exactamente una vez entre réplicas**: la misma tarea programada, con dos workers
   levantados, se ejecuta una sola vez (`SKIP LOCKED`).
+
+**Gate que suma D-16** ([[20 Maqueta de referencia · deltas del frontend]]). La
+habilitación deja de ser un veredicto y pasa a ser una lista que se puede mostrar:
+
+- **El contrato devuelve cada requisito evaluado con su código, su umbral y el valor del
+  usuario**, no solo `aprobada: true`. `F5` pinta cumplidos y faltantes con esos datos, y
+  si el contrato manda solo el veredicto, la app tendría que cablear los umbrales —que es
+  exactamente lo que `semillas-catalogos` prohíbe.
+- **El puntaje se congela al postular** (`puntaje_reputacion_al_solicitar`) y la
+  evaluación usa los requisitos **vigentes a esa fecha**, no los de hoy. Prueba: cambiar
+  un umbral entre la postulación y la resolución no cambia el resultado.
+- **El rechazo lleva motivo y fecha desde la que se puede volver a postular.** Un rechazo
+  sin camino de vuelta es una expulsión encubierta.
+- **La suspensión por capacitación vencida no toca los grupos vigentes.** Prueba: un
+  organizador suspendido no puede crear grupos y **sigue administrando** los que tiene.
 
 **Dónde se rompe.** Permitiendo expresiones arbitrarias en las reglas. El motor evalúa
 expresiones **compiladas contra un catálogo cerrado**; si acepta código, una regla de
@@ -793,6 +853,22 @@ con prueba de entrega, plazo **guardado al inicio**, descargo con evidencia, dec
 motivada, apelación única resuelta por otra persona, prescripción, y reversión con
 compensación si la apelación prospera. Cada uno de esos pasos es una prueba.
 
+**Gate que suma D-17** ([[20 Maqueta de referencia · deltas del frontend]]). Todo este
+aparato tenía superficie de operador y **ninguna de cliente**: el que debe veía un recargo
+creciendo y nada más. El carril expone lo que la app necesita para mostrarlo:
+
+- **Aviso anticipado de dificultad** como operación propia (`POST /aportes/obligaciones/
+  avisos-de-dificultad`). No condona nada —el importe no cambia— pero **mueve la etapa de
+  cobranza** y frena los recordatorios automáticos hasta que se resuelva. Prueba: tras el
+  aviso, el motor de notificaciones respeta la etapa nueva y su tope de contactos.
+- **La escalera se consulta, no se cablea.** Las seis etapas con sus canales, frecuencia y
+  `max_contactos_por_semana` salen de `estrategia_cobranza`. La app las pinta.
+- **Los dos plazos de 5 días hábiles viajan guardados**, con su fecha de vencimiento ya
+  calculada. La app no suma días hábiles: no tiene el calendario de feriados y no debe
+  tenerlo.
+- **El expediente es legible por su titular**, no solo por el operador. Con las mismas
+  piezas de evidencia y su hash.
+
 **Dónde se rompe.** Sancionando antes de notificar, o dejando que quien decide sea
 quien resuelve la apelación. Es el carril donde el sistema le saca algo a una persona:
 todo lo que falte en el debido proceso vuelve como reclamo con la razón del otro lado.
@@ -886,6 +962,19 @@ publicidad** (P4, T9) — mismo puesto.
 **Gate propio.** La liquidación de CU-114 **cuadra contra los eventos de entrega** de
 CU-113: no se factura una impresión que no se registró. Y la moderación de CU-112 es
 previa a la entrega, no posterior.
+
+**Gate que suma D-21** ([[20 Maqueta de referencia · deltas del frontend]]). El vale es lo
+que este carril le presta al producto núcleo, y trae cuatro reglas propias:
+
+| Regla | Por qué |
+| --- | --- |
+| **El descuento lo asume el comercio en su margen** | No toca `cuenta_custodia`, y por eso puede ser mucho más grande que cualquier bono que la plataforma pudiera pagar (ver D-19). Un vale **nunca** se convierte en acreditación de saldo |
+| **El beneficio se congela en el canje** | Si la campaña baja del 8 % al 6 %, el vale ya usado valió lo de ese día — misma regla que el tarifario congelado por grupo |
+| **El presupuesto corta la emisión, nunca el canje** | Un vale en manos de alguien es una obligación asumida |
+| **Protección contra doble canje** | Token firmado, QR rotativo e idempotencia. Es la garantía que hace que un comercio acepte poner el descuento; sin ella, no hay alianza |
+
+Y RN-18 sigue en pie: la comisión sobre una venta atribuida la cobra **la plataforma**,
+nunca el organizador del grupo.
 
 **Dónde se rompe.** Mezclando el dinero del anunciante con el de los participantes. La
 cuenta publicitaria es un tercero comercial, no una billetera de pasanaku: si comparten
@@ -1145,6 +1234,18 @@ botón**, probado con doble toque real · el importe se muestra **siempre** por 
 `Monto` · la comisión se muestra **antes** de confirmar (CU-30), nunca después ·
 lectura del QR con `expo-camera` funcionando en gama baja.
 
+**Gate que suman los deltas nuevos** ([[20 Maqueta de referencia · deltas del frontend]]):
+
+| Delta | Lo que hay que poder mostrar | Cómo se verifica |
+| :-: | --- | --- |
+| **D-22** | El calendario cubre **el ciclo completo** de cada grupo, no los meses que el escenario trajo a mano | Un grupo de 12 cupos muestra 12 cuotas y se navega de la primera a la última |
+| **D-22** | La **lista no se deja invadir** por lo que todavía no se debe: exigible entera, dos futuras asomadas y el resto contado | Con 11 cuotas abiertas, la lista muestra 4 tarjetas y una línea que dice cuántas faltan |
+| **D-12** | El segmentado **se ve elegido en los dos temas**, sin depender de que `--field` y `--surface` difieran | Captura en claro y en oscuro con el segmento activo legible |
+| **D-12** | Cada estado del calendario lleva **relleno y borde**, y la leyenda se pinta con las mismas reglas | Los cuatro estados se distinguen a 36 px |
+| **D-19** | El cobro del turno muestra **bolsa, comisión, descuento por nivel y neto**, y el descuento viene del contrato de `2B` | El cliente **no calcula** el descuento: lo recibe |
+| **D-21** | El vale muestra QR **rotativo**, estado, origen y condiciones; al canjear dice cuánto se ahorró **y que no se tocó el saldo** | Doble canje rechazado con `AP-VAL-03` |
+| **D-17** | La cuota exigible ofrece ***No voy a poder pagar*** | Lleva a la pantalla de salidas, con el costo de cada una |
+
 **Dónde se rompe.** En el doble toque. Es la pantalla donde el usuario, con red lenta,
 toca dos veces. Si el botón no se bloquea con la misma clave, el backend absorbe el
 duplicado —está diseñado para eso— pero el usuario ve dos movimientos y deja de confiar.
@@ -1172,6 +1273,20 @@ desde la app** (enlace a la verificación pública de CU-61) · el reclamo (CU-5
 **el plazo guardado**, no uno recalculado · la mora se comunica **en hechos, no en
 probabilidades** (skill `alertas-riesgo-temprano`).
 
+**Gate que suman los deltas nuevos** ([[20 Maqueta de referencia · deltas del frontend]]):
+
+| Delta | Lo que hay que poder mostrar | Cómo se verifica |
+| :-: | --- | --- |
+| **D-15** | Canjear la invitación **no ocupa cupo**: el botón dice *Pedir mi cupo* y abre una solicitud | Después del canje, `GET /grupos?participante=` **no** trae el grupo |
+| **D-15** | *Tu pedido de cupo* dice **quién decide, en cuánto, qué ve de vos y las tres salidas** | Las dos columnas de privacidad están, y el plazo no se recalcula al volver |
+| **D-15** | La cola del organizador trae el puntaje **descompuesto**, y **rechazar exige motivo** | Confirmar un rechazo en blanco es imposible desde la interfaz |
+| **D-16** | *Organizar un grupo* muestra los 14 requisitos como **cumplidos y faltantes**, con tu valor al lado del umbral y el código de la fila | Los umbrales salen del contrato de `2E`, **no del código de la app** |
+| **D-16** | Se dice que **capacitación vencida suspende pero no quita los grupos vigentes** | Está en la pantalla, no en un instructivo |
+| **D-17** | El participante ve **su propio expediente**: escalera de cobranza, matriz y los dos plazos de 5 días hábiles | Los plazos vienen guardados; la app no los calcula |
+| **D-18** | El reclamo entrega **número correlativo y fecha límite concreta** en el momento | Y dice que la segunda instancia y la ASFI siguen disponibles |
+| **D-20** | El mercado marca el **tope del 5 %** antes de pisarlo, y la validación va **después** de aceptar | Publicar por encima del tope se bloquea con `AP-CU62-05` |
+| **D-20** | Por debajo del puntaje mínimo la pantalla **no se abre y explica por qué** | Con enlace a *Tu nivel*, no un «no disponible» |
+
 **Dónde se rompe.** Por tamaño, igual que `3C`. Se parte en bloques —grupo, turno,
 aporte, entrega, transparencia, reclamo— y cada bloque cierra con sus pruebas. Y hay
 una trampa propia: es la pantalla donde se muestra el riesgo de un participante. **Un
@@ -1198,6 +1313,14 @@ conciliación, descuadres, reversos, incidencias de desembolso, arqueos.
 aprueba, y la pantalla lo refleja en vez de confiar en que el backend lo impida · toda
 acción con efecto pide confirmación con el dato concreto delante, no un «¿estás
 seguro?».
+
+**Gate que suman los deltas nuevos** ([[20 Maqueta de referencia · deltas del frontend]]):
+
+| Delta | Pantalla que suma | Lo que no puede faltar |
+| :-: | --- | --- |
+| **D-16** | `cumplimiento/organizadores` — habilitaciones (**vive en F8.C**, no en F7) | La cola con nivel pedido, **puntaje congelado** y requisitos cumplidos sobre el total · y el bloque de *lo que no puede pasar*, que es lo que se lee antes de aprobar la primera. Es la respuesta institucional a «¿quién acepta a un organizador?»: **este escritorio**, no otro usuario y no el grupo |
+| **D-15** | Solicitudes de ingreso escaladas | Cuando el organizador deja vencer las 48 horas, el pedido llega acá. Sin esta cola, el plazo que la app le promete al postulante no lo sostiene nadie |
+| **D-18** | Reclamos (ya existía) | Ahora tiene puerta de entrada en la app, así que el volumen deja de ser hipotético. El plazo se muestra **guardado**, y la segunda instancia la resuelve **otro** rol |
 
 **Dónde se rompe.** Dando a los operadores más de lo que su rol permite «porque es
 interno». El backoffice es donde una fuga de permisos no se nota hasta la auditoría.

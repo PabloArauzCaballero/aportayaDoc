@@ -89,6 +89,40 @@ final class FixturaDeIdentidad {
                 asignadaPor);
     }
 
+    UUID permiso(String codigo, String recurso, String accion, boolean requiereMfa) {
+        UUID id = UUID.randomUUID();
+        dsl.execute(
+                """
+                INSERT INTO identidad.permiso (id, codigo, descripcion, recurso, accion, requiere_mfa)
+                VALUES (?, ?, 'permiso de prueba', ?, ?, ?)
+                """,
+                id,
+                codigo,
+                recurso,
+                accion,
+                requiereMfa);
+        return id;
+    }
+
+    void darPermisoAlRol(UUID rolId, UUID permisoId) {
+        dsl.execute("INSERT INTO identidad.rol_permiso (rol_id, permiso_id) VALUES (?, ?)", rolId, permisoId);
+    }
+
+    UUID sesionAbierta(UUID usuarioId) {
+        UUID dispositivo = dispositivoConfiable(usuarioId, "huella-" + UUID.randomUUID());
+        UUID id = UUID.randomUUID();
+        dsl.execute(
+                """
+                INSERT INTO identidad.sesion
+                    (id, usuario_id, dispositivo_id, iniciada_en, ultima_actividad_en, expira_en, ip_origen)
+                VALUES (?, ?, ?, now(), now(), now() + interval '12 hours', '127.0.0.1'::inet)
+                """,
+                id,
+                usuarioId,
+                dispositivo);
+        return id;
+    }
+
     void factor(UUID usuarioId, String tipo, boolean activo, boolean confirmado) {
         dsl.execute(
                 """

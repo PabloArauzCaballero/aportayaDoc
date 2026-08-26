@@ -19,6 +19,8 @@ Modulo 01 de la boveda — Identidad, Usuarios y Seguridad.
 | --- | --- | --- |
 | CU-04 | Autenticar con MFA y registrar dispositivo | ⬜ sin implementar |
 
+| CU-08 | Asignar y revocar roles de operador | ⬜ sin implementar |
+
 ## Eventos que emite
 
 | Tema | Cuando |
