@@ -126,6 +126,18 @@ Los tres se arreglaron en la fuente de verdad —`docs/Restricciones.md` y
 > tiene `BYPASSRLS`: concederlo no abre nada. Es la marca que hace que las políticas
 > apliquen, y se verificó contra la base antes de tocarla.
 
+## Fase 1 · las cuatro pruebas que la cierran
+
+| Prueba | Invariante | Estado | Evidencia |
+| --- | :-: | :-: | --- |
+| `AislamientoEsquemaTest` | 11 y 12 | ✅ | 14 roles × 13 esquemas ajenos ⇒ permiso denegado; solo `svc_nucleo_financiero` escribe `asiento_contable` |
+| `ContextoDeFilaRepositorioTest` | 3 | ✅ | Fila ajena ⇒ **0 filas, sin error**; el contexto muere en el `COMMIT` |
+| `AppendOnlyRepositorioTest` | 5 | ✅ | **79 tablas selladas**; el `UPDATE` y el `DELETE` los rechaza la **base** con `R-AUD-01` |
+| `DineroCuadreTest` + propiedades | 4 | ✅ | 3.000 casos generados; el prorrateo no pierde ni inventa un centavo |
+| `EsquemaAlDiaTest` | 1 | 🟡 | Necesita clases generadas de jOOQ: va en el primer servicio (carril 1A), no en `plataforma/` |
+
+**Total de `plataforma/`: 73 pruebas · 0 saltadas · 0 falladas.**
+
 ## Decisiones tomadas, y por qué
 
 | Decisión | Por qué | Dónde |
