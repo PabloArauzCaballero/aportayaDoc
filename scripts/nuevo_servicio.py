@@ -188,12 +188,47 @@ components:
 """
 
 
+# Nivel de criticidad por servicio — ADR-037 §1. NO lo elige el dueno del servicio:
+# lo impone su peor dependiente sincronico. Vive aca y no dentro de cada descriptor
+# para que regenerar no borre una decision de arquitectura, que es justo lo que pasa
+# cuando la plantilla no la conoce.
+NIVEL = {
+    "aportes": ("N1", "Cobrar el aporte, el flujo que el usuario hace todos los períodos", 4, 10, 10),
+    "auditoria": ("N3", "Consultas y exportes: se difieren sin consecuencia externa", 2, 2, 5),
+    "cumplimiento": ("N3", "Los límites se leen de `catalogo` (ADR-029); monitorear y alertar llega por evento", 2, 2, 5),
+    "entregas": ("N2", "La entrega tiene fecha, no instante: tolera minutos", 3, 6, 8),
+    "erp": ("N3", "Contabilidad de gestión: trabaja sobre períodos cerrados", 2, 2, 5),
+    "garantia": ("N2", "La cobertura se aplica en el barrido, no en línea", 3, 6, 8),
+    "grupos": ("N2", "Gobernanza del grupo: se atrasa un acuerdo, no se pierde plata", 3, 6, 8),
+    "identidad": ("N1", "Autenticar y autorizar: sin esto nadie entra", 4, 10, 10),
+    "notificaciones": ("N2", "El outbox retiene: una caída se vuelve atraso, no aviso perdido", 3, 6, 8),
+    "nucleo-financiero": ("N1", "El libro contable y la billetera: sin esto no se mueve plata", 4, 10, 10),
+    "organizador": ("N2", "Habilitación y automatización: nada de esto es de camino crítico", 3, 6, 8),
+    "publicidad": ("N3", "Lo primero que se apaga en degradación controlada (ADR-037 §7)", 2, 2, 5),
+    "tarifas": ("N1", "ADR-022 pone «¿cuánto es la comisión?» entre las llamadas sincrónicas del cobro", 4, 10, 10),
+    "transparencia": ("N3", "Reputación y certificados: nadie afuera nota diez minutos", 2, 2, 5),
+}
+
+
 def descriptor(servicio):
+    nivel, porque, minimo, maximo, hikari = NIVEL[servicio]
     return f"""# Despliegue de {servicio} — genera el manifiesto de Kubernetes.
 # Los manifiestos NO se escriben a mano: catorce copias divergen y la divergencia
-# se descubre en produccion (ADR-025).
+# se descubre en produccion (ADR-025). Los numeros de disponibilidad salen del
+# nivel (ADR-037): este archivo declara el nivel, no los recalcula.
 servicio: {servicio}
-replicas: {REPLICAS.get(servicio, 1)}
+
+# Nivel de criticidad — ADR-037 §1. NO lo elige el dueno del servicio: lo impone
+# su peor dependiente sincronico. Cambiarlo exige actualizar el cuadro del ADR.
+nivel: {nivel}
+nivel_porque: "{porque}"
+
+replicas:
+  min: {minimo}                    # piso del nivel — nunca 1 (ADR-037 §2)
+  max: {maximo}                    # tope atado al pool de conexiones (ADR-037 §3)
+pool:
+  hikari_por_replica: {hikari}     # replicas_max x esto tiene que caber en pgbouncer
+
 recursos:
   memoria: 512Mi                 # presupuesto de ADR-025
   cpu: 500m
@@ -202,7 +237,10 @@ sondas:
   liveness:  /actuator/health/liveness    # solo el proceso
 despliegue:
   estrategia: RollingUpdate
-  maxUnavailable: {0 if servicio in REPLICAS else 1}
+  maxUnavailable: 0
+disponibilidad:
+  objetivo_mensual: 99.9        # presupuesto de error: al agotarlo se congela lo nuevo
+  latencia_p95_ms: 400
 puerto_publicado: false          # solo el gateway publica puerto
 """
 
@@ -416,7 +454,18 @@ def crear(servicio, forzar=False):
         base / "src/test/java" / ruta_pkg / "ArquitecturaTest.java": arquitectura_test(servicio, pkg),
         base / "src/test/java" / ruta_pkg / "BarridoTest.java": barrido_test(servicio, pkg),
     }
+    # CURADOS: el carril los llena y --forzar NO los pisa. Regenerar borro una vez
+    # el nivel de criticidad de los catorce descriptores y otra vez los tres
+    # contratos de la Fase 0; un generador que destruye decisiones es peor que no
+    # tenerlo. Se escriben solo si faltan.
+    curados = {
+        base / "descriptor.yml",
+        base / "README.md",
+        base / f"src/main/resources/openapi/{servicio}.yaml",
+    }
     for ruta, contenido in escribir.items():
+        if ruta in curados and ruta.exists():
+            continue
         ruta.write_text(contenido, encoding="utf-8")
     print(f"  creado: servicios/{servicio}/  ({esquema} · {rol_de(esquema)} · {pkg})")
     return 0

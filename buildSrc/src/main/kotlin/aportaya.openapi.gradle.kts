@@ -52,7 +52,12 @@ tasks.register<GenerateTask>("generarClienteTypescript") {
     configOptions.set(
         mapOf(
             "supportsES6" to "true",
-            "withoutRuntimeChecks" to "false",
+            // Con las comprobaciones de runtime encendidas, los modelos importan
+            // `mapValues` de un runtime.ts que el generador no siempre exporta, y el
+            // cliente no compila. Sin ellas quedan interfaces puras, que es lo que la
+            // app necesita: la entrada la valida el servidor con `strict()`, no el
+            // cliente (contrato de implementacion §3 bis).
+            "withoutRuntimeChecks" to "true",
             "typescriptThreePlus" to "true",
         ),
     )

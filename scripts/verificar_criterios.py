@@ -61,8 +61,20 @@ def pruebas_de(servicio, nn):
     if not archivos:
         return None, [], ""
     texto = "\n".join(f.read_text(encoding="utf-8") for f in archivos)
-    nombres = re.findall(r'@DisplayName\("([^"]+)"\)', texto)
-    return archivos, nombres, texto
+    return archivos, nombres_de_display(texto), texto
+
+
+# El formateador parte `@DisplayName("texto muy largo")` en varias lineas y a veces
+# concatena literales. Sin tolerarlo, el gate de formato y el de criterios se
+# contradicen: nuevo_cu.py genera la prueba, spotless la reformatea, y este
+# verificador la da por ausente. Le habria pasado a los cinco carriles el primer dia.
+RE_DISPLAY = re.compile(r'@DisplayName\(\s*((?:"(?:[^"\\]|\\.)*"\s*\+?\s*)+)\)')
+RE_LITERAL = re.compile(r'"((?:[^"\\]|\\.)*)"')
+
+
+def nombres_de_display(texto):
+    """Los @DisplayName del archivo, ya rearmados si venian partidos."""
+    return ["".join(RE_LITERAL.findall(bloque)) for bloque in RE_DISPLAY.findall(texto)]
 
 
 def clase_de_aplicacion(servicio, nn):

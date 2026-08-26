@@ -9,6 +9,7 @@ dependencies {
     api(libs.testcontainers.kafka)
     api(libs.jqwik)
     api(libs.junit.jupiter)
+    api(libs.snakeyaml)
     implementation(libs.spring.boot.jdbc)
     runtimeOnly(libs.postgresql)
 

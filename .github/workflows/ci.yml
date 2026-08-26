@@ -47,8 +47,14 @@ jobs:
       - name: 3 · analisis estatico y las reglas propias
         run: ./gradlew check -x test
 
+      - name: 3b · testBarrido — las reglas propias sobre cada modulo
+        run: ./gradlew testBarrido
+
       - name: 4 · compileJava (invariante 1)
         run: ./gradlew compileJava
+
+      - name: 4b · erroresCatalogo — constraint_name -> R-XXX-nn desde sql/
+        run: ./gradlew erroresCatalogo
 
   # ------------------------------------------------------------------ boveda --
   boveda:
@@ -73,6 +79,12 @@ jobs:
 
       - name: 6c · verificar_carriles.py
         run: python3 scripts/verificar_carriles.py
+
+      - name: 6d · verificar_criterios.py — cada gherkin con su prueba
+        run: python3 scripts/verificar_criterios.py
+
+      - name: 6e · generar_k8s.py — los descriptores cierran contra el pool
+        run: python3 scripts/generar_k8s.py
 
   # -------------------------------------------------------------------- base --
   base:
@@ -149,6 +161,16 @@ jobs:
           # no un diff). Lo que se verifica es que salga y que no salga vacio.
           test -s clientes/typescript/identidad/index.ts \
             || { echo "El cliente de identidad no se genero"; exit 1; }
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: 12b · el cliente TypeScript COMPILA
+        run: |
+          # yarn, nunca npm ni pnpm.
+          yarn global add typescript@5
+          "$(yarn global bin)/tsc" -p clientes/tsconfig.json
 
   # ----------------------------------------------------------------- pruebas --
   pruebas:

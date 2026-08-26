@@ -42,8 +42,16 @@ spotless {
 val entornoDocker = listOf("DOCKER_HOST", "DOCKER_CONTEXT", "DOCKER_API_VERSION", "TESTCONTAINERS_RYUK_DISABLED")
     .associateWith { providers.environmentVariable(it) }
 
+// docker-java —el cliente que trae Testcontainers— pide por omision la API 1.32,
+// y Docker Engine 29 exige 1.40 como minimo: la peticion vuelve con 400 y, a traves
+// del proxy de Docker Desktop, con un cuerpo que no dice nada. 1.41 la soporta
+// cualquier motor desde 2020 y satisface el minimo de los actuales.
+val apiDeDocker = "1.41"
+
 tasks.withType<Test>().configureEach {
     entornoDocker.forEach { (clave, valor) -> valor.orNull?.let { environment(clave, it) } }
+    systemProperty("api.version", apiDeDocker)
+    environment("DOCKER_API_VERSION", apiDeDocker)
 }
 
 // Los cinco corredores. Uno solo con todo adentro es un corredor que nadie corre

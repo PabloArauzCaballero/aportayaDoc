@@ -40,6 +40,7 @@ spring-cloud-gateway = { module = "org.springframework.cloud:spring-cloud-starte
 # — Datos —
 jooq       = { module = "org.jooq:jooq", version.ref = "jooq" }
 postgresql = { module = "org.postgresql:postgresql" }
+snakeyaml  = { module = "org.yaml:snakeyaml" }   # leer los contratos en las pruebas
 # Solo para buildSrc: el generador de clases y el driver que necesita para leer la base viva.
 codegen-jooq      = { module = "org.jooq:jooq-codegen", version.ref = "jooq" }
 driver-postgresql = { module = "org.postgresql:postgresql", version.ref = "driver-postgresql" }

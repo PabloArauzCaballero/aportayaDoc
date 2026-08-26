@@ -22,18 +22,29 @@ estado: en curso
 
 | § | Entregable | Evidencia | Estado |
 | :-: | --- | --- | :-: |
-| 0.1 | Monorepo Gradle, `plataforma/` y los catorce servicios compilando | `./gradlew build` → BUILD SUCCESSFUL, 228 tareas | ✅ |
-| 0.2 | Esquemas, roles y permisos | ya venía hecho · `AislamientoEsquemaTest` escrito, **sin correr** (ver Bloqueos) | 🟡 |
-| 0.3 | Docker: base, pooler, cola y entrada | `bd:reset` → BUILD SUCCESSFUL · `prueba_humo.sql` **42 OK, 0 FALLA** | ✅ |
-| 0.4 | Los tres generadores, envueltos en Gradle | `nuevoServicio`, `nuevoCu`, `verificarCriterios` · los catorce servicios regenerados sin edición manual | ✅ |
-| 0.5 | Cinco reglas propias con su prueba | `./gradlew check` → SUCCESSFUL · 4 pruebas de las reglas + ArchUnit por servicio | ✅ |
-| 0.6 | Los cinco corredores | `test` · `integrationTest` · `contractTest` · `sagaTest` · `e2eTest` + `testBarrido` | 🟡 |
+| 0.1 | Monorepo Gradle, `plataforma/` y los catorce servicios compilando | `./gradlew build` → BUILD SUCCESSFUL | ✅ |
+| 0.2 | Esquemas, roles y permisos, **verificados por el motor** | `AislamientoEsquemaTest` en verde: 14 roles × 13 esquemas ajenos ⇒ `permission denied`, y solo `svc_nucleo_financiero` escribe `asiento_contable` | ✅ |
+| 0.3 | Docker: base, pooler, cola y entrada | `bd:reset` → BUILD SUCCESSFUL · `prueba_humo.sql` **165 OK, 0 FALLA** | ✅ |
+| 0.4 | Los tres generadores, envueltos en Gradle | `nuevoServicio` regenera los catorce sin edición manual · `nuevoCu -Pcu=01` produce 3 criterios y 9 rechazos **fallando** · `verificarCriterios` → «sin divergencias» | ✅ |
+| 0.5 | Cinco reglas propias con su prueba | `capas`, `sin-import-cruzado`, `sin-jpa` (ArchUnit × 14) · `tamano-archivo` y `sin-umbral-literal` (barrido, con 4 pruebas propias) | ✅ |
+| 0.6 | Los cinco corredores | `test` · `integrationTest` · `contractTest` · `sagaTest` · `e2eTest` + `testBarrido`. Con prueba de humo: los tres primeros y el barrido | 🟡 |
 | 0.7 | `plataforma/` y el gateway | `curl -f http://localhost/actuator/health` → **200** a través de NGINX, sin puerto publicado | ✅ |
-| 0.8 | Los tres contratos que desbloquean la Ola 1 | `generateOpenApiClients` → `clientes/typescript/{identidad,nucleo-financiero,notificaciones}` | ✅ |
-| 0.9 | CI con los 19 pasos | `.github/workflows/ci.yml` escrito; **no ejecutado** (corre al abrir el PR) | 🟡 |
+| 0.8 | Los tres contratos que desbloquean la Ola 1 | `generateOpenApiClients` → tres clientes, y **`tsc -p clientes/tsconfig.json` los compila** · `RutaEnPrefijoContratoTest` verifica que ninguna ruta cae fuera de `PREFIJOS` | ✅ |
+| 0.9 | CI con los 19 pasos | `.github/workflows/ci.yml`; **no ejecutado** (corre al abrir el PR) | 🟡 |
+| — | `erroresCatalogo` | 189 restricciones → 112 reglas, generado desde `sql/` · `CatalogoDeErroresTest` en verde | ✅ |
+| — | Verificadores del repositorio | `verificar_seguridad` TODO OK (2 avisos) · `verificar_carriles` TODO OK · `verificar_criterios` sin divergencias · `generar_k8s` 34 archivos, **690 conexiones de 1000** que acepta PgBouncer | ✅ |
 
 **Además:** `./gradlew generateJooq compileJava` en verde sobre los catorce esquemas
 —el invariante 1 funcionando— y `bd:reset` reproducible desde volumen limpio.
+
+### Lo que queda abierto, y de quién es
+
+| Qué | De quién | Cuándo |
+| --- | --- | --- |
+| `e2eTest` y el perfil `todo` de compose | Ola 5 | Fase 17. Hoy no hay servicio con código que levantar |
+| Una prueba de humo de `sagaTest` | este carril, más adelante | Fase 2, cuando exista la primera saga. Escribir una saga falsa para marcar una casilla es bajar el gate |
+| `apps/backoffice` compilando el cliente TypeScript | **P4 Dell A** | Ola F0 · Delta 2. No es de este carril |
+| `verificar_boveda.py` en verde | **no es de este carril** | Falla por un wikilink roto en `docs/Views/AportaYa-Maqueta.md` (cambio de maqueta sin commitear): apunta a `planes/20`, y `planes/` no es parte de la bóveda |
 
 ## Decisiones tomadas, y por qué
 
@@ -58,11 +69,36 @@ estado: en curso
    `should()` encadenados se evalúan como AND sobre dependencias distintas, así que
    `java.lang.Object` alcanzaba para que cualquier clase que dependiera de
    `plataforma/` violara la regla. Pasaba solo porque ninguna clase dependía de nada
-   todavía. Ahora el predicado va compuesto: `resideInAPackage("bo.aportaya..")` **y**
-   `resideOutsideOfPackages(propio, plataforma)`.
-3. **El paso 12 del CI comparaba un diff sobre `clientes/typescript`**, que está en
-   `.gitignore`: la comprobación era vacía. Ahora verifica que el cliente se genere y
-   no salga vacío.
+   todavía. Ahora el predicado va compuesto.
+3. **`verificar_criterios.py` daba por ausente la prueba que `nuevo_cu.py` acababa de
+   generar.** El formateador parte `@DisplayName("texto largo")` en dos líneas y el
+   verificador exigía `@DisplayName("` pegado. Los dos gates se contradecían: **le
+   habría pasado a los cinco carriles el primer día, en su primer caso de uso.**
+   Ahora tolera el salto de línea y los literales concatenados.
+4. **La plantilla de `descriptor.yml` era anterior a [[ADR-037 Alta disponibilidad y balanceo]]**
+   y no conocía `nivel`. Regenerar los catorce servicios borró la decisión de
+   criticidad de los catorce descriptores (244 líneas), y `generar_k8s.py` empezó a
+   rechazar con `nivel 'None' no existe`. Restaurados, y el nivel de cada servicio
+   vive ahora en una tabla del generador: regenerar ya no lo borra.
+5. **El paso 12 del CI comparaba un diff sobre `clientes/typescript`**, que está en
+   `.gitignore`: la comprobación era vacía. Ahora genera el cliente **y lo compila**
+   con `tsc`, que es lo que el gate pide de verdad.
+7. **El cliente TypeScript generado no compilaba.** Los trece modelos importaban
+   `mapValues` de un `runtime.ts` que el generador no lo exporta. Se habría entregado
+   roto a los tres carriles de frontend, y ninguno de ellos habría podido arreglarlo:
+   `clientes/typescript/` es generado. Corregido con `withoutRuntimeChecks`, y el
+   `tsc` quedó como paso 12b del CI para que no vuelva a pasar en silencio.
+8. **`--forzar` del generador pisaba archivos curados.** Me borró dos veces trabajo
+   ya hecho: el nivel de criticidad de los catorce descriptores, y los tres contratos
+   de §0.8 (que volvieron a `paths: {}`, con lo cual `generateOpenApiClients` pasó a
+   saltarse en silencio y el gate seguía diciendo BUILD SUCCESSFUL). Ahora
+   `descriptor.yml`, `README.md` y `openapi/<servicio>.yaml` solo se escriben si
+   faltan.
+6. **`prueba_humo.sql` no es idempotente.** Dice funcionar «igual con la base recién
+   creada o ya sembrada», pero correrlo dos veces seguidas da 27 FALLA por clave
+   duplicada de sus propios datos de prueba. No afecta al gate —`bd:reset` recrea el
+   volumen— pero un carril que corra `bd:humo` dos veces va a creer que rompió algo.
+   **No lo toqué:** es el único archivo escrito a mano de `sql/`, y `sql/` es troncal.
 
 ## Supuestos declarados
 
@@ -85,36 +121,89 @@ Regla cero: ninguno silencioso.
 
 ## Bloqueos
 
-| Qué | Desde | Detalle |
-| --- | --- | --- |
-| **Testcontainers no encuentra Docker en este Mac** | hoy | Docker Engine **29.6.2** (API 1.55). `docker-java`, el cliente que trae Testcontainers 1.21.3, recibe `400` de `/info` por las tres estrategias (env, socket unix, Docker Desktop). El socket responde bien por `curl` con `v1.41`. Probado sin efecto: `DOCKER_HOST` explícito, `~/.testcontainers.properties`, `DOCKER_API_VERSION=1.44`. **Consecuencia:** `integrationTest` no corre en el Mac, y con él `AislamientoEsquemaTest` (invariantes 11 y 12) queda escrito y sin ejecutar |
+**Ninguno abierto.**
 
-> Es exactamente lo que `planes/17` §5 previó para **P2 Ubuntu**: el gate se verifica
-> en dos máquinas, no en una. Ubuntu tiene Docker nativo y una versión de motor más
-> conservadora. Si allí pasa, el hallazgo es del entorno del Mac y no del código.
+### Resuelto · Testcontainers no encontraba Docker en el Mac
+
+El síntoma era `Could not find a valid Docker environment`, con las tres estrategias
+fallando con un `400` cuyo cuerpo era un `Info` vacío. El proxy de Docker Desktop
+oculta el mensaje real; el socket crudo
+(`~/Library/Containers/com.docker.docker/Data/docker.raw.sock`) lo dice entero:
+
+```
+client version 1.32 is too old. Minimum supported API version is 1.40
+```
+
+`docker-java` —el cliente que trae Testcontainers 1.21.3, que es la última— pide por
+omisión la **API 1.32**, y Docker Engine 29 exige **1.40**. No es del Mac: le va a
+pasar a cualquier máquina del parque con un motor reciente, WSL2 incluido.
+
+**Arreglado en el troncal, no en la máquina:** `aportaya.base` fija `api.version=1.41`
+en todas las tareas de prueba y propaga `DOCKER_HOST`, `DOCKER_CONTEXT` y
+`DOCKER_API_VERSION` si el entorno los trae. 1.41 la soporta cualquier motor desde
+2020 y satisface el mínimo de los actuales. Ninguna ruta local quedó en el repositorio.
 
 ## Gate de salida de la Fase 0 — evidencia
 
-- [x] `./gradlew spotlessCheck check` — BUILD SUCCESSFUL, 244 tareas
-- [x] `docker compose --profile base up -d --wait` — postgres, pgbouncer, kafka, gateway y nginx **healthy**
-- [x] `./gradlew bd:reset` — BUILD SUCCESSFUL
-- [x] `prueba_humo.sql` — **42 líneas OK, 0 FALLA** sobre base recién creada
-- [x] `./gradlew generateJooq compileJava` — BUILD SUCCESSFUL sobre los catorce esquemas
-- [x] `./gradlew generateOpenApiClients` — los tres clientes TypeScript generados
-- [x] `curl -f http://localhost/actuator/health` — **200** a través de NGINX
-- [x] Ningún `build.gradle.kts` declara JPA · la tarea `sinJpa` está en `check`
-- [ ] `./gradlew test integrationTest` — `test` en verde; `integrationTest` **bloqueado** (ver Bloqueos)
-- [ ] `./gradlew e2eTest` — pendiente: no hay perfil `todo` todavía (Fase 17)
-- [ ] `nuevoCu` probado punta a punta contra un CU real — pendiente
-- [ ] `erroresCatalogo` — la tarea todavía no existe
-- [ ] `python3 scripts/verificar_boveda.py` — pendiente de correr en esta rama
-- [ ] `apps/backoffice` compila importando el cliente — **no es de este carril**: es la Ola F0 (P4 Dell A, Delta 2)
+Comandos **ejecutados**, con su resultado.
+
+```
+./gradlew spotlessCheck check                BUILD SUCCESSFUL
+./gradlew bd:reset                           BUILD SUCCESSFUL
+  prueba_humo.sql                            165 OK · 0 FALLA  (base recién creada)
+  verificaciones.sql                         sin filas
+./gradlew generateJooq compileJava           BUILD SUCCESSFUL  (14 esquemas)
+./gradlew generateOpenApiClients             BUILD SUCCESSFUL  (3 clientes, 28 .ts)
+tsc -p clientes/tsconfig.json                sin errores
+./gradlew test integrationTest contractTest sagaTest testBarrido
+                                             BUILD SUCCESSFUL
+curl -f http://localhost/actuator/health     200 a través de NGINX
+python3 scripts/verificar_seguridad.py       TODO OK · 2 avisos
+python3 scripts/verificar_carriles.py        TODO OK
+python3 scripts/verificar_criterios.py       sin divergencias
+python3 scripts/generar_k8s.py               34 archivos · 690/1000 conexiones
+```
+
+**Pruebas que corrieron, por corredor:**
+
+| Corredor | Pruebas | Falladas |
+| --- | :-: | :-: |
+| `test` | 77 | 0 |
+| `integrationTest` | 15 | 0 |
+| `contractTest` | 1 | 0 |
+| `testBarrido` | 30 | 0 |
+| `sagaTest` | 0 | — |
+| `e2eTest` | 0 | — |
+
+Ninguna `@Disabled`.
+
+### Los trece puntos del gate
+
+- [x] Las 304 tablas existen y `sql/50_verificacion/` pasa
+- [x] Los catorce esquemas y los catorce roles existen, y el `SELECT` cruzado entre
+      cualquier par devuelve permiso denegado ← **invariante 11**, verificado por
+      `AislamientoEsquemaTest` (14 × 13 = 182 comprobaciones)
+- [x] Solo `svc_nucleo_financiero` escribe `asiento_contable` ← **invariante 12**
+- [x] Los 20 catálogos mínimos sembrados
+- [x] `prueba_humo.sql` da todo OK, cero FALLA sobre base recién creada
+- [x] Los tres generadores producen un servicio y un caso de uso sin edición manual
+- [x] Los tres contratos de 0.8 publicados y el cliente TypeScript generado
+- [x] Ningún servicio de aplicación publica puerto: solo NGINX
+      (PostgreSQL expone `127.0.0.1:5433` para `generateJooq`; ver Decisiones)
+- [x] Ningún `build.gradle.kts` declara JPA y ningún `application.yml` tiene `spring.jpa`
+- [x] La suma de los pools declarados (690) es menor que lo que acepta PgBouncer (1000)
+- [ ] `./gradlew e2eTest` — sin perfil `todo` todavía (Fase 17)
+- [ ] El proceso no levanta si falta una clave de configuración — **probado a medias**:
+      los `${BD_URL}` sin valor por omisión lo garantizan, pero no lo ejecuté a propósito
+- [ ] `python3 scripts/verificar_boveda.py` — falla por un wikilink de la maqueta que
+      no es de este carril (ver «Lo que queda abierto»)
 
 ### Frases prohibidas sin evidencia
 
-No se dice «está listo». Lo que hay es: **228 tareas de Gradle en verde, 42 líneas OK
-y 0 FALLA en la prueba de humo, 200 por NGINX, tres clientes TypeScript generados, y
-un corredor de integración bloqueado por el entorno del Mac.**
+No se dice «está listo». Lo que hay es: **123 pruebas en verde repartidas en cuatro
+corredores, 165 líneas OK y 0 FALLA en la prueba de humo desde volumen limpio, 182
+comprobaciones de permiso cruzado, 200 por NGINX, tres clientes TypeScript generados
+y 690 de 1000 conexiones en el pico.**
 
 ## Ver también
 

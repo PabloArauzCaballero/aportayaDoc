@@ -1,0 +1,15 @@
+{
+  "//": "El gate de la Fase 0 dice que el cliente TypeScript COMPILA, no que se genera.",
+  "//2": "clientes/typescript/ es generado y no se versiona; este archivo si, para que",
+  "//3": "el CI y las tres maquinas de frontend comprueben lo mismo.",
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "lib": ["ES2020", "DOM"]
+  },
+  "include": ["typescript/**/*.ts"]
+}

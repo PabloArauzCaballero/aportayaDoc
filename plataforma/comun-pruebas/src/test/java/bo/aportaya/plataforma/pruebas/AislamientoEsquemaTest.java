@@ -110,10 +110,20 @@ class AislamientoEsquemaTest {
         }
     }
 
+    /**
+     * Sin {@code USAGE} sobre el esquema ni siquiera se puede nombrar la tabla, y
+     * {@code has_table_privilege} falla en vez de devolver false. Que no se pueda
+     * preguntar es la forma mas fuerte de no poder escribir.
+     */
     private boolean puedeEscribir(Statement sentencia, String tabla) throws SQLException {
         try (var filas =
                 sentencia.executeQuery("SELECT has_table_privilege('%s', 'INSERT') AS puede".formatted(tabla))) {
             return filas.next() && filas.getBoolean("puede");
+        } catch (SQLException e) {
+            if (e.getMessage() != null && e.getMessage().contains("permission denied")) {
+                return false;
+            }
+            throw e;
         }
     }
 }

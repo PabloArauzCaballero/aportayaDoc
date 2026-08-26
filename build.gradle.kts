@@ -30,6 +30,7 @@ agregar("sagaTest", "Sagas con dobles de los servicios participantes")
 agregar("e2eTest", "Punta a punta sobre compose --profile todo")
 agregar("generateJooq", "Clases de jOOQ de cada esquema, desde la base viva", servicios)
 agregar("generateOpenApiClients", "Cliente TypeScript desde los OpenAPI · clientes/typescript", emptyList())
+agregar("erroresCatalogo", "constraint_name -> R-XXX-nn, desde sql/", listOf(project(":plataforma:comun-web")))
 
 tasks.named("generateOpenApiClients") {
     group = "build"

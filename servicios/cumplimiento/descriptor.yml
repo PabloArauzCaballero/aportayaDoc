@@ -1,8 +1,20 @@
 # Despliegue de cumplimiento — genera el manifiesto de Kubernetes.
 # Los manifiestos NO se escriben a mano: catorce copias divergen y la divergencia
-# se descubre en produccion (ADR-025).
+# se descubre en produccion (ADR-025). Los numeros de disponibilidad salen del
+# nivel (ADR-037): este archivo declara el nivel, no los recalcula.
 servicio: cumplimiento
-replicas: 1
+
+# Nivel de criticidad — ADR-037 §1. NO lo elige el dueno del servicio: lo impone
+# su peor dependiente sincronico. Cambiarlo exige actualizar el cuadro del ADR.
+nivel: N3
+nivel_porque: "Los límites se leen de `catalogo` (ADR-029); monitorear y alertar llega por evento"
+
+replicas:
+  min: 2                    # piso del nivel — nunca 1 (ADR-037 §2)
+  max: 2                    # tope atado al pool de conexiones (ADR-037 §3)
+pool:
+  hikari_por_replica: 5     # replicas_max x esto tiene que caber en pgbouncer
+
 recursos:
   memoria: 512Mi                 # presupuesto de ADR-025
   cpu: 500m
@@ -11,5 +23,8 @@ sondas:
   liveness:  /actuator/health/liveness    # solo el proceso
 despliegue:
   estrategia: RollingUpdate
-  maxUnavailable: 1
+  maxUnavailable: 0
+disponibilidad:
+  objetivo_mensual: 99.9        # presupuesto de error: al agotarlo se congela lo nuevo
+  latencia_p95_ms: 400
 puerto_publicado: false          # solo el gateway publica puerto
