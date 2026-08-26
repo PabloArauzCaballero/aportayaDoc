@@ -406,7 +406,7 @@ PARTICIPANTE = re.compile(
 
 def parse_puml(path):
     """Devuelve entidades, relaciones, notas, clases y enumeraciones del módulo."""
-    txt = path.read_text()
+    txt = path.read_text(encoding="utf-8")
     i = txt.index("@enduml")
     rel_block = txt[txt.index("@startuml", i):]
     cls_block = txt[:i]

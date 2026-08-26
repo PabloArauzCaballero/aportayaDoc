@@ -28,6 +28,13 @@ import sys
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
 from modelo import escenarios_gherkin  # noqa: E402  — UNA sola definicion
 
+# Estos informes se imprimen con acentos, flechas y el punto medio. En Windows la
+# consola entrega stdout en cp1252 y el gate muere con UnicodeEncodeError antes de
+# decir si algo falla — en tres de las cinco maquinas del parque.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
+
 R = pathlib.Path(__file__).resolve().parent.parent
 CU_DIR = R / "docs/CasosDeUso"
 SERVICIOS = R / "servicios"

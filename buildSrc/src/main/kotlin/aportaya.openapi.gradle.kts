@@ -10,6 +10,12 @@ plugins {
 
 val servicio = project.name
 val contrato = layout.projectDirectory.file("src/main/resources/openapi/$servicio.yaml")
+
+// El generador interpreta `inputSpec` como URI. Una ruta absoluta de Windows
+// (`C:\...`) no lo es: falla con «Illegal character in opaque part at index 2» y
+// tumba `compileJava` en las tres maquinas Windows del parque. La forma `file:` es
+// URI en las cinco.
+val rutaDelContrato = contrato.asFile.toURI().toString()
 val servidor = layout.buildDirectory.dir("generated/openapi")
 val clienteTs = rootProject.layout.projectDirectory.dir("clientes/typescript/$servicio")
 
@@ -24,7 +30,7 @@ val generarServidor = tasks.register<GenerateTask>("generarServidorOpenApi") {
     group = "build"
     description = "Interfaz de servidor de $servicio desde su OpenAPI"
     generatorName.set("spring")
-    inputSpec.set(contrato.asFile.absolutePath)
+    inputSpec.set(rutaDelContrato)
     outputDir.set(servidor.map { it.asFile.absolutePath })
     apiPackage.set("bo.aportaya.$servicio.web.generado")
     modelPackage.set("bo.aportaya.$servicio.web.generado.modelo")
@@ -47,7 +53,7 @@ tasks.register<GenerateTask>("generarClienteTypescript") {
     group = "build"
     description = "Cliente TypeScript de $servicio para apps/movil y apps/backoffice"
     generatorName.set("typescript-fetch")
-    inputSpec.set(contrato.asFile.absolutePath)
+    inputSpec.set(rutaDelContrato)
     outputDir.set(clienteTs.asFile.absolutePath)
     configOptions.set(
         mapOf(

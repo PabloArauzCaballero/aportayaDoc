@@ -172,7 +172,7 @@ def slug(s):
 
 
 def parse_puml(path):
-    txt = path.read_text()
+    txt = path.read_text(encoding="utf-8")
     i = txt.index("@enduml")
     rel_block = txt[txt.index("@startuml", i):]
     cls_block = txt[: i]

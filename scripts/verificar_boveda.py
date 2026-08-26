@@ -10,8 +10,15 @@ modelo contra los .puml) y a la prueba de humo (que valida la base real).
 """
 import re, pathlib, collections, sys
 
+# Estos informes se imprimen con acentos, flechas y el punto medio. En Windows la
+# consola entrega stdout en cp1252 y el gate muere con UnicodeEncodeError antes de
+# decir si algo falla — en tres de las cinco maquinas del parque.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
 from modelo import (ESQUEMA, ESQUEMA_CATALOGO, ESQUEMA_COMUN,  # noqa: E402
+
                     LIBRO_CONTABLE, COMPARTIDAS_ESCRITURA, esquema_de, rol_de, cargar)
 
 R = pathlib.Path(__file__).resolve().parent.parent
@@ -43,12 +50,12 @@ def cu_label(p):
     return 'CU-' + cu_num(p)
 
 
-sin_seccion = [cu_label(p) for p in casos if any(s not in p.read_text() for s in SEC)]
+sin_seccion = [cu_label(p) for p in casos if any(s not in p.read_text(encoding="utf-8") for s in SEC)]
 check(not sin_seccion, f'todos con las 13 secciones de la plantilla {sin_seccion or ""}')
 
 sin_tabla, mal_num, sin_fila = [], [], []
 for p in casos:
-    t = p.read_text(); nn = cu_num(p)
+    t = p.read_text(encoding="utf-8"); nn = cu_num(p)
     zod = re.findall(r"(\w+):\s*'AP-CU(\d+)-(\d+)'", t)
     filas = set(re.findall(r'^\|\s*`([A-Z0-9_]+)`\s*\|', t, re.M))
     if zod and '| Error | Cuándo se devuelve |' not in t:
@@ -63,19 +70,19 @@ check(not mal_num, f'códigos de error correlativos {mal_num or ""}')
 check(not sin_fila, f'cada código con su fila y su CU {sin_fila[:5] or ""}')
 
 pocos_g = [cu_label(p) for p in casos
-           if len(re.findall(r'^\s*Dad[oa]s?\b', re.search(r'```gherkin(.*?)```', p.read_text(), re.S).group(1), re.M)) < 3]
+           if len(re.findall(r'^\s*Dad[oa]s?\b', re.search(r'```gherkin(.*?)```', p.read_text(encoding="utf-8"), re.S).group(1), re.M)) < 3]
 check(not pocos_g, f'≥3 escenarios Gherkin por caso {pocos_g or ""}')
 
 pocos_a = []
 for p in casos:
-    sec = p.read_text().split('## Flujos alternativos')[-1].split('## Postcondiciones')[0]
+    sec = p.read_text(encoding="utf-8").split('## Flujos alternativos')[-1].split('## Postcondiciones')[0]
     if len([l for l in sec.splitlines() if l.startswith('|') and '---' not in l]) - 1 < 4:
         pocos_a.append(cu_label(p))
 check(not pocos_a, f'≥4 flujos alternativos por caso {pocos_a or ""}')
 
 ref = {}
 for p in casos:
-    ref[cu_label(p)] = set(re.findall(r'\[\[(CU-\d+)[^\]]*\]\]', p.read_text().split('## Ver también')[-1]))
+    ref[cu_label(p)] = set(re.findall(r'\[\[(CU-\d+)[^\]]*\]\]', p.read_text(encoding="utf-8").split('## Ver también')[-1]))
 no_rec = [f'{a}→{b}' for a, s in ref.items() for b in s if b in ref and a not in ref[b]]
 check(not no_rec, f'"Ver también" recíproco {no_rec[:5] or ""}')
 
@@ -83,33 +90,33 @@ print('\n=== COBERTURA DEL MODELO ===')
 ents = {p.stem for p in (R / 'docs/Modelos/Entidades').rglob('*.md') if not p.stem.startswith('_')}
 usadas = set()
 for p in casos:
-    usadas |= {m.strip().rstrip('\\') for m in re.findall(r'\[\[([^\]|#]+)', p.read_text())}
+    usadas |= {m.strip().rstrip('\\') for m in re.findall(r'\[\[([^\]|#]+)', p.read_text(encoding="utf-8"))}
 huerfanas = sorted(ents - usadas)
 check(len(ents) > 0, f'{len(ents)} entidades en el modelo')
 check(not huerfanas, f'toda entidad tiene al menos un caso de uso {huerfanas[:5] or ""}')
 
 print('\n=== RESTRICCIONES ===')
-rdef = set(re.findall(r'R-[A-Z]{3}-\d{2}', (R / 'docs/Restricciones.md').read_text()))
+rdef = set(re.findall(r'R-[A-Z]{3}-\d{2}', (R / 'docs/Restricciones.md').read_text(encoding="utf-8")))
 rcit = set()
 for p in casos:
-    rcit |= set(re.findall(r'R-[A-Z]{3}-\d{2}', p.read_text()))
+    rcit |= set(re.findall(r'R-[A-Z]{3}-\d{2}', p.read_text(encoding="utf-8")))
 check(len(rdef) > 0, f'{len(rdef)} restricciones definidas')
 check(not (rcit - rdef), f'toda restricción citada existe {sorted(rcit - rdef) or ""}')
 check(not (rdef - rcit), f'toda restricción está citada por un caso {sorted(rdef - rcit) or ""}')
 
 print('\n=== ÍNDICES ===')
-idx = (CU / '_CasosDeUso.md').read_text()
+idx = (CU / '_CasosDeUso.md').read_text(encoding="utf-8")
 enl = set(re.findall(r'\[\[(CU-\d+[^\]]*)\]\]', idx))
 arch = {p.stem for p in casos}
 check(enl == arch, f'índice de casos completo (sobran {sorted(enl - arch)[:3]}, faltan {sorted(arch - enl)[:3]})')
 check(f'total_casos: {len(casos)}' in idx, f'total_casos: {len(casos)} en el frontmatter')
 
-sk = (R / '.claude/skills/README.md').read_text()
+sk = (R / '.claude/skills/README.md').read_text(encoding="utf-8")
 listadas = set(re.findall(r'^\| `([a-z0-9-]+)`', sk, re.M))
 carpetas = {p.name for p in (R / '.claude/skills').iterdir() if p.is_dir()}
 check(listadas == carpetas, f'índice de skills completo ({len(carpetas)} skills)')
 
-nombres_ok = all(re.match(r'---\nname: ' + re.escape(p.parent.name) + r'\n', (p).read_text())
+nombres_ok = all(re.match(r'---\nname: ' + re.escape(p.parent.name) + r'\n', (p).read_text(encoding="utf-8"))
                  for p in (R / '.claude/skills').glob('*/SKILL.md'))
 check(nombres_ok, 'frontmatter de cada skill coincide con su carpeta')
 
@@ -117,18 +124,18 @@ print('\n=== ARQUITECTURA ===')
 SEC_ADR = ['## Contexto', '## Decisión', '## Motivo', '## Alternativas descartadas',
            '## Consecuencias', '## Cómo se verifica']
 adrs = sorted((R / 'docs/Arquitectura').glob('ADR-*.md'))
-arq = (R / 'docs/Arquitectura/_Arquitectura.md').read_text()
+arq = (R / 'docs/Arquitectura/_Arquitectura.md').read_text(encoding="utf-8")
 check(len(adrs) > 0, f'{len(adrs)} decisiones registradas')
 
 sin_idx = [p.stem[:7] for p in adrs if p.stem not in arq]
 check(not sin_idx, f'toda decisión está en el índice {sin_idx or ""}')
 
-sin_sec = [p.stem[:7] for p in adrs if any(s not in p.read_text() for s in SEC_ADR)]
+sin_sec = [p.stem[:7] for p in adrs if any(s not in p.read_text(encoding="utf-8") for s in SEC_ADR)]
 check(not sin_sec, f'toda decisión tiene las 6 secciones obligatorias {sin_sec or ""}')
 
 sin_estado = [p.stem[:7] for p in adrs
               if not re.search(r'^estado: (aceptada|rechazada|superada por ADR-\d+)$',
-                               p.read_text(), re.M)]
+                               p.read_text(encoding="utf-8"), re.M)]
 check(not sin_estado, f'toda decisión declara estado válido {sin_estado or ""}')
 
 nums = [p.stem[4:7] for p in adrs]
@@ -143,11 +150,11 @@ SQL_T = R / 'sql/10_tablas'
 if SQL_T.exists():
     ubic = {}
     for f in SQL_T.rglob('*.sql'):
-        for esq, tab in re.findall(r'CREATE TABLE IF NOT EXISTS (\w+)\.(\w+) \(', f.read_text()):
+        for esq, tab in re.findall(r'CREATE TABLE IF NOT EXISTS (\w+)\.(\w+) \(', f.read_text(encoding="utf-8")):
             ubic[tab] = esq
     validos = set(ESQUEMA.values()) | {ESQUEMA_CATALOGO, ESQUEMA_COMUN}
 
-    total_modelo = sum(len(re.findall(r'^entity ', q.read_text(), re.M))
+    total_modelo = sum(len(re.findall(r'^entity ', q.read_text(encoding="utf-8"), re.M))
                        for q in (R / 'docs/entidades').glob('*.puml'))
     check(len(ubic) == total_modelo,
           f'{len(ubic)} tablas con esquema asignado (modelo: {total_modelo})')
@@ -168,7 +175,7 @@ if SQL_T.exists():
     check('evento_dominio' not in COMPARTIDAS_ESCRITURA,
           'el outbox salio de comun (ADR-027)')
     infra = (R / 'sql/15_infra/mensajeria.sql')
-    infra_txt = infra.read_text() if infra.exists() else ''
+    infra_txt = infra.read_text(encoding="utf-8") if infra.exists() else ''
     from modelo import esquemas_de_servicio, ESQUEMAS_ORQUESTADORES
     faltan_outbox = [e for e in esquemas_de_servicio()
                      if f'{e}.evento_dominio' not in infra_txt]
@@ -194,7 +201,7 @@ if SQL_T.exists():
     cruz = 0
     for f in (R / 'sql/20_claves').glob('*.sql'):
         for m in re.finditer(r'ALTER TABLE (\w+)\.\w+\n\s+ADD CONSTRAINT \S+\n'
-                             r'\s+FOREIGN KEY \(\w+\) REFERENCES (\w+)\.', f.read_text()):
+                             r'\s+FOREIGN KEY \(\w+\) REFERENCES (\w+)\.', f.read_text(encoding="utf-8")):
             if m.group(1) != m.group(2):
                 cruz += 1
     check(cruz > 0, f'{cruz} claves foraneas cruzan esquemas y las verifica el motor')
@@ -203,7 +210,7 @@ if SQL_T.exists():
     perm = (R / 'sql/00_base/03_permisos.sql')
     esqf = (R / 'sql/00_base/02_esquemas.sql')
     if perm.exists() and esqf.exists():
-        pt, et = perm.read_text(), esqf.read_text()
+        pt, et = perm.read_text(encoding="utf-8"), esqf.read_text(encoding="utf-8")
         check(len(re.findall(r'CREATE ROLE svc_', et)) == len(set(ESQUEMA.values())),
               f'{len(set(ESQUEMA.values()))} roles de servicio creados')
         sin_grant = [e for e in sorted(set(ESQUEMA.values()))
@@ -222,7 +229,10 @@ print('\n=== ENLACES ===')
 # nota o por ruta parcial desde esa raiz. Los que van dentro de `backticks` son
 # ejemplos citados, no enlaces, y no se cuentan.
 notas = {p.stem for p in (R / 'docs').rglob('*.md')}
-rutas = {str(p.relative_to(R / 'docs').with_suffix('')) for p in (R / 'docs').rglob('*.md')}
+# `as_posix()` y no `str()`: un wikilink se escribe siempre con barra, y en
+# Windows `str()` devuelve `Arquitectura\Prompts\_Prompts` — con lo cual toda
+# nota enlazada por ruta parcial se declara rota.
+rutas = {p.relative_to(R / 'docs').with_suffix('').as_posix() for p in (R / 'docs').rglob('*.md')}
 
 def enlaces_de(texto):
     sin_codigo = re.sub(r'```.*?```', '', texto, flags=re.S)   # bloques de codigo
@@ -231,7 +241,7 @@ def enlaces_de(texto):
 
 rotos = []
 for p in sorted((R / 'docs').rglob('*.md')):
-    for enlace in enlaces_de(p.read_text()):
+    for enlace in enlaces_de(p.read_text(encoding="utf-8")):
         if enlace in notas:
             continue
         if any(r == enlace or r.endswith('/' + enlace) for r in rutas):
@@ -243,7 +253,7 @@ check(not rotos, f'ningún wikilink roto en la bóveda {rotos[:5] or ""}')
 # Una skill se referencia con `backticks`, nunca con [[wikilink]].
 rotos_sk = []
 for p in sorted((R / '.claude/skills').glob('*/SKILL.md')):
-    for enlace in enlaces_de(p.read_text()):
+    for enlace in enlaces_de(p.read_text(encoding="utf-8")):
         if enlace in notas or any(r.endswith('/' + enlace) for r in rutas):
             continue
         rotos_sk.append(f'{p.parent.name} → {enlace}')
@@ -257,9 +267,9 @@ print('\n=== CIFRAS CITADAS ===')
 pumls = sorted((R / 'docs/entidades').glob('*.puml'))
 CIFRAS = {
     'casos de uso': len(casos),
-    'tablas':       sum(len(re.findall(r'^entity ', p.read_text(), re.M)) for p in pumls),
+    'tablas':       sum(len(re.findall(r'^entity ', p.read_text(encoding="utf-8"), re.M)) for p in pumls),
     'restricciones': len(set(re.findall(r'\bR-[A-Z]{2,4}-\d{2}\b',
-                                        (R / 'docs/Restricciones.md').read_text()))),
+                                        (R / 'docs/Restricciones.md').read_text(encoding="utf-8")))),
     'ADR':          len(list((R / 'docs/Arquitectura').glob('ADR-*.md'))),
 }
 # Sinonimos con los que cada cifra aparece en la prosa de los planes.
@@ -280,7 +290,7 @@ for p in docs_prosa:
         continue
     # Una cifra en formato de codigo es una cita literal, no una afirmacion:
     # asi se puede escribir "decia `87 casos de uso`" sin que el gate falle.
-    texto = re.sub(r'```.*?```', '', p.read_text(), flags=re.S)
+    texto = re.sub(r'```.*?```', '', p.read_text(encoding="utf-8"), flags=re.S)
     texto = re.sub(r'`[^`\n]*`', '', texto)
     for cifra, real in CIFRAS.items():
         for termino in TERMINOS[cifra]:
