@@ -144,7 +144,7 @@ Los tres se arreglaron en la fuente de verdad —`docs/Restricciones.md` y
 pipeline entero: contrato OpenAPI → interfaz generada → controlador → organismo con
 `@Transactional` → `conContexto` → escritura → outbox → `COMMIT`.
 
-**Evidencia:** `27 pruebas · 0 saltadas · 0 falladas` en `identidad`, de las cuales
+**Evidencia (los tres CU):** `65 pruebas · 0 saltadas · 0 falladas` en `identidad`, de las cuales
 **los 7 criterios de aceptación de la bóveda** y **una prueba de rechazo por cada uno
 de los 9 `R-XXX-nn` citados**. `verificar_criterios.py` → «sin divergencias».
 
@@ -171,7 +171,8 @@ columnas inventadas en cinco tablas, `ip_origen` que es `inet` y no cadena, y
 | CU-04 | ✅ | — |
 | CU-01 | bloqueado | Escribe en `cumplimiento` (debida diligencia, calificación de riesgo, expediente) y en `nucleo_financiero` (cuenta de billetera y su espejo contable). Es una **saga**, no una transacción local, y necesita los contratos de los carriles 1B y 1C |
 | CU-05 | bloqueado | `aceptacion_contrato` y `contrato_adhesion` viven en `cumplimiento`. El caso de uso dice `openapi/identidad.yaml` pero sus tablas son de otro servicio: **hueco declarado**, hay que decidir de quién es antes de escribirlo |
-| CU-08 · CU-09 | pendiente | Self-contained en `identidad`; siguen a continuación |
+| **CU-08** | ✅ | Asignar y revocar roles de operador. 6 criterios + 7 rechazos |
+| **CU-09** | ✅ | Cambiar credenciales y solicitar la baja. 8 criterios + 9 rechazos |
 
 ## Decisiones tomadas, y por qué
 

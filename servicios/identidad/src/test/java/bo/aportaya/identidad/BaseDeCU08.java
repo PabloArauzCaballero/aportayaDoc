@@ -82,4 +82,25 @@ abstract class BaseDeCU08 {
         return dsl.fetchCount(
                 DSL.table("identidad.asignacion_rol"), DSL.field("usuario_id").eq(usuario));
     }
+
+    /**
+     * Un DELETE sobre una tabla vacia no dispara un trigger FOR EACH ROW: la prueba
+     * tiene que dejar la fila que va a intentar borrar, o depende del orden en que
+     * corran las otras — y una prueba que depende del orden no prueba nada.
+     */
+    protected void dejarUnaFilaEnLaBitacora() {
+        transaccion.execute(estado -> {
+            dsl.execute(
+                    """
+                    INSERT INTO comun.bitacora_evento
+                        (id, secuencia, entidad, entidad_id, accion, origen, correlation_id,
+                         hash_registro, hash_anterior, fecha_hora)
+                    VALUES (gen_random_uuid(),
+                            nextval(pg_get_serial_sequence('comun.bitacora_evento','secuencia')),
+                            'prueba_append_only', gen_random_uuid(), 'CREACION', 'TAREA_PROGRAMADA',
+                            gen_random_uuid(), repeat('a', 64), repeat('0', 64), now())
+                    """);
+            return null;
+        });
+    }
 }

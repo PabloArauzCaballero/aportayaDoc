@@ -21,6 +21,8 @@ Modulo 01 de la boveda — Identidad, Usuarios y Seguridad.
 
 | CU-08 | Asignar y revocar roles de operador | ⬜ sin implementar |
 
+| CU-09 | Cambiar credenciales y solicitar la baja | ⬜ sin implementar |
+
 ## Eventos que emite
 
 | Tema | Cuando |

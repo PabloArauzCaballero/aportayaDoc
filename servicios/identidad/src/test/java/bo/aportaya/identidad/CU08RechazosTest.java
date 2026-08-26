@@ -15,6 +15,8 @@ class CU08RechazosTest extends BaseDeCU08 {
     void rechazaRAUD01() {
         // Revocar escribe; la fila NO se borra. Lo hace cumplir el sellado
         // append-only de la bitacora que acompana al acto.
+        dejarUnaFilaEnLaBitacora();
+
         assertThat(rechazaLaBase("DELETE FROM comun.bitacora_evento")).contains("R-AUD-01");
     }
 
