@@ -174,6 +174,51 @@ columnas inventadas en cinco tablas, `ip_origen` que es `inet` y no cadena, y
 | **CU-08** | ✅ | Asignar y revocar roles de operador. 6 criterios + 7 rechazos |
 | **CU-09** | ✅ | Cambiar credenciales y solicitar la baja. 8 criterios + 9 rechazos |
 
+## Carril 2C · `grupos` — CU-59, CU-60 y CU-63
+
+| CU | Qué resuelve | Evidencia |
+| :-: | --- | --- |
+| **CU-59** | Calendario de días no hábiles · el cálculo | 4 criterios + 5 rechazos |
+| **CU-60** | Sortear los turnos, con compromiso y revelación | 4 criterios + 4 rechazos |
+| **CU-63** | Proponer y votar un acuerdo | 4 criterios + 4 rechazos |
+
+**`grupos`: 41 pruebas · 0 saltadas · 0 falladas.**
+
+### La decisión que más pesa: el sorteo lo puede recomputar cualquiera
+
+El índice de cada paso de Fisher-Yates **no sale de un generador del lenguaje** sino
+de `SHA256(semilla || ":" || paso)`. Con `Random(semilla)` el resultado dependería de
+la implementación de la JVM y «cualquiera puede recomputarlo» valdría solo para quien
+tenga esta misma JVM. Con SHA-256 lo recomputa un participante con veinte líneas de
+Python, y el procedimiento está escrito paso a paso en el javadoc.
+
+El compromiso publica **solo el hash**. Sin esa separación, quien ejecuta el sorteo
+podría probar semillas hasta que salga el orden que le conviene.
+
+### Lo que el modelo me corrigió
+
+| Qué creí | Qué dice el modelo |
+| --- | --- |
+| Un período tiene varios turnos | `uq_turno_periodo` es único sobre `periodo_id` **a secas**: cada período tiene UN beneficiario. Es lo que hace que un pasanaku sea un pasanaku |
+| `quorum_decisiones` es un porcentaje | Es `numeric(4,3)`: una **fracción**. 60 desborda; el sesenta por ciento es 0,600 |
+| Los tipos de acuerdo son los del CU | El `.puml` manda: `CONDONACION_MORA`, no `CONDONACION`; y `TRASPASO_CUPO` y `REPETIR_SORTEO` **no existen** |
+
+### Un patrón que aparece en todos los carriles, y conviene decidirlo
+
+Tres casos de uso seguidos resultaron asignados a un servicio que **no puede escribir
+donde el caso de uso dice que escribe**:
+
+| CU | Asignado a | Escribe en |
+| :-: | --- | --- |
+| CU-01 | `identidad` | `cumplimiento` y `nucleo_financiero` |
+| CU-05 | `identidad` | `cumplimiento` |
+| CU-59 | `grupos` | `catalogo`, que todos leen y **nadie escribe en caliente** |
+
+No es un error de ninguno de los tres: es que la asignación CU↔servicio se hizo por
+módulo del `.puml` y hay casos de uso que cruzan módulos. **Cada uno es una saga o un
+cambio de dueño, y decidirlo caso por caso mientras se programa es exactamente cómo se
+termina con un servicio leyendo el esquema de otro.**
+
 ## Decisiones tomadas, y por qué
 
 | Decisión | Por qué | Dónde |
