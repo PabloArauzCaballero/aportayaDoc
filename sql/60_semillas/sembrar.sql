@@ -1,5 +1,5 @@
 -- Catálogos mínimos — también se aplican en producción
---   psql -d pasanaku -v ON_ERROR_STOP=1 -f sql\60_semillas/sembrar.sql
+--   psql -d pasanaku -v ON_ERROR_STOP=1 -f sql/60_semillas/sembrar.sql
 -- GENERADO desde seeders/ — no editar a mano.
 
 \set ON_ERROR_STOP on

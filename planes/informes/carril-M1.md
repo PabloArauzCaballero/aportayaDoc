@@ -30,27 +30,40 @@ librado a interpretación. Dice, textual, por qué el Mac cambia de lado justo e
 > inventar nada: `packages/ui` congelado (T2), el shell (T3) y los contratos de
 > identidad (T2).»
 
-Son tres precondiciones. **Se cumple una.**
+Son tres precondiciones. **Se cumple una y media.**
 
 | # | Precondición | Dueño | Comprobación | Estado |
 | :-: | --- | --- | --- | :-: |
-| 1 | `packages/ui` congelado | Ola F1 · sistema de diseño | `ls packages` → no existe | ❌ |
-| 2 | Shell móvil (`apps/movil/`) | Carril **M** · F2 · **P3 Legion** | `find apps -type f` → un solo archivo, `apps/backoffice/.gitignore` | ❌ |
-| 3 | Contratos de identidad | Carriles de backend | `clientes/typescript/identidad` presente | ⚠️ parcial |
+| 1 | `packages/ui` congelado | Ola F1 · sistema de diseño | `ls packages/` → solo `simulado`. No existe `packages/ui` | ❌ |
+| 2 | Shell móvil | Carril **M** · F2 · **P3 Legion** | `apps/movil/src/{navegacion,proveedores}/` → ausentes | ❌ |
+| 3 | Contratos de identidad | Carriles de backend | `clientes/typescript/identidad` expone 2 de ~15 operaciones | ⚠️ parcial |
 
-No existe el andamiaje móvil (**F0-M**, `apps/movil/**`, P3 según
-[[16 Carriles de frontend]] §2), no existe `package.json` ni `yarn.lock` en el
-repositorio, y no hay ningún proyecto Expo. La comprobación es directa:
+> **Corregido el 26-08-2026, al fusionar `dev`.** Este informe se abrió cuando no
+> existía **nada** de móvil. Entre medio entró **F0-M** (`carril-F0-M-andamiaje-movil`,
+> ya en `dev`), que sí cambia el terreno: hay monorepo yarn con espacios de trabajo,
+> Expo SDK 54 con Expo Router, `packages/simulado` derivado de los contratos, tres
+> corredores de Jest y una rebanada vertical que prueba el patrón. La afirmación
+> original de que «no hay `package.json` ni `yarn.lock` ni proyecto Expo» **ya no es
+> cierta** y queda anulada.
 
-```
-$ find . -name package.json -not -path "*/node_modules/*" -not -path "./.git/*"
-$ ls yarn.lock
-   AUSENTE
-```
+### Lo que F0-M dejó, y lo que todavía falta
+
+| Capa | Qué hay hoy | Qué necesita M1 |
+| --- | --- | --- |
+| Andamiaje | Expo Router, `turbo.json`, `yarn.lock`, tres corredores de Jest, ESLint | — completo |
+| `src/dominio/` | `gateway.ts`, `sesion.ts`, `registro.ts`, `identificadores.ts`, `errores.ts` | los hooks por CU de las once pantallas |
+| `src/atomos/` | `Monto.tsx` | `Boton`, `Campo*`, `CampoOTP`, `TecladoNumerico`, `ChipEstado` — **son de F1** |
+| `src/moleculas/` | `EstadoDePantalla.tsx` | `DeclaracionPEP` — de F1 |
+| `src/organismos/` | `ResumenDeBilletera.tsx` | los once organismos de identidad — **de F1** |
+| `src/navegacion/`, `src/proveedores/` | **no existen** | `ProveedorSesion`, `usarBiometria()`, `usarIdempotencia()`, `LimiteDeError` — **son de F2** |
+
+F0-M entregó **una rebanada vertical** —un átomo, una molécula, un organismo y una
+pantalla con sus cuatro estados— para fijar el patrón, no el catálogo. Los organismos
+que componen las once pantallas de identidad siguen sin existir.
 
 ### Por qué no lo construí igual
 
-Porque los tres faltantes son, uno por uno, **rutas que [[16 Carriles de frontend]] §4
+Porque los dos faltantes son, uno por uno, **rutas que [[16 Carriles de frontend]] §4
 marca como «lo que ningún carril toca»**:
 
 | Ruta que haría falta crear | Quién la cambia, según §4 |
@@ -58,7 +71,6 @@ marca como «lo que ningún carril toca»**:
 | `packages/ui/**` | Ola F0. **Congelado al cerrar F1.** Un átomo nuevo = micro-PR |
 | `apps/movil/src/{navegacion,proveedores}/` | Carril M (F2), luego congelado |
 | `apps/*/src/tokens/**` | Ola F0. **Jamás durante un carril** |
-| `package.json`, `yarn.lock`, configs | Micro-PR |
 
 Y porque el reparto de trabajo lo dice sin rodeos en §7 del
 [[Flujo de pantallas · app del participante]]: los organismos de identidad
@@ -69,8 +81,8 @@ inventando el sistema de diseño por su cuenta — que es exactamente lo que
 
 > «La Ola F0. Es el sistema de diseño; si se parte, cada carril inventa su propia…»
 
-Construirlo desde M1 no sería adelantar F3: sería hacer F0-M, F1 y F2 con nombre de
-F3, en una rama de carril, sin el gate de ninguna de las tres.
+Construirlo desde M1 no sería adelantar F3: sería hacer F1 y F2 con nombre de F3, en
+una rama de carril y sin el gate de ninguna de las dos.
 
 ## 2 · Paso 0 — las once pantallas, declaradas
 
@@ -132,16 +144,18 @@ todas resolubles antes de escribir código.
 
 ## 5 · Qué desbloquea este carril
 
-En orden, y ninguno es del Mac según [[17 Plan de acción secuencial · coordinación de cinco máquinas]] §5:
+Quedan dos, y ninguno es del Mac según
+[[17 Plan de acción secuencial · coordinación de cinco máquinas]] §5:
 
-1. **F0-M** — andamiaje móvil `apps/movil/**` + MSW · **P3 Legion** · Ola F0
-2. **F1** — sistema de diseño, `packages/ui` congelado · Ola F1
-3. **F2** — shell móvil: `ProveedorSesion`, Expo Router, `usarIdempotencia()`,
-   `LimiteDeError`, biometría · carril **M** · **P3 Legion** · T3
+| # | Falta | Dueño | Estado |
+| :-: | --- | --- | :-: |
+| ~~1~~ | ~~**F0-M** — andamiaje móvil `apps/movil/**` + MSW~~ | P3 Legion · Ola F0 | ✅ en `dev` |
+| 2 | **F1** — sistema de diseño: los once organismos de identidad y sus átomos | Ola F1 | ❌ |
+| 3 | **F2** — shell: `ProveedorSesion`, `usarBiometria()`, `usarIdempotencia()`, `LimiteDeError` | carril **M** · P3 Legion · T3 | ❌ |
 
-Con los tres en `dev`, F3 es composición de once pantallas contra organismos que ya
-existen, y el gate de salida de §"Gate de salida F3" de [[12 Fases F2 a F5 · App móvil]]
-pasa a ser ejecutable.
+Con los dos en `dev`, F3 es composición de once pantallas contra organismos que ya
+existen, y el «Gate de salida F3» de [[12 Fases F2 a F5 · App móvil]] pasa a ser
+ejecutable.
 
 ## Ver también
 
