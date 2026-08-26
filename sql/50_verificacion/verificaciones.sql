@@ -90,3 +90,21 @@ SELECT n.nspname || '.' || c.relname FROM pg_class c
                 WHERE a.attrelid = c.oid AND a.attname = 'usuario_id'
                   AND NOT a.attisdropped)
    AND NOT c.relrowsecurity;
+
+-- 12) R-CTB-09 · saldo contable en caché que no coincide con el mayor
+--     El equivalente contable de la consulta 2: el saldo es caché, el libro es la
+--     verdad, y si difieren gana el libro y hay que explicar por qué.
+SELECT c.id, c.codigo, c.saldo AS cacheado, COALESCE(l.derivado, 0) AS derivado
+  FROM cuenta_contable c
+  LEFT JOIN LATERAL (
+        SELECT SUM(CASE WHEN c.naturaleza = 'DEUDORA' THEN m.debe - m.haber
+                        ELSE m.haber - m.debe END) AS derivado
+          FROM movimiento_contable m WHERE m.cuenta_id = c.id) l ON TRUE
+ WHERE c.saldo <> COALESCE(l.derivado, 0);
+
+-- 13) R-AUD-11 · asientos donde el estado y el enlace de reversa se contradicen
+--     La restricción lo impide al insertar; esta consulta detecta lo que hubiera
+--     entrado antes de que existiera.
+SELECT id, numero, estado, asiento_reversa_id
+  FROM asiento_contable
+ WHERE (estado = 'REVERSADO') <> (asiento_reversa_id IS NOT NULL);

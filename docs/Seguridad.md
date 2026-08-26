@@ -270,7 +270,7 @@ python3 scripts/verificar_boveda.py        # coherencia de bóveda, CU, ADR y re
 python3 scripts/verificar_carriles.py      # skills asignadas y carriles alineados
 python3 scripts/generar_ddl.py             # lo derivado no diverge de su fuente
 python3 scripts/generar_k8s.py             # ninguna réplica única, ningún puerto de más
-psql -f sql/aplicar.sql                    # el esquema y las 140 restricciones aplican en limpio
+psql -f sql/aplicar.sql                    # el esquema y las 142 restricciones aplican en limpio
 psql -f sql/50_verificacion/prueba_humo.sql  # cero FALLA
 ```
 

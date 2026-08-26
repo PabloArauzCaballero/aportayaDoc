@@ -80,6 +80,7 @@ fn_<dominio>_<accion>  función
 | R-AUD-08 | Nada se depura antes de su fecha de conservación | Ley 393 (10 años) | [[CU-07 Ejercer derechos sobre datos personales]] |
 | R-AUD-09 | Los hashes de la bitácora los calcula la base, no la aplicación | ASFI · prueba ante el regulador | [[CU-73 Verificar la cadena de transparencia]] |
 | R-AUD-10 | Las cadenas se verifican en el control diario, no sólo al auditar | ASFI Seguridad de la Información | [[CU-73 Verificar la cadena de transparencia]] |
+| R-AUD-11 | El asiento que reversa se marca `REVERSADO` y apunta al original; y también tiene que cuadrar | Contabilidad · Ley 393 | [[CU-24 Registrar el asiento contable de una operación]] |
 
 ```sql
 -- R-AUD-01 · append-only por privilegios, no por convención
@@ -189,16 +190,35 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+-- El cuadre se le exige a los DOS estados que dejan un asiento en firme. Con la
+-- condición puesta solo en 'CONFIRMADO', un asiento marcado 'REVERSADO' entraba sin
+-- que nadie verificara su partida doble: la corrección de un error contable era
+-- justamente el único movimiento que podía descuadrar impunemente.
 CREATE CONSTRAINT TRIGGER tg_asiento_cuadrado
   AFTER INSERT OR UPDATE ON asiento_contable
   DEFERRABLE INITIALLY DEFERRED
-  FOR EACH ROW WHEN (NEW.estado = 'CONFIRMADO')
+  FOR EACH ROW WHEN (NEW.estado IN ('CONFIRMADO', 'REVERSADO'))
   EXECUTE FUNCTION fn_aud_asiento_cuadrado();
 
 -- R-AUD-06 · la reversa apunta a un asiento distinto y confirmado
 ALTER TABLE asiento_contable
   ADD CONSTRAINT ck_asiento_reversa_distinta
   CHECK (asiento_reversa_id IS NULL OR asiento_reversa_id <> id);
+
+-- R-AUD-11 · qué asiento lleva el estado REVERSADO
+--
+-- El CHECK de `estado` admitía 'REVERSADO' y ningún caso de uso decía a cuál de los
+-- dos asientos le tocaba. La lectura natural —marcar el ORIGINAL— es imposible:
+-- `asiento_contable` es append-only (R-AUD-01), así que su estado no se puede
+-- cambiar después. De modo que 'REVERSADO' solo puede escribirse al insertar, y el
+-- único asiento que se inserta sabiendo que es una corrección es el inverso.
+--
+-- Queda entonces una equivalencia, y se hace cumplir en las dos direcciones: un
+-- asiento está REVERSADO si y solo si apunta al que corrige. Sin esto, "reversado"
+-- era una palabra que cada carril iba a interpretar a su manera.
+ALTER TABLE asiento_contable
+  ADD CONSTRAINT ck_asiento_reversado_enlazado CHECK (
+        (estado = 'REVERSADO') = (asiento_reversa_id IS NOT NULL));
 
 -- R-AUD-07 · un cierre de saldo por cuenta y día
 ALTER TABLE saldo_diario_billetera
@@ -2383,6 +2403,7 @@ ALTER TABLE ejecucion_tarea
 | R-CTB-06 | Una cuenta por cobrar no se cobra por encima de su saldo | NIIF | [[CU-104 Cobrar una cuenta por cobrar]] |
 | R-CTB-07 | Una depreciación por activo y período | NIIF | [[CU-105 Depreciar un activo fijo]] |
 | R-CTB-08 | Un estado financiero por período y tipo | NIIF · Ley 393 | [[CU-106 Generar el estado financiero del período]] |
+| R-CTB-09 | El saldo de una cuenta contable se deriva del libro, no lo escribe la aplicación | NIIF · partida doble | [[CU-24 Registrar el asiento contable de una operación]] |
 
 ```sql
 -- R-CTB-01 · un período por ejercicio y mes, y nada se asienta en uno cerrado
@@ -2524,6 +2545,48 @@ ALTER TABLE estado_financiero_generado
 
 ALTER TABLE linea_plantilla_asiento
   ADD CONSTRAINT uq_linea_plantilla_orden UNIQUE (plantilla_id, orden);
+
+-- R-CTB-09 · el saldo contable se deriva del libro, igual que el de billetera
+--
+-- `cuenta_billetera.saldo_*` lo deriva el motor desde R-BIL-16; `cuenta_contable.saldo`
+-- no tenía equivalente, y quedaba en manos de la aplicación hacer el
+-- `UPDATE ... SET saldo = saldo + delta` en la misma transacción. Eso convierte en
+-- promesa lo que en la billetera es garantía: basta un caso de uso nuevo que inserte
+-- en `movimiento_contable` y se olvide del saldo para que el mayor deje de reflejar
+-- la posición, y nada lo impida.
+--
+-- El signo lo da la NATURALEZA de la cuenta y no el lado del movimiento: en una
+-- cuenta deudora (activo, egreso) el debe suma; en una acreedora (pasivo,
+-- patrimonio, ingreso) suma el haber. Escribirlo en la base es lo que evita que
+-- catorce servicios repitan esa tabla de signos, cada uno con su criterio.
+--
+-- El bloqueo de fila se toma ANTES de leer, por el mismo motivo que
+-- `fn_bil_recalcular_saldos`: dos asientos simultáneos sobre la misma cuenta que
+-- leyeran el libro a la vez calcularían ambos sobre un mayor incompleto.
+CREATE OR REPLACE FUNCTION fn_ctb_recalcular_saldo(p_cuenta UUID) RETURNS VOID AS $$
+DECLARE v_saldo NUMERIC(16,2); v_naturaleza TEXT;
+BEGIN
+  SELECT naturaleza INTO v_naturaleza
+    FROM cuenta_contable WHERE id = p_cuenta FOR UPDATE;
+
+  SELECT COALESCE(SUM(
+           CASE WHEN v_naturaleza = 'DEUDORA' THEN debe - haber
+                ELSE haber - debe END), 0)
+    INTO v_saldo
+    FROM movimiento_contable WHERE cuenta_id = p_cuenta;
+
+  UPDATE cuenta_contable SET saldo = v_saldo WHERE id = p_cuenta;
+END $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION fn_ctb_sincronizar_saldo() RETURNS trigger AS $$
+BEGIN
+  PERFORM fn_ctb_recalcular_saldo(NEW.cuenta_id);
+  RETURN NULL;
+END $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER tg_movimiento_contable_sincroniza_saldo
+  AFTER INSERT ON movimiento_contable
+  FOR EACH ROW EXECUTE FUNCTION fn_ctb_sincronizar_saldo();
 ```
 
 ---
@@ -2816,6 +2879,24 @@ SELECT n.nspname || '.' || c.relname FROM pg_class c
                 WHERE a.attrelid = c.oid AND a.attname = 'usuario_id'
                   AND NOT a.attisdropped)
    AND NOT c.relrowsecurity;
+
+-- 12) R-CTB-09 · saldo contable en caché que no coincide con el mayor
+--     El equivalente contable de la consulta 2: el saldo es caché, el libro es la
+--     verdad, y si difieren gana el libro y hay que explicar por qué.
+SELECT c.id, c.codigo, c.saldo AS cacheado, COALESCE(l.derivado, 0) AS derivado
+  FROM cuenta_contable c
+  LEFT JOIN LATERAL (
+        SELECT SUM(CASE WHEN c.naturaleza = 'DEUDORA' THEN m.debe - m.haber
+                        ELSE m.haber - m.debe END) AS derivado
+          FROM movimiento_contable m WHERE m.cuenta_id = c.id) l ON TRUE
+ WHERE c.saldo <> COALESCE(l.derivado, 0);
+
+-- 13) R-AUD-11 · asientos donde el estado y el enlace de reversa se contradicen
+--     La restricción lo impide al insertar; esta consulta detecta lo que hubiera
+--     entrado antes de que existiera.
+SELECT id, numero, estado, asiento_reversa_id
+  FROM asiento_contable
+ WHERE (estado = 'REVERSADO') <> (asiento_reversa_id IS NOT NULL);
 ```
 
 ## Cómo se aplica

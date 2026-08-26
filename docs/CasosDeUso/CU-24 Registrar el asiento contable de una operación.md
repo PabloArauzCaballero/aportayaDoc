@@ -32,7 +32,9 @@ normas: [Ley 393 (libros y conservación), plan de cuentas, NIIF]
    [[asiento_contable]] con `origen_tipo` / `origen_id` apuntando al hecho, y sus
    [[movimiento_contable]].
 3. Un trigger valida `SUM(debe) = SUM(haber)` al confirmar el asiento (`R-AUD-05`).
-4. Se actualizan los saldos de cuenta y se emite `evento_dominio`.
+4. El saldo de cada [[cuenta_contable]] tocada se sincroniza **desde el libro, por
+   trigger** (`R-CTB-09`): la aplicación no lo escribe, igual que no escribe el de
+   billetera. Se emite `evento_dominio` en la misma transacción.
 5. El asiento entra al [[cierre_diario]] de su fecha ([[CU-51 Ejecutar el cierre diario]]).
 
 ## Flujos alternativos
@@ -40,7 +42,7 @@ normas: [Ley 393 (libros y conservación), plan de cuentas, NIIF]
 | # | Situación | Resultado |
 | :-: | --- | --- |
 | 3a | Las partidas no cuadran | La transacción entera falla: **no existe operación sin asiento cuadrado** |
-| — | Corrección de un asiento | No se edita: se crea el asiento inverso y se enlaza con `asiento_reversa_id` (`R-AUD-06`) |
+| — | Corrección de un asiento | No se edita: se crea el asiento inverso, se marca `estado = 'REVERSADO'` y se enlaza con `asiento_reversa_id` (`R-AUD-06`, `R-AUD-11`). El inverso **también** tiene que cuadrar (`R-AUD-05`) |
 | 1a | Falta la cuenta contable del concepto | El devengo o la operación se rechazan en configuración, no en producción |
 | — | Cierre del período contable | Los asientos del período cerrado no admiten inserciones retroactivas sin reapertura autorizada |
 
@@ -103,7 +105,7 @@ export const ErroresCU24 = {
 
 ## Restricciones aplicables
 
-`R-AUD-01` · `R-AUD-05` · `R-AUD-06` · `R-CTB-02`
+`R-AUD-01` · `R-AUD-05` · `R-AUD-06` · `R-AUD-11` · `R-CTB-02` · `R-CTB-09`
 
 ## Evidencia que deja
 

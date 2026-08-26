@@ -20,14 +20,15 @@ public class AsientoRepositorio {
 
     public record AsientoCreado(UUID id, long numero) {}
 
-    public record AsientoExistente(UUID id, String origenTipo, UUID origenId, String estado) {}
+    public record AsientoExistente(UUID id, String origenTipo, UUID origenId, UUID grupoId, String estado) {}
 
     public record MovimientoExistente(UUID cuentaId, BigDecimal debe, BigDecimal haber) {}
 
     /**
-     * {@code periodo_contable_id} y {@code grupo_id} quedan NULL: M13 (el ejercicio
-     * contable) todavía no existe en este carril, y {@code tg_asiento_periodo_abierto}
-     * acepta explícitamente un asiento sin período ("anteriores a M13").
+     * {@code periodo_contable_id} queda NULL: {@code periodo_contable} es del módulo 13
+     * (ERP), que todavía no existe, y {@code tg_asiento_periodo_abierto} acepta
+     * explícitamente un asiento sin período ("anteriores a M13"). Cuando el ERP exista,
+     * el período entra por acá y el trigger pasa a exigirlo abierto (R-CTB-01).
      */
     public AsientoCreado crear(
             DSLContext dsl,
@@ -35,14 +36,19 @@ public class AsientoRepositorio {
             String glosa,
             String origenTipo,
             UUID origenId,
+            Optional<UUID> grupoId,
             Optional<UUID> registradoPor,
             Optional<UUID> asientoReversaId) {
+        // R-AUD-11: el estado y el enlace de reversa son la misma decisión, y la base
+        // rechaza que se contradigan. Se derivan de un solo dato para que no puedan.
+        String estado = asientoReversaId.isPresent() ? "REVERSADO" : "CONFIRMADO";
         return dsl.insertInto(ASIENTO_CONTABLE)
                 .set(ASIENTO_CONTABLE.FECHA, fecha)
                 .set(ASIENTO_CONTABLE.GLOSA, glosa)
                 .set(ASIENTO_CONTABLE.ORIGEN_TIPO, origenTipo)
                 .set(ASIENTO_CONTABLE.ORIGEN_ID, origenId)
-                .set(ASIENTO_CONTABLE.ESTADO, "CONFIRMADO")
+                .set(ASIENTO_CONTABLE.GRUPO_ID, grupoId.orElse(null))
+                .set(ASIENTO_CONTABLE.ESTADO, estado)
                 .set(ASIENTO_CONTABLE.REGISTRADO_POR, registradoPor.orElse(null))
                 .set(ASIENTO_CONTABLE.ASIENTO_REVERSA_ID, asientoReversaId.orElse(null))
                 .returning(ASIENTO_CONTABLE.ID, ASIENTO_CONTABLE.NUMERO)
@@ -65,10 +71,11 @@ public class AsientoRepositorio {
                         ASIENTO_CONTABLE.ID,
                         ASIENTO_CONTABLE.ORIGEN_TIPO,
                         ASIENTO_CONTABLE.ORIGEN_ID,
+                        ASIENTO_CONTABLE.GRUPO_ID,
                         ASIENTO_CONTABLE.ESTADO)
                 .from(ASIENTO_CONTABLE)
                 .where(ASIENTO_CONTABLE.ID.eq(id))
-                .fetchOptional(r -> new AsientoExistente(r.value1(), r.value2(), r.value3(), r.value4()));
+                .fetchOptional(r -> new AsientoExistente(r.value1(), r.value2(), r.value3(), r.value4(), r.value5()));
     }
 
     public List<MovimientoExistente> movimientosDe(DSLContext dsl, UUID asientoId) {

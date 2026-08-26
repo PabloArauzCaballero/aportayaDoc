@@ -6996,7 +6996,7 @@ const PREGUNTAS = {
   'Respaldo con <b>recuperación a un punto en el tiempo</b> y ensayo de restauración programado en entorno aislado. Los objetivos de recuperación se <b>miden en el ensayo</b>, no se declaran en un documento: un respaldo que nadie restauró es una suposición.',
   'Backoffice → Riesgo y plataforma → Arquitectura, bloque Continuidad'],
  ['¿Cómo saben que las reglas realmente se cumplen?',
-  'Porque <b>140 restricciones viven en el motor</b>, no en el código: quien autoriza no ejecuta, nadie se otorga un rol a sí mismo, el asiento cuadra o no se guarda, un operador sin TOTP no abre sesión. Cada una tiene su prueba de rechazo, y el esquema completo se aplica sobre PostgreSQL real en cada cambio.',
+  'Porque <b>142 restricciones viven en el motor</b>, no en el código: quien autoriza no ejecuta, nadie se otorga un rol a sí mismo, el asiento cuadra o no se guarda, un operador sin TOTP no abre sesión. Cada una tiene su prueba de rechazo, y el esquema completo se aplica sobre PostgreSQL real en cada cambio.',
   'Backoffice → cualquier pantalla: los códigos R-SEG y AP-CU son reales'],
  ['¿Y si el fraude viene de adentro?',
   'Es el que más plata se lleva en este rubro, y por eso la segregación está en la base: contabilidad autoriza y tesorería ejecuta, y la restricción rechaza que sean la misma persona. En pantalla, el operador <b>no ve el botón del otro lado</b> — no está deshabilitado, no está.',
@@ -7004,7 +7004,7 @@ const PREGUNTAS = {
 ],
 'Directorio':[
  ['¿Cuánto de esto está construido de verdad?',
-  'Está completo lo que suele faltar: <b>modelo de 304 tablas aplicado sobre PostgreSQL real, 99 casos de uso con criterios de aceptación, 140 restricciones con prueba de rechazo, 39 decisiones de arquitectura y la matriz normativa</b>. Lo que <b>no existe todavía</b> es el código de los catorce servicios ni las apps: lo que están viendo es una maqueta con el backend simulado. Decirlo así es deliberado — una maqueta presentada como producto se descubre en la primera pregunta técnica.',
+  'Está completo lo que suele faltar: <b>modelo de 304 tablas aplicado sobre PostgreSQL real, 99 casos de uso con criterios de aceptación, 142 restricciones con prueba de rechazo, 39 decisiones de arquitectura y la matriz normativa</b>. Lo que <b>no existe todavía</b> es el código de los catorce servicios ni las apps: lo que están viendo es una maqueta con el backend simulado. Decirlo así es deliberado — una maqueta presentada como producto se descubre en la primera pregunta técnica.',
   'Backoffice → Riesgo y plataforma → Arquitectura, bloque «en qué estado está»'],
  ['¿Esto es legal? ¿Podemos operar?',
   'Todavía no, y está declarado: la autorización de ASFI está <b>en trámite</b>, categoría pagos y plataformas de pago. Hasta que se otorgue no se opera con dinero real, y una restricción de la base impide habilitar un servicio fuera del alcance autorizado. No depende de que alguien se acuerde.',

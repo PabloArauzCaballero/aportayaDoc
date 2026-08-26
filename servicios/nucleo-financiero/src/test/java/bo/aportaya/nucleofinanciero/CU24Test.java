@@ -45,11 +45,13 @@ class CU24Test extends BaseDeCU24 {
         SalidaAsiento reversa = transaccion.execute(
                 e -> registrar.reversar(dsl, original.asientoId(), "monto equivocado", comoSistema()));
 
-        UUID reversaIdEnBase = (UUID) dsl.fetchOne(
-                        "SELECT asiento_reversa_id FROM nucleo_financiero.asiento_contable WHERE id = ?",
-                        reversa.asientoId())
-                .get(0);
-        assertThat(reversaIdEnBase).isEqualTo(original.asientoId());
+        var fila = dsl.fetchOne(
+                "SELECT asiento_reversa_id, estado FROM nucleo_financiero.asiento_contable WHERE id = ?",
+                reversa.asientoId());
+        assertThat((UUID) fila.get(0)).isEqualTo(original.asientoId());
+        // R-AUD-11: el asiento que corrige es el que lleva el estado REVERSADO — el
+        // original no se puede tocar, es append-only.
+        assertThat((String) fila.get(1)).isEqualTo("REVERSADO");
         // La reversa intercambia debe y haber: el total que era debe en el original es
         // ahora haber, y viceversa — el saldo de las dos cuentas vuelve a cero.
         assertThat(fixtura.saldoDe(caja.id())).isEqualByComparingTo("0.00");

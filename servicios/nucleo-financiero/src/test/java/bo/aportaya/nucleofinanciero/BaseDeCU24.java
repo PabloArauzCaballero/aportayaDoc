@@ -59,11 +59,61 @@ abstract class BaseDeCU24 {
             });
             return "";
         } catch (RuntimeException e) {
-            Throwable raiz = e;
-            while (raiz.getCause() != null && raiz.getCause() != raiz) {
-                raiz = raiz.getCause();
-            }
-            return String.valueOf(raiz.getMessage());
+            return raizDe(e);
         }
+    }
+
+    /**
+     * El mensaje del motor, al fondo de la cadena de causas. Hace falta aparte de
+     * {@link #rechazaLaBase} para los triggers {@code DEFERRABLE}, que solo disparan al
+     * intentar el COMMIT y por lo tanto nunca saltan en una transacción que se revierte
+     * a propósito.
+     */
+    protected String raizDe(Throwable e) {
+        Throwable raiz = e;
+        while (raiz.getCause() != null && raiz.getCause() != raiz) {
+            raiz = raiz.getCause();
+        }
+        return String.valueOf(raiz.getMessage());
+    }
+
+    /** {@code cuenta_contable.codigo} es VARCHAR(20): un UUID entero no entra. */
+    protected String codigoCorto() {
+        return "T." + UUID.randomUUID().toString().substring(0, 8);
+    }
+
+    /** Un asiento cuadrado de dos patas, ya confirmado. Devuelve su id. */
+    protected UUID asientoCuadrado(UUID cuentaDebe, UUID cuentaHaber, String monto, String glosa) {
+        UUID asientoId = UUID.randomUUID();
+        transaccion.execute(estado -> {
+            dsl.execute(
+                    """
+                    INSERT INTO nucleo_financiero.asiento_contable
+                        (id, fecha, glosa, origen_tipo, origen_id, estado)
+                    VALUES (?, now(), ?, 'AJUSTE', gen_random_uuid(), 'CONFIRMADO')
+                    """,
+                    asientoId,
+                    glosa);
+            dsl.execute(
+                    """
+                    INSERT INTO nucleo_financiero.movimiento_contable
+                        (id, asiento_id, cuenta_id, debe, haber, descripcion)
+                    VALUES (gen_random_uuid(), ?, ?, ?::numeric, 0.00, 'debe')
+                    """,
+                    asientoId,
+                    cuentaDebe,
+                    monto);
+            dsl.execute(
+                    """
+                    INSERT INTO nucleo_financiero.movimiento_contable
+                        (id, asiento_id, cuenta_id, debe, haber, descripcion)
+                    VALUES (gen_random_uuid(), ?, ?, 0.00, ?::numeric, 'haber')
+                    """,
+                    asientoId,
+                    cuentaHaber,
+                    monto);
+            return null;
+        });
+        return asientoId;
     }
 }

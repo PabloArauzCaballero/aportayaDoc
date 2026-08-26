@@ -127,15 +127,100 @@ class CU24RechazosTest extends BaseDeCU24 {
                 .contains("R-CTB-02");
     }
 
-    private String codigoCorto() {
-        return "T." + UUID.randomUUID().toString().substring(0, 8);
+    @Test
+    @DisplayName("rechaza R-AUD-11: un asiento REVERSADO sin enlace al original no entra")
+    void rechazaReversadoSinEnlace() {
+        assertThat(
+                        rechazaLaBase(
+                                """
+                        INSERT INTO nucleo_financiero.asiento_contable
+                            (id, fecha, glosa, origen_tipo, origen_id, estado)
+                        VALUES (gen_random_uuid(), now(), 'reversado sin original', 'AJUSTE',
+                                gen_random_uuid(), 'REVERSADO')
+                        """))
+                .contains("ck_asiento_reversado_enlazado");
     }
 
-    private String raizDe(Throwable e) {
-        Throwable raiz = e;
-        while (raiz.getCause() != null && raiz.getCause() != raiz) {
-            raiz = raiz.getCause();
-        }
-        return String.valueOf(raiz.getMessage());
+    @Test
+    @DisplayName("rechaza R-AUD-11: un asiento enlazado a un original pero no marcado REVERSADO tampoco")
+    void rechazaEnlaceSinEstadoReversado() {
+        UUID originalId = UUID.randomUUID();
+        transaccion.execute(estado -> {
+            dsl.execute(
+                    """
+                    INSERT INTO nucleo_financiero.asiento_contable
+                        (id, fecha, glosa, origen_tipo, origen_id, estado)
+                    VALUES (?, now(), 'original', 'AJUSTE', gen_random_uuid(), 'BORRADOR')
+                    """,
+                    originalId);
+            return null;
+        });
+
+        assertThat(rechazaLaBase(
+                        """
+                        INSERT INTO nucleo_financiero.asiento_contable
+                            (id, fecha, glosa, origen_tipo, origen_id, estado, asiento_reversa_id)
+                        VALUES (gen_random_uuid(), now(), 'enlazada pero confirmada', 'AJUSTE',
+                                gen_random_uuid(), 'CONFIRMADO', '%s')
+                        """
+                                .formatted(originalId)))
+                .contains("ck_asiento_reversado_enlazado");
+    }
+
+    @Test
+    @DisplayName("rechaza R-AUD-05: una reversa descuadrada tampoco pasa — el cuadre también se le exige a REVERSADO")
+    void rechazaReversaDescuadrada() {
+        UUID cuenta = fixtura.cuentaDeMovimiento(codigoCorto(), "ACTIVO", "DEUDORA");
+        UUID contrapartida = fixtura.cuentaDeMovimiento(codigoCorto(), "INGRESO", "ACREEDORA");
+        UUID originalId = UUID.randomUUID();
+        transaccion.execute(estado -> {
+            dsl.execute(
+                    """
+                    INSERT INTO nucleo_financiero.asiento_contable
+                        (id, fecha, glosa, origen_tipo, origen_id, estado)
+                    VALUES (?, now(), 'original cuadrado', 'AJUSTE', gen_random_uuid(), 'CONFIRMADO')
+                    """,
+                    originalId);
+            dsl.execute(
+                    """
+                    INSERT INTO nucleo_financiero.movimiento_contable
+                        (id, asiento_id, cuenta_id, debe, haber, descripcion)
+                    VALUES (gen_random_uuid(), ?, ?, 20.00, 0.00, 'debe')
+                    """,
+                    originalId,
+                    cuenta);
+            dsl.execute(
+                    """
+                    INSERT INTO nucleo_financiero.movimiento_contable
+                        (id, asiento_id, cuenta_id, debe, haber, descripcion)
+                    VALUES (gen_random_uuid(), ?, ?, 0.00, 20.00, 'haber')
+                    """,
+                    originalId,
+                    contrapartida);
+            return null;
+        });
+
+        UUID reversaId = UUID.randomUUID();
+        assertThatThrownBy(() -> transaccion.execute(estado -> {
+                    dsl.execute(
+                            """
+                            INSERT INTO nucleo_financiero.asiento_contable
+                                (id, fecha, glosa, origen_tipo, origen_id, estado, asiento_reversa_id)
+                            VALUES (?, now(), 'reversa descuadrada', 'AJUSTE', gen_random_uuid(),
+                                    'REVERSADO', ?)
+                            """,
+                            reversaId,
+                            originalId);
+                    dsl.execute(
+                            """
+                            INSERT INTO nucleo_financiero.movimiento_contable
+                                (id, asiento_id, cuenta_id, debe, haber, descripcion)
+                            VALUES (gen_random_uuid(), ?, ?, 0.00, 20.00, 'solo una pata')
+                            """,
+                            reversaId,
+                            cuenta);
+                    return null;
+                }))
+                .satisfies(e -> assertThat(raizDe(e)).contains("R-AUD-05"));
     }
 }

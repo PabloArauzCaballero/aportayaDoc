@@ -1,7 +1,5 @@
 package bo.aportaya.nucleofinanciero.aplicacion;
 
-import static bo.aportaya.plataforma.dominio.Moneda.BOB;
-
 import bo.aportaya.nucleofinanciero.dominio.CuadrarPartidas;
 import bo.aportaya.nucleofinanciero.dominio.OrigenAsiento;
 import bo.aportaya.nucleofinanciero.dominio.Partida;
@@ -32,6 +30,10 @@ import org.springframework.stereotype.Service;
  * curso. Esta clase vive igual en {@code aplicacion/} porque orquesta piezas hacia un
  * objetivo completo — la ArchUnit de esta capa exige {@code @Transactional} solo
  * cuando la clase abre transacción, no a toda clase que viva acá.
+ *
+ * <p><b>El saldo no se escribe acá.</b> Lo deriva el motor desde
+ * {@code movimiento_contable} (R-CTB-09), igual que el de billetera desde R-BIL-16:
+ * el organismo inserta el libro y la base mantiene la caché.
  *
  * <p>Todavía no tiene quien la llame: el circuito del dinero (billetera, aportes,
  * entregas) es de las olas 2 a 4. Este carril entrega el organismo completo, probado
@@ -67,19 +69,13 @@ public class CU24RegistrarAsiento {
                 entrada.glosa(),
                 entrada.origenTipo().name(),
                 entrada.origenId(),
-                ctx.esSistema() ? Optional.empty() : Optional.of(ctx.usuarioId()),
+                entrada.grupoId(),
+                registrante(ctx),
                 Optional.empty());
 
-        String descripcionMovimiento = entrada.glosa().length() > LARGO_COLUMNA_DESCRIPCION
-                ? entrada.glosa().substring(0, LARGO_COLUMNA_DESCRIPCION)
-                : entrada.glosa();
-
+        String descripcion = descripcionDe(entrada.glosa());
         for (PartidaResuelta r : resueltas) {
-            asientos.agregarMovimiento(dsl, asiento.id(), r.cuentaId(), r.debe(), r.haber(), descripcionMovimiento);
-            BigDecimal delta = "DEUDORA".equals(r.naturaleza())
-                    ? r.debe().subtract(r.haber())
-                    : r.haber().subtract(r.debe());
-            cuentas.sumarAlSaldo(dsl, r.cuentaId(), delta);
+            asientos.agregarMovimiento(dsl, asiento.id(), r.cuentaId(), r.debe(), r.haber(), descripcion);
         }
 
         outbox.emitir(
@@ -98,13 +94,9 @@ public class CU24RegistrarAsiento {
 
     /**
      * CU-24 · flujo alternativo "Corrección de un asiento": no se edita, se crea el
-     * inverso enlazado por {@code asiento_reversa_id} (R-AUD-06).
-     *
-     * <p>Queda {@code estado = 'CONFIRMADO'} igual que el original — no {@code
-     * 'REVERSADO'} — porque es el único valor sobre el que corre {@code
-     * tg_asiento_cuadrado}: una reversa que no se verifica a sí misma no cumple
-     * R-AUD-05. Ningún CU ni restricción dice qué asiento lleva el estado {@code
-     * REVERSADO}; queda declarado como supuesto, no inventado en silencio.
+     * inverso, marcado {@code REVERSADO} y enlazado por {@code asiento_reversa_id}
+     * (R-AUD-06, R-AUD-11). El inverso también tiene que cuadrar, y el trigger de
+     * R-AUD-05 se lo exige.
      */
     public SalidaAsiento reversar(DSLContext dsl, UUID asientoOriginalId, String motivo, ContextoSesion ctx) {
         AsientoRepositorio.AsientoExistente original = asientos.porId(dsl, asientoOriginalId)
@@ -114,7 +106,7 @@ public class CU24RegistrarAsiento {
                         Map.of("asientoId", asientoOriginalId)));
 
         List<AsientoRepositorio.MovimientoExistente> movimientos = asientos.movimientosDe(dsl, asientoOriginalId);
-        String glosaReversa = "Reversa: " + motivo;
+        String glosaReversa = descripcionDe("Reversa: " + motivo);
 
         AsientoRepositorio.AsientoCreado reversa = asientos.crear(
                 dsl,
@@ -122,28 +114,17 @@ public class CU24RegistrarAsiento {
                 glosaReversa,
                 original.origenTipo(),
                 original.origenId(),
-                ctx.esSistema() ? Optional.empty() : Optional.of(ctx.usuarioId()),
+                Optional.ofNullable(original.grupoId()),
+                registrante(ctx),
                 Optional.of(asientoOriginalId));
 
-        // Las naturalezas, en UNA consulta y no una por movimiento: dentro de la
-        // transacción del hecho económico, un N+1 se paga en el pool de conexiones.
-        Map<UUID, String> naturalezas = cuentas.naturalezasDe(
-                dsl,
-                movimientos.stream()
-                        .map(AsientoRepositorio.MovimientoExistente::cuentaId)
-                        .toList());
-
-        Dinero totalDebe = Dinero.cero(BOB);
-        Dinero totalHaber = Dinero.cero(BOB);
+        Dinero totalDebe = Dinero.cero(bo.aportaya.plataforma.dominio.Moneda.BOB);
+        Dinero totalHaber = totalDebe;
         for (AsientoRepositorio.MovimientoExistente m : movimientos) {
             // El inverso intercambia debe y haber de cada línea, cuenta por cuenta.
             asientos.agregarMovimiento(dsl, reversa.id(), m.cuentaId(), m.haber(), m.debe(), glosaReversa);
-            BigDecimal delta = "DEUDORA".equals(naturalezas.get(m.cuentaId()))
-                    ? m.haber().subtract(m.debe())
-                    : m.debe().subtract(m.haber());
-            cuentas.sumarAlSaldo(dsl, m.cuentaId(), delta);
-            totalDebe = totalDebe.mas(Dinero.de(m.haber(), BOB));
-            totalHaber = totalHaber.mas(Dinero.de(m.debe(), BOB));
+            totalDebe = totalDebe.mas(Dinero.de(m.haber(), bo.aportaya.plataforma.dominio.Moneda.BOB));
+            totalHaber = totalHaber.mas(Dinero.de(m.debe(), bo.aportaya.plataforma.dominio.Moneda.BOB));
         }
 
         outbox.emitir(
@@ -158,18 +139,39 @@ public class CU24RegistrarAsiento {
         return new SalidaAsiento(reversa.id(), reversa.numero(), totalDebe, totalHaber);
     }
 
+    /** El actor Sistema no deja {@code registrado_por}: no hay una persona detrás del hecho. */
+    private Optional<UUID> registrante(ContextoSesion ctx) {
+        return ctx.esSistema() ? Optional.empty() : Optional.of(ctx.usuarioId());
+    }
+
+    /**
+     * {@code movimiento_contable.descripcion} es {@code VARCHAR(160)} y
+     * {@code asiento_contable.glosa} es {@code VARCHAR(200)}. La glosa completa queda
+     * siempre en el asiento: esto recorta la copia por línea, no el original.
+     */
+    private String descripcionDe(String glosa) {
+        return glosa.length() > LARGO_COLUMNA_DESCRIPCION ? glosa.substring(0, LARGO_COLUMNA_DESCRIPCION) : glosa;
+    }
+
     private PartidaResuelta resolver(DSLContext dsl, Partida p) {
         var cuenta = cuentas.porCodigo(dsl, p.cuentaCodigo())
                 .orElseThrow(() -> new ErrorDeNegocio(
                         CodigoError.de(24, 2),
                         "La cuenta «%s» no existe en el plan de cuentas.".formatted(p.cuentaCodigo()),
                         Map.of("cuentaCodigo", p.cuentaCodigo())));
-        return new PartidaResuelta(cuenta.id(), cuenta.naturaleza(), p.debe(), p.haber());
+        return new PartidaResuelta(cuenta.id(), p.debe(), p.haber());
     }
 
-    private record PartidaResuelta(UUID cuentaId, String naturaleza, BigDecimal debe, BigDecimal haber) {}
+    private record PartidaResuelta(UUID cuentaId, BigDecimal debe, BigDecimal haber) {}
 
-    public record EntradaAsiento(OrigenAsiento origenTipo, UUID origenId, List<Partida> partidas, String glosa) {}
+    public record EntradaAsiento(
+            OrigenAsiento origenTipo, UUID origenId, List<Partida> partidas, String glosa, Optional<UUID> grupoId) {
+
+        /** La forma corta, para los orígenes que no pertenecen a ningún grupo (comisión, ajuste). */
+        public EntradaAsiento(OrigenAsiento origenTipo, UUID origenId, List<Partida> partidas, String glosa) {
+            this(origenTipo, origenId, partidas, glosa, Optional.empty());
+        }
+    }
 
     public record SalidaAsiento(UUID asientoId, long numero, Dinero totalDebe, Dinero totalHaber) {}
 }

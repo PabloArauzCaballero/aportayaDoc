@@ -50,7 +50,8 @@ Los códigos de error viven igual en `openapi/nucleo-financiero.yaml`, porque
 ### CU-24
 
 1. **Todo junto o nada:** el `asiento_contable`, sus `movimiento_contable`, el saldo
-   de cada `cuenta_contable` tocada y el evento de outbox. Y —esto es lo que define
+   de cada `cuenta_contable` tocada —que lo sincroniza el trigger de R-CTB-09, dentro
+   de esta misma transacción— y el evento de outbox. Y —esto es lo que define
    el caso— **junto con el hecho económico que lo origina**, que vive fuera de esta
    clase. Por eso `ejecutar` recibe el `DSLContext` en curso y **no** abre su propia
    transacción ni su propio `conContexto`: si los abriera, el débito y su asiento
@@ -63,10 +64,11 @@ Los códigos de error viven igual en `openapi/nucleo-financiero.yaml`, porque
    que es del carril 2A. CU-24 no es un borde: no lo invoca un cliente que pueda
    reintentar, lo invoca un organismo que ya está dentro de una transacción. Si esa
    transacción revierte, el asiento no existió.
-4. **Qué se bloquea:** nada explícitamente. El `UPDATE … SET saldo = saldo + ?` de
-   `cuenta_contable` toma el bloqueo de fila del propio motor, y por ser un
-   incremento relativo —no un `SET saldo = <valor leído antes>`— dos asientos
-   simultáneos sobre la misma cuenta no se pisan. Está probado en `CU24Test.concurrencia`.
+4. **Qué se bloquea:** la fila de cada `cuenta_contable` tocada, y **la toma la base,
+   no este código**: `fn_ctb_recalcular_saldo` (R-CTB-09) hace `SELECT … FOR UPDATE`
+   *antes* de leer el libro, igual que su equivalente de billetera. Dos asientos
+   simultáneos sobre la misma cuenta se serializan ahí, y el segundo recalcula sobre
+   el mayor ya completo. Está probado en `CU24Test.concurrencia`.
 5. **Si el proceso muere tras el commit:** no se pierde nada. El asiento está
    escrito y el evento quedó en el outbox; el relevo lo publica cuando el proceso
    vuelva.
@@ -76,12 +78,15 @@ Los códigos de error viven igual en `openapi/nucleo-financiero.yaml`, porque
 
 Regla cero: ninguno silencioso.
 
-| # | Supuesto | Por qué | Qué lo cerraría |
-| :-: | --- | --- | --- |
-| 1 | `periodo_contable_id` queda `NULL` | La propia base lo documenta: `fn_ctb_periodo_abierto` acepta explícitamente los asientos «anteriores a M13». `periodo_contable` es del módulo 13 (ERP), que todavía no existe | El carril 5A, cuando construya el ERP |
-| 2 | `grupo_id` queda `NULL` | CU-24 es genérico —lo disparan pago, entrega, comisión, ajuste—; el grupo lo conoce quien origina el hecho, no el asiento | Que un CU diga cuándo poblarlo |
-| 3 | La reversa queda `estado = 'CONFIRMADO'`, no `'REVERSADO'` | Es el único valor sobre el que corre `tg_asiento_cuadrado`: una reversa con estado `REVERSADO` no se verificaría a sí misma y R-AUD-05 dejaría de aplicarle | Que un CU diga qué asiento lleva `REVERSADO` — probablemente el original, en un `UPDATE` que la tabla append-only no permite |
-| 4 | La glosa se trunca a 160 caracteres al copiarla a `movimiento_contable.descripcion` | `asiento_contable.glosa` es `VARCHAR(200)` y `movimiento_contable.descripcion` es `VARCHAR(160)`: el modelo no dice qué hacer con la diferencia | Una decisión de bóveda, si alguna vez importa |
+De los cuatro supuestos con los que cerró la primera vuelta, **tres se resolvieron**
+en vez de quedar declarados. Queda uno, y está bloqueado por un módulo que no existe.
+
+| # | Supuesto | Estado |
+| :-: | --- | --- |
+| 1 | `periodo_contable_id` queda `NULL` | **Sigue abierto, y no se puede cerrar acá.** `periodo_contable` es del módulo 13 (ERP): la tabla no existe todavía. La propia base lo contempla —`fn_ctb_periodo_abierto` acepta explícitamente los asientos «anteriores a M13»— así que no es un agujero, es una fase que falta. `AsientoRepositorio.crear` ya está escrito para que el día que exista entre por ahí y el trigger pase a exigirlo abierto (R-CTB-01). **Lo cierra el carril 5A.** |
+| 2 | `grupo_id` queda `NULL` | **Resuelto.** La columna existe y es FK anulable a `grupo`; lo que faltaba era dejar pasarlo. `EntradaAsiento` ahora lo lleva —con una forma corta para los orígenes que no pertenecen a ningún grupo, como comisión o ajuste— y la reversa hereda el del original |
+| 3 | La reversa queda `estado = 'CONFIRMADO'` | **Resuelto por `R-AUD-11`.** Ver abajo |
+| 4 | La glosa se trunca a 160 al copiarla a `movimiento_contable.descripcion` | **Resuelto: no era una deuda.** La glosa completa (hasta 200) vive siempre en `asiento_contable.glosa`; lo que se recorta es la copia por línea, no el original. Nada se pierde. Quedó escrito en el código, que es donde alguien se lo va a preguntar |
 
 ## Micro-PR abiertos al troncal
 
@@ -97,12 +102,47 @@ como un import a **otro** servicio: 44 violaciones del invariante 11 sobre códi
 el propio build había generado. Ningún otro carril lo habría encontrado, porque
 ningún otro esquema tiene guion bajo.
 
+## Restricciones nuevas
+
+Dos, y las dos nacen de una deuda que este carril prefirió pagar antes que declarar.
+
+### `R-CTB-09` · el saldo contable se deriva del libro
+
+`cuenta_billetera.saldo_*` lo mantiene el motor desde `R-BIL-16`.
+`cuenta_contable.saldo` no tenía equivalente: lo escribía la aplicación, en la misma
+transacción, y funcionaba. El problema no era la corrección de este código sino
+**dónde vivía la garantía**: bastaba con que un caso de uso futuro insertara en
+`movimiento_contable` y se olvidara del saldo para que el mayor dejara de reflejar la
+posición, sin que nada lo impidiera. `frontera-transaccional` §3 es explícita — una
+regla que protege valor contable vive en la base.
+
+Ahora `fn_ctb_recalcular_saldo` lo deriva por trigger, con el signo tomado de la
+**naturaleza** de la cuenta (deudora: suma el debe; acreedora: suma el haber) y el
+bloqueo de fila tomado *antes* de leer, por el mismo motivo que
+`fn_bil_recalcular_saldos`. `CuentaContableRepositorio` quedó de solo lectura: ya no
+existe un método que pueda escribir el saldo.
+
+### `R-AUD-11` · qué asiento lleva el estado `REVERSADO`
+
+El `CHECK` de `estado` admitía `REVERSADO` y ningún caso de uso decía a cuál de los
+dos asientos le tocaba. La lectura natural —marcar el original— resulta **imposible**:
+`asiento_contable` es append-only, su estado no se puede cambiar después. De modo que
+`REVERSADO` solo puede escribirse al insertar, y el único asiento que se inserta
+sabiendo que corrige a otro es el inverso.
+
+Se hace cumplir como equivalencia en las dos direcciones (`ck_asiento_reversado_enlazado`),
+y de paso se corrigió algo más grave que estaba al lado: `tg_asiento_cuadrado` solo
+disparaba sobre `CONFIRMADO`, así que **la corrección de un error contable era
+justamente el único movimiento que podía descuadrar impunemente**. Ahora el cuadre se
+le exige a los dos estados.
+
 ## Correcciones a la bóveda
 
 | Qué | Por qué |
 | --- | --- |
 | `CU-24` citaba `R-BIL-11` en «Restricciones aplicables» | `R-BIL-11` vive entero en `conciliacion_custodia` y `orden_retiro` —tablas que CU-24 no toca— y `docs/Restricciones.md` lo asigna a **CU-50**. Se reemplazó por `R-CTB-02`, que sí actúa sobre `movimiento_contable` y ahora tiene su prueba de rechazo |
 | `docs/Views/Maqueta-Crecimiento/README.md` enlazaba a `planes/21` como wikilink | La bóveda tiene su raíz en `docs/`, así que un `[[wikilink]]` a `planes/` no resuelve nunca. Va como ruta, misma convención que `18d659a` aplicó a `planes/20` |
+| Cinco documentos citaban «140 restricciones» | Son 142 con las dos nuevas. Lo detectó `verificar_boveda.py`, que es exactamente para lo que existe ese gate |
 
 ## Bloqueos
 
@@ -117,13 +157,14 @@ contable. La forma de su entrada y su salida ya no se negocia: está probada.
 | Área | Gate | Evidencia | Estado |
 | --- | --- | --- | --- |
 | Especificación | Criterios de aceptación cubiertos | `verificar_criterios.py` → «Sin divergencias entre la boveda y el codigo» | Pass |
-| Datos | Restricciones citadas con prueba de rechazo | 4/4 — R-AUD-01, R-AUD-05, R-AUD-06, R-CTB-02 en `CU24RechazosTest` | Pass |
+| Datos | Restricciones citadas con prueba de rechazo | 6/6 — R-AUD-01, R-AUD-05, R-AUD-06, R-AUD-11, R-CTB-02 y R-CTB-09 | Pass |
 | Dinero | Cuadre y asiento equilibrado | `CuadrarPartidasPropiedadTest`: 1000 asientos generados, todos cuadran | Pass |
 | Seguridad | `verificar_seguridad.py` | TODO OK · 2 avisos (preexistentes, S-8 y S-9) | Pass |
 | Seguridad | Prueba negativa de RLS | **No aplica todavía**: `asiento_contable` no tiene política de fila; el aislamiento es por esquema y lo cubre `AislamientoEsquemaTest` del troncal | n/a |
 | Plazos | Vencimiento y aviso previo | No aplica: CU-24 no tiene plazo legal | n/a |
 | Arquitectura | Piezas por nivel, sin saltos | `ArquitecturaTest` 5/5 — incluido `ningunImportCruzado` | Pass |
 | Operación | Evento de outbox por caso de uso | `asiento_registrado` y `asiento_reversado`, dentro de la transacción | Pass |
+| Rendimiento | Sin N+1 | La reversa leía la naturaleza por movimiento; ahora ni la lee: el saldo lo deriva el motor | Pass |
 | Entrega | Lint, tipos, pruebas, build | `./gradlew build` + `integrationTest` → BUILD SUCCESSFUL | Pass |
 
 ## Gate de salida — evidencia
@@ -136,7 +177,7 @@ sobre volumen recién creado, en la máquina Ubuntu.
 - [x] `./gradlew :servicios:nucleo-financiero:spotlessCheck` — BUILD SUCCESSFUL
 - [x] `./gradlew :servicios:nucleo-financiero:build` — BUILD SUCCESSFUL
 - [x] `./gradlew :servicios:nucleo-financiero:integrationTest` — BUILD SUCCESSFUL
-- [x] **24 pruebas · 0 fallas · 0 saltadas**, repartidas así:
+- [x] **30 pruebas · 0 fallas · 0 saltadas**, repartidas así:
 
 | Corredor | Clase | Pruebas |
 | --- | --- | :-: |
@@ -145,11 +186,12 @@ sobre volumen recién creado, en la máquina Ubuntu.
 | `test` | `CuadrarPartidasPropiedadTest` (1000 casos generados) | 1 |
 | `testBarrido` | `BarridoTest` | 2 |
 | `integrationTest` | `CU24Test` | 6 |
-| `integrationTest` | `CU24RechazosTest` | 4 |
+| `integrationTest` | `CU24RechazosTest` | 7 |
+| `integrationTest` | `CU24SaldoDerivadoTest` | 3 |
 
 - [x] Cada criterio de aceptación con su `@Test` + `@DisplayName` nombrado igual —
       lo verifica `verificar_criterios.py`, no una afirmación de este informe
-- [x] Cada `R-XXX-nn` citado con prueba de rechazo — 4/4
+- [x] Cada `R-XXX-nn` citado con prueba de rechazo — 6/6
 - [ ] `sagaTest` — **no aplica**: CU-24 no cruza servicios
 - [x] Prueba de humo sobre base nueva — **165 OK · 0 FALLA**
 - [x] `verificar_boveda.py` → **TODO OK**
@@ -175,14 +217,13 @@ sobre volumen recién creado, en la máquina Ubuntu.
 
 ### Deuda declarada
 
-- **`cuenta_contable.saldo` lo actualiza la aplicación, no un trigger.** A diferencia
-  de `cuenta_billetera.saldo_*`, que tiene `tg_movimiento_sincroniza_saldo`
-  (`R-BIL-16`), el plan de cuentas no tiene quien derive su saldo en la base. CU-24
-  lo hace en la misma transacción, que es lo que el paso 4 del caso de uso pide, pero
-  la garantía queda en la aplicación y no en el motor — y `frontera-transaccional` §3
-  dice que una regla que protege valor contable vive en la base. **Es una restricción
-  que falta, no un defecto de este código**: proponerla es trabajo de bóveda
-  (`restriccion`), no de carril.
+**Ninguna abierta.** La que quedó de la primera vuelta —el saldo contable sin
+trigger— se pagó: es `R-CTB-09`.
+
+Lo único que este carril no puede cerrar es `periodo_contable_id`, y no es deuda sino
+**dependencia**: la tabla pertenece al módulo 13 y no existe todavía. Está anotado
+arriba, en el código y en el `AsientoRepositorio`, con el punto exacto por el que va a
+entrar cuando el ERP se construya.
 
 ## Ver también
 
