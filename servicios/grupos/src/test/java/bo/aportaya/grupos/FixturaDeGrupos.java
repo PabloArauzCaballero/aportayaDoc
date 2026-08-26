@@ -105,6 +105,46 @@ final class FixturaDeGrupos {
         return creados;
     }
 
+    /**
+     * Un token de invitacion emitido por identidad.
+     *
+     * <p>`invitacion.token_id` apunta a `identidad.token_verificacion`: la clave
+     * foranea cruza esquemas y la verifica el motor. Es de las 325 que el modelo
+     * conserva a proposito por estar todo en un solo cluster.
+     */
+    UUID tokenDeInvitacion() {
+        UUID politica = UUID.randomUUID();
+        dsl.execute(
+                """
+                INSERT INTO identidad.politica_token
+                    (id, proposito, ttl_segundos, longitud_codigo, max_intentos_validacion,
+                     max_reenvios_por_hora, cooldown_reenvio_segundos, max_emisiones_por_dia,
+                     canales_permitidos, exige_dispositivo_conocido, invalida_anteriores, vigente_desde)
+                VALUES (?, 'INVITACION_GRUPO', 604800, 8, 3, 3, 60, 10,
+                        ARRAY['IN_APP','CORREO'], false, true, now())
+                """,
+                politica);
+
+        UUID token = UUID.randomUUID();
+        dsl.execute(
+                """
+                INSERT INTO identidad.token_verificacion
+                    (id, politica_id, tipo_token, proposito, hash_token, algoritmo_hash,
+                     canal_entrega, destino_enmascarado, estado, emitido_en, expira_en,
+                     intentos_fallidos, max_intentos, reenvios, ip_origen, agente_usuario,
+                     correlation_id, clave_idempotencia, uso_unico)
+                VALUES (?, ?, 'ENLACE', 'INVITACION_GRUPO', encode(sha256(?::bytea), 'hex'), 'SHA256',
+                        'IN_APP', '+591*****01', 'EMITIDO', now(), now() + interval '7 days',
+                        0, 3, 0, '127.0.0.1'::inet, 'prueba', gen_random_uuid(),
+                        gen_random_uuid()::text, true)
+                """,
+                token,
+                politica,
+                // El hash es unico: dos tokens con el mismo hash serian el mismo token.
+                token.toString());
+        return token;
+    }
+
     /** Alguien esperando entrar: participante sin cupo, todavia INVITADO. */
     UUID participanteSuelto(UUID grupoId) {
         UUID id = UUID.randomUUID();

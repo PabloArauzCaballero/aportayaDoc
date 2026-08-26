@@ -29,6 +29,8 @@ Modulo 02 de la boveda — Grupos, Cupos, Turnos y Gobernanza.
 
 | CU-64 | Traspasar un cupo | ⬜ sin implementar |
 
+| CU-69 | Invitar a un contacto y registrar sus referencias | ⬜ sin implementar |
+
 ## Eventos que emite
 
 | Tema | Cuando |

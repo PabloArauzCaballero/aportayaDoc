@@ -237,6 +237,36 @@ paths:
           # AP-CU64-03 ENTRANTE_SIN_KYC        · AP-CU64-04 ENTRANTE_SIN_REPUTACION
           # AP-CU64-05 ACUERDO_REQUERIDO
 
+  /grupos/{grupoId}/invitaciones:
+    post:
+      operationId: invitarAlGrupo              # CU-69
+      summary: Invitar a un contacto, con token de un solo uso
+      description: >-
+        Si el destinatario esta suprimido NO se envia nada y se responde como si
+        hubiera salido bien: decir «esa persona pidio no recibir mensajes» ya cuenta
+        algo de ella a quien no tiene por que saberlo.
+
+        El mensaje dice quien invita y a que grupo, con el monto y la periodicidad —
+        nadie deberia aceptar un compromiso de dinero sin saber cual— y no revela
+        datos de los otros integrantes.
+
+        El token lo emite `identidad`: aca se recibe su identificador.
+      parameters:
+        - name: grupoId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      responses:
+        '201':
+          description: Invitación enviada
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU69-01 SIN_CUPOS_LIBLES  · AP-CU69-02 DESTINATARIO_SUPRIMIDO
+          # AP-CU69-03 YA_ES_PARTICIPANTE · AP-CU69-04 TOPE_REENVIOS
+          # AP-CU69-05 TOKEN_INVALIDO     · AP-CU69-06 REFERENCIA_DUPLICADA
+          # AP-CU69-07 EMISOR_NO_HABILITADO
+
 components:
   parameters:
     ClaveIdempotencia:
