@@ -2,9 +2,12 @@
 # SE ESCRIBE PRIMERO, antes que la implementacion (ADR-020). Es lo que permite que
 # otro carril genere el cliente y programe contra vos sin esperar a que termines.
 #
-# Prefijos reservados de este servicio: /billetera, /custodia, /puntos-atencion, /contabilidad
+# Prefijos reservados de este servicio: /billetera /custodia /puntos-atencion /contabilidad
 #   Una ruta fuera de ellos es un rechazo automatico, no una discusion de diseno.
 #   Toda ruta exige sesion: 401 sin token, 403 con rol insuficiente.
+#
+# BORRADOR DE LA FASE 0 (planes/01 §0.8). El carril dueno lo amplia; NO puede
+# romperlo sin avisar, y la prueba de contrato falla en el CI del que rompe.
 openapi: 3.1.0
 info:
   title: nucleo-financiero
@@ -16,22 +19,39 @@ info:
 servers:
   - url: /api/v1
 
-paths: {}
-  # Una operacion por caso de uso. Plantilla:
-  #
-  #   /billetera/…:
-  #     post:
-  #       operationId: <verboObjeto>          # CU-NN
-  #       parameters:
-  #         - name: Idempotency-Key
-  #           in: header
-  #           required: true                   # toda operacion con efecto
-  #           schema: { type: string, format: uuid }
-  #       responses:
-  #         '200': …
-  #         '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+paths:
+  /billetera/{cuentaId}/saldo:
+    get:
+      operationId: consultarSaldo
+      summary: Saldo de una cuenta de billetera
+      description: >-
+        El saldo NO se guarda: se deriva del libro. Esta operacion existe en el
+        borrador porque los trece servicios necesitan saber que la forma del saldo
+        es Dinero, no un number.
+      parameters:
+        - name: cuentaId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Saldo disponible y retenido
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SaldoBilletera' }
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
 
 components:
+  parameters:
+    ClaveIdempotencia:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: >-
+        Toda operacion con efecto la exige. La red duplica; reintentar tiene que ser
+        seguro, y la clave se valida ANTES de escribir (invariante 7).
+      schema: { type: string, format: uuid }
   schemas:
     Dinero:
       type: object
@@ -53,9 +73,23 @@ components:
         mensaje:  { type: string }
         detalle:  { type: object }
         trazaId:  { type: string }
+    SaldoBilletera:
+      type: object
+      additionalProperties: false
+      required: [cuentaId, disponible, retenido, alCorteDe]
+      properties:
+        cuentaId:   { type: string, format: uuid }
+        disponible: { $ref: '#/components/schemas/Dinero' }
+        retenido:   { $ref: '#/components/schemas/Dinero' }
+        alCorteDe:  { type: string, format: date-time }
   responses:
     ReglaDeNegocio:
       description: Regla de negocio de la aplicacion (422, no 400)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NoAutenticado:
+      description: Sin sesion valida
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }

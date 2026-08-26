@@ -214,6 +214,8 @@ import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
 
+import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPackage;
+import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideOutsideOfPackages;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
 /**
@@ -238,13 +240,15 @@ class ArquitecturaTest {{
         noClasses().that().resideOutsideOfPackage("..aplicacion..")
             .should().beAnnotatedWith("org.springframework.transaction.annotation.Transactional");
 
+    // Invariante 11: se depende del propio servicio y de plataforma/. De ningun
+    // otro. El predicado va COMPUESTO y no en dos `should` encadenados: encadenados,
+    // java.lang.Object alcanza para que cualquier clase viole la regla.
     @ArchTest
     static final ArchRule ningunImportCruzado =
         noClasses().that().resideInAPackage("{pkg}..")
-            .should().dependOnClassesThat()
-            .resideInAnyPackage("bo.aportaya..")
-            .andShould().dependOnClassesThat()
-            .resideOutsideOfPackages("{pkg}..", "bo.aportaya.plataforma..");
+            .should().dependOnClassesThat(
+                resideInAPackage("bo.aportaya..")
+                    .and(resideOutsideOfPackages("{pkg}..", "bo.aportaya.plataforma..")));
 
     @ArchTest
     static final ArchRule jpaProhibido =
@@ -320,6 +324,66 @@ Skills: `arrancar-carril` primero, despues las diecinueve de todo carril de back
 """
 
 
+
+def aplicacion_java(servicio, pkg):
+    clase = "Aplicacion"
+    return f"""package {pkg};
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+
+/**
+ * El punto de arranque de {servicio}. No tiene logica: si aparece un if sobre una
+ * regla del pasanaku aca, esta mal ubicado — va a aplicacion/.
+ *
+ * La configuracion se valida al arrancar: si falta una clave, el proceso NO levanta
+ * y dice cual (planes/01 §0.7).
+ */
+@SpringBootApplication
+@ConfigurationPropertiesScan
+public class {clase} {{
+
+    public static void main(String[] argumentos) {{
+        SpringApplication.run({clase}.class, argumentos);
+    }}
+}}
+"""
+
+
+
+def barrido_test(servicio, pkg):
+    return f"""package {pkg};
+
+import bo.aportaya.plataforma.pruebas.barrido.Barrido;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+/**
+ * Las reglas propias de planes/00 §6 aplicadas a las fuentes de este servicio.
+ *
+ * <p>La implementacion vive en plataforma/comun-pruebas: ningun servicio puede
+ * desactivarlas, y el que agrega la regla numero trece la agrega una sola vez.
+ */
+class BarridoTest {{
+
+    private final Barrido barrido = Barrido.delModulo();
+
+    @Test
+    @DisplayName("tamano-archivo: ningun archivo llega a 300 lineas")
+    void ningunArchivoBloquea() {{
+        barrido.ningunArchivoBloquea();
+    }}
+
+    @Test
+    @DisplayName("sin-umbral-literal: ninguna cifra regulatoria dentro del codigo")
+    void ningunUmbralEnElCodigo() {{
+        barrido.ningunUmbralEnElCodigo();
+    }}
+}}
+"""
+
+
 def crear(servicio, forzar=False):
     esquema = servicio.replace("-", "_")
     if esquema not in set(ESQUEMA.values()):
@@ -348,7 +412,9 @@ def crear(servicio, forzar=False):
         base / "README.md": readme(servicio, esquema),
         base / "src/main/resources/application.yml": application_yml(servicio, esquema),
         base / f"src/main/resources/openapi/{servicio}.yaml": openapi(servicio, esquema),
+        base / "src/main/java" / ruta_pkg / "Aplicacion.java": aplicacion_java(servicio, pkg),
         base / "src/test/java" / ruta_pkg / "ArquitecturaTest.java": arquitectura_test(servicio, pkg),
+        base / "src/test/java" / ruta_pkg / "BarridoTest.java": barrido_test(servicio, pkg),
     }
     for ruta, contenido in escribir.items():
         ruta.write_text(contenido, encoding="utf-8")

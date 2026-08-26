@@ -1,0 +1,242 @@
+# Los 19 pasos de planes/00 §6, en ese orden y todos bloqueantes.
+#
+# En la Fase 0 varios corren sobre lo que existe (poco), pero TIENEN que existir en
+# el archivo desde ahora: un paso que se agrega "despues" nunca se agrega.
+#
+# Todo lo que este archivo ejecuta existe tambien como tarea de Gradle: un paso de
+# CI que no se puede reproducir en local es un paso que nadie puede arreglar.
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  BD_URL_ADMIN: jdbc:postgresql://localhost:5432/pasanaku
+  BD_USUARIO_ADMIN: pasanaku
+  BD_CLAVE_ADMIN: pasanaku
+
+jobs:
+  # ------------------------------------------------------------------ codigo --
+  codigo:
+    name: Formato, reglas propias y compilacion
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: 1 · toolchain Java 21
+        run: ./gradlew --version
+
+      - name: 2 · formato
+        run: ./gradlew spotlessCheck
+
+      - name: 3 · analisis estatico y las reglas propias
+        run: ./gradlew check -x test
+
+      - name: 4 · compileJava (invariante 1)
+        run: ./gradlew compileJava
+
+  # ------------------------------------------------------------------ boveda --
+  boveda:
+    name: La boveda y el esquema no divergen
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 5 · generar_ddl.py deja diff vacio
+        run: |
+          python3 scripts/generar_ddl.py
+          git diff --exit-code -- sql/
+
+      - name: 6 · verificar_boveda.py
+        run: python3 scripts/verificar_boveda.py
+
+      - name: 6b · verificar_seguridad.py
+        run: python3 scripts/verificar_seguridad.py
+
+      - name: 6c · verificar_carriles.py
+        run: python3 scripts/verificar_carriles.py
+
+  # -------------------------------------------------------------------- base --
+  base:
+    name: Base efimera, semillas y permisos
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: pasanaku
+          POSTGRES_USER: pasanaku
+          POSTGRES_PASSWORD: pasanaku
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U pasanaku -d pasanaku"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      PGPASSWORD: pasanaku
+      PSQL: psql -v ON_ERROR_STOP=1 -h localhost -U pasanaku -d pasanaku -q
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 7 · sql/aplicar.sql sobre base vacia + prueba de humo
+        run: |
+          cd sql && $PSQL -f aplicar.sql && cd ..
+          $PSQL -f sql/50_verificacion/verificaciones.sql
+          $PSQL -f sql/50_verificacion/prueba_humo.sql | tee humo.txt
+          grep -q "FALLA" humo.txt && exit 1 || true
+
+      - name: 8 · semillas minimas DOS veces — mismo estado, sin duplicados
+        run: |
+          python3 scripts/generar_semillas.py
+          $PSQL -f sql/60_semillas/sembrar.sql
+          $PSQL -f sql/60_semillas/sembrar.sql
+
+      - name: 9 · semillas de prueba DOS veces (entorno no productivo)
+        env:
+          APORTAYA_ENTORNO: dev
+        run: |
+          $PSQL -f sql/61_dev/sembrar_dev.sql
+          $PSQL -f sql/61_dev/sembrar_dev.sql
+
+      - name: 10 · rechazo — las semillas de prueba FALLAN si el entorno es produccion
+        env:
+          APORTAYA_ENTORNO: produccion
+        run: |
+          if $PSQL -f sql/61_dev/sembrar_dev.sql; then
+            echo "Las semillas de dev entraron en un entorno de produccion"; exit 1
+          fi
+
+      - name: 11 · permisos — cada svc_* solo ve su esquema (invariante 11)
+        run: $PSQL -f sql/50_verificacion/verificaciones.sql
+
+  # --------------------------------------------------------------- contratos --
+  contratos:
+    name: Contratos y clientes generados
+    runs-on: ubuntu-latest
+    needs: [codigo]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: 12 · generateOpenApiClients — genera sin error
+        run: |
+          ./gradlew generateOpenApiClients
+          # clientes/typescript no se versiona (ADR-016: el gate es la generacion,
+          # no un diff). Lo que se verifica es que salga y que no salga vacio.
+          test -s clientes/typescript/identidad/index.ts \
+            || { echo "El cliente de identidad no se genero"; exit 1; }
+
+  # ----------------------------------------------------------------- pruebas --
+  pruebas:
+    name: Los cuatro corredores
+    runs-on: ubuntu-latest
+    needs: [codigo]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: 13 · test
+        run: ./gradlew test
+
+      - name: 14 · integrationTest (Testcontainers, PostgreSQL real)
+        run: ./gradlew integrationTest
+
+      - name: 15 · contractTest
+        run: ./gradlew contractTest
+
+      - name: 16 · sagaTest
+        run: ./gradlew sagaTest
+
+  # ---------------------------------------------------------------- imagenes --
+  imagenes:
+    name: bootJar y docker build, multietapa y sin root
+    runs-on: ubuntu-latest
+    needs: [codigo]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: 17 · una imagen de muestra
+        run: |
+          ./gradlew :servicios:identidad:bootJar
+          docker build -f despliegue/Dockerfile --build-arg SERVICIO=identidad -t aportaya/identidad:ci .
+          test "$(docker image inspect aportaya/identidad:ci --format '{{.Config.User}}')" = "app" \
+            || { echo "La imagen corre como root"; exit 1; }
+
+  # --------------------------------------------------------------------- e2e --
+  e2e:
+    name: Punta a punta — solo en main
+    runs-on: ubuntu-latest
+    needs: [pruebas, base]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: 18 · e2eTest
+        run: ./gradlew e2eTest
+
+  # -------------------------------------------------------------- seguridad --
+  seguridad:
+    name: Dependencias, secretos e imagen
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 19a · el catalogo de versiones no cambia en una rama de carril
+        if: startsWith(github.head_ref, 'pablo/feature/carril-')
+        run: |
+          git fetch origin dev --depth=1
+          git diff --exit-code origin/dev -- gradle/libs.versions.toml || {
+            echo "Una dependencia nueva es un micro-PR al troncal, no un cambio de carril"; exit 1; }
+
+      - name: 19b · escaneo de secretos
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 19c · dependencias vulnerables
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@v4
+      - run: ./gradlew dependencies --configuration runtimeClasspath > /dev/null

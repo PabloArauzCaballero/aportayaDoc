@@ -1,0 +1,153 @@
+# Perfil `base`: lo que necesita CUALQUIER carril para trabajar. Una maquina de
+# carril levanta esto y SU servicio — si trabajar exigiera quince contenedores,
+# esta arquitectura costaria mas de lo que rinde.
+#
+#   docker compose -f despliegue/compose/base.yml --profile base up -d --wait
+#
+# Ningun servicio publica puerto. La unica entrada publica es NGINX.
+name: aportaya
+
+networks:
+  interna:
+    name: aportaya-interna
+
+volumes:
+  datos_pg:
+    name: aportaya-datos-pg
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: aportaya-postgres
+    profiles: [base, dinero, todo]
+    networks: [interna]
+    environment:
+      POSTGRES_DB: pasanaku
+      POSTGRES_USER: pasanaku
+      POSTGRES_PASSWORD: pasanaku
+      # El esquema declara 325 claves foraneas que cruzan esquemas: el motor las
+      # verifica, y para eso necesita trabajar con holgura.
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    command:
+      - postgres
+      - -c
+      - max_connections=300          # la suma de los pools declarados cabe adentro
+      - -c
+      - shared_buffers=512MB
+      - -c
+      - timezone=America/La_Paz
+    # Loopback y puerto NO estandar, a proposito. Es la unica concesion al host y
+    # existe por una razon concreta: `generateJooq` introspecciona la base VIVA
+    # desde el build, que corre fuera de Docker. 5433 evita chocar con cualquier
+    # PostgreSQL que la maquina ya tenga en el 5432.
+    # Los que no publican puerto son los servicios de aplicacion: la unica entrada
+    # publica sigue siendo NGINX.
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - datos_pg:/var/lib/postgresql/data
+      # El repositorio, de solo lectura: `bd:aplicar` corre psql DENTRO del
+      # contenedor, y asi las cinco maquinas no necesitan psql instalado.
+      - ../..:/repo:ro
+      # Arranque de la maquina local: search_path y la marca de entorno de dev.
+      - ./init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pasanaku -d pasanaku"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    container_name: aportaya-pgbouncer
+    profiles: [base, dinero, todo]
+    networks: [interna]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: pasanaku
+      DB_PASSWORD: pasanaku
+      # Modo transaccion: es lo que hace que SET LOCAL sea la unica forma valida de
+      # fijar el contexto de RLS (invariante 3). Un SET plano se filtraria a la
+      # siguiente transaccion de otro usuario.
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: "1000"
+      DEFAULT_POOL_SIZE: "40"
+      AUTH_TYPE: scram-sha-256
+      ADMIN_USERS: pasanaku
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -p 5432 -U pasanaku"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  kafka:
+    image: confluentinc/cp-kafka:7.7.1
+    container_name: aportaya-kafka
+    profiles: [base, dinero, todo]
+    networks: [interna]
+    environment:
+      # KRaft: sin ZooKeeper. Un proceso menos que explicar y que mantener.
+      CLUSTER_ID: aportaya-local-cluster
+      KAFKA_NODE_ID: "1"
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENERS: PLAINTEXT://kafka:9092,CONTROLLER://kafka:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "1"
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: "1"
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: "0"
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server kafka:9092 >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 30s
+
+  # El gateway va en `base` y no en un perfil aparte por una razon practica: NGINX
+  # sin gateway no lleva a ningun lado, y un carril que prueba su servicio a traves
+  # de la entrada publica necesita los dos. No tiene logica de negocio ni toca la
+  # base — si algun dia la toca, es el monolito volviendo por la puerta de atras.
+  gateway:
+    build:
+      context: ../..
+      dockerfile: despliegue/Dockerfile
+      args:
+        SERVICIO: gateway
+        MODULO: plataforma
+    image: aportaya/gateway:local
+    container_name: aportaya-gateway
+    profiles: [base, dinero, todo]
+    networks: [interna]
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8080/actuator/health/liveness || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 30s
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: aportaya-nginx
+    profiles: [base, dinero, todo]
+    networks: [interna]
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ../nginx/aportaya.conf:/etc/nginx/conf.d/default.conf:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/nginx-vivo || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10

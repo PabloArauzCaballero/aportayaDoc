@@ -1,0 +1,19 @@
+# La imagen lleva el jar, no el repositorio. ADR-025: sin docs, sin planes, sin
+# pruebas y sin .git — es lo que evita empujar 200 MB por un cambio de una linea.
+.git
+.github
+.claude
+.vscode
+docs
+planes
+landing
+seeders
+scripts
+apps
+clientes
+**/src/test
+**/build
+**/.gradle
+**/node_modules
+*.md
+!README.md

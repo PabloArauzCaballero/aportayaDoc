@@ -34,3 +34,6 @@ despliegue/k8s/generado/
 *.key
 *.p12
 *.jks
+
+# jqwik: base local de semillas de propiedades, no del proyecto
+.jqwik-database

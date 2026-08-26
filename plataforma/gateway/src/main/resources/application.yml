@@ -1,0 +1,28 @@
+# gateway — la unica entrada publica. Las rutas salen de los prefijos reservados de
+# cada servicio (scripts/modelo.py -> PREFIJOS): una ruta que no cae en un prefijo
+# real no existe.
+spring:
+  application:
+    name: gateway
+  cloud:
+    gateway:
+      httpclient:
+        connect-timeout: 2000
+        response-timeout: 10s
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin
+
+server:
+  port: 8080
+  forward-headers-strategy: framework
+  shutdown: graceful          # SIGTERM: deja de aceptar, termina lo que esta en curso
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
