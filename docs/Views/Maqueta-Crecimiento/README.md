@@ -141,13 +141,23 @@ puede comparar contra la comisión que paga.
 
 ## Entidades nuevas
 
-`UserFinancialProfile` · `Badge` · `UserBadge` · `TurnMarketplaceOffer` · `TurnExchange` ·
-`SavingGoal` · `Partner` · `PartnerUser` · `Partnership` · `CommercialCampaign` ·
+`UserFinancialProfile` · `TurnMarketplaceOffer` · `TurnExchange` · `SavingGoal` ·
+`Partner` · `PartnerUser` · `Partnership` · `CommercialCampaign` ·
 `CommercialPublication` · `Voucher` · `VoucherInstance` · `VoucherRedemption` ·
 `InvestmentPartner` · `InvestmentProduct` · `UserInvestment` · `InvestmentTransaction`
 
 Roles nuevos: `COMMERCIAL_PARTNER` · `PARTNER_MANAGER` · `BACKOFFICE_COMMERCIAL` ·
 `BACKOFFICE_RISK`
+
+> [!warning] Corrección post-conciliación (ver `planes/21 Crecimiento Financiero y Alianzas — deltas de backend, frontend y carriles.md`)
+> Esta lista tenía `Badge` y `UserBadge` como entidades nuevas. **No lo son**: el
+> modelo ya tiene `insignia_logro` / `insignia_otorgada` (M06, `svc_transparencia`),
+> y el nivel Bronce/Plata/Oro/Diamante de esta maqueta **es el mismo dato** que
+> `puntaje_reputacion.nivel_confianza` (`EN_OBSERVACION`/`BASICO`/`CONFIABLE`/
+> `MUY_CONFIABLE`/`REFERENTE`, con `SIN_HISTORIAL` y `RESTRINGIDO` fuera de la
+> escala visible), con otro nombre de cara al usuario — no una escala nueva. Las
+> pantallas de la maqueta no cambian; lo que cambia es de dónde sale el dato. El
+> mapa exacto queda en `planes/21 Crecimiento Financiero y Alianzas — deltas de backend, frontend y carriles.md` §1.3.
 
 ## Estructura
 
