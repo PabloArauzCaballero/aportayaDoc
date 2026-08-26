@@ -31,6 +31,8 @@ import pathlib
 import re
 import sys
 
+import modelo
+
 RAIZ = pathlib.Path(__file__).resolve().parent.parent
 SEGURIDAD = RAIZ / "docs" / "Seguridad.md"
 RESTRICCIONES = RAIZ / "docs" / "Restricciones.md"
@@ -223,7 +225,6 @@ PROHIBIDOS = [
      "deserialización polimórfica (prohibición 11)"),
     (r"\"\s*(SELECT|INSERT|UPDATE|DELETE)[^\"]*\"\s*\+", "SQL concatenado (prohibición 2)",
      CODIGO_APP),
-    (r"@PermitAll|permitAll\(\)", "endpoint abierto sin marca declarada (prohibición 3)"),
     (r"\.setAllowedOrigins\(\s*\"\*\"|Access-Control-Allow-Origin:\s*\*",
      "CORS abierto (§3.1)"),
     (r"verify\s*=\s*False|rejectUnauthorized:\s*false|InsecureSkipVerify",
@@ -252,6 +253,46 @@ def bloque_3():
           f"patrones prohibidos: {hallazgos[:8]}")
     if revisados == 0:
         aviso("todavía no hay código de aplicación: este bloque empieza a morder cuando lo haya")
+
+
+# --------------------------------------------- 3b · las rutas abiertas, enumeradas
+#
+# Prohibir la palabra `permitAll()` no dice nada sobre QUE quedo abierto: se satisface
+# escribiendo el permiso de otra forma, y deja pasar una ruta publica que nadie
+# declaro. Lo que se verifica es mas fuerte: que el permiso viva en UN solo archivo, y
+# que las rutas que abre sean exactamente las declaradas — los prefijos publicos de
+# `modelo.PREFIJOS`/`RUTAS_PUBLICAS` y las sondas del actuator, que no son del dominio.
+GUARDIA = RAIZ / "plataforma/comun-web/src/main/java/bo/aportaya/plataforma/web/seguridad/ConfiguracionDeSeguridad.java"
+SONDAS_ABIERTAS = ("/actuator/health", "/actuator/info")
+
+
+def bloque_3b():
+    print("\n=== 3b · RUTAS ABIERTAS, ENUMERADAS ===")
+
+    fuera = []
+    for p in archivos({".java"}):
+        if p == GUARDIA:
+            continue
+        if re.search(r"@PermitAll|permitAll\(\)", p.read_text(encoding="utf-8", errors="ignore")):
+            fuera.append(str(p.relative_to(RAIZ)))
+    check(not fuera, "el permiso de acceso abierto vive en un solo archivo",
+          f"permitAll() fuera de la guardia central: {fuera}")
+
+    if not GUARDIA.is_file():
+        aviso("todavia no existe la guardia central: este bloque empieza a morder cuando exista")
+        return
+
+    texto = GUARDIA.read_text(encoding="utf-8")
+    publicos = tuple(modelo.RUTAS_PUBLICAS) + SONDAS_ABIERTAS
+    sin_declarar = []
+    for m in re.finditer(r'requestMatchers\(([^)]*)\)', texto, re.S):
+        for ruta in re.findall(r'"([^"]+)"', m.group(1)):
+            limpia = ruta.replace("/api/v1", "").rstrip("*").rstrip("/")
+            if not any(limpia.startswith(p) for p in publicos):
+                sin_declarar.append(ruta)
+    check(not sin_declarar,
+          f"las {len(publicos)} rutas abiertas son las declaradas y ninguna mas",
+          f"rutas abiertas que nadie declaro: {sin_declarar}")
 
 
 # ------------------------------------------------------------------- 4 · secretos
@@ -384,6 +425,7 @@ def main():
     bloque_1()
     bloque_2()
     bloque_3()
+    bloque_3b()
     bloque_4()
     bloque_5()
     bloque_6()

@@ -175,13 +175,17 @@ abstract class BaseDeCU68 {
     }
 
     protected boolean respondioAlguien(UUID propuestaId) {
-        return contar("SELECT count(*)::int FROM grupos.propuesta_postulacion WHERE propuesta_id = '" + propuestaId
-                        + "' AND respondido_en IS NOT NULL")
+        return contar(
+                        """
+                        SELECT count(*)::int FROM grupos.propuesta_postulacion
+                         WHERE propuesta_id = ? AND respondido_en IS NOT NULL
+                        """,
+                        propuestaId)
                 > 0;
     }
 
-    protected int contar(String consulta) {
-        return ((Number) dsl.fetchOne(consulta).get(0)).intValue();
+    protected int contar(String consulta, Object... parametros) {
+        return ((Number) dsl.fetchOne(consulta, parametros).get(0)).intValue();
     }
 
     protected void dejarUnaFilaEnLaBitacora() {

@@ -175,11 +175,20 @@ class CU04RechazosTest extends BaseDeCU04 {
                 """);
     }
 
+    /**
+     * Parametrizado y no concatenado. En una prueba el nombre es una constante, pero
+     * la prohibicion 2 no admite excepciones «porque aca no se puede inyectar»: es
+     * justamente ese razonamiento el que despues se copia a un sitio donde si.
+     */
     private boolean constraintExiste(String nombre) {
-        return contar("SELECT count(*)::int FROM pg_constraint WHERE conname = '" + nombre + "'") > 0;
+        return contar("SELECT count(*)::int FROM pg_constraint WHERE conname = ?", nombre) > 0;
     }
 
-    private int contar(String consulta) {
-        return ((Number) dsl.fetchOne(consulta).get(0)).intValue();
+    private boolean triggerExiste(String nombre) {
+        return contar("SELECT count(*)::int FROM pg_trigger WHERE tgname = ?", nombre) > 0;
+    }
+
+    private int contar(String consulta, Object... parametros) {
+        return ((Number) dsl.fetchOne(consulta, parametros).get(0)).intValue();
     }
 }
