@@ -77,6 +77,34 @@ final class FixturaDeGrupos {
         return creados;
     }
 
+    /** Participantes activos, cada uno con su cupo ocupado: de ahi sale el peso del voto. */
+    List<UUID> participantesConCupo(UUID grupoId, int cuantos) {
+        List<UUID> creados = new ArrayList<>();
+        for (int numero = 1; numero <= cuantos; numero++) {
+            UUID participante = UUID.randomUUID();
+            dsl.execute(
+                    """
+                    INSERT INTO grupos.participante
+                        (id, grupo_id, usuario_id, estado, es_organizador, fecha_ingreso,
+                         reputacion_al_ingresar, aportes_realizados, aportes_en_mora)
+                    VALUES (?, ?, ?, 'ACTIVO', false, now(), 0, 0, 0)
+                    """,
+                    participante,
+                    grupoId,
+                    usuario());
+            dsl.execute(
+                    """
+                    INSERT INTO grupos.cupo (id, grupo_id, numero, participante_id, estado, fraccion, asignado_en)
+                    VALUES (gen_random_uuid(), ?, ?, ?, 'OCUPADO', 1.00, now())
+                    """,
+                    grupoId,
+                    (short) numero,
+                    participante);
+            creados.add(participante);
+        }
+        return creados;
+    }
+
     /** Un periodo por turno: cada periodo tiene un solo beneficiario. */
     List<UUID> periodos(UUID grupoId, int cuantos, BigDecimal objetivo) {
         List<UUID> creados = new ArrayList<>();

@@ -21,6 +21,8 @@ Modulo 02 de la boveda — Grupos, Cupos, Turnos y Gobernanza.
 
 | CU-60 | Sortear los turnos | ⬜ sin implementar |
 
+| CU-63 | Proponer y votar un acuerdo | ⬜ sin implementar |
+
 ## Eventos que emite
 
 | Tema | Cuando |

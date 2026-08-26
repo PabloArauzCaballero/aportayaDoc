@@ -121,6 +121,47 @@ paths:
           $ref: '#/components/responses/ReglaDeNegocio'
           # AP-CU60-03 FECHA_DE_REVELADO_FUTURA · AP-CU60-04 HASH_NO_VERIFICA
 
+  /acuerdos:
+    post:
+      operationId: proponerAcuerdo             # CU-63
+      summary: Proponer un acuerdo y abrir su votación
+      description: >-
+        Ningun efecto colectivo se ejecuta sin acuerdo aprobado, y el efecto va en la
+        MISMA transaccion que la aprobacion: si el efecto falla, el acuerdo no queda
+        aprobado sin su efecto — que seria un grupo convencido de que decidio algo
+        que no ocurrio.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      responses:
+        '201':
+          description: Acuerdo abierto a votación
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU63-01 PROPONENTE_NO_HABILITADO · AP-CU63-02 ACUERDO_DUPLICADO
+
+  /acuerdos/{acuerdoId}/votos:
+    post:
+      operationId: votarAcuerdo                # CU-63
+      summary: Emitir el voto, con el peso de los cupos
+      description: >-
+        El afectado por el acuerdo vota y su voto QUEDA REGISTRADO, como abstencion
+        con peso cero. Impedirle votar lo dejaria sin constancia de que se presento;
+        dejarlo ponderar convertiria el quorum en una formalidad en los dos casos
+        donde mas importa.
+      parameters:
+        - name: acuerdoId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      responses:
+        '201':
+          description: Voto emitido
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU63-03 VOTO_YA_EMITIDO · AP-CU63-04 VOTACION_CERRADA
+          # AP-CU63-05 PARTE_INTERESADA
+
 components:
   parameters:
     ClaveIdempotencia:
