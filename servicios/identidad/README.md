@@ -25,6 +25,8 @@ Modulo 01 de la boveda — Identidad, Usuarios y Seguridad.
 
 | CU-01 | Registro y apertura de billetera | ⬜ sin implementar |
 
+| CU-05 | Aceptar contrato de adhesión y tarifario | ⬜ sin implementar |
+
 ## Eventos que emite
 
 | Tema | Cuando |

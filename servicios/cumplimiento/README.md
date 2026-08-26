@@ -17,7 +17,13 @@ Modulo 12 de la boveda — Cumplimiento Regulatorio y Consumidor Financiero.
 
 | CU | Nombre | Estado |
 | --- | --- | --- |
-| | *(los llena `nuevo_cu.py`)* | |
+| CU-46 | Verificar el alcance de la licencia | ⬜ sin implementar |
+
+| CU-03 | Declaración PEP y beneficiario final | ⬜ sin implementar |
+
+| CU-02 | Elevar nivel de debida diligencia | ⬜ sin implementar |
+
+| CU-06 | Revisión periódica de conocimiento del cliente | ⬜ sin implementar |
 
 ## Eventos que emite
 
