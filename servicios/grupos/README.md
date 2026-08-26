@@ -27,6 +27,8 @@ Modulo 02 de la boveda — Grupos, Cupos, Turnos y Gobernanza.
 
 | CU-65 | Retirarse de un grupo | ⬜ sin implementar |
 
+| CU-64 | Traspasar un cupo | ⬜ sin implementar |
+
 ## Eventos que emite
 
 | Tema | Cuando |

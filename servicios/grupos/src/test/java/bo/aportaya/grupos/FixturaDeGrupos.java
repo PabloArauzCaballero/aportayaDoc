@@ -105,6 +105,22 @@ final class FixturaDeGrupos {
         return creados;
     }
 
+    /** Alguien esperando entrar: participante sin cupo, todavia INVITADO. */
+    UUID participanteSuelto(UUID grupoId) {
+        UUID id = UUID.randomUUID();
+        dsl.execute(
+                """
+                INSERT INTO grupos.participante
+                    (id, grupo_id, usuario_id, estado, es_organizador, fecha_ingreso,
+                     reputacion_al_ingresar, aportes_realizados, aportes_en_mora)
+                VALUES (?, ?, ?, 'INVITADO', false, now(), 0, 0, 0)
+                """,
+                id,
+                grupoId,
+                usuario());
+        return id;
+    }
+
     /** Turnos PROGRAMADOS, uno por periodo, en el orden en que llegan los cupos. */
     List<UUID> turnos(UUID grupoId, List<UUID> periodos, List<UUID> cupos) {
         List<UUID> creados = new ArrayList<>();

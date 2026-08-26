@@ -206,6 +206,37 @@ paths:
           # AP-CU65-01 PARTICIPANTE_NO_ACTIVO · AP-CU65-02 POSICION_DEUDORA_SIN_PLAN
           # AP-CU65-03 RETIRO_RECHAZADO_POR_GRUPO
 
+  /grupos/{grupoId}/cupos/{cupoId}/traspasos:
+    post:
+      operationId: traspasarCupo               # CU-64
+      summary: Traspasar un cupo a otro participante
+      description: >-
+        El TURNO no se toca: la posicion en el calendario es del cupo, no de la
+        persona. Si se moviera, traspasar seria una forma de adelantar el propio
+        turno y el sorteo dejaria de significar nada.
+
+        Y la deuda no viaja con el cupo: las obligaciones vencidas se quedan con
+        quien las genero. Sin eso, un cupo seria una forma de venderle a alguien la
+        deuda de otro.
+      parameters:
+        - name: grupoId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: cupoId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      responses:
+        '201':
+          description: Cupo traspasado
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU64-01 CUPO_NO_TRASPASABLE     · AP-CU64-02 SALIENTE_CON_DEUDA
+          # AP-CU64-03 ENTRANTE_SIN_KYC        · AP-CU64-04 ENTRANTE_SIN_REPUTACION
+          # AP-CU64-05 ACUERDO_REQUERIDO
+
 components:
   parameters:
     ClaveIdempotencia:
