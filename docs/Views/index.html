@@ -1,0 +1,216 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AportaYa — Índice de vistas</title>
+<link rel="stylesheet" href="Sistema-Diseno/estilos.css">
+<link rel="stylesheet" href="Maqueta-Crecimiento/maqueta.css">
+<svg width="0" height="0" style="position:absolute"><defs>
+  <g id="mark"><path d="M92 30 C74 66 52 108 40 168" fill="none" stroke="#7CBE9C" stroke-width="13" stroke-linecap="round"/><path d="M108 30 C126 66 148 108 160 168" fill="none" stroke="#7CBE9C" stroke-width="13" stroke-linecap="round"/><path d="M100 58 C84 92 68 130 62 170" fill="none" stroke="#E5852B" stroke-width="12" stroke-linecap="round"/><path d="M100 58 C116 92 132 130 138 170" fill="none" stroke="#E5852B" stroke-width="12" stroke-linecap="round"/></g>
+</defs></svg>
+
+<div class="topbar"><div class="topbar-in">
+  <a class="brandmark" href="index.html"><svg width="26" height="26" viewBox="0 0 200 200"><use href="#mark"/></svg><span>Aporta<span class="ya">Ya</span></span></a>
+  <nav class="navlinks">
+    <a class="on" href="index.html">Índice</a>
+    <a href="#maquetas">Maquetas</a>
+    <a href="#apuntes">Los siete apuntes</a>
+    <a href="#sistema">Sistema de diseño</a>
+    <a href="#marca">Marca</a>
+  </nav>
+  <button class="theme-btn" onclick="toggleTheme()">◐ Tema</button>
+</div></div>
+
+<main>
+
+<div class="mq-hero">
+  <p class="eyebrow">Todas las vistas del proyecto</p>
+  <h1>Qué se puede abrir y ver</h1>
+  <p>Dos maquetas navegables, el sistema de diseño que las dos usan y la identidad de marca. Nada de esto necesita instalar algo: son archivos HTML que se abren en el navegador.</p>
+  <div class="frase">Si una decisión de producto no se puede señalar en una pantalla, todavía no está tomada.</div>
+</div>
+
+<!-- ================= MAQUETAS ================= -->
+<section id="maquetas" style="padding-top:10px">
+  <div class="sec-head">
+    <p class="eyebrow">Lo navegable</p>
+    <h2>Las dos maquetas</h2>
+    <p>Se dividen por lo que responden. Una muestra el producto que hay que construir primero; la otra, hacia dónde puede crecer una vez que ese producto funcione.</p>
+  </div>
+
+  <div class="mq-grid">
+    <a class="mq-card" href="AportaYa-Maqueta.html">
+      <div class="ic">📱</div><h3>Maqueta navegable</h3>
+      <p>El recorrido completo del participante y del operador, con cada llamada al backend simulada: latencia, reintento idempotente y rechazo con el código de error del caso de uso.</p>
+      <span class="ref">43 pantallas de app · 28 de backoffice · un solo archivo</span>
+    </a>
+    <a class="mq-card" href="Maqueta-Crecimiento/index.html">
+      <div class="ic">📈</div><h3>Crecimiento y alianzas</h3>
+      <p>Mercado de turnos, valorización del turno, alianzas con vales e inversión por entidades autorizadas, en las tres superficies que el módulo abre.</p>
+      <span class="ref">6 de app · 4 de portal partner · 3 de backoffice</span>
+    </a>
+  </div>
+
+  <div class="clabel" style="margin-top:26px">Cinco recorridos que se pueden caminar</div>
+  <div class="subgrid cols2">
+    <div class="demo">
+      <h3 style="margin-bottom:6px">Vender el turno</h3>
+      <p style="font-size:13.5px;color:var(--text-2);margin:0">Grupos → La Ramada → <em>Tu turno y el mercado</em>. Publicás la oferta eligiendo hasta dónde te corrés y cuánto pedís, con el tope del 5&nbsp;% marcado antes de pisarlo.</p>
+    </div>
+    <div class="demo">
+      <h3 style="margin-bottom:6px">Aceptar la permuta de otro</h3>
+      <p style="font-size:13.5px;color:var(--text-2);margin:0">Aceptar dispara la validación de riesgo. Recién si pasa se mueve el turno y se acredita la compensación, menos el 8&nbsp;% de comisión.</p>
+    </div>
+    <div class="demo">
+      <h3 style="margin-bottom:6px">Aceptar a quien quiere entrar</h3>
+      <p style="font-size:13.5px;color:var(--text-2);margin:0">Grupos → Compañeras del taller, que es el grupo que organizás. Aceptar ocupa el cupo; rechazar no deja confirmar sin motivo escrito.</p>
+    </div>
+    <div class="demo">
+      <h3 style="margin-bottom:6px">Entrar siendo cuenta nueva</h3>
+      <p style="font-size:13.5px;color:var(--text-2);margin:0">Reiniciar demo → crear cuenta → escanear el QR → pedir el cupo → <em>simular que Rosa te acepta</em>. Recién ahí existe el grupo y la primera cuota.</p>
+    </div>
+  </div>
+
+  <div class="alert ok" style="margin-top:16px">
+    <span class="ic">✓</span>
+    <div><div class="t">El descuento, en sus tres formas</div>
+    <div class="m">El bono de Bs 10 y el vale de bienvenida llegan con el alta. <em>Vales</em>, en los accesos rápidos, lleva al vale con su QR rotativo y al canje en caja — ese descuento lo paga el comercio, no la plataforma. Y <em>Cobrar la bolsa</em> muestra el desglose con el descuento de comisión por nivel, que sale del margen y no de la custodia.</div></div>
+  </div>
+
+  <div class="alert warn" style="margin-top:22px">
+    <span class="ic">!</span>
+    <div><div class="t">Ninguna cifra de las maquetas es un dato de negocio</div>
+    <div class="m">Los montos, nombres y grupos son de ejemplo. Los umbrales que sí salen del modelo —requisitos de habilitación, etapas de cobranza, plazos de reclamo— están marcados en cada pantalla con el archivo del que vienen.</div></div>
+  </div>
+</section>
+
+<!-- ================= LOS APUNTES ================= -->
+<section id="apuntes">
+  <div class="sec-head">
+    <span class="lvl core">Las siete preguntas del apunte</span>
+    <h2>Dónde se contesta cada una</h2>
+    <p>Seis de las siete ya tenían respuesta en el modelo de datos y en los casos de uso; lo que faltaba era una pantalla que la mostrara. La séptima —el bono por subir de nivel— no existía en ninguna parte, y la maqueta ahora propone tres formas de resolverla con su costo al lado.</p>
+  </div>
+
+  <div class="table-wrap"><div class="tbl-scroll"><table>
+    <thead><tr><th>La pregunta</th><th>Dónde se ve ahora</th><th>De dónde sale el dato</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><b>El organizador tiene que aceptar a quien entra con el QR</b></td>
+        <td>App · <em>Tu pedido de cupo</em> y <em>Quién quiere entrar</em>. Escanear ya no da cupo: abre una solicitud con plazo de 48 h.</td>
+        <td>CU-68 · <code class="code">solicitud_ingreso.revisada_por</code> y la restricción <code class="code">ck_solicitud_ingreso_resuelta</code></td>
+      </tr>
+      <tr>
+        <td><b>¿Qué verificaciones se piden para ser organizador, y quién lo acepta?</b></td>
+        <td>App · <em>Organizar un grupo</em> (los 14 requisitos, cumplidos y faltantes). Backoffice · <em>Habilitaciones</em>, que es quien resuelve.</td>
+        <td>CU-90 · las 14 filas de <code class="code">requisito_habilitacion</code> en <code class="code">seeders/minimos/17</code></td>
+      </tr>
+      <tr>
+        <td><b>El QR se lee con la cámara al añadir un grupo</b></td>
+        <td>App · <em>Canjear invitación</em>, modo Escanear QR, con el visor y la lectura simulada. El modo código sigue estando al lado.</td>
+        <td>CU-69 · token de un solo uso con vencimiento (<code class="code">R-GRP-15</code>)</td>
+      </tr>
+      <tr>
+        <td><b>Problemas legales y regulación con la ASFI</b></td>
+        <td>Backoffice · <em>Licencia ASFI</em>, y el aviso de alcance en la maqueta de crecimiento: el módulo de inversión queda fuera de la categoría autorizada.</td>
+        <td><code class="code">docs/Cumplimiento.md</code> §1.1 — Res. ASFI/540/2025, categoría «pagos y plataformas de pago»</td>
+      </tr>
+      <tr>
+        <td><b>Qué se hace si un participante no quiere o no puede pagar</b></td>
+        <td>App · <em>No voy a poder pagar</em>: cuatro salidas con su costo, la escalera de cobranza completa y los plazos de descargo y apelación.</td>
+        <td>CU-23 · CU-25 · CU-26 · las 6 etapas de <code class="code">estrategia_cobranza</code> y las 23 filas de <code class="code">matriz_sancion</code></td>
+      </tr>
+      <tr>
+        <td><b>¿Cuánto de bono al subir de nivel?</b></td>
+        <td>App · <em>Tu nivel</em>: la aritmética antes que la cifra, y tres modelos de premio con lo que cuesta cada uno.</td>
+        <td>No existía. Se apoya en el tarifario (<code class="code">COM_ENTREGA</code>: 0,3 %, piso Bs 10, techo Bs 50) y en el encaje de <code class="code">cuenta_custodia</code></td>
+      </tr>
+      <tr>
+        <td><b>Cómo se gestiona el soporte</b></td>
+        <td>App · <em>Ayuda</em> y <em>Hacer un reclamo</em>, con el número correlativo y el plazo que se guarda al ingresar. Backoffice · <em>Reclamos</em>.</td>
+        <td>CU-52 · CU-53 · RNSF Libro 4 Título I: 5 días hábiles, prórroga a 10, aviso escrito a la ASFI si se excede</td>
+      </tr>
+    </tbody>
+  </table></div></div>
+
+  <div class="nota" style="margin-top:18px">
+    <span class="ic">✎</span>
+    <div><b>La única divergencia que hubo que corregir.</b> <code>Flujo de pantallas · app del participante</code> §5.1 describía el canje de la invitación como <code>POST /grupos/invitaciones/{codigo}/canje</code> con resultado «participante <b>con cupo</b>». El caso de uso dice otra cosa, y por la precedencia del contrato de implementación gana el caso de uso: el canje abre una solicitud, y el cupo lo da el organizador. La maqueta ya está del lado del caso de uso; el documento de pantallas queda anotado para corregir.</div>
+  </div>
+</section>
+
+<!-- ================= SISTEMA ================= -->
+<section id="sistema">
+  <div class="sec-head">
+    <span class="lvl base">La base</span>
+    <h2>Sistema de diseño</h2>
+    <p>Los tokens, los átomos, las moléculas y los organismos que las dos maquetas consumen. Un color que no esté acá no se usa en ninguna pantalla.</p>
+  </div>
+  <div class="mq-grid">
+    <a class="mq-card" href="Sistema-Diseno/Fundamentos/Fundamentos.html">
+      <div class="ic">🎨</div><h3>Fundamentos</h3>
+      <p>Paleta con contraste verificado, escala tipográfica, espaciado, radios y sombras.</p>
+      <span class="ref">estilos.css · tokens</span>
+    </a>
+    <a class="mq-card" href="Sistema-Diseno/Atomos/Atomos.html">
+      <div class="ic">⚛️</div><h3>Átomos</h3>
+      <p>Botones, campos, chips, avisos, insignias y todo lo que no se puede partir en algo más chico.</p>
+      <span class="ref">nivel 1</span>
+    </a>
+    <a class="mq-card" href="Sistema-Diseno/Moleculas/Moleculas.html">
+      <div class="ic">🧬</div><h3>Moléculas</h3>
+      <p>Combinaciones con una sola responsabilidad: tarjeta de grupo, fila de movimiento, resumen de importes.</p>
+      <span class="ref">nivel 2</span>
+    </a>
+    <a class="mq-card" href="Sistema-Diseno/Organismos/Organismos.html">
+      <div class="ic">🫀</div><h3>Organismos</h3>
+      <p>Piezas que ya resuelven un caso de uso entero y se enchufan a una pantalla.</p>
+      <span class="ref">nivel 3</span>
+    </a>
+    <a class="mq-card" href="Sistema-Diseno/Moviles/Moviles.html">
+      <div class="ic">📲</div><h3>Móviles</h3>
+      <p>Lo que solo existe en el teléfono: tab bar, hoja inferior, teclado numérico, PIN y OTP.</p>
+      <span class="ref">nivel 3 · móvil</span>
+    </a>
+  </div>
+</section>
+
+<!-- ================= MARCA ================= -->
+<section id="marca">
+  <div class="sec-head">
+    <span class="lvl base">Identidad</span>
+    <h2>Marca</h2>
+    <p>De dónde salen el nombre, el isotipo y el verde con naranja que atraviesan todo lo anterior.</p>
+  </div>
+  <div class="mq-grid">
+    <a class="mq-card" href="AportaYa-Identidad.html">
+      <div class="ic">🪪</div><h3>Identidad</h3>
+      <p>Nombre, promesa, tono de voz y los usos correctos e incorrectos del logo.</p>
+      <span class="ref">AportaYa-Identidad.md</span>
+    </a>
+    <a class="mq-card" href="AportaYa-Logo-Evaluacion.html">
+      <div class="ic">🔍</div><h3>Evaluación del logo</h3>
+      <p>Las alternativas que se probaron y por qué ganó la que ganó, a tamaño de favicon incluido.</p>
+      <span class="ref">decisión de marca</span>
+    </a>
+    <a class="mq-card" href="AportaYa-Logo-Horizontal.html">
+      <div class="ic">↔️</div><h3>Versión horizontal</h3>
+      <p>La bajada de la marca para cabeceras, con sus áreas de respeto y tamaños mínimos.</p>
+      <span class="ref">aportaya-logo-horizontal.svg</span>
+    </a>
+  </div>
+</section>
+
+<div class="mq-hero" style="background:linear-gradient(160deg,var(--g600),var(--g900));margin-top:34px">
+  <p class="eyebrow">Cómo se lee todo esto</p>
+  <h2 style="color:#fff;margin-bottom:10px">La maqueta no reemplaza al modelo: lo muestra</h2>
+  <p>La fuente de verdad sigue siendo la bóveda —las entidades, los casos de uso, las restricciones y la matriz normativa—. Estas pantallas existen para poder señalar con el dedo lo que ahí está escrito en prosa, y para descubrir las contradicciones antes de que cuesten código.</p>
+</div>
+
+</main>
+
+<footer>
+  <span>AportaYa · Índice de vistas</span>
+  <a href="../Index.md">Bóveda del modelo</a>
+</footer>
+<div class="toast" id="toast"><span>✓</span><span id="toastMsg">Listo</span></div>
+<script src="Sistema-Diseno/script.js"></script>

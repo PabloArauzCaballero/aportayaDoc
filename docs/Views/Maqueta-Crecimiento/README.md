@@ -163,4 +163,20 @@ Maqueta-Crecimiento/
 └── backoffice/            ← 3 pantallas del equipo interno
 ```
 
-Relacionado: [[AportaYa-Identidad]] · [[README|Sistema de Diseño]] · [[Index|Bóveda del modelo]]
+## Dónde se abre esto
+
+Desde [`docs/Views/index.html`](../index.html), el índice de todas las vistas del proyecto,
+junto a la [[AportaYa-Maqueta|maqueta navegable]] del producto núcleo. Hasta la versión 1 de
+esta maqueta no había ningún enlace hacia acá: se abría solo si alguien conocía la ruta.
+
+## Lo que este módulo le debe al producto núcleo
+
+§18 pide que las insignias tengan **efecto económico**, y ahí engancha con una pregunta que el
+producto núcleo tenía abierta: cuánto premiar a alguien que sube de nivel. La respuesta está
+en la pantalla *Tu nivel* de la maqueta navegable, y es la que habilita este módulo: un bono en
+efectivo obliga a depositar el equivalente en la cuenta de custodia —el saldo es pasivo exigible
+con respaldo uno a uno—, mientras que **un beneficio que paga un comercio aliado no toca la
+custodia en absoluto**. Es la razón económica por la que las alianzas resuelven algo que la
+plataforma sola no puede pagar.
+
+Relacionado: [[AportaYa-Maqueta]] · [[AportaYa-Identidad]] · [[README|Sistema de Diseño]] · [[Index|Bóveda del modelo]]
