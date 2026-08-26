@@ -267,6 +267,34 @@ paths:
           # AP-CU69-05 TOKEN_INVALIDO     · AP-CU69-06 REFERENCIA_DUPLICADA
           # AP-CU69-07 EMISOR_NO_HABILITADO
 
+  /grupos/{grupoId}/postulaciones:
+    post:
+      operationId: postularAlGrupo             # CU-68
+      summary: Postular a un grupo, con el motivo legible del puntaje
+      description: >-
+        El postulante ve POR QUE se le propuso ese grupo —monto compatible, gente de
+        su zona, riesgo parecido— y nunca los datos de los demas. Un puntaje sin
+        explicacion es un numero que nadie puede discutir, y un emparejamiento que
+        nadie puede discutir es uno que se acepta por resignacion.
+
+        Los pesos del criterio son datos CON VIGENCIA, no constantes: hay que poder
+        explicar con que pesos se armo un grupo de hace seis meses.
+      parameters:
+        - name: grupoId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      responses:
+        '201':
+          description: Postulación registrada, con puntaje y motivos
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU68-01 RESTRICCION_VIGENTE     · AP-CU68-02 KYC_INSUFICIENTE
+          # AP-CU68-03 REPUTACION_INSUFICIENTE · AP-CU68-04 SIN_CUPOS_LIBRES
+          # AP-CU68-05 CONCENTRACION_DE_RIESGO · AP-CU68-06 SOLICITUD_DUPLICADA
+          # AP-CU68-07 PROPUESTA_EXPIRADA
+
 components:
   parameters:
     ClaveIdempotencia:

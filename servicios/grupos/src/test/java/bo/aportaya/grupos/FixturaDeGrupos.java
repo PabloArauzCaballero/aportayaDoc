@@ -9,6 +9,14 @@ import org.jooq.DSLContext;
 /** Filas minimas para probar el sorteo, con las columnas del modelo. */
 final class FixturaDeGrupos {
 
+    /** Un telefono E.164 distinto por usuario: uq_usuario_telefono_e164 no perdona. */
+    private static final java.util.concurrent.atomic.AtomicInteger SECUENCIA =
+            new java.util.concurrent.atomic.AtomicInteger(10_000_000);
+
+    private static String telefonoUnico() {
+        return "+591" + SECUENCIA.incrementAndGet();
+    }
+
     private final DSLContext dsl;
 
     FixturaDeGrupos(DSLContext dsl) {
@@ -32,7 +40,7 @@ final class FixturaDeGrupos {
                 """,
                 id,
                 "GRU-" + id.toString().substring(0, 8),
-                "+5917" + String.valueOf(System.nanoTime()).substring(0, 7));
+                telefonoUnico());
         return id;
     }
 

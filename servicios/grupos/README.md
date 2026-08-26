@@ -31,6 +31,8 @@ Modulo 02 de la boveda — Grupos, Cupos, Turnos y Gobernanza.
 
 | CU-69 | Invitar a un contacto y registrar sus referencias | ⬜ sin implementar |
 
+| CU-68 | Postular a un grupo y ser emparejado | ⬜ sin implementar |
+
 ## Eventos que emite
 
 | Tema | Cuando |
