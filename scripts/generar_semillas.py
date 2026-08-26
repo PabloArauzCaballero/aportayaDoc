@@ -300,8 +300,11 @@ def procesar(entorno):
         (destino / salida).write_text("\n".join(L), encoding="utf-8")
         archivos.append(salida)
 
+    # as_posix(): `destino` es un Path, y en Windows se renderiza con contrabarras.
+    # Sin esto el comentario cambia segun la maquina que corre el generador y el
+    # archivo rebota en cada merge entre el Mac y las Windows.
     L = [f"-- {titulo}",
-         f"--   psql -d pasanaku -v ON_ERROR_STOP=1 -f {destino}/{orquestador}",
+         f"--   psql -d pasanaku -v ON_ERROR_STOP=1 -f {destino.as_posix()}/{orquestador}",
          "-- GENERADO desde seeders/ — no editar a mano.", "",
          "\\set ON_ERROR_STOP on", "BEGIN;", ""]
     if entorno == "dev":
