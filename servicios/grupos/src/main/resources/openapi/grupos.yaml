@@ -181,6 +181,31 @@ paths:
           # AP-CU62-03 CONTRAPARTE_EN_MORA  · AP-CU62-04 REGLAMENTO_NO_PERMITE
           # AP-CU62-05 ACUERDO_SIN_QUORUM
 
+  /grupos/{grupoId}/retiros:
+    post:
+      operationId: solicitarRetiro             # CU-65
+      summary: Solicitar el retiro y ver la posición exacta antes de confirmar
+      description: >-
+        El numero se calcula y se MUESTRA ANTES de confirmar, con su desglose. Un
+        retiro donde el monto aparece despues es un retiro que alguien va a discutir,
+        y con razon.
+
+        Acreedora sin reemplazo se liquida AL CIERRE DEL CICLO, no antes: sacar plata
+        de la bolsa a mitad de camino perjudica a los que faltan cobrar.
+      parameters:
+        - name: grupoId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      responses:
+        '201':
+          description: Solicitud creada, con la posición y el momento de liquidación
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU65-01 PARTICIPANTE_NO_ACTIVO · AP-CU65-02 POSICION_DEUDORA_SIN_PLAN
+          # AP-CU65-03 RETIRO_RECHAZADO_POR_GRUPO
+
 components:
   parameters:
     ClaveIdempotencia:
