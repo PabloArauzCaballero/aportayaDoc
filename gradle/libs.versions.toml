@@ -44,6 +44,7 @@ snakeyaml  = { module = "org.yaml:snakeyaml" }   # leer los contratos en las pru
 # jOOQ trae anotaciones JAXB en sus clases de configuracion; sin la API en el
 # classpath, javac avisa y -Werror convierte el aviso en error.
 jakarta-xml-bind = { module = "jakarta.xml.bind:jakarta.xml.bind-api" }
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind" }
 # Solo para buildSrc: el generador de clases y el driver que necesita para leer la base viva.
 codegen-jooq      = { module = "org.jooq:jooq-codegen", version.ref = "jooq" }
 driver-postgresql = { module = "org.postgresql:postgresql", version.ref = "driver-postgresql" }

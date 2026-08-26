@@ -19,6 +19,7 @@ from pathlib import Path
 RAIZ = Path(__file__).resolve().parent.parent
 HUMO = RAIZ / "sql/50_verificacion/prueba_humo.sql"
 REGLAS = RAIZ / "sql/40_reglas/restricciones.sql"
+BOVEDA = RAIZ / "docs/Restricciones.md"
 
 CODIGO = r"R-[A-Z]{3}-\d{2}"
 # La prueba de humo ya lleva la pareja curada: ('R-XXX-nn nombre', 'nombre').
@@ -60,6 +61,22 @@ def desde_las_reglas():
     return encontrado
 
 
+# La fila de la tabla: | R-XXX-nn | que garantiza | por que | CU |
+FILA_BOVEDA = re.compile(rf"^\|\s*({CODIGO})\s*\|\s*([^|]+?)\s*\|", re.M)
+
+
+def mensajes_de_las_reglas():
+    """Que garantiza cada regla, en las palabras de la boveda.
+
+    Sin esto, traducir `uq_cuenta_billetera_titular_moneda` daria `R-BIL-04` y nada
+    mas: un codigo que el usuario no puede leer. El mensaje sale del documento y no
+    de una constante en el codigo, porque cuando la regla cambia, cambia ahi.
+    """
+    if not BOVEDA.is_file():
+        return {}
+    return {c: d.strip() for c, d in FILA_BOVEDA.findall(BOVEDA.read_text(encoding="utf-8"))}
+
+
 def main():
     if len(sys.argv) != 2:
         print(__doc__)
@@ -79,8 +96,22 @@ def main():
     lineas += [f"{nombre}={codigo}" for nombre, codigo in sorted(catalogo.items())]
     salida.write_text("\n".join(lineas) + "\n", encoding="utf-8")
 
+    mensajes = mensajes_de_las_reglas()
+    faltantes = sorted(set(catalogo.values()) - set(mensajes))
+    salida_mensajes = salida.parent / "errores-reglas.properties"
+    lineas = [
+        "# R-XXX-nn = que garantiza la regla, en las palabras de la boveda",
+        "# GENERADO por scripts/generar_errores.py desde docs/Restricciones.md.",
+        "",
+    ]
+    lineas += [f"{codigo}={texto}" for codigo, texto in sorted(mensajes.items())]
+    salida_mensajes.write_text("\n".join(lineas) + "\n", encoding="utf-8")
+
     reglas = len(set(catalogo.values()))
-    print(f"catalogo de errores: {len(catalogo)} restricciones -> {reglas} reglas · {salida}")
+    print(f"catalogo de errores: {len(catalogo)} restricciones -> {reglas} reglas · {salida.name}")
+    print(f"mensajes de regla: {len(mensajes)} · {salida_mensajes.name}")
+    if faltantes:
+        print(f"  AVISO: {len(faltantes)} reglas con restriccion y sin fila en la boveda: {', '.join(faltantes[:8])}")
     return 0
 
 

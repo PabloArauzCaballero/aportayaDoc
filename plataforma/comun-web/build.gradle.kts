@@ -4,12 +4,16 @@ plugins { id("aportaya.libreria") }
 
 dependencies {
     api(project(":plataforma:comun-dominio"))
+    api(project(":plataforma:comun-datos"))
     implementation(libs.spring.boot.web)
+    implementation(libs.spring.boot.actuator)
+    implementation(libs.spring.boot.jdbc)   // DataAccessException: la traduccion de restricciones
     implementation(libs.spring.boot.validation)
-    implementation(libs.spring.boot.security)
+    api(libs.spring.boot.security)
     implementation(libs.spring.boot.oauth2)
     implementation(libs.micrometer.tracing)
 
+    testImplementation(project(":plataforma:comun-pruebas"))
     testImplementation(libs.bundles.pruebas)
     testRuntimeOnly(libs.junit.platform.launcher)
 }

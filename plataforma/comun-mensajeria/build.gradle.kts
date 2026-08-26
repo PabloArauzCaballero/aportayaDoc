@@ -4,12 +4,17 @@ plugins { id("aportaya.libreria") }
 
 dependencies {
     api(project(":plataforma:comun-dominio"))
-    implementation(project(":plataforma:comun-datos"))
+    api(project(":plataforma:comun-datos"))
+    implementation(libs.jackson.databind)
+    implementation(libs.micrometer)
+    compileOnly(libs.jakarta.xml.bind)
     implementation(libs.kafka)
     implementation(libs.shedlock)
     implementation(libs.shedlock.jdbc)
 
+    testImplementation(project(":plataforma:comun-pruebas"))
     testImplementation(libs.bundles.pruebas)
+    testImplementation(libs.spring.boot.jdbc)
     testImplementation(libs.testcontainers.kafka)
     testRuntimeOnly(libs.junit.platform.launcher)
 }
