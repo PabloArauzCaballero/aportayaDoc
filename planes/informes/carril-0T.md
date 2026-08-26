@@ -138,6 +138,41 @@ Los tres se arreglaron en la fuente de verdad —`docs/Restricciones.md` y
 
 **Total de `plataforma/`: 73 pruebas · 0 saltadas · 0 falladas.**
 
+## Carril 1A · `identidad` — CU-04 terminado
+
+**`POST /sesiones` · Autenticar con MFA y registrar dispositivo.** Recorre el
+pipeline entero: contrato OpenAPI → interfaz generada → controlador → organismo con
+`@Transactional` → `conContexto` → escritura → outbox → `COMMIT`.
+
+**Evidencia:** `27 pruebas · 0 saltadas · 0 falladas` en `identidad`, de las cuales
+**los 7 criterios de aceptación de la bóveda** y **una prueba de rechazo por cada uno
+de los 9 `R-XXX-nn` citados**. `verificar_criterios.py` → «sin divergencias».
+
+### Dos decisiones que valen más que el código
+
+1. **El caso de uso no lanza para rechazar.** El caso de uso pide que el intento
+   fallido quede escrito; si el organismo lanzara, la transacción revertiría y se
+   llevaría consigo el `intento_autenticacion` que acaba de escribir. Devuelve un
+   `ResultadoDeAutenticacion` y la página lo traduce a `422` **después del `COMMIT`**.
+2. **CU-04 no lleva clave de idempotencia, y es deliberado.** Cada intento *es* un
+   hecho distinto. Colapsar dos en uno borraría justo lo que hay que poder contar.
+
+### Lo que el motor encontró y el código no
+
+Escribiendo las pruebas, la base rechazó cuatro cosas que yo había dado por buenas:
+columnas inventadas en cinco tablas, `ip_origen` que es `inet` y no cadena, y
+`ck_asignacion_no_autoasignada` — nadie se asigna un rol a sí mismo (`R-SEG-07`).
+**Ninguna la habría visto una revisión de código.**
+
+### Lo que queda de 1A, y por qué
+
+| CU | Estado | Por qué |
+| :-: | :-: | --- |
+| CU-04 | ✅ | — |
+| CU-01 | bloqueado | Escribe en `cumplimiento` (debida diligencia, calificación de riesgo, expediente) y en `nucleo_financiero` (cuenta de billetera y su espejo contable). Es una **saga**, no una transacción local, y necesita los contratos de los carriles 1B y 1C |
+| CU-05 | bloqueado | `aceptacion_contrato` y `contrato_adhesion` viven en `cumplimiento`. El caso de uso dice `openapi/identidad.yaml` pero sus tablas son de otro servicio: **hueco declarado**, hay que decidir de quién es antes de escribirlo |
+| CU-08 · CU-09 | pendiente | Self-contained en `identidad`; siguen a continuación |
+
 ## Decisiones tomadas, y por qué
 
 | Decisión | Por qué | Dónde |
