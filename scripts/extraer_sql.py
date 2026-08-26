@@ -14,6 +14,14 @@ sección en la que estaba, para que el archivo siga siendo legible.
 
 import re
 import pathlib
+import sys
+
+# Estos informes se imprimen con acentos y flechas. En Windows la consola entrega
+# stdout en cp1252 y el generador muere con UnicodeEncodeError despues de haber
+# escrito los archivos — en tres de las cinco maquinas del parque.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
 
 ORIGEN = pathlib.Path("docs/Restricciones.md")
 DESTINO = pathlib.Path("sql/40_reglas/restricciones.sql")

@@ -1,0 +1,8 @@
+{
+  "//": "El generador del arbol de rutas. Mismos valores que vite.config.ts: dos configuraciones distintas serian dos arboles distintos.",
+  "routesDirectory": "./src/rutas",
+  "generatedRouteTree": "./src/arbolDeRutas.gen.ts",
+  "routeFileIgnorePrefix": "-",
+  "quoteStyle": "single",
+  "semicolons": false
+}

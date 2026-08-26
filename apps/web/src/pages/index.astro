@@ -1,0 +1,21 @@
+---
+import Base from '../layouts/Base.astro'
+
+// Sin `prerender = false`: esta página es estática, que es lo que el sitio es por
+// omisión. Cero JavaScript enviado al navegador.
+---
+
+<Base
+  titulo="Pasanaku digital"
+  descripcion="AportaYa lleva la cuenta del pasanaku: quién aportó, a quién le toca y cuánto queda, con la historia del grupo verificable por cualquiera."
+>
+  <h1>El pasanaku, sin llevar la cuenta a mano</h1>
+  <p>
+    Andamiaje de la fase F0 del sitio público. Las páginas de producto, los documentos
+    regulatorios y las rutas de verificación llegan en <strong>F9</strong>.
+  </p>
+  <p>
+    <a href="/plazos">Calcular un plazo en días hábiles</a> — la pantalla real de esta
+    fase, que consulta el servicio en vivo.
+  </p>
+</Base>

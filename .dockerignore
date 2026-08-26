@@ -9,7 +9,18 @@ planes
 landing
 seeders
 scripts
+# `apps/` sigue fuera de las imagenes de backend, que llevan un jar. La excepcion es
+# `apps/web`: el sitio publico tiene su propia imagen y necesita su fuente en el
+# contexto. Se reincluye el codigo y se dejan afuera sus artefactos.
 apps
+!apps/web
+# Los manifiestos de TODOS los espacios de trabajo: `yarn install --immutable` los
+# exige aunque no se construyan, porque el lockfile los nombra. Sin ellos yarn
+# concluye que el lockfile cambio y se niega, que es exactamente lo que queremos que
+# haga — pero por el motivo equivocado.
+!apps/*/package.json
+apps/web/dist
+apps/web/.astro
 clientes
 **/src/test
 **/build

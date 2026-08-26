@@ -17,13 +17,27 @@ Modulo 10 de la boveda — Billetera, Custodia y Dinero Electrónico.
 
 | CU | Nombre | Estado |
 | --- | --- | --- |
-| | *(los llena `nuevo_cu.py`)* | |
+| [CU-24](../../docs/CasosDeUso/CU-24%20Registrar%20el%20asiento%20contable%20de%20una%20operación.md) | Registrar el asiento contable de una operación | **Implementado** (carril 1B) |
+| CU-10 – CU-17, 50, 57 | Billetera y custodia | Pendiente — carril 2A, Ola 2 |
+
+**CU-24 no tiene endpoint.** Lo invoca otro caso de uso —el que registra el hecho
+económico— pasándole el `DSLContext` de **su** transacción, que es lo que hace que el
+débito y su asiento confirmen juntos (invariante 12). Quien lo llame:
+
+```java
+// dentro del @Transactional + conContexto del organismo que mueve el dinero
+cu24.ejecutar(dsl, new EntradaAsiento(OrigenAsiento.PAGO, pagoId, partidas, glosa), ctx);
+```
+
+Y para corregir, nunca editar: `cu24.reversar(dsl, asientoId, motivo, ctx)` crea el
+asiento inverso enlazado por `asiento_reversa_id` (R-AUD-06).
 
 ## Eventos que emite
 
 | Tema | Cuando |
 | --- | --- |
-| | |
+| `aportaya.nucleo_financiero.asiento_registrado` | Se confirmó un asiento cuadrado (CU-24) |
+| `aportaya.nucleo_financiero.asiento_reversado` | Se corrigió un asiento con su inverso (CU-24) |
 
 ## Eventos que consume
 

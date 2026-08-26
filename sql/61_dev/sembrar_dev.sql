@@ -1,5 +1,5 @@
 -- Datos de desarrollo — NO aplicar en producción
---   psql -d pasanaku -v ON_ERROR_STOP=1 -f sql/61_dev/sembrar_dev.sql
+--   psql -d pasanaku -v ON_ERROR_STOP=1 -f sql\61_dev/sembrar_dev.sql
 -- GENERADO desde seeders/ — no editar a mano.
 
 \set ON_ERROR_STOP on

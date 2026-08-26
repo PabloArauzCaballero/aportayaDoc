@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["vite/client", "vitest/globals", "@testing-library/jest-dom"],
+    "baseUrl": "../..",
+    "paths": {
+      "@aportaya/simulado": ["packages/simulado/src/index.ts"],
+      "@aportaya/simulado/*": ["packages/simulado/src/*"],
+      "clientes/typescript/*": ["clientes/typescript/*"],
+      "@/*": ["apps/backoffice/src/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "pruebas/**/*.ts", "pruebas/**/*.tsx", "*.ts"],
+  "exclude": ["node_modules", "dist"]
+}

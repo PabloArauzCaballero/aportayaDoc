@@ -18,6 +18,14 @@ tocan.
 
 import re, pathlib, shutil, json
 from collections import defaultdict
+import sys
+
+# Estos informes se imprimen con acentos y flechas. En Windows la consola entrega
+# stdout en cp1252 y el generador muere con UnicodeEncodeError despues de haber
+# escrito los archivos — en tres de las cinco maquinas del parque.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
 
 ROOT = pathlib.Path("docs")
 SRC = ROOT / "entidades"
@@ -172,7 +180,7 @@ def slug(s):
 
 
 def parse_puml(path):
-    txt = path.read_text()
+    txt = path.read_text(encoding="utf-8")
     i = txt.index("@enduml")
     rel_block = txt[txt.index("@startuml", i):]
     cls_block = txt[: i]

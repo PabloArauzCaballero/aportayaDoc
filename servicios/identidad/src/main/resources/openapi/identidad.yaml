@@ -2,7 +2,7 @@
 # SE ESCRIBE PRIMERO, antes que la implementacion (ADR-020). Es lo que permite que
 # otro carril genere el cliente y programe contra vos sin esperar a que termines.
 #
-# Prefijos reservados de este servicio: /identidad /usuarios /sesion /roles
+# Prefijos reservados de este servicio: /identidad /usuarios /sesion /sesiones /roles
 #   Una ruta fuera de ellos es un rechazo automatico, no una discusion de diseno.
 #   Toda ruta exige sesion: 401 sin token, 403 con rol insuficiente.
 #

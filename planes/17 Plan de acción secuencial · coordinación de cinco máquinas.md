@@ -180,7 +180,7 @@ son semanas**: duran lo que dure su carril más lento.
 | :-: | :-: | --- | --- |
 | **P1** Mac | **primer plano** | **Backend Fase 0** — monorepo, Docker, ADR de desviación, lint, corredores de JUnit, esqueletos, CI · **+ Delta 1**: los tres contratos OpenAPI base (con `CU-01`) y su cliente `clientes/typescript` generado, publicados en `dev` | Gate de salida de la Fase 0, ejecutado |
 | **P2** Ubuntu | segundo plano | **Verificación independiente del gate de P1** sobre su propia máquina, y afinado de Postgres para desarrollo | El gate pasa en **dos** máquinas, no en una |
-| **P3** Legion | segundo plano | Preparación de carril: leer los CU de grupos y transparencia, declarar las piezas por nivel | `informes/carril-P3.md` con la declaración |
+| **P3** Legion | segundo plano | Preparación de carril: leer los CU de **transparencia (`3B`) y garantía (`4B`)** —los dos que la ficha le asigna—, declarar las piezas por nivel | `informes/carril-P3.md` con la declaración |
 | **P4** Dell A | segundo plano | Preparación de carril: CU de habilitación y auditoría | `informes/carril-P4.md` |
 | **P5** Dell B | segundo plano | `landing/` + preparación: CU de notificaciones y tarifas | `informes/carril-P5.md` |
 

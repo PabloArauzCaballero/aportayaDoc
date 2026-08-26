@@ -5,8 +5,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import bo.aportaya.grupos.aplicacion.CU60Sortear.Compromiso;
 import bo.aportaya.grupos.aplicacion.CU60Sortear.Revelacion;
-import bo.aportaya.grupos.dominio.SorteoDeterminista;
 import bo.aportaya.plataforma.dominio.ErrorDeNegocio;
+import bo.aportaya.plataforma.dominio.SorteoVerificable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
@@ -69,12 +69,12 @@ class CU60Test extends BaseDeCU60 {
                 UUID.fromString("00000000-0000-4000-8000-000000000003"),
                 UUID.fromString("00000000-0000-4000-8000-000000000004"));
 
-        List<UUID> primera = SorteoDeterminista.ordenar(cupos, "semilla-publicada");
-        List<UUID> segunda = SorteoDeterminista.ordenar(cupos, "semilla-publicada");
+        List<UUID> primera = SorteoVerificable.barajarDeterminista("semilla-publicada", cupos);
+        List<UUID> segunda = SorteoVerificable.barajarDeterminista("semilla-publicada", cupos);
 
         assertThat(primera).isEqualTo(segunda);
         assertThat(primera).containsExactlyInAnyOrderElementsOf(cupos);
-        assertThat(SorteoDeterminista.ordenar(cupos, "otra-semilla")).isNotEqualTo(primera);
+        assertThat(SorteoVerificable.barajarDeterminista("otra-semilla", cupos)).isNotEqualTo(primera);
     }
 
     @Test

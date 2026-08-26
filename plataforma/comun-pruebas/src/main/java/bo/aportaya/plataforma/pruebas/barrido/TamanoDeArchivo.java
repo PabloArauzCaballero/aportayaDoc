@@ -53,12 +53,24 @@ public final class TamanoDeArchivo {
             return arbol.filter(Files::isRegularFile)
                     .filter(p -> p.getFileName().toString().endsWith(".java"))
                     // Lo generado no se revisa: se regenera.
-                    .filter(p -> !p.toString().contains("/build/"))
+                    .filter(p -> !enBarras(p).contains("/build/"))
                     .sorted(Comparator.comparing(Path::toString))
                     .toList();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    /**
+     * La ruta con barras normales, venga de donde venga.
+     *
+     * <p>En Windows {@code Path.toString()} devuelve contrabarras, y un filtro escrito
+     * con {@code "/build/"} no acierta ni una vez: el barrido pasa a revisar el codigo
+     * generado y a denunciar lo que no debe. Es el mismo defecto que tenia el
+     * resolvedor de wikilinks, en otro archivo.
+     */
+    static String enBarras(Path ruta) {
+        return ruta.toString().replace('\\', '/');
     }
 
     private static int contarLineas(Path archivo) {

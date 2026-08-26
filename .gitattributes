@@ -1,0 +1,13 @@
+# Fin de linea, declarado en el repositorio y no en la configuracion de cada maquina.
+#
+# Tres de las cinco maquinas del parque son Windows, y `core.autocrlf=true` viene
+# encendido por omision. Sin este archivo, `gradlew` se registra en el arbol de
+# trabajo con CRLF; el Dockerfile lo copia y la etapa de construccion muere con
+# `/bin/sh: 1: ./gradlew: not found` — un mensaje que no dice nada de lo que pasa.
+# El sintoma se ve al levantar el perfil `base`, que construye el gateway.
+
+*           text=auto
+gradlew     text eol=lf
+*.sh        text eol=lf
+gradlew.bat text eol=crlf
+*.bat       text eol=crlf

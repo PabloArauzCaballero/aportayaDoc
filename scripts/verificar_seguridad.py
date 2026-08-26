@@ -33,6 +33,12 @@ import sys
 
 import modelo
 
+# Estos informes se imprimen con acentos, flechas y el punto medio. En Windows la
+# consola entrega stdout en cp1252 y el gate muere con UnicodeEncodeError antes de
+# decir si algo falla — en tres de las cinco maquinas del parque.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
 RAIZ = pathlib.Path(__file__).resolve().parent.parent
 SEGURIDAD = RAIZ / "docs" / "Seguridad.md"
 RESTRICCIONES = RAIZ / "docs" / "Restricciones.md"

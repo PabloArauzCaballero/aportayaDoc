@@ -140,11 +140,16 @@ class CU09Test extends BaseDeCU09 {
     void criterio8() {
         // El enfriamiento del reenrolamiento es el mismo atomo, aplicado del lado
         // que puede mover plata ajena. No hay atajo, tampoco por seguridad.
-        OffsetDateTime reenrolo = OffsetDateTime.now().minusHours(1);
+        // Un solo instante para las tres llamadas. Con `now()` tres veces, lo que se
+        // mide es cuanto tarda la prueba: en Windows el reloj del sistema avanza de a
+        // ~15 ms y dos lecturas seguidas pueden devolver lo mismo, con lo cual el
+        // restante cae en 47 h exactas o en 46:59:59 segun la suerte del tick.
+        OffsetDateTime ahora = OffsetDateTime.now();
+        OffsetDateTime reenrolo = ahora.minusHours(1);
         VentanaDeEnfriamiento ventana = VentanaDeEnfriamiento.desde(reenrolo, Duration.ofHours(48));
 
-        assertThat(ventana.vigenteEn(OffsetDateTime.now())).isTrue();
-        assertThat(ventana.restanteEn(OffsetDateTime.now()).toHours()).isEqualTo(46);
+        assertThat(ventana.vigenteEn(ahora)).isTrue();
+        assertThat(ventana.restanteEn(ahora).toHours()).isEqualTo(47);
     }
 
     @Test

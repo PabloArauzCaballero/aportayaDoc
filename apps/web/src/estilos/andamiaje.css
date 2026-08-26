@@ -1,0 +1,37 @@
+/*
+  ANDAMIAJE — no es el sistema de diseno.
+
+  Los valores de marca los define F1 en `packages/ui`. SE BORRA AL CERRAR F1.
+*/
+:root {
+  --color-fondo: #ffffff;
+  --color-texto: #1a1a1a;
+  --color-texto-suave: #5c5c5c;
+  --color-borde: #e3e3e3;
+  --color-acento: #f26a21;
+  --color-error: #b3261e;
+  --espacio-sm: 8px;
+  --espacio-md: 16px;
+  --espacio-lg: 24px;
+  --radio-md: 8px;
+  --area-tactil: 44px;
+}
+
+body {
+  margin: 0;
+  background: var(--color-fondo);
+  color: var(--color-texto);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.6;
+}
+
+main {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: var(--espacio-lg);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-acento);
+  outline-offset: 2px;
+}

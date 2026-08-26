@@ -36,7 +36,9 @@ la especificación visual de las pantallas que [[Flujo de pantallas · app del p
 Nueve cambios, y todos salieron de la misma pregunta: *«¿y esto qué es?»*. Están
 recogidos como deltas de planificación en
 `planes/20 Maqueta de referencia · deltas del frontend.md`, que es lo que corrige las
-fases del frontend para que lo construido coincida con esto.
+fases del frontend para que lo construido coincida con esto. **No va como wikilink**:
+la bóveda tiene su raíz en `docs/` y `planes/` está afuera, así que un `[[...]]` hacia
+ahí no resuelve ni en Obsidian ni en `verificar_boveda.py`.
 
 | # | Cambio | Dónde se ve |
 | :-: | --- | --- |

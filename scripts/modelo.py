@@ -178,7 +178,12 @@ def esquema_de(tabla, modulo):
 # negocian: una ruta fuera del prefijo de su servicio es un rechazo automatico,
 # no una discusion de diseno. El barrido 13 comprueba que ninguno tenga dos duenos.
 PREFIJOS = {
-    "identidad":         ["/identidad", "/usuarios", "/sesion", "/roles"],
+    # `/sesion` y `/sesiones` son los dos de identidad, y los dos estan en la boveda:
+    # ADR-030 y el flujo de pantallas usan `/sesion/...` para MFA, dispositivos y
+    # validez; CU-04 y el flujo del backoffice usan `POST /sesiones` para abrirla.
+    # La reserva listaba solo el primero, y por eso el contrato de identidad no
+    # pasaba su propia prueba de prefijos.
+    "identidad":         ["/identidad", "/usuarios", "/sesion", "/sesiones", "/roles"],
     "grupos":            ["/grupos", "/turnos", "/acuerdos"],
     "nucleo_financiero": ["/billetera", "/custodia", "/puntos-atencion", "/contabilidad"],
     "aportes":           ["/aportes", "/pagos", "/qr", "/conciliacion"],
@@ -406,7 +411,7 @@ PARTICIPANTE = re.compile(
 
 def parse_puml(path):
     """Devuelve entidades, relaciones, notas, clases y enumeraciones del módulo."""
-    txt = path.read_text()
+    txt = path.read_text(encoding="utf-8")
     i = txt.index("@enduml")
     rel_block = txt[txt.index("@startuml", i):]
     cls_block = txt[:i]
