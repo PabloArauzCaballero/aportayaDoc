@@ -174,15 +174,34 @@ columnas inventadas en cinco tablas, `ip_origen` que es `inet` y no cadena, y
 | **CU-08** | ✅ | Asignar y revocar roles de operador. 6 criterios + 7 rechazos |
 | **CU-09** | ✅ | Cambiar credenciales y solicitar la baja. 8 criterios + 9 rechazos |
 
-## Carril 2C · `grupos` — CU-59, CU-60 y CU-63
+## Carril 2C · `grupos` — siete casos de uso
 
 | CU | Qué resuelve | Evidencia |
 | :-: | --- | --- |
 | **CU-59** | Calendario de días no hábiles · el cálculo | 4 criterios + 5 rechazos |
 | **CU-60** | Sortear los turnos, con compromiso y revelación | 4 criterios + 4 rechazos |
+| **CU-62** | Permutar turnos entre participantes | 3 criterios + 3 rechazos |
 | **CU-63** | Proponer y votar un acuerdo | 4 criterios + 4 rechazos |
+| **CU-64** | Traspasar un cupo | 3 criterios + 4 rechazos |
+| **CU-65** | Retirarse de un grupo | 3 criterios + 3 rechazos |
+| **CU-69** | Invitar a un contacto | 4 criterios + 6 rechazos |
 
-**`grupos`: 41 pruebas · 0 saltadas · 0 falladas.**
+**`grupos`: 92 pruebas · 0 saltadas · 0 falladas.**
+**Monorepo entero: 323 pruebas · 0 saltadas · 0 falladas.**
+
+> El commit de CU-69 dice «329 pruebas». La cifra correcta es **323**: conté un
+> informe de ejecución que incluía una clase dos veces.
+
+### Un intento mío de violar el invariante 11, atrapado antes de la prueba
+
+En CU-69 escribí `yaEsParticipante` como una consulta que unía
+`grupos.participante` con `identidad.usuario` para resolver un teléfono. **Este
+servicio no lee el esquema de otro.** La respuesta llega resuelta desde afuera, igual
+que el token de invitación —que lo emite `identidad`, dueño de `token_verificacion`—
+y que los importes de CU-65.
+
+Que lo haya escrito sin pensarlo es el argumento entero a favor de
+`AislamientoEsquemaTest`: la disciplina no alcanza, y la revisión de código tampoco.
 
 ### La decisión que más pesa: el sorteo lo puede recomputar cualquiera
 
