@@ -238,11 +238,49 @@ PROHIBIDOS = [
 ]
 
 
+# Una excepcion declarada, con su motivo escrito en la linea de arriba (o en la
+# misma), no es un hallazgo: es una decision que alguien firmo y que queda a la
+# vista. Una que NO esta declarada sigue siendo falla.
+#
+#     // SEGURIDAD-DECLARADO: la sonda de salud no lleva datos y el orquestador
+#     // la consulta sin sesion (ADR-021).
+#     .requestMatchers("/actuator/health/**").permitAll()
+#
+# Sin este mecanismo el gate solo tenia dos salidas: apagarlo, o escribir codigo
+# inseguro para que pasara. Las dos son peores que pedir un motivo por escrito.
+MARCA_DECLARADA = re.compile(r"SEGURIDAD-DECLARADO:\s*(?P<motivo>.{15,})")
+
+
+COMENTARIO = re.compile(r"^\s*(//|\*|/\*|#|--)")
+
+
+def declarada(texto, inicio):
+    """Devuelve el motivo declarado, o None si no hay marca.
+
+    Se camina hacia arriba mientras haya comentario o linea en blanco, y se para
+    en la primera linea de codigo: asi la excepcion queda atada a la sentencia que
+    excusa, y no a otra que quedo cerca por casualidad.
+    """
+    numero = texto[:inicio].count("\n")
+    lineas = texto.split("\n")
+    propia = MARCA_DECLARADA.search(lineas[numero])
+    if propia:
+        return propia.group("motivo").strip()
+    for k in range(numero - 1, -1, -1):
+        linea = lineas[k]
+        marca = MARCA_DECLARADA.search(linea)
+        if marca:
+            return marca.group("motivo").strip()
+        if linea.strip() and not COMENTARIO.match(linea):
+            return None
+    return None
+
+
 def bloque_3():
     print("\n=== 3 · PATRONES PROHIBIDOS ===")
-    hallazgos, revisados = [], 0
+    hallazgos, excepciones, revisados = [], [], 0
     for p in archivos(EXT_CODIGO):
-        # Este archivo enumera los patrones: encontrarlos acá es su función.
+        # Este archivo enumera los patrones: encontrarlos aca es su funcion.
         if p.name == "verificar_seguridad.py":
             continue
         texto = p.read_text(encoding="utf-8", errors="ignore")
@@ -254,9 +292,17 @@ def bloque_3():
                 continue
             for m in re.finditer(patron, texto):
                 linea = texto[:m.start()].count("\n") + 1
-                hallazgos.append(f"{p.relative_to(RAIZ)}:{linea} — {motivo}")
+                razon = declarada(texto, m.start())
+                if razon:
+                    excepciones.append(f"{p.relative_to(RAIZ)}:{linea} — {razon[:70]}")
+                else:
+                    hallazgos.append(f"{p.relative_to(RAIZ)}:{linea} — {motivo}")
     check(not hallazgos, f"{revisados} archivos de código sin patrones prohibidos",
           f"patrones prohibidos: {hallazgos[:8]}")
+    # Se cuentan y se muestran SIEMPRE: una excepcion invisible deja de ser una
+    # excepcion y pasa a ser un agujero con permiso.
+    if excepciones:
+        aviso(f"{len(excepciones)} excepción(es) declarada(s), con su motivo: {excepciones[:6]}")
     if revisados == 0:
         aviso("todavía no hay código de aplicación: este bloque empieza a morder cuando lo haya")
 
