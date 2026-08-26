@@ -29,6 +29,7 @@ dependencies {
 
     testImplementation(project(":plataforma:comun-pruebas"))
     testImplementation(libs.bundles.pruebas)   // JUnit 5, AssertJ, Testcontainers, ArchUnit
+    testImplementation(libs.spring.boot.jdbc)  // DriverManagerDataSource, DataSourceTransactionManager
 }
 
 // JPA esta PROHIBIDO (ADR-016): compite con sql/ por la propiedad del esquema y

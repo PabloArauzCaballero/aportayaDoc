@@ -8,6 +8,15 @@
 #
 # BORRADOR DE LA FASE 0 (planes/01 §0.8). El carril dueno lo amplia; NO puede
 # romperlo sin avisar, y la prueba de contrato falla en el CI del que rompe.
+#
+# CU-24 · Registrar el asiento contable de una operacion — NO tiene endpoint (lo
+# dispara otro caso de uso, en su misma transaccion). Sus codigos de error viven
+# igual en este contrato, porque scripts/verificar_criterios.py los busca aca sin
+# importar si hay una ruta HTTP que los use:
+#   AP-CU24-01  ASIENTO_DESCUADRADO  · debe y haber no coinciden (R-AUD-05)
+#   AP-CU24-02  CUENTA_INEXISTENTE   · el codigo de cuenta no esta en el plan
+#   AP-CU24-03  PERIODO_CERRADO      · pendiente: periodo_contable es de M13 (ERP),
+#                                      que todavia no existe en este carril
 openapi: 3.1.0
 info:
   title: nucleo-financiero

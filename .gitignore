@@ -53,3 +53,6 @@ despliegue/k8s/generado/
 
 # jqwik: base local de semillas de propiedades, no del proyecto
 .jqwik-database
+
+# Override local de puerto (conflicto de host, no del proyecto)
+despliegue/compose/base.local.yml
