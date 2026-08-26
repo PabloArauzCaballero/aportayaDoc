@@ -56,7 +56,12 @@ val generateJooq = tasks.register("generateJooq") {
                     )
                     .withTarget(
                         org.jooq.meta.jaxb.Target()
-                            .withPackageName("bo.aportaya.$nombre.generado")
+                            // El paquete Java no lleva guion bajo aunque el esquema lo
+                            // tenga (nucleo_financiero): scripts/nuevo_servicio.py arma
+                            // el paquete del servicio pegando las palabras
+                            // (bo.aportaya.nucleofinanciero), y si el generado no
+                            // coincide, ArchUnit lo ve como un import a otro servicio.
+                            .withPackageName("bo.aportaya.${nombre.replace("_", "")}.generado")
                             .withDirectory(salida.get().asFile.absolutePath),
                     ),
             )
