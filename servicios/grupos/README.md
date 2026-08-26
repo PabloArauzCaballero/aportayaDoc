@@ -17,7 +17,7 @@ Modulo 02 de la boveda — Grupos, Cupos, Turnos y Gobernanza.
 
 | CU | Nombre | Estado |
 | --- | --- | --- |
-| | *(los llena `nuevo_cu.py`)* | |
+| CU-59 | Mantener el calendario de días no hábiles | ⬜ sin implementar |
 
 ## Eventos que emite
 

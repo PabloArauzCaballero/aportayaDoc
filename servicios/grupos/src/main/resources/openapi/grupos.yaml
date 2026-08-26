@@ -16,7 +16,47 @@ info:
 servers:
   - url: /api/v1
 
-paths: {}
+paths:
+  /grupos/calendario/calcular:
+    get:
+      operationId: calcularPlazoHabil          # CU-59
+      summary: Fecha límite en días hábiles, con los días que se saltearon
+      description: >-
+        El resultado se GUARDA donde se use y no se recalcula: si despues se declara
+        un feriado, ese plazo no se mueve. Devuelve tambien que dias se saltearon,
+        porque un plazo que no se puede explicar no se puede defender.
+
+        Nota de ruta: el caso de uso dice `/calendario`, que no esta entre los
+        prefijos reservados de `grupos` (/grupos, /turnos, /acuerdos). Va bajo
+        /grupos/calendario para no invadir un prefijo sin dueno.
+      parameters:
+        - name: desde
+          in: query
+          required: true
+          schema: { type: string, format: date }
+        - name: dias
+          in: query
+          required: true
+          schema: { type: integer, minimum: 1, maximum: 365 }
+        - name: alcance
+          in: query
+          required: true
+          schema: { type: string, enum: [NACIONAL, DEPARTAMENTAL, PLATAFORMA, GRUPO] }
+        - name: referenciaId
+          in: query
+          required: false
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Fecha límite y los días no hábiles que se saltearon
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaPlazoHabil' }
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU59-01 FECHA_DUPLICADA    · AP-CU59-02 ALCANCE_INCOMPLETO
+          # AP-CU59-03 FECHA_EN_EL_PASADO · AP-CU59-04 SIN_FUENTE
+          # AP-CU59-05 CALENDARIO_VACIO
   # Una operacion por caso de uso. Plantilla:
   #
   #   /grupos/…:
@@ -33,6 +73,22 @@ paths: {}
 
 components:
   schemas:
+    DiaSalteado:
+      type: object
+      additionalProperties: false
+      required: [fecha, descripcion]
+      properties:
+        fecha:       { type: string, format: date }
+        descripcion: { type: string }
+    SalidaPlazoHabil:
+      type: object
+      additionalProperties: false
+      required: [fechaLimite, diasSalteados]
+      properties:
+        fechaLimite:   { type: string, format: date }
+        diasSalteados:
+          type: array
+          items: { $ref: '#/components/schemas/DiaSalteado' }
     Dinero:
       type: object
       additionalProperties: false
