@@ -1,0 +1,19 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "lib": ["ES2022", "DOM"],
+    "types": ["jest", "node"],
+    "moduleResolution": "bundler",
+    "allowJs": true,
+    "baseUrl": "../..",
+    "paths": {
+      "@aportaya/simulado": ["packages/simulado/src/index.ts"],
+      "@aportaya/simulado/*": ["packages/simulado/src/*"],
+      "clientes/typescript/*": ["clientes/typescript/*"],
+      "@/*": ["apps/movil/src/*"]
+    }
+  },
+  "include": ["app/**/*.ts", "app/**/*.tsx", "src/**/*.ts", "src/**/*.tsx", "pruebas/**/*.ts", "pruebas/**/*.tsx", "*.js"],
+  "exclude": ["node_modules", ".expo"]
+}

@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "AportaYa",
+    "slug": "aportaya-movil",
+    "scheme": "aportaya",
+    "version": "0.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "android": {
+      "package": "bo.aportaya.movil",
+      "edgeToEdgeEnabled": true
+    },
+    "ios": {
+      "bundleIdentifier": "bo.aportaya.movil",
+      "supportsTablet": false
+    },
+    "plugins": ["expo-router", "expo-secure-store"],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "//": "Una sola base: el gateway. El prefijo de la ruta enruta al servicio.",
+      "gateway": "http://localhost/api/v1",
+      "simulado": true
+    }
+  }
+}
