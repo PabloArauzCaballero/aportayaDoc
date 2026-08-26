@@ -222,21 +222,71 @@ podría probar semillas hasta que salga el orden que le conviene.
 | `quorum_decisiones` es un porcentaje | Es `numeric(4,3)`: una **fracción**. 60 desborda; el sesenta por ciento es 0,600 |
 | Los tipos de acuerdo son los del CU | El `.puml` manda: `CONDONACION_MORA`, no `CONDONACION`; y `TRASPASO_CUPO` y `REPETIR_SORTEO` **no existen** |
 
-### Un patrón que aparece en todos los carriles, y conviene decidirlo
+### El patrón de los CU que cruzan servicios, y cómo se resolvió
 
-Tres casos de uso seguidos resultaron asignados a un servicio que **no puede escribir
-donde el caso de uso dice que escribe**:
+Cinco casos de uso resultaron asignados a un servicio que **no puede escribir donde el
+caso de uso dice que escribe**. No es error de ninguno: la asignación CU↔servicio se
+hizo por módulo del `.puml` y hay casos de uso que cruzan módulos. Cada uno se
+resolvió, y la resolución es la misma tres veces:
 
-| CU | Asignado a | Escribe en |
+| CU | Cruza a | Decisión |
 | :-: | --- | --- |
-| CU-01 | `identidad` | `cumplimiento` y `nucleo_financiero` |
-| CU-05 | `identidad` | `cumplimiento` |
-| CU-59 | `grupos` | `catalogo`, que todos leen y **nadie escribe en caliente** |
+| **CU-01** | `cumplimiento`, `nucleo_financiero`, `auditoria` | **Coreografía por eventos.** No es saga |
+| **CU-20** | `tarifas`, `nucleo_financiero` | **Coreografía por eventos.** Igual |
+| **CU-59** | `catalogo` | **Es siembra**, no endpoint. Ya estaba sembrado |
+| **CU-05** | `cumplimiento` | **Cambia de dueño**: es del carril 1C |
+| **CU-64/65/68/69** | varios, solo lectura | Los datos ajenos **llegan resueltos** por parámetro |
 
-No es un error de ninguno de los tres: es que la asignación CU↔servicio se hizo por
-módulo del `.puml` y hay casos de uso que cruzan módulos. **Cada uno es una saga o un
-cambio de dueño, y decidirlo caso por caso mientras se programa es exactamente cómo se
-termina con un servicio leyendo el esquema de otro.**
+#### Por qué CU-01 y CU-20 no son sagas
+
+La tentación era llamarlas saga. **El propio proyecto dice que no:** `estado_saga`
+existe solo en `aportes`, `entregas`, `garantia` y `tarifas`, y el recetario §8b acota
+la saga a «cuando **hay dinero en vuelo**». En una apertura de cuenta y en la creación
+de un grupo no hay dinero en vuelo: hay una cuenta que se abre en cero y un precio que
+se congela.
+
+Lo que sí hay es **coreografía**, que es exactamente para lo que existe el outbox. El
+servicio dueño hace su parte en una transacción local y emite; los otros consumen y
+hacen la suya. Cada uno escribe en su esquema, y ninguno necesita permiso sobre el
+ajeno.
+
+**Y el estado intermedio no es un rodeo, es la verdad:** el usuario nace
+`PENDIENTE_VERIFICACION` y el grupo nace `BORRADOR` porque, hasta que los otros
+respondan, ni el usuario puede operar ni el grupo puede recibir a nadie. Por eso las
+dos operaciones responden **`202` y no `201`**: el contrato de CU-01 prometía
+`cuentaBilleteraId` en la respuesta, y esa cuenta todavía no existe cuando la
+operación contesta. **No se promete en el contrato lo que la arquitectura no puede
+entregar sincrónicamente.**
+
+#### CU-05 cambia de dueño
+
+`aceptacion_contrato` y `contrato_adhesion` viven **enteros** en `cumplimiento`.
+Asignado a `identidad` obliga a una llamada entre servicios para algo que en
+`cumplimiento` es una transacción local. **Pasa al carril 1C**, y con eso deja de ser
+del Mac.
+
+## Estado final de los carriles del Mac
+
+| Tramo | Carril | Estado |
+| --- | --- | :-: |
+| T0 | **Fase 0** · cimientos | ✅ |
+| T1 | **Fase 1** · átomos, `conContexto`, los cuatro invariantes | ✅ |
+| T1 | **Fase 2** · `comun-web`, `comun-mensajeria`, barridos | ✅ |
+| T2 | **Carril 1A** · `identidad` — CU-01, 04, 08, 09 | ✅ (CU-05 pasó a 1C) |
+| T3 | **Carril 2C** · `grupos` — CU-20, 59, 60, 62, 63, 64, 65, 68, 69 | ✅ |
+| T4–T7 | **F3–F5** · app móvil | pendiente |
+| T8 | **F12** · E2E y tiendas | pendiente |
+
+**371 pruebas · 0 saltadas · 0 falladas** · 13 casos de uso verificados contra la
+bóveda, sin divergencias.
+
+### Lo que queda, y por qué queda
+
+| Qué | Por qué |
+| --- | --- |
+| `e2eTest` y el perfil `todo` de compose | Fase 17. Levantar quince contenedores para probar dos servicios cuesta más de lo que rinde |
+| `sagaTest` con una saga real | Ninguno de los dos carriles del Mac tiene saga: no hay dinero en vuelo en ninguno de sus trece casos de uso. La primera saga es CU-21, del carril 3A |
+| La app móvil (F3–F5) y F12 | Son los tramos T4 a T8. Dependen del cliente TypeScript, que ya está generado y compila |
 
 ## Decisiones tomadas, y por qué
 
