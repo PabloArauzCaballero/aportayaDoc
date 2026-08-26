@@ -1,6 +1,9 @@
 package bo.aportaya.cumplimiento;
 
+import bo.aportaya.cumplimiento.aplicacion.CU05AceptarContrato;
 import bo.aportaya.cumplimiento.aplicacion.CU46VerificarAlcance;
+import bo.aportaya.cumplimiento.infraestructura.AceptacionRepositorio;
+import bo.aportaya.cumplimiento.infraestructura.ContratoRepositorio;
 import bo.aportaya.cumplimiento.infraestructura.LicenciaRepositorio;
 import bo.aportaya.cumplimiento.infraestructura.SandboxRepositorio;
 import bo.aportaya.plataforma.datos.Datos;
@@ -31,6 +34,7 @@ abstract class BaseDeCumplimiento {
     protected static FixturaDeCumplimiento fixtura;
     protected static Consumidos consumidos;
     protected static CU46VerificarAlcance alcanceCU;
+    protected static CU05AceptarContrato contratoCU;
 
     @BeforeAll
     static void armar() {
@@ -49,6 +53,12 @@ abstract class BaseDeCumplimiento {
                 new Outbox("cumplimiento"),
                 Reloj.delSistema(),
                 Set.of("RETIRO"));
+        contratoCU = new CU05AceptarContrato(
+                new Datos(dsl),
+                new ContratoRepositorio(),
+                new AceptacionRepositorio(),
+                new Outbox("cumplimiento"),
+                Reloj.delSistema());
     }
 
     protected ContextoSesion contexto() {

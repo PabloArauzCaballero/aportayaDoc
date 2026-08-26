@@ -82,6 +82,54 @@ final class FixturaDeCumplimiento {
         return id;
     }
 
+    /** Un contrato de adhesion en la version y estado pedidos. */
+    UUID contrato(String tipo, int version, String estado) {
+        UUID id = UUID.randomUUID();
+        dsl.execute(
+                """
+                INSERT INTO cumplimiento.contrato_adhesion
+                    (id, codigo, version, tipo, estado, url_documento, hash_documento,
+                     registrado_ante_regulador, vigente_desde)
+                VALUES (?, ?, ?, ?, ?, 'https://aportaya.bo/contrato.pdf', ?, false, now() - interval '1 day')
+                """,
+                id,
+                "CTO-" + id.toString().substring(0, 8),
+                (short) version,
+                tipo,
+                estado,
+                // Un hash distinto por version: si dos versiones compartieran hash,
+                // la evidencia no distinguiria cual se acepto.
+                String.valueOf(version).repeat(64).substring(0, 64));
+        return id;
+    }
+
+    /** Sustituye la version anterior, como hace una publicacion real. */
+    void sustituir(UUID contratoId) {
+        dsl.execute(
+                "UPDATE cumplimiento.contrato_adhesion SET estado = 'SUSTITUIDO', vigente_hasta = now() WHERE id = ?",
+                contratoId);
+    }
+
+    /** R-CON-07 exige publicado_en, url y hash para un tarifario VIGENTE. */
+    UUID tarifarioPublicado() {
+        UUID id = UUID.randomUUID();
+        dsl.execute(
+                """
+                INSERT INTO catalogo.tarifario
+                    (id, codigo, version, nombre, estado, moneda_base, vigente_desde, dias_preaviso,
+                     publicado_en, url_publicacion, hash_documento)
+                VALUES (?, ?, 1, 'Tarifario de prueba', 'VIGENTE', 'BOB', current_date - 10, 30,
+                        now() - interval '10 days', 'https://aportaya.bo/tarifario', repeat('t', 64))
+                """,
+                id,
+                "TAR-" + id.toString().substring(0, 8));
+        return id;
+    }
+
+    void borrarTarifarios() {
+        dsl.execute("DELETE FROM catalogo.tarifario");
+    }
+
     /** Devuelve la tabla al vacio con que arranca el contenedor. */
     void restaurarLicencia() {
         dsl.execute("DELETE FROM cumplimiento.entorno_prueba_regulado");
