@@ -1,0 +1,27 @@
+{
+  "//": "Base de los tres productos. Cada app extiende y agrega lo suyo (jsx, lib, tipos).",
+  "//2": "`clientes/typescript` es GENERADO: se referencia por alias y no se edita a mano.",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@aportaya/simulado": ["packages/simulado/src/index.ts"],
+      "@aportaya/simulado/*": ["packages/simulado/src/*"],
+      "@aportaya/ui": ["packages/ui/src/index.ts"],
+      "@aportaya/ui/*": ["packages/ui/src/*"],
+      "clientes/typescript/*": ["clientes/typescript/*"]
+    }
+  },
+  "exclude": ["node_modules", "**/build", "**/dist", "**/.expo"]
+}

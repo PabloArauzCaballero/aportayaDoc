@@ -14,9 +14,25 @@ __pycache__/
 .vscode/
 .claude/launch.json
 
-# Andamio vacío: apps/ se quitó del repo (commit 63ec074) y se reintroduce
-# cuando exista código de verdad, no como carpeta con solo un .gitignore
-apps/
+# apps/ vuelve al repositorio: `apps/movil` es codigo de verdad desde el carril
+# F0-M, que es la condicion que este archivo pedia para reintroducirlo.
+
+# --- frontend: dependencias y artefactos, nunca versionados ---
+node_modules/
+.yarn/*
+!.yarn/patches
+!.yarn/releases
+.pnp.*
+.expo/
+.turbo/
+coverage/
+apps/*/dist/
+apps/*/android/
+apps/*/ios/
+
+# Contratos en JSON para Metro y Jest: se generan del .yaml de cada servicio con
+# `yarn workspace @aportaya/simulado contratos`. Versionarlos crea dos verdades.
+packages/simulado/generado/
 
 # --- generado por el build: el gate es la compilacion, no un diff (ADR-016) ---
 build/
