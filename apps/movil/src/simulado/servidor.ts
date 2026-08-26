@@ -1,3 +1,6 @@
+// Primero los globales que Hermes no trae: MSW los toca al importarse.
+import './polirrellenos'
+
 import { setupServer } from 'msw/native'
 import { manejadoresDeTodos } from '@aportaya/simulado'
 
