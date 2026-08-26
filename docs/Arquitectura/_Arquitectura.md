@@ -76,6 +76,7 @@ está en [[Stack]]. El motivo por el que son catorce y no uno está en
 | [[ADR-037 Alta disponibilidad y balanceo\|037]] | Cuántas réplicas, qué se replica abajo y cómo se reparte la carga | Tres niveles de criticidad · ninguno con menos de 2 réplicas · el tope de escalado atado al pool | — |
 | [[ADR-038 Acceso administrativo · segundo factor y recuperación asistida\|038]] | Cómo entra un operador al backoffice y cómo recupera el acceso si lo pierde | Dos factores en todo acceso · TOTP, nunca SMS · recuperación aprobada por otra identidad · lo hace cumplir la base | — |
 | [[ADR-039 Sin efectivo · la plataforma no opera dinero físico\|039]] | Si la plataforma opera dinero en efectivo por corresponsales | No: solo ingreso electrónico y salida a cuenta bancaria · `CU-57` obsoleto · dos tablas retiradas | — |
+| [[ADR-040 Fronteras de transparencia, reputación y riesgo\|040]] | Cómo cruzan la frontera de servicio la transparencia, la reputación y el riesgo | Proyección local por eventos en vez de llamadas · el átomo del sorteo baja a `plataforma` con su protocolo público · `CU-97` se parte en dos servicios · la restricción efectiva vive en `identidad` | — |
 
 ## Decisiones superadas
 

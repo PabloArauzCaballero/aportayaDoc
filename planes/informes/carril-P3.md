@@ -18,9 +18,11 @@ leer los casos de uso del puesto y **declarar las piezas por nivel** antes de es
 la primera línea. Este archivo lo escribe solo este puesto.
 
 > **Qué es y qué no es.** Es el paso 0 de `frontera-transaccional` hecho por
-> adelantado para los 16 casos de uso que le tocan a la Legion. No es código, no es
-> diseño de tablas y no decide nada que la bóveda ya haya decidido. Donde encontré
-> una contradicción, la anoté; no la resolví.
+> adelantado para los 16 casos de uso que le tocan a la Legion. No es código y no es
+> diseño de tablas. Donde encontré una contradicción la anoté primero y la llevé
+> después a una decisión escrita: los ocho huecos de §6 están cerrados, seis de ellos
+> en [[ADR-040 Fronteras de transparencia, reputación y riesgo]]. **Ninguno se cerró
+> cambiando el modelo.**
 
 ## 0 · Qué carriles tiene este puesto, y cuándo
 
@@ -34,12 +36,12 @@ la primera línea. Este archivo lo escribe solo este puesto.
 | `F7` backoffice · operación | T6–T7 | `apps/backoffice` | — | pendiente |
 | `F13` backoffice · ERP | T9 | `apps/backoffice` | — | pendiente |
 
-> [!warning] Discrepancia entre dos documentos del plan, sin resolver
-> [[17 Plan de acción secuencial · coordinación de cinco máquinas]] §5 T0 dice que P3
-> prepara «los CU de **grupos** y transparencia». [[18 Fichas de carril · las 38 unidades de trabajo]]
-> asigna `2C` grupos a **P1** (T3) y le da a P3 `3B` y `4B`. Declaré `3B` y `4B`, que
-> es lo que dice la ficha —el documento que manda en el qué—, y dejo la discrepancia
-> anotada porque **el que quede sin declarar es el que va a improvisar**.
+> [!note] Discrepancia resuelta el 2026-08-26
+> [[17 Plan de acción secuencial · coordinación de cinco máquinas]] §5 T0 decía que P3
+> prepara «los CU de **grupos** y transparencia», mientras
+> [[18 Fichas de carril · las 38 unidades de trabajo]] asigna `2C` grupos a **P1** (T3)
+> y le da a P3 `3B` y `4B`. **Corregido en `planes/17`**, que ahora dice lo mismo que
+> la ficha: grupos lo prepara P1.
 
 ---
 
@@ -221,8 +223,10 @@ es el error caro del paso 0.
 5. **Si muere tras el commit:** el trabajo de cierre de período reevalúa; idempotente
    por la clave.
 6. **Cruza servicios: sí, y parte el caso de uso en dos.** `score_riesgo_incumplimiento`
-   y `alerta_temprana` viven en **`garantia`**, no en `transparencia`. → hueco H-5,
-   que es el más importante de los que encontré.
+   y `alerta_temprana` viven en **`garantia`**, no en `transparencia`. **ADR-040 §5** lo
+   resuelve partiéndolo por servicio: acá quedan las métricas del grupo y la alerta de
+   cartera, y `4B` calcula el score y la alerta temprana al consumir
+   `metricas.calculadas`. El punto 1 de arriba ya está escrito con esa mitad.
 
 ---
 
@@ -418,20 +422,23 @@ con `noindex, nofollow`**: llevan datos de personas.
 
 ---
 
-## 6 · Huecos y contradicciones, encontrados al leer y **no resueltos**
+## 6 · Huecos y contradicciones — decididos en [[ADR-040 Fronteras de transparencia, reputación y riesgo]]
 
-Regla cero: se declaran, no se completan con una suposición.
+Se declararon primero y se decidieron después, que es el orden. Los seis tocaban la
+frontera entre servicios, y esa no se decide durante la implementación: el carril que
+llegue primero elige la llamada sincrónica, que es lo que sale natural, y acopla la
+disponibilidad de una ruta pública a la de cuatro servicios internos.
 
-| # | Hueco | Por qué importa | De quién es |
-| :-: | --- | --- | --- |
-| **H-1** | **El contenido del bloque de CU-72 vive en cuatro servicios ajenos.** Aportes, entregas, coberturas, altas y bajas, acuerdos y sorteo: ninguno se puede leer con `SELECT` (invariante 11) | Es el caso de uso que define si la transparencia es un mecanismo o una promesa. Cuatro llamadas sincrónicas dentro del cierre de período acoplan la disponibilidad de los cuatro. **Mi propuesta, sujeta a visto bueno: proyección local en `transparencia` alimentada por los eventos de dominio que esos servicios ya emiten** | Decisión de arquitectura · P1 |
-| **H-2** | `reputacion_usuario` está en el esquema **`identidad`**, mientras `puntaje_reputacion` y todo el resto están en `transparencia` | CU-75 la nombra en su evidencia. O es una proyección de identidad y hay que decirlo, o el modelo tiene la reputación partida entre dos servicios | Bóveda · troncal |
-| **H-3** | CU-61 verifica el sorteo, pero `sorteo_turnos` y `turno` son de **`grupos`** | Una ruta **pública** que depende de una llamada sincrónica a otro servicio se cae cuando ese servicio se cae. El paquete público debería viajar por evento al sellarse el sorteo | Decisión de arquitectura · P1 |
-| **H-4** | CU-61 exige que el átomo de verificación sea **el mismo** que usa CU-60 para sortear — y CU-60 es de `grupos` | El CU lo dice explícito: con dos implementaciones se comprueba que dos códigos coinciden, no que el sorteo es correcto. → `verificarCompromiso` y `barajarDeterminista` tienen que vivir en **`plataforma/comun-dominio`**, por micro-PR, antes de que cualquiera de los dos carriles arranque | Micro-PR a `plataforma` |
-| **H-5** | **CU-97 está asignado a `3B` (transparencia) pero dos de sus tres tablas principales —`alerta_temprana` y `score_riesgo_incumplimiento`— viven en `garantia`** | Tal como está declarado, el caso de uso **no se puede implementar dentro de un servicio**. O se parte (métricas en transparencia, score y alertas en garantía), o las tablas cambian de esquema. Las dos opciones son cambio de modelo, y eso es troncal: **paro y pregunto** | Bóveda · troncal |
-| **H-6** | CU-27 escribe `lista_restriccion_interna` (garantía) pero **las `restriccion_usuario` que el sistema consulta viven en `identidad`** | CU-68 y CU-90 consultan las restricciones al decidir un ingreso. Si la lista y la restricción efectiva están en servicios distintos, hay una ventana en la que la persona está en la lista y todavía puede entrar a un grupo | Decisión de arquitectura · P1 |
-| **H-7** | CU-97 dice que la alerta **nunca** produce por sí sola una restricción, y CU-27 exige causa consumada | No es un conflicto: es la regla que evita castigar por pronóstico. La anoto para que no se «simplifique» al implementar | — |
-| **H-8** | La discrepancia de §0 sobre quién prepara `grupos` | Un carril sin declaración es un carril que improvisa | P1 |
+| # | Hueco encontrado | Cómo quedó | |
+| :-: | --- | --- | :-: |
+| **H-1** | El contenido del bloque de CU-72 vive en cinco servicios ajenos, y ninguno se puede leer con `SELECT` | **Decidido · ADR-040 §1:** proyección local en `transparencia` alimentada por los eventos que esos servicios ya publican. El sellado **se bloquea** si la proyección tiene huecos, en vez de sellar incompleto | ✅ |
+| **H-2** | `reputacion_usuario` está en `identidad` y el resto de la reputación en `transparencia` | **Decidido · ADR-040 §2:** es una proyección de solo lectura que `identidad` mantiene consumiendo `reputacion.recalculada`. La fuente de verdad sigue siendo `puntaje_reputacion` | ✅ |
+| **H-3** | CU-61 verifica el sorteo, pero `sorteo_turnos` y `turno` son de `grupos` | **Decidido · ADR-040 §3:** el paquete público viaja en `sorteo.revelado` y `transparencia` lo guarda. La ruta pública **no llama** a `grupos`, y por eso sigue respondiendo si `grupos` se cae | ✅ |
+| **H-4** | CU-61 exige el **mismo** átomo que CU-60, que es de `grupos` | **Decidido y escrito · ADR-040 §4:** `SorteoVerificable` vive en `plataforma/comun-dominio` con su protocolo público fijado, y 11 pruebas en verde. `grupos` sortea y `transparencia` verifica con la misma implementación | ✅ |
+| **H-5** | CU-97 estaba asignado solo a `3B`, pero `alerta_temprana` y `score_riesgo_incumplimiento` son de `garantia` | **Decidido · ADR-040 §5:** se parte en dos mitades, una por servicio. `3B` calcula métricas y alerta de cartera; `4B` calcula el score y la alerta temprana al consumir `metricas.calculadas`. **El modelo no cambia** | ✅ |
+| **H-6** | CU-27 escribe la lista en `garantia` pero la restricción efectiva es de `identidad` | **Decidido · ADR-040 §6:** el expediente queda en `garantia`, lo efectivo en `identidad`, y se sincroniza por evento. **La ventana de segundos se acepta por escrito** y no toca dinero | ✅ |
+| **H-7** | CU-97 dice que la alerta **nunca** produce por sí sola una restricción, y CU-27 exige causa consumada | No era un conflicto: es la regla que evita castigar por pronóstico. Queda anotada para que nadie la «simplifique» al implementar | vigente |
+| **H-8** | La discrepancia de §0 sobre quién prepara `grupos` | **Resuelto:** corregido en `planes/17`. Grupos lo prepara P1 | ✅ |
 
 ---
 
@@ -439,8 +446,8 @@ Regla cero: se declaran, no se completan con una suposición.
 
 | Carril | Necesita | Estado hoy |
 | :-: | --- | :-: |
-| `3B` | `2C` grupos cerrado (sorteo y turnos) · contratos de `3A` aportes · H-1, H-3, H-4 y H-5 resueltos | ninguno |
-| `4B` | `2C` grupos · `3A` aportes · `2A` billetera · `1B` asiento contable · calendario de CU-59 · H-6 resuelto | ninguno |
+| `3B` | `2C` grupos cerrado (sorteo y turnos) · contratos de `3A` aportes · los eventos que alimentan la proyección de ADR-040 §1 | H-1, H-3, H-4 y H-5 decididos; faltan los servicios |
+| `4B` | `2C` grupos · `3A` aportes · `2A` billetera · `1B` asiento contable · calendario de CU-59 · `metricas.calculadas` de `3B` (ADR-040 §5) | H-6 decidido; faltan los servicios |
 
 Los dos están detrás de la Ola 1 y la Ola 2 completas. **La preparación es lo único
 que este puesto puede adelantar sobre ellos hoy, y es lo que hace este archivo.**
@@ -452,11 +459,13 @@ que este puesto puede adelantar sobre ellos hoy, y es lo que hace este archivo.*
 - No propone tablas nuevas ni cambios de esquema. Los cinco huecos que tocarían el
   modelo están anotados como huecos, no como propuestas.
 - **Ninguna de las seis preguntas está respondida «se verá al implementar».** Donde no
-  supe, escribí el hueco con su dueño.
+  supe, escribí el hueco; los seis se decidieron después en
+  [[ADR-040 Fronteras de transparencia, reputación y riesgo]].
 
 ## Ver también
 
 [[17 Plan de acción secuencial · coordinación de cinco máquinas]] ·
 [[18 Fichas de carril · las 38 unidades de trabajo]] ·
 [[05 Fases 12 a 16 · Plataforma, reputación y cumplimiento]] ·
-[[04 Fases 8 a 11 · Circuito del pasanaku]] · [[carril-F0-M]]
+[[04 Fases 8 a 11 · Circuito del pasanaku]] · [[carril-F0-M]] ·
+[[ADR-040 Fronteras de transparencia, reputación y riesgo]]
