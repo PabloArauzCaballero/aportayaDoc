@@ -125,13 +125,20 @@ public class CU24RegistrarAsiento {
                 ctx.esSistema() ? Optional.empty() : Optional.of(ctx.usuarioId()),
                 Optional.of(asientoOriginalId));
 
+        // Las naturalezas, en UNA consulta y no una por movimiento: dentro de la
+        // transacción del hecho económico, un N+1 se paga en el pool de conexiones.
+        Map<UUID, String> naturalezas = cuentas.naturalezasDe(
+                dsl,
+                movimientos.stream()
+                        .map(AsientoRepositorio.MovimientoExistente::cuentaId)
+                        .toList());
+
         Dinero totalDebe = Dinero.cero(BOB);
         Dinero totalHaber = Dinero.cero(BOB);
         for (AsientoRepositorio.MovimientoExistente m : movimientos) {
             // El inverso intercambia debe y haber de cada línea, cuenta por cuenta.
             asientos.agregarMovimiento(dsl, reversa.id(), m.cuentaId(), m.haber(), m.debe(), glosaReversa);
-            String naturaleza = cuentas.naturalezaDe(dsl, m.cuentaId());
-            BigDecimal delta = "DEUDORA".equals(naturaleza)
+            BigDecimal delta = "DEUDORA".equals(naturalezas.get(m.cuentaId()))
                     ? m.haber().subtract(m.debe())
                     : m.debe().subtract(m.haber());
             cuentas.sumarAlSaldo(dsl, m.cuentaId(), delta);

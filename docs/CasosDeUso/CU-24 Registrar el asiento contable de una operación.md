@@ -103,7 +103,7 @@ export const ErroresCU24 = {
 
 ## Restricciones aplicables
 
-`R-AUD-01` · `R-AUD-05` · `R-AUD-06` · `R-BIL-11`
+`R-AUD-01` · `R-AUD-05` · `R-AUD-06` · `R-CTB-02`
 
 ## Evidencia que deja
 

@@ -3,6 +3,8 @@ package bo.aportaya.nucleofinanciero.infraestructura;
 import static bo.aportaya.nucleofinanciero.generado.Tables.CUENTA_CONTABLE;
 
 import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.jooq.DSLContext;
@@ -22,12 +24,22 @@ public class CuentaContableRepositorio {
                 .fetchOptional(r -> new CuentaEncontrada(r.value1(), r.value2()));
     }
 
-    /** Para la reversa: ya se tiene el {@code cuentaId} del movimiento original, solo falta el signo. */
-    public String naturalezaDe(DSLContext dsl, UUID cuentaId) {
-        return dsl.select(CUENTA_CONTABLE.NATURALEZA)
+    /**
+     * Para la reversa: ya se tienen los {@code cuentaId} de los movimientos originales,
+     * solo falta el signo de cada uno.
+     *
+     * <p>En bloque y no una consulta por movimiento: un asiento con veinte líneas son
+     * veinte viajes a la base dentro de la transacción del hecho económico, y eso es un
+     * N+1 sobre la ruta más caliente del sistema.
+     */
+    public Map<UUID, String> naturalezasDe(DSLContext dsl, Collection<UUID> cuentaIds) {
+        if (cuentaIds.isEmpty()) {
+            return Map.of();
+        }
+        return dsl.select(CUENTA_CONTABLE.ID, CUENTA_CONTABLE.NATURALEZA)
                 .from(CUENTA_CONTABLE)
-                .where(CUENTA_CONTABLE.ID.eq(cuentaId))
-                .fetchOne(CUENTA_CONTABLE.NATURALEZA);
+                .where(CUENTA_CONTABLE.ID.in(cuentaIds))
+                .fetchMap(CUENTA_CONTABLE.ID, CUENTA_CONTABLE.NATURALEZA);
     }
 
     /**
