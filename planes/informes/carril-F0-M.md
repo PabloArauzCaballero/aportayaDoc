@@ -33,7 +33,8 @@ frontend) · **Máquina** Legion
 | Una pantalla real contra MSW con sus **cuatro estados** | `PantallaDeSaldo` · 5 pruebas: cargando, éxito, vacío, error y sin red | ✅ |
 | Herramientas de calidad: tres corredores de Jest + ESLint plano | `front-unit` · `front-componente` · `front-a11y` | ✅ |
 | **La prueba del gate**: agregar una pantalla vacía no toca ningún registro compartido | `enrutamiento-por-archivos.spec.ts`, 3 pruebas | ✅ |
-| `yarn --cwd apps/movil start` abierto en Expo Go | **no ejecutado**: no hay dispositivo ni emulador acelerado en esta máquina | 🟡 |
+| `yarn --cwd apps/movil start` levanta Metro y **sirve la app** | `packager-status:running` y el paquete de desarrollo servido: **8,27 MB** desde `.expo/.virtual-metro-entry.bundle` | ✅ |
+| La app **abierta en Expo Go** sobre un dispositivo | **no ejecutado**: esta máquina no tiene emulador Android acelerado ni dispositivo conectado | 🟡 |
 | ADR-037 y ADR-038 | **no son de este carril**: los escribe `F0-W` (planes/11 F0.5) | — |
 
 ### Evidencia, con el comando y su resultado
@@ -46,6 +47,8 @@ yarn typecheck                               2 tareas, 2 exitosas
 yarn test:front                              5 suites · 21 pruebas · 0 falladas
 yarn test:a11y                               1 suite · 2 pruebas · 0 falladas
 npx expo export --platform android           1.285 modulos · Hermes 3,81 MB
+npx expo start --port 8099                   packager-status:running
+curl .expo/.virtual-metro-entry.bundle       HTTP 200 · 8.275.052 bytes (android, dev)
 python3 scripts/verificar_seguridad.py       sin hallazgos nuevos en apps/ ni packages/
 ```
 
@@ -110,7 +113,8 @@ Regla cero: ninguno silencioso.
    **se borra al cerrar F1**. Está dicho en su cabecera y en `tokens/README.md`.
 4. **Versiones del SDK 54.** Salen del manifiesto de módulos nativos de `expo@54`, no de
    memoria: `expo-router ~6.0.24`, `react-native 0.81.5`, `react 19.1.0`,
-   `expo-secure-store ~15.0.8`, `expo-crypto ~15.0.9`.
+   `expo-secure-store ~15.0.8`, `expo-crypto ~15.0.9`. `@types/jest` bajó a `~29.5.14`
+   porque el propio `expo start` avisó que la 30 no es la que el SDK espera.
 
 ## Huecos encontrados, no completados con una suposición
 
@@ -126,7 +130,7 @@ Regla cero: ninguno silencioso.
 
 | Qué | De quién | Cuándo |
 | --- | --- | --- |
-| `yarn --cwd apps/movil start` verificado en Expo Go o emulador | este carril | Cuando haya emulador Android acelerado en esta máquina |
+| La app abierta y navegada **en Expo Go**, sobre dispositivo o emulador | este carril | Cuando haya emulador Android acelerado en esta máquina. Metro ya sirve el paquete: falta el aparato, no el andamiaje |
 | `apps/backoffice` y `apps/web` consumiendo `@aportaya/simulado` | **P4 Dell A** y **P5 Dell B** | Ola F0 · mismo tramo |
 | ADR-037 y ADR-038 | **P5 Dell B** (`F0-W`) | Ola F0 |
 | Playwright, Maestro y los `Dockerfile` de web y backoffice | `F0-B` y `F0-W` | Ola F0 |
