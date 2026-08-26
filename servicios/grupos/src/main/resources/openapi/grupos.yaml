@@ -71,8 +71,86 @@ paths:
   #         '200': …
   #         '422': { $ref: '#/components/responses/ReglaDeNegocio' }
 
+  /grupos/{grupoId}/sorteo:
+    post:
+      operationId: comprometerSorteo           # CU-60 fase 1
+      summary: Publicar el compromiso del sorteo
+      description: >-
+        Publica SOLO el hash de la semilla. Sin esa separacion, quien ejecuta el
+        sorteo podria probar semillas hasta que salga el orden que le conviene: el
+        compromiso es lo que convierte «confia en nosotros» en «verificalo vos».
+      parameters:
+        - name: grupoId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      responses:
+        '201':
+          description: Compromiso publicado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CompromisoDeSorteo' }
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU60-01 GRUPO_NO_CONFORMADO · AP-CU60-02 SORTEO_YA_EXISTE
+          # AP-CU60-05 REGLAMENTO_SIN_FIRMAR
+
+  /grupos/{grupoId}/sorteo/revelacion:
+    post:
+      operationId: revelarSorteo               # CU-60 fase 2
+      summary: Revelar la semilla y crear los turnos
+      description: >-
+        Verifica que SHA256(semilla || entropias) sea el hash publicado y recien
+        entonces crea los turnos, todo en una transaccion: o hay turnos completos o
+        no hay ninguno. Si el hash no cierra, el sorteo queda ANULADO — jamas se
+        publica un resultado que no verifica.
+      parameters:
+        - name: grupoId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      responses:
+        '200':
+          description: Turnos creados, con el orden y la semilla publicada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RevelacionDeSorteo' }
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU60-03 FECHA_DE_REVELADO_FUTURA · AP-CU60-04 HASH_NO_VERIFICA
+
 components:
+  parameters:
+    ClaveIdempotencia:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: >-
+        Toda operacion con efecto la exige. La red duplica; reintentar tiene que ser
+        seguro, y la clave se valida ANTES de escribir (invariante 7).
+      schema: { type: string, format: uuid }
   schemas:
+    CompromisoDeSorteo:
+      type: object
+      additionalProperties: false
+      required: [sorteoId, hashSemilla, algoritmo]
+      properties:
+        sorteoId:    { type: string, format: uuid }
+        hashSemilla: { type: string, minLength: 64, maxLength: 64 }
+        algoritmo:   { type: string, enum: [FISHER_YATES_SHA256] }
+    RevelacionDeSorteo:
+      type: object
+      additionalProperties: false
+      required: [sorteoId, verificado, cuposEnOrden]
+      properties:
+        sorteoId:   { type: string, format: uuid }
+        verificado: { type: boolean }
+        semilla:    { type: string }
+        cuposEnOrden:
+          type: array
+          items: { type: string, format: uuid }
     DiaSalteado:
       type: object
       additionalProperties: false

@@ -19,6 +19,8 @@ Modulo 02 de la boveda — Grupos, Cupos, Turnos y Gobernanza.
 | --- | --- | --- |
 | CU-59 | Mantener el calendario de días no hábiles | ⬜ sin implementar |
 
+| CU-60 | Sortear los turnos | ⬜ sin implementar |
+
 ## Eventos que emite
 
 | Tema | Cuando |

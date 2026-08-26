@@ -32,6 +32,15 @@ paths: {}
   #         '422': { $ref: '#/components/responses/ReglaDeNegocio' }
 
 components:
+  parameters:
+    ClaveIdempotencia:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: >-
+        Toda operacion con efecto la exige. La red duplica; reintentar tiene que ser
+        seguro, y la clave se valida ANTES de escribir (invariante 7).
+      schema: { type: string, format: uuid }
   schemas:
     Dinero:
       type: object
