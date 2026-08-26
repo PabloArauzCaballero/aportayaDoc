@@ -100,6 +100,8 @@ abstract class BaseDeCU65 {
     }
 
     protected String estadoDelCupoDe(UUID participante) {
+        // La consulta entera en un bloque de texto: partirla con `+` la vuelve
+        // indistinguible de un SQL concatenado, y esa es justo la prohibicion 2.
         Object estado = dsl.fetchOne(
                         """
                         SELECT estado FROM grupos.cupo

@@ -31,12 +31,13 @@ import pathlib
 import re
 import sys
 
+import modelo
+
 # Estos informes se imprimen con acentos, flechas y el punto medio. En Windows la
 # consola entrega stdout en cp1252 y el gate muere con UnicodeEncodeError antes de
 # decir si algo falla — en tres de las cinco maquinas del parque.
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
-
 
 RAIZ = pathlib.Path(__file__).resolve().parent.parent
 SEGURIDAD = RAIZ / "docs" / "Seguridad.md"
@@ -230,7 +231,6 @@ PROHIBIDOS = [
      "deserialización polimórfica (prohibición 11)"),
     (r"\"\s*(SELECT|INSERT|UPDATE|DELETE)[^\"]*\"\s*\+", "SQL concatenado (prohibición 2)",
      CODIGO_APP),
-    (r"@PermitAll|permitAll\(\)", "endpoint abierto sin marca declarada (prohibición 3)"),
     (r"\.setAllowedOrigins\(\s*\"\*\"|Access-Control-Allow-Origin:\s*\*",
      "CORS abierto (§3.1)"),
     (r"verify\s*=\s*False|rejectUnauthorized:\s*false|InsecureSkipVerify",
@@ -238,49 +238,11 @@ PROHIBIDOS = [
 ]
 
 
-# Una excepcion declarada, con su motivo escrito en la linea de arriba (o en la
-# misma), no es un hallazgo: es una decision que alguien firmo y que queda a la
-# vista. Una que NO esta declarada sigue siendo falla.
-#
-#     // SEGURIDAD-DECLARADO: la sonda de salud no lleva datos y el orquestador
-#     // la consulta sin sesion (ADR-021).
-#     .requestMatchers("/actuator/health/**").permitAll()
-#
-# Sin este mecanismo el gate solo tenia dos salidas: apagarlo, o escribir codigo
-# inseguro para que pasara. Las dos son peores que pedir un motivo por escrito.
-MARCA_DECLARADA = re.compile(r"SEGURIDAD-DECLARADO:\s*(?P<motivo>.{15,})")
-
-
-COMENTARIO = re.compile(r"^\s*(//|\*|/\*|#|--)")
-
-
-def declarada(texto, inicio):
-    """Devuelve el motivo declarado, o None si no hay marca.
-
-    Se camina hacia arriba mientras haya comentario o linea en blanco, y se para
-    en la primera linea de codigo: asi la excepcion queda atada a la sentencia que
-    excusa, y no a otra que quedo cerca por casualidad.
-    """
-    numero = texto[:inicio].count("\n")
-    lineas = texto.split("\n")
-    propia = MARCA_DECLARADA.search(lineas[numero])
-    if propia:
-        return propia.group("motivo").strip()
-    for k in range(numero - 1, -1, -1):
-        linea = lineas[k]
-        marca = MARCA_DECLARADA.search(linea)
-        if marca:
-            return marca.group("motivo").strip()
-        if linea.strip() and not COMENTARIO.match(linea):
-            return None
-    return None
-
-
 def bloque_3():
     print("\n=== 3 · PATRONES PROHIBIDOS ===")
-    hallazgos, excepciones, revisados = [], [], 0
+    hallazgos, revisados = [], 0
     for p in archivos(EXT_CODIGO):
-        # Este archivo enumera los patrones: encontrarlos aca es su funcion.
+        # Este archivo enumera los patrones: encontrarlos acá es su función.
         if p.name == "verificar_seguridad.py":
             continue
         texto = p.read_text(encoding="utf-8", errors="ignore")
@@ -292,19 +254,51 @@ def bloque_3():
                 continue
             for m in re.finditer(patron, texto):
                 linea = texto[:m.start()].count("\n") + 1
-                razon = declarada(texto, m.start())
-                if razon:
-                    excepciones.append(f"{p.relative_to(RAIZ)}:{linea} — {razon[:70]}")
-                else:
-                    hallazgos.append(f"{p.relative_to(RAIZ)}:{linea} — {motivo}")
+                hallazgos.append(f"{p.relative_to(RAIZ)}:{linea} — {motivo}")
     check(not hallazgos, f"{revisados} archivos de código sin patrones prohibidos",
           f"patrones prohibidos: {hallazgos[:8]}")
-    # Se cuentan y se muestran SIEMPRE: una excepcion invisible deja de ser una
-    # excepcion y pasa a ser un agujero con permiso.
-    if excepciones:
-        aviso(f"{len(excepciones)} excepción(es) declarada(s), con su motivo: {excepciones[:6]}")
     if revisados == 0:
         aviso("todavía no hay código de aplicación: este bloque empieza a morder cuando lo haya")
+
+
+# --------------------------------------------- 3b · las rutas abiertas, enumeradas
+#
+# Prohibir la palabra `permitAll()` no dice nada sobre QUE quedo abierto: se satisface
+# escribiendo el permiso de otra forma, y deja pasar una ruta publica que nadie
+# declaro. Lo que se verifica es mas fuerte: que el permiso viva en UN solo archivo, y
+# que las rutas que abre sean exactamente las declaradas — los prefijos publicos de
+# `modelo.PREFIJOS`/`RUTAS_PUBLICAS` y las sondas del actuator, que no son del dominio.
+GUARDIA = RAIZ / "plataforma/comun-web/src/main/java/bo/aportaya/plataforma/web/seguridad/ConfiguracionDeSeguridad.java"
+SONDAS_ABIERTAS = ("/actuator/health", "/actuator/info")
+
+
+def bloque_3b():
+    print("\n=== 3b · RUTAS ABIERTAS, ENUMERADAS ===")
+
+    fuera = []
+    for p in archivos({".java"}):
+        if p == GUARDIA:
+            continue
+        if re.search(r"@PermitAll|permitAll\(\)", p.read_text(encoding="utf-8", errors="ignore")):
+            fuera.append(str(p.relative_to(RAIZ)))
+    check(not fuera, "el permiso de acceso abierto vive en un solo archivo",
+          f"permitAll() fuera de la guardia central: {fuera}")
+
+    if not GUARDIA.is_file():
+        aviso("todavia no existe la guardia central: este bloque empieza a morder cuando exista")
+        return
+
+    texto = GUARDIA.read_text(encoding="utf-8")
+    publicos = tuple(modelo.RUTAS_PUBLICAS) + SONDAS_ABIERTAS
+    sin_declarar = []
+    for m in re.finditer(r'requestMatchers\(([^)]*)\)', texto, re.S):
+        for ruta in re.findall(r'"([^"]+)"', m.group(1)):
+            limpia = ruta.replace("/api/v1", "").rstrip("*").rstrip("/")
+            if not any(limpia.startswith(p) for p in publicos):
+                sin_declarar.append(ruta)
+    check(not sin_declarar,
+          f"las {len(publicos)} rutas abiertas son las declaradas y ninguna mas",
+          f"rutas abiertas que nadie declaro: {sin_declarar}")
 
 
 # ------------------------------------------------------------------- 4 · secretos
@@ -437,6 +431,7 @@ def main():
     bloque_1()
     bloque_2()
     bloque_3()
+    bloque_3b()
     bloque_4()
     bloque_5()
     bloque_6()

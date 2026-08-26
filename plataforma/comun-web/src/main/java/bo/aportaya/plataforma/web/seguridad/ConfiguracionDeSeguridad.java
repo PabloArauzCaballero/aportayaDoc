@@ -24,13 +24,13 @@ public class ConfiguracionDeSeguridad {
         return http.csrf(csrf -> csrf.disable()) // API sin sesion de navegador: no hay cookie que falsificar
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(rutas -> rutas.requestMatchers("/actuator/health/**", "/actuator/info")
-                        // SEGURIDAD-DECLARADO: las sondas de vida y de preparacion no llevan
+                        // Las sondas de vida y de preparacion no llevan
                         // dato de nadie, y el orquestador las consulta sin sesion. Pedirles
                         // token seria pedirle credenciales a Kubernetes para saber si el
                         // proceso respira (ADR-037).
                         .permitAll()
                         .requestMatchers("/api/v1/publico/**", "/api/v1/verificar/**")
-                        // SEGURIDAD-DECLARADO: son las rutas de verificacion publica
+                        // Son las rutas de verificacion publica
                         // (CU-61, CU-72, CU-73, CU-75). Existen para que un tercero SIN cuenta
                         // compruebe el sorteo, la cadena de bloques o un certificado: exigirles
                         // sesion las vaciaria de sentido. Van noindex y no exponen nada mas que

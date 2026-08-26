@@ -184,8 +184,8 @@ abstract class BaseDeCU68 {
                 > 0;
     }
 
-    protected int contar(String consulta, Object... ligaduras) {
-        return ((Number) dsl.fetchOne(consulta, ligaduras).get(0)).intValue();
+    protected int contar(String consulta, Object... parametros) {
+        return ((Number) dsl.fetchOne(consulta, parametros).get(0)).intValue();
     }
 
     protected void dejarUnaFilaEnLaBitacora() {

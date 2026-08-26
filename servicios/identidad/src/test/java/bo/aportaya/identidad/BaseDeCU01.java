@@ -160,17 +160,21 @@ abstract class BaseDeCU01 {
                 .formatted(usuarioId);
     }
 
+    /**
+     * Parametrizado y no concatenado. En una prueba el nombre es una constante, pero
+     * la prohibicion 2 no admite excepciones «porque aca no se puede inyectar»: es
+     * justamente ese razonamiento el que despues se copia a un sitio donde si.
+     */
     protected boolean constraintExiste(String nombre) {
-        return ((Number) dsl.fetchOne(
-                                        """
-                                        SELECT (SELECT count(*) FROM pg_constraint WHERE conname = ?)
-                                             + (SELECT count(*) FROM pg_trigger WHERE tgname = ?)
-                                        """,
-                                        nombre,
-                                        nombre)
-                                .get(0))
-                        .intValue()
-                > 0;
+        Number cuantos = (Number) dsl.fetchOne(
+                        """
+                        SELECT (SELECT count(*) FROM pg_constraint WHERE conname = ?)
+                             + (SELECT count(*) FROM pg_trigger    WHERE tgname  = ?)
+                        """,
+                        nombre,
+                        nombre)
+                .get(0);
+        return cuantos.intValue() > 0;
     }
 
     protected String rechazaLaBase(String sql) {

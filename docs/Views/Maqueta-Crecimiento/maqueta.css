@@ -24,6 +24,10 @@
 @media(prefers-color-scheme:dark){.lvl.app{background:rgba(60,147,102,.16);color:var(--g300)}}
 :root[data-theme="dark"] .lvl.app{background:rgba(60,147,102,.16);color:var(--g300)}
 
+/* Producto núcleo: lo que responde a los apuntes, fuera de este módulo. */
+.lvl.core{background:var(--warnbg);color:var(--aviso-texto)}
+:root[data-theme="dark"] .lvl.core{background:rgba(240,180,41,.16);color:var(--warn)}
+
 /* ===== Índice: tarjetas de pantalla ===== */
 .mq-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:16px}
 .mq-card{display:block;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;box-shadow:var(--sh-1);text-decoration:none;color:inherit;transition:box-shadow .18s,transform .18s}

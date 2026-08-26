@@ -2,9 +2,9 @@
 titulo: AportaYa — Maqueta navegable con backend simulado
 tipo: maqueta
 proyecto: AportaYa
-version: 2
+version: 3
 estado: presentable
-fecha: 2026-08-20
+fecha: 2026-08-25
 tags: [maqueta, prototipo, frontend, movil, backoffice, demo]
 ---
 
@@ -34,11 +34,11 @@ la especificación visual de las pantallas que [[Flujo de pantallas · app del p
 ## Lo que cambió en la versión 2
 
 Nueve cambios, y todos salieron de la misma pregunta: *«¿y esto qué es?»*. Están
-recogidos como deltas de planificación en `planes/20 Maqueta de referencia · deltas
-del frontend`, que es lo que corrige las fases del frontend para que lo construido
-coincida con esto. **No va como wikilink**: la bóveda tiene su raíz en `docs/` y
-`planes/` está afuera, así que un `[[...]]` hacia ahí nunca resuelve — ni en Obsidian
-ni en `verificar_boveda.py`.
+recogidos como deltas de planificación en
+`planes/20 Maqueta de referencia · deltas del frontend.md`, que es lo que corrige las
+fases del frontend para que lo construido coincida con esto. **No va como wikilink**:
+la bóveda tiene su raíz en `docs/` y `planes/` está afuera, así que un `[[...]]` hacia
+ahí no resuelve ni en Obsidian ni en `verificar_boveda.py`.
 
 | # | Cambio | Dónde se ve |
 | :-: | --- | --- |
@@ -97,6 +97,109 @@ ni en `verificar_boveda.py`.
 | Detalle de grupo y turnos | `pasanaku/grupo/[codigo]` | [[CU-60 Sortear los turnos]] · [[CU-61 Verificar públicamente el sorteo]] | `GET /grupos/{codigo}`, `GET /grupos/{codigo}/turnos/{n}` · grupos |
 | Mi perfil (pestaña Perfil) | `pasanaku/reputacion` | [[CU-71 Recalcular el puntaje de reputación]] · [[CU-74 Otorgar y revocar una insignia]] | `GET /reputacion/usuarios/{id}` · transparencia |
 | Avisos | `notificaciones/bandeja` | [[CU-80 Despachar una notificación]] · [[CU-12 Transferir saldo entre billeteras]] | `GET /notificaciones` · notificaciones |
+
+**Lo que agregó la versión 3** — siete pantallas que responden a las preguntas que quedaron
+abiertas en el apunte de producto. Ninguna inventa reglas: todas muestran algo que el modelo
+ya tenía y que no se veía en ninguna parte.
+
+| Pantalla | Ruta | Caso de uso | Endpoint · servicio |
+| --- | --- | --- | --- |
+| **Tu pedido de cupo** | `pasanaku/solicitudes/[id]` | [[CU-68 Postular a un grupo y ser emparejado]] | `POST /grupos/{cod}/solicitudes-ingreso` · grupos |
+| **Quién quiere entrar** (cola del organizador) | `pasanaku/grupo/[codigo]/solicitudes` | [[CU-68 Postular a un grupo y ser emparejado]] | `GET` y `POST …/solicitudes-ingreso/{id}/resolucion` · grupos |
+| **Organizar un grupo** | `pasanaku/organizador` | [[CU-90 Postular a organizador y habilitarse]] | `POST /organizadores/postulaciones` · organizador |
+| **No voy a poder pagar** | `aportes/[id]/no-puedo-pagar` | [[CU-25 Declarar el incumplimiento con descargo y evidencia]] · [[CU-23 Cubrir un incumplimiento con el fondo]] | `POST /aportes/obligaciones/avisos-de-dificultad` · aportes |
+| **Ayuda** | `soporte/ayuda` | [[CU-52 Atender un reclamo en plazo]] | — |
+| **Hacer un reclamo** | `soporte/reclamos/nuevo` | [[CU-52 Atender un reclamo en plazo]] · [[CU-53 Elevar un reclamo a segunda instancia]] | `POST /reclamos` · reclamos |
+| **Tu nivel** | `pasanaku/nivel` | [[CU-71 Recalcular el puntaje de reputación]] · [[CU-74 Otorgar y revocar una insignia]] | — |
+
+| **Tu turno** (valor de ceder) | `pasanaku/grupo/[codigo]/mi-turno` | [[CU-62 Permutar turnos entre participantes]] | — |
+| **Ceder mi turno** (publicar oferta) | `pasanaku/grupo/[codigo]/ofertas/nueva` | [[CU-62 Permutar turnos entre participantes]] | `POST` y `DELETE /grupos/{cod}/ofertas` · grupos |
+| **Ofertas del grupo** (aceptar permuta) | `pasanaku/grupo/[codigo]/ofertas` | [[CU-62 Permutar turnos entre participantes]] | `POST …/ofertas/{id}/aceptacion` · grupos |
+| **Mis vales** | `alianzas/mis-vales` | [[CU-113 Entregar un anuncio y medir su desempeño]] | — |
+| **Usar el vale** | `alianzas/vales/[id]/uso` | [[CU-113 Entregar un anuncio y medir su desempeño]] | `POST /alianzas/vales/{id}/canje` · publicidad |
+| **Cobrás tu turno** (con descuento por nivel) | `entregas/mi-turno/cobro` | [[CU-22 Liquidar y entregar el fondo]] · [[CU-31 Devengar y cobrar la comisión]] | `POST /entregas/{cod}/turnos/{n}/cobro` · entregas |
+
+Y una vista de backoffice: **Habilitación de organizadores** (`cumplimiento/organizadores`,
+[[CU-90 Postular a organizador y habilitarse]]), que es la respuesta institucional a
+«¿quién lo tiene que aceptar?»: no otro usuario ni el grupo, sino el equipo de cumplimiento.
+
+> [!important] El cambio de comportamiento más importante de la versión 3
+> Canjear una invitación **ya no da cupo**. Antes, `#u-ent` hacía
+> `POST /grupos/{cod}/miembros` y la persona quedaba adentro en la misma transacción.
+> Ahora abre una `solicitud_ingreso` que el organizador resuelve, con 48 horas de plazo.
+> El token se sigue consumiendo una sola vez; lo que cambió es que consumirlo no ocupa
+> el lugar. Un QR se reenvía: quien lo emite conoce al invitado, quien lo recibe de
+> tercera mano no. Y el criterio de emparejamiento admite **un solo participante en mora
+> por grupo** — si el cupo se toma solo, esa regla no la aplica nadie.
+
+### El recorrido que se puede caminar en la demo
+
+Las pantallas nuevas no son cuadros sueltos: encadenan cuatro recorridos completos, con
+efecto real sobre el estado simulado.
+
+1. **Vender el turno.** Grupos → La Ramada → *Tu turno y el mercado*. Ahí se ve el rango
+   estimado por ceder, se publica una oferta eligiendo hasta qué turno correrse y cuánto
+   pedir —con el tope del 5 % de la bolsa marcado **antes** de pisarlo, no después— y se
+   puede cancelar mientras nadie la haya tomado.
+2. **Aceptar la permuta de otro.** En la misma pantalla, *Ver las ofertas del grupo*.
+   Aceptar dispara la validación de riesgo con sus cinco factores; recién si pasa se mueve
+   el turno y se acredita la compensación menos el 8 % de comisión. El escenario de rechazo
+   del mando muestra la permuta bloqueada por riesgo, con su motivo.
+3. **Aceptar un solicitante.** Grupos → Compañeras del taller (es el grupo que María
+   organiza) → *N esperan que las aceptes*. Aceptar ocupa el cupo; rechazar **abre el campo
+   de motivo y no deja confirmar en blanco**.
+4. **Ser aceptado siendo cuenta nueva.** *Reiniciar demo* → crear cuenta → escanear el QR →
+   *Pedir mi cupo* → **Simular que Rosa te acepta**. Recién ahí se crea el grupo y la
+   primera obligación.
+5. **El descuento, en sus tres formas.** El bono de Bs 10 y el vale de bienvenida llegan con
+   el alta; *Vales* en los accesos rápidos lleva al vale con su QR rotativo y al canje; y
+   *Cobrar la bolsa*, en un grupo donde te toca, muestra el desglose con el descuento de
+   comisión por nivel.
+
+### Tres arreglos en la pantalla de aportes
+
+1. **El calendario llegaba hasta septiembre y el pasanaku dura hasta abril.** Los escenarios
+   traen a mano solo las cuotas que la demo necesita contar —la del mes, la siguiente y una
+   pagada—, así que la navegación se quedaba sin meses a los dos toques de flecha.
+   `completarObligaciones()` deriva las que faltan de `turnos[].mes`, que ya dice en qué mes
+   cobra cada turno: quedan **20 cuotas y 14 meses**, de marzo de 2026 a abril de 2027, que es
+   exactamente la unión de los dos ciclos. Las cuotas escritas a mano mandan: la función solo
+   rellena huecos, nunca pisa una que el escenario haya definido.
+2. **Los colores del calendario no se distinguían.** Las celdas usaban los tintes de chip
+   (`--ok-bg` y compañía), que a 36 px son todos el mismo claro; y la leyenda usaba los colores
+   **sólidos**, así que explicaba un calendario distinto del que se veía. Ahora la celda lleva
+   una mezcla más cargada **más un borde del color del estado** —el contorno es lo que separa
+   una celda de la de al lado— y la muestra de la leyenda se pinta con las mismas reglas.
+   El día de hoy pasó a tener anillo, para que se encuentre esté del color que esté.
+3. **El selector de lista y calendario era invisible.** `.selvista` pintaba la pista con
+   `--field` y el segmento activo con `--surface`, que en tema claro son **el mismo blanco**
+   (`#FFFFFF`) y en oscuro dos verdes casi iguales; lo único que los separaba era una sombra al
+   10 %. Ahora la pista va en `--surface-2` y el segmento elegido en verde sólido, que es el
+   relleno que el resto de la maqueta ya usa para «esto está seleccionado». Afecta también al
+   selector de QR/código de *Canjear invitación*, que tenía el mismo problema.
+
+Con el ciclo completo cargado, la **lista** habría pasado a mostrar once tarjetas, nueve de
+ellas «todavía no se abre». Como la lista contesta *qué pago ahora*, muestra entera la parte
+exigible, asoma las **dos** próximas y cierra con una línea que dice cuántas quedan y manda al
+calendario, que es donde vive la pregunta *cómo vengo*.
+
+> [!note] Por qué el descuento de comisión se ve chico en la demo
+> Con una bolsa de Bs 3.000 la comisión da Bs 9, así que manda el **piso de Bs 10**, y el
+> 25 % de descuento son Bs 2,50. La pantalla lo dice con todas las letras y agrega una tabla
+> con bolsas de Bs 10.000 y Bs 20.000, donde sí se nota. Inflar la bolsa de la demo para que
+> el número luciera mejor sería mentir sobre el tarifario.
+
+### Los datos que estas pantallas muestran no son de ejemplo
+
+A diferencia del resto de la maqueta, estas siete traen cifras que salen del proyecto:
+
+| Qué se muestra | De dónde sale |
+| --- | --- |
+| Los 14 requisitos de habilitación, en 4 niveles | `seeders/minimos/17-organizador-y-emparejamiento.json` |
+| Las 6 etapas de cobranza con sus topes de contacto | `seeders/minimos/18-sanciones-y-cobranza.json` |
+| Descargo de 5 días hábiles, apelación 5, prescripción 365 | `politica_sancion` v1, mismo seeder |
+| Plazo de reclamo de 5 días hábiles, prórroga a 10 | [[Cumplimiento]] §1.3 · RNSF Libro 4 Título I |
+| La comisión sobre la que se calcula el costo de un bono | `seeders/minimos/04-tarifario.json` · `COM_ENTREGA` |
 
 ### Preparada para una audiencia mixta
 
@@ -246,7 +349,18 @@ de marca crudos, que no llegan a AA en texto chico.
 Lo único que agrega es la familia monoespaciada de la consola de red (JetBrains Mono), que
 llena el hueco de `--mono`; el sistema lo declara sin nombrar una fuente.
 
-## Divergencia encontrada al construirla
+## Divergencias encontradas al construirla
+
+[[Flujo de pantallas · app del participante]] §5.1 describe el canje de la invitación como
+`POST /grupos/invitaciones/{codigo}/canje` con resultado «participante **con cupo**». Pero
+[[CU-68 Postular a un grupo y ser emparejado]] §4 dice que *el organizador revisa y acepta o
+rechaza*, y [[Restricciones]] `ck_solicitud_ingreso_resuelta` impide cerrar una solicitud sin
+`revisada_por` ni `fecha_resolucion`. Por la precedencia de
+[[Contrato de implementación para IA]] §1 **gana el caso de uso**: la maqueta canjea el token,
+abre la solicitud y espera. **El documento de pantallas queda anotado para corregir §5.1**, y
+le falta además la pantalla del lado del organizador.
+
+## Divergencia de rutas de sesión
 
 [[Flujo de pantallas · app del participante]] §2.5 y §2.6 dicen `POST /sesion` y
 `POST /sesion/mfa`; [[CU-04 Autenticar con MFA y registrar dispositivo]] dice `POST /sesiones`
