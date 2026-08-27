@@ -35,44 +35,38 @@ paths:
   /indicadores:
     get:
       operationId: publicarTablero           # CU-98
-      summary: Los indicadores del periodo, con su meta, su variacion y su definicion
+      summary: Los indicadores del periodo, con su meta, su variacion y su serie
       description: >-
-        [CONTRATO] Agregada para que el backoffice tenga contra que programar el
-        tablero. Que la direccion mire siempre los mismos numeros, calculados de la
+        [CONTRATO] Que la direccion mire siempre los mismos numeros, calculados de la
         misma forma: un indicador es una DEFINICION, no una consulta, y si dos lugares
         lo recalculan ya hay dos indicadores.
 
-        Se calcula contra la replica de lectura: un tablero nunca compite con el
-        camino del dinero.
+        Se lee de `auditoria.indicador_kpi`, que es donde el calculo los deja. Esta
+        operacion NO calcula: publica.
 
-        `provisorio` viaja SIEMPRE y no es un detalle: un numero sobre datos sin
-        cuadrar es una opinion, y publicarlo sin la marca es la forma mas facil de
-        que alguien decida con el.
-
-        `valor` es `null` cuando la muestra queda por debajo del minimo: un promedio
-        de tres personas identifica a las tres (R-SEG-03). En ese caso
-        `suprimidoPorPrivacidad` es true y la interfaz dice POR QUE no hay numero, en
-        vez de mostrar un hueco.
+        La `dimension` es la del modelo —GLOBAL, POR_GRUPO, POR_ORGANIZADOR— y no la
+        que enumera el texto de CU-98. Donde el caso de uso y la tabla no coinciden,
+        manda la tabla: es la que rechaza.
       parameters:
         - name: periodo
           in: query
           required: true
-          schema: { type: string, pattern: '^\d{4}(-\d{2})?(-\d{2})?$' }
+          description: Formato AAAA, AAAA-MM o AAAA-MM-DD, segun la granularidad
+          schema: { type: string, maxLength: 10, minLength: 4 }
         - name: dimension
           in: query
           required: true
-          schema: { type: string, enum: [PLATAFORMA, GRUPO, ORGANIZADOR, PRODUCTO] }
+          schema: { type: string, enum: [GLOBAL, POR_GRUPO, POR_ORGANIZADOR] }
         - name: dimensionId
           in: query
+          description: Obligatorio salvo en GLOBAL, donde no corresponde
           schema: { type: string, format: uuid }
-        - name: familias
+        - name: periodosDeSerie
           in: query
-          description: Familias a incluir. Ausente = todas.
-          schema:
-            type: array
-            items:
-              type: string
-              enum: [NEGOCIO, RIESGO, CUMPLIMIENTO, OPERACION, FINANZAS]
+          description: >-
+            Cuantos periodos anteriores traer para el grafico. Cero trae solo el
+            actual.
+          schema: { type: integer, minimum: 0, maximum: 24, default: 6 }
       responses:
         '200':
           description: El tablero del periodo
@@ -81,7 +75,7 @@ paths:
               schema: { $ref: '#/components/schemas/SalidaTablero' }
         '422':
           $ref: '#/components/responses/ReglaDeNegocio'
-          # AP-CU98-01 PERIODO_NO_CERRADO · AP-CU98-02 SIN_DEFINICION
+          # AP-CU98-01 PERIODO_NO_CERRADO   · AP-CU98-02 SIN_DEFINICION
           # AP-CU98-03 SIN_META_DEL_PERIODO · AP-CU98-04 MUESTRA_INSUFICIENTE
           # AP-CU98-05 INDICADOR_DUPLICADO
         '401':
@@ -121,45 +115,43 @@ components:
     SalidaTablero:
       type: object
       additionalProperties: false
-      required: [periodo, provisorio, indicadores]
+      required: [periodo, dimension, indicadores]
       properties:
         periodo: { type: string }
-        provisorio:
-          type: boolean
-          description: >-
-            true mientras el periodo este abierto o sin cuadrar. Se muestra siempre.
+        dimension: { type: string, enum: [GLOBAL, POR_GRUPO, POR_ORGANIZADOR] }
+        dimensionId: { type: string, format: uuid }
         indicadores:
           type: array
           items: { $ref: '#/components/schemas/Indicador' }
     Indicador:
       type: object
       additionalProperties: false
-      required: [codigo, nombre, unidad, familia, duenoFamilia, definicionVersion, suprimidoPorPrivacidad]
+      required: [codigo, nombre, valor, unidad, familia, duenoFamilia, definicionVersion, calculadoEn]
       properties:
         codigo: { type: string, maxLength: 40 }
         nombre: { type: string, maxLength: 80 }
         valor:
           type: string
           description: >-
-            Cadena decimal. null cuando se suprimio por minimo de casos.
-        unidad: { type: string, enum: [CANTIDAD, PORCENTAJE, MONTO, DIAS] }
-        moneda: { type: string, enum: [BOB, USD] }
-        familia: { type: string, enum: [NEGOCIO, RIESGO, CUMPLIMIENTO, OPERACION, FINANZAS] }
-        meta: { type: string }
+            Cadena decimal, con la escala que guardo el calculo. No se redondea al
+            publicar: el numero del tablero tiene que ser el numero de la tabla.
+        unidad: { type: string, maxLength: 15 }
+        meta:
+          type: string
+          description: >-
+            Ausente cuando no hay meta fijada para el periodo. Sin meta no hay
+            semaforo, y ponerla despues de ver el resultado no es medir.
         cumpleMeta:
           type: boolean
-          description: >-
-            null cuando no hay meta fijada para el periodo: sin meta no hay semaforo,
-            y ponerla despues de ver el resultado no es medir.
+          description: Ausente cuando no hay meta.
         variacionPeriodoAnterior:
           type: string
           description: >-
-            null en un indicador nuevo. Sin historia no hay comparacion, y un cero
-            fingido desinforma.
+            Ausente en un indicador sin historia. Sin periodo anterior no hay
+            comparacion, y un cero fingido afirmaria que se mantuvo igual.
         serie:
           type: array
-          description: >-
-            Los ultimos periodos, para el grafico de la tarjeta. Puede venir vacia.
+          description: Los periodos anteriores, del mas viejo al mas nuevo.
           items:
             type: object
             additionalProperties: false
@@ -167,17 +159,23 @@ components:
             properties:
               periodo: { type: string }
               valor: { type: string }
-        suprimidoPorPrivacidad: { type: boolean }
-        casos:
-          type: integer
-          description: Tamano de la muestra, para poder explicar la supresion.
-        duenoFamilia: { type: string, maxLength: 80 }
-        explicacion:
+        familia:
           type: string
+          enum: [NEGOCIO, RIESGO, CUMPLIMIENTO, OPERACION, FINANZAS]
           description: >-
-            La escribe el dueno cuando su indicador esta en rojo. Un indicador que no
-            cumple su meta no se maquilla.
-        definicionVersion: { type: string, maxLength: 20 }
+            Sale del catalogo de definiciones del servicio, no de la tabla:
+            `indicador_kpi` no tiene columna de familia (hueco declarado).
+        duenoFamilia:
+          type: string
+          maxLength: 80
+          description: Quien responde cuando el indicador esta en rojo.
+        definicionVersion:
+          type: string
+          maxLength: 20
+          description: >-
+            Con que version de la definicion se calculo. Es lo que permite que un
+            numero de hace un ano vuelva a salir igual.
+        calculadoEn: { type: string, format: date-time }
   responses:
     ReglaDeNegocio:
       description: Regla de negocio de la aplicacion (422, no 400)
