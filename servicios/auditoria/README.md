@@ -17,7 +17,13 @@ Modulo 09 de la boveda — Auditoría, Reportes y Cumplimiento.
 
 | CU | Nombre | Estado |
 | --- | --- | --- |
-| | *(los llena `nuevo_cu.py`)* | |
+| CU-98 | Publicar el tablero de indicadores | **Implementado** |
+
+**El tablero publica, no calcula.** El valor lo deja el trabajo de calculo en
+`indicador_kpi`; CU-98 lo lee unido a su `definicion_indicador` y decide tres cosas
+de publicacion: si cumple la meta segun el sentido de la definicion, si la muestra
+alcanza para mostrarlo sin identificar personas, y como se lee la variacion.
+Calcular aca crearia un segundo lugar donde nace el mismo numero.
 
 ## Eventos que emite
 
