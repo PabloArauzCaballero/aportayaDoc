@@ -4,6 +4,7 @@ import bo.aportaya.nucleofinanciero.aplicacion.CU10RecargarSaldo;
 import bo.aportaya.nucleofinanciero.aplicacion.CU11RetirarSaldo;
 import bo.aportaya.nucleofinanciero.aplicacion.CU12TransferirSaldo;
 import bo.aportaya.nucleofinanciero.aplicacion.CU13RetenerSaldo;
+import bo.aportaya.nucleofinanciero.aplicacion.CU14ReversarTransaccion;
 import bo.aportaya.nucleofinanciero.aplicacion.CU40EvaluarLimites;
 import bo.aportaya.nucleofinanciero.infraestructura.CuentaBilleteraRepositorio;
 import bo.aportaya.nucleofinanciero.infraestructura.LibroDeBilletera;
@@ -11,6 +12,7 @@ import bo.aportaya.nucleofinanciero.infraestructura.LimiteRepositorio;
 import bo.aportaya.nucleofinanciero.infraestructura.OrdenRecargaRepositorio;
 import bo.aportaya.nucleofinanciero.infraestructura.OrdenRetiroRepositorio;
 import bo.aportaya.nucleofinanciero.infraestructura.RetencionRepositorio;
+import bo.aportaya.nucleofinanciero.infraestructura.ReversoRepositorio;
 import bo.aportaya.nucleofinanciero.infraestructura.TransferenciaRepositorio;
 import bo.aportaya.plataforma.datos.Datos;
 import bo.aportaya.plataforma.dominio.ContextoSesion;
@@ -53,6 +55,7 @@ abstract class BaseDeBilletera {
     protected static CU10RecargarSaldo recargaCU;
     protected static CU11RetirarSaldo retiroCU;
     protected static CU12TransferirSaldo transferenciaCU;
+    protected static CU14ReversarTransaccion reversoCU;
 
     /** La cuenta puente: el otro lado de todo ingreso. Una sola para toda la corrida. */
     protected static UUID puente;
@@ -110,6 +113,13 @@ abstract class BaseDeBilletera {
                 new TransferenciaRepositorio(),
                 new LibroDeBilletera(),
                 limitesCU,
+                new Outbox("nucleo_financiero"),
+                Reloj.delSistema());
+        reversoCU = new CU14ReversarTransaccion(
+                new Datos(dsl),
+                new ReversoRepositorio(),
+                new CuentaBilleteraRepositorio(),
+                new LibroDeBilletera(),
                 new Outbox("nucleo_financiero"),
                 Reloj.delSistema());
     }

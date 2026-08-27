@@ -241,6 +241,36 @@ paths:
         '401':
           $ref: '#/components/responses/NoAutenticado'
 
+  /billetera/reversos:
+    post:
+      operationId: reversarTransaccion         # CU-14
+      summary: Reversar una transaccion aplicada
+      description: >-
+        Reversar es escribir el espejo, no borrar el original. El libro es
+        append-only y la transaccion original conserva sus movimientos sin un solo
+        cambio: el extracto tiene que poder contar la historia completa —el cobro y
+        su devolucion—, no un cobro que se desvanecio.
+        Cuatro ojos: quien autoriza no puede ser quien solicita.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaReverso' }
+      responses:
+        '201':
+          description: Reverso ejecutado, o restitucion generada si el saldo no alcanza
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaReverso' }
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU14-01 TRANSACCION_NO_REVERSABLE · AP-CU14-02 FALTA_AUTORIZACION
+          # AP-CU14-03 SALDO_INSUFICIENTE_PARA_REVERSO
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+
 components:
   parameters:
     ClaveIdempotencia:
@@ -252,6 +282,23 @@ components:
         seguro, y la clave se valida ANTES de escribir (invariante 7).
       schema: { type: string, format: uuid }
   schemas:
+    EntradaReverso:
+      type: object
+      additionalProperties: false
+      required: [transaccionOriginalId, tipo, motivo, autorizadaPor]
+      properties:
+        transaccionOriginalId: { type: string, format: uuid }
+        tipo:   { type: string, enum: [ANULACION, CONTRACARGO, ERROR_OPERATIVO, ORDEN_AUTORIDAD] }
+        motivo: { type: string, minLength: 20, maxLength: 300 }
+        autorizadaPor: { type: string, format: uuid }
+    SalidaReverso:
+      type: object
+      additionalProperties: false
+      required: [reversoId, generaObligacionDeRestitucion]
+      properties:
+        reversoId:            { type: string, format: uuid }
+        transaccionReversoId: { type: string, format: uuid, nullable: true }
+        generaObligacionDeRestitucion: { type: boolean }
     EntradaTransferencia:
       type: object
       additionalProperties: false
