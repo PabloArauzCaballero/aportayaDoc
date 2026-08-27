@@ -106,6 +106,144 @@ paths:
           # AP-CU05-01 CONTRATO_NO_VIGENTE - AP-CU05-02 VERSION_DESACTUALIZADA
           # AP-CU05-03 TARIFARIO_NO_PUBLICADO
 
+  /cumplimiento/riesgos/eventos:
+    post:
+      operationId: registrarRiesgoOperativo  # CU-54
+      summary: Registra un evento de riesgo operativo y su plan de accion
+      description: >-
+        Ponerle numero a lo que cuesta hacer las cosas mal, con las categorias y
+        factores que exige la norma, y cerrar el circulo con un plan de accion con
+        responsable y plazo. Una base de perdidas sin plan de accion es una coleccion
+        de anecdotas caras.
+
+        Un evento SIN perdida monetaria se registra igual, con `perdidaBruta` en cero:
+        la frecuencia tambien es informacion, y filtrar las casi-perdidas por no costar
+        plata deja el analisis ciego justo para lo que todavia no salio caro.
+
+        La `perdidaNeta` que devuelve es la que calculo el MOTOR: la columna es
+        GENERATED. La aplicacion no la reemplaza, la lee de vuelta (`R-RIS-02`).
+
+        La ruta va bajo `/cumplimiento` y no bajo `/riesgos` como dice la ficha del
+        caso de uso: `/riesgos` no es un prefijo reservado de este servicio, y una ruta
+        fuera de los prefijos es un rechazo automatico.
+
+        Este caso de uso vive en `cumplimiento` y no en `auditoria` —donde lo pone su
+        ficha— porque las cuatro tablas que escribe estan en el esquema
+        `cumplimiento`, y `svc_auditoria` no tiene GRANT sobre el. Donde la ficha y el
+        modelo no coinciden, manda el modelo (invariante 11).
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaRiesgoOperativo' }
+      responses:
+        '201':
+          description: Evento registrado, con su perdida neta y su plan si lo hubo
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaRiesgoOperativo' }
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU54-01 FECHAS_INCOHERENTES · AP-CU54-02 RECUPERACION_MAYOR_A_PERDIDA
+          # AP-CU54-03 TAXONOMIA_INVALIDA
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+
+  /cumplimiento/seguridad/incidentes:
+    post:
+      operationId: registrarIncidente        # CU-55
+      summary: Abre el expediente de un incidente de seguridad y arranca sus relojes
+      description: >-
+        Contener rapido, reportar en plazo y notificar a los titulares cuando hay datos
+        personales afectados. Son TRES relojes distintos corriendo en paralelo, y los
+        tres se guardan: recalcularlos al consultar los haria moverse solos, y bastaria
+        cambiar la politica el mes que viene para que un incidente de hace tres meses
+        apareciera reportado en plazo cuando no lo estuvo.
+
+        Sin responsable de seguridad designado y activo NO se abre el incidente. No es
+        burocracia: sin designacion no hay a quien le corran los plazos ni quien firme
+        ante el organismo.
+
+        El campo datosPersonalesAfectados es lo que DECLARA quien reporta, y lo puede
+        sobrescribir el activo: si el inventario dice que ese activo contiene datos
+        personales, los contiene. Quien esta apagando el incendio a las tres de la
+        manana no esta en condiciones de determinar el alcance.
+
+        El enlace con el contrato del proveedor se resuelve POR EL ACTIVO: la tabla
+        incidente_seguridad no tiene columna propia para el, y agregarsela duplicaria
+        un dato que ya vive en el inventario de activos.
+
+        Vive en cumplimiento y no en auditoria, donde lo pone su ficha, porque las
+        tablas que escribe estan en el esquema cumplimiento (invariante 11).
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaIncidente' }
+      responses:
+        '201':
+          description: Incidente abierto, con sus plazos guardados
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaIncidente' }
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU55-01 SIN_RESPONSABLE_DESIGNADO - AP-CU55-02 PLAZO_REPORTE_VENCIDO
+          # AP-CU55-03 CIERRE_SIN_NOTIFICAR
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+
+  /cumplimiento/seguridad/incidentes/{incidenteId}/reportes:
+    post:
+      operationId: reportarIncidente         # CU-55
+      summary: Deja constancia de que el incidente se reporto al organismo
+      description: >-
+        Se reporta IGUAL aunque el plazo haya vencido: llegar tarde es una observacion,
+        no reportar es un incumplimiento. Lo que no se hace es disimularlo: el
+        vencimiento queda visible y el control diario abre el hallazgo.
+      parameters:
+        - name: incidenteId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      responses:
+        '204':
+          description: Constancia registrada
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+
+  /cumplimiento/seguridad/incidentes/{incidenteId}/notificaciones:
+    post:
+      operationId: notificarTitulares        # CU-55
+      summary: Deja constancia de la notificacion a los titulares afectados
+      description: >-
+        Se notifica con lo que se sabe, sin esperar al numero final: un aviso tardio y
+        exacto le sirve menos a la persona afectada que uno a tiempo y aproximado.
+
+        Sobre un incidente que no afecto datos personales se rechaza: asustar a gente
+        sin motivo gasta la credibilidad del canal para cuando de verdad haga falta.
+      parameters:
+        - name: incidenteId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      responses:
+        '204':
+          description: Constancia registrada
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU55-03 CIERRE_SIN_NOTIFICAR
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+
   /licencia/alcance:
     get:
       operationId: verificarAlcance          # CU-46
@@ -151,6 +289,143 @@ components:
         seguro, y la clave se valida ANTES de escribir (invariante 7).
       schema: { type: string, format: uuid }
   schemas:
+    EntradaRiesgoOperativo:
+      type: object
+      additionalProperties: false
+      required:
+        [categoriaEvento, factorRiesgo, lineaNegocio, descripcion, fechaOcurrencia,
+         fechaDeteccion, perdidaBruta, moneda]
+      properties:
+        categoriaEvento:
+          type: string
+          enum: [FRAUDE_INTERNO, FRAUDE_EXTERNO, RELACIONES_LABORALES,
+                 CLIENTES_PRODUCTOS_PRACTICAS, DANOS_ACTIVOS, FALLAS_SISTEMAS]
+          description: >-
+            Las seis de la norma. No hay «otros» a proposito: una septima categoria
+            cajon se lleva todo lo incomodo y el analisis por categoria deja de decir
+            nada.
+        factorRiesgo:
+          type: string
+          enum: [PROCESOS_INTERNOS, PERSONAS, TECNOLOGIA_INFORMACION,
+                 EVENTOS_EXTERNOS, INFRAESTRUCTURA]
+        lineaNegocio: { type: string, maxLength: 40 }
+        descripcion:  { type: string, minLength: 20 }
+        fechaOcurrencia: { type: string, format: date-time }
+        fechaDeteccion:
+          type: string
+          format: date-time
+          description: >-
+            Nunca anterior a la ocurrencia. Es el error de carga mas comun, y una fecha
+            invertida rompe el unico indicador que de verdad importa: cuanto tardamos
+            en darnos cuenta.
+        perdidaBruta:
+          type: string
+          pattern: '^\d+\.\d{2}$'
+          description: >-
+            CADENA decimal. Cero es valido: la casi-perdida se registra igual, porque la
+            frecuencia tambien es informacion.
+        recuperacion:
+          type: string
+          pattern: '^\d+\.\d{2}$'
+          description: >-
+            Lo ya recuperado al registrar. La recuperacion POSTERIOR no edita el
+            evento: la tabla es append-only y la perdida bruta no se toca.
+        moneda: { type: string, enum: [BOB, USD] }
+        responsableId:
+          type: string
+          format: uuid
+          description: >-
+            Sin responsable no hay plan de accion, y el evento se registra igual. Es
+            peor perder el registro que registrar sin plan.
+        accionComprometida: { type: string, maxLength: 500 }
+        fechaCompromiso:    { type: string, format: date }
+    SalidaRiesgoOperativo:
+      type: object
+      additionalProperties: false
+      required: [eventoId, codigo, perdidaNeta, moneda]
+      properties:
+        eventoId: { type: string, format: uuid }
+        codigo:
+          type: string
+          maxLength: 20
+          description: >-
+            Derivado del hecho —fecha de deteccion y categoria— para que sea legible en
+            un listado y para que dos cargas del mismo hecho choquen contra el UNIQUE en
+            vez de duplicar la base de perdidas.
+        perdidaNeta:
+          type: string
+          pattern: '^-?\d+\.\d{2}$'
+          description: Bruta menos recuperacion, calculada por el motor.
+        moneda: { type: string, enum: [BOB, USD] }
+        planAccionId: { type: string, format: uuid }
+    EntradaIncidente:
+      type: object
+      additionalProperties: false
+      required: [tipo, severidad, datosPersonalesAfectados, usuariosAfectados, detectadoEn]
+      properties:
+        tipo:
+          type: string
+          enum: [ACCESO_NO_AUTORIZADO, DENEGACION_SERVICIO, FRAUDE_TECNOLOGICO,
+                 FUGA_DE_DATOS, MALWARE, PHISHING]
+        severidad: { type: string, enum: [BAJA, MEDIA, ALTA, CRITICA] }
+        activoInformacionId:
+          type: string
+          format: uuid
+          description: >-
+            El activo del inventario que se vio afectado. De el salen la clasificacion
+            de datos y el contrato del proveedor, si lo hay.
+        datosPersonalesAfectados:
+          type: boolean
+          description: >-
+            Lo que declara quien reporta. El activo lo puede sobrescribir: la
+            clasificacion del inventario sabe mas que quien esta apagando el incendio.
+        usuariosAfectados:
+          type: integer
+          minimum: 0
+          description: >-
+            Aproximado esta bien. Esperar al numero final para notificar es como se
+            pierde el plazo de notificacion.
+        detectadoEn:
+          type: string
+          format: date-time
+          description: >-
+            Desde aca corren los plazos, y no desde la ocurrencia: no se le puede
+            exigir a nadie reportar algo que todavia no sabia.
+        eventoRiesgoId:
+          type: string
+          format: uuid
+          description: La perdida asociada, si ya se registro (CU-54).
+    SalidaIncidente:
+      type: object
+      additionalProperties: false
+      required: [incidenteId, codigo, plazoReporte, requiereNotificarTitulares, registradoEn]
+      properties:
+        incidenteId: { type: string, format: uuid }
+        codigo:
+          type: string
+          maxLength: 20
+          description: >-
+            Derivado del hecho. Dos avisos del mismo incidente, el del monitoreo y el de
+            la persona que lo vio, producen el mismo codigo y el segundo choca contra el
+            UNIQUE, en vez de abrir dos expedientes con dos relojes para el mismo hecho.
+        plazoReporte:
+          type: string
+          format: date-time
+          description: >-
+            Guardado, no recalculado. Es el plazo que regia el dia del incidente.
+        requiereNotificarTitulares: { type: boolean }
+        plazoNotificacion:
+          type: string
+          format: date-time
+          description: Ausente cuando no hay datos personales afectados.
+        contratoTerceroId:
+          type: string
+          format: uuid
+          description: >-
+            El contrato del proveedor, resuelto por el activo afectado. Presente cuando
+            el incidente ocurrio en un tercero: la responsabilidad frente al cliente no
+            se terceriza, pero el contrato hay que poder mirarlo.
+        registradoEn: { type: string, format: date-time }
     EntradaDiligencia:
       type: object
       additionalProperties: false
@@ -271,6 +546,11 @@ components:
   responses:
     ReglaDeNegocio:
       description: Regla de negocio de la aplicacion (422, no 400)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NoAutenticado:
+      description: Sin sesion valida
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }

@@ -60,7 +60,20 @@ normas: [ASFI Gestión de Seguridad de la Información, ISO/IEC 27001 A.5.24-A.5
 - Existe línea de tiempo completa: detección, contención, reporte y notificación,
   con los plazos que regían ese día.
 
-## Contrato · `openapi/auditoria.yaml`
+## Contrato · `openapi/cumplimiento.yaml`
+
+> **Vive en `cumplimiento`, no en `auditoria`.** Las tablas que este caso de uso
+> escribe —[[incidente_seguridad]], [[activo_informacion]], [[designacion_regulatoria]],
+> [[contrato_tercero]]— están en el esquema `cumplimiento`, y `svc_auditoria` no tiene
+> `GRANT` sobre él. Implementarlo allá habría exigido leer el esquema de otro servicio,
+> que es el invariante 11.
+>
+> Las rutas también cambiaron: van bajo `/cumplimiento/seguridad/…` en vez de
+> `/seguridad/…`, porque `/seguridad` no es un prefijo reservado de este servicio.
+>
+> **El enlace con [[contrato_tercero]] se resuelve por el activo.**
+> `incidente_seguridad` no tiene columna propia para el contrato, y agregársela
+> duplicaría un dato que ya vive —y se mantiene— en el inventario de activos.
 
 ```ts
 export const EntradaCU55 = z.object({
@@ -101,7 +114,7 @@ export const ErroresCU55 = {
 | Molécula | `IncidenteSeguridadRepositorio` | Expediente del incidente |
 | Molécula | `ActivoInformacionRepositorio` | Activo afectado y su clasificación |
 | Organismo | `CU55GestionarIncidente` | Transacción: alta, plazos y enlace con riesgo operativo |
-| Página | `POST /seguridad/incidentes` | Traduce y delega, sin lógica |
+| Página | `POST /cumplimiento/seguridad/incidentes` | Traduce y delega, sin lógica |
 
 ## Eventos, trabajos y permisos
 

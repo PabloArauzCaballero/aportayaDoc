@@ -3,6 +3,7 @@ package bo.aportaya.cumplimiento;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * El punto de arranque de cumplimiento. No tiene logica: si aparece un if sobre una
@@ -13,6 +14,10 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
  */
 @SpringBootApplication
 @ConfigurationPropertiesScan
+// Sin esto, `@Scheduled` no es un error de compilacion ni de arranque: simplemente
+// nunca suena. El control diario de CU-54 pareceria escrito y estaria muerto, y eso
+// solo se descubre el dia que alguien pregunta por que ningun plan vencido escalo.
+@EnableScheduling
 public class Aplicacion {
 
     public static void main(String[] argumentos) {

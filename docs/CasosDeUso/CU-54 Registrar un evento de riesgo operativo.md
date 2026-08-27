@@ -59,7 +59,17 @@ normas: [ASFI RNSF Libro 3 Título V — base de datos de eventos y central de r
 - Existe una base de pérdidas consultable que permite decidir inversiones en
   control con números y no con opiniones.
 
-## Contrato · `openapi/auditoria.yaml`
+## Contrato · `openapi/cumplimiento.yaml`
+
+> **Vive en `cumplimiento`, no en `auditoria`.** Las cuatro tablas que este caso de
+> uso escribe —[[evento_riesgo_operativo]], [[plan_accion_riesgo]],
+> [[hallazgo_auditoria]] y [[acta_comite]]— están en el esquema `cumplimiento`, y
+> `svc_auditoria` no tiene `GRANT` sobre él. Implementarlo allá habría exigido leer el
+> esquema de otro servicio, que es el invariante 11. Donde la ficha y el modelo no
+> coincidían, mandó el modelo: es el que rechaza.
+>
+> La ruta también cambió: `POST /cumplimiento/riesgos/eventos` en vez de
+> `/riesgos/eventos`, porque `/riesgos` no es un prefijo reservado de este servicio.
 
 ```ts
 export const EntradaCU54 = z.object({
@@ -100,7 +110,7 @@ export const ErroresCU54 = {
 | Molécula | `EventoRiesgoRepositorio` | Base de pérdidas, append-only |
 | Molécula | `PlanAccionRepositorio` | Remediación con responsable y plazo |
 | Organismo | `CU54RegistrarRiesgoOperativo` | Transacción: evento y plan de acción |
-| Página | `POST /riesgos/eventos` | Traduce y delega, sin lógica |
+| Página | `POST /cumplimiento/riesgos/eventos` | Traduce y delega, sin lógica |
 
 ## Eventos, trabajos y permisos
 
