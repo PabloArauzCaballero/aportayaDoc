@@ -28,6 +28,7 @@ dependencies {
     implementation(libs.micrometer)
 
     testImplementation(project(":plataforma:comun-pruebas"))
+    testImplementation(libs.spring.boot.jdbc)
     testImplementation(libs.bundles.pruebas)   // JUnit 5, AssertJ, Testcontainers, ArchUnit
 }
 

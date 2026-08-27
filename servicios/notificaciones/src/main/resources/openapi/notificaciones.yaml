@@ -46,6 +46,57 @@ paths:
         '401':
           $ref: '#/components/responses/NoAutenticado'
 
+  /notificaciones/webhooks/{proveedor}:
+    post:
+      operationId: procesarRespuestaEntrante   # CU-82
+      summary: Procesar una respuesta entrante
+      description: >-
+        La unica puerta que abre alguien de afuera. Verifica la firma ANTES de
+        tocar la base, y no revela nada: un remitente desconocido recibe la misma
+        respuesta que un mensaje duplicado. Contestar «ese numero no existe»
+        convertiria este webhook en un directorio de clientes.
+      parameters:
+        - name: proveedor
+          in: path
+          required: true
+          schema: { type: string, maxLength: 40 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaRespuesta' }
+      responses:
+        '200':
+          description: Respuesta clasificada y accion despachada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaRespuesta' }
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU82-01 FIRMA_INVALIDA - AP-CU82-02 REMITENTE_DESCONOCIDO
+          # AP-CU82-03 MENSAJE_DUPLICADO
+
+  # Los otros tres casos de uso del carril NO tienen endpoint, y es a proposito:
+  #
+  #   CU-80 Despachar una notificacion — solo por evento de dominio. Dispararlo por
+  #         API seria una puerta para mandar mensajes a nombre de la entidad sin que
+  #         ningun hecho del dominio lo respalde. La ruta POST /notificaciones de
+  #         arriba viene de la Ola 0 y NO es CU-80: recibe un pedido y emite el
+  #         evento; el despacho lo hace el consumidor.
+  #         AP-CU80-01 SIN_PLANTILLA_APROBADA - AP-CU80-02 CANAL_NO_VERIFICADO
+  #         AP-CU80-03 DESTINATARIO_SUPRIMIDO - AP-CU80-04 EVENTO_RESERVADO
+  #
+  #   CU-81 Programar recordatorios — trabajo diario del planificador.
+  #         AP-CU81-01 PERIODO_NO_ABIERTO - AP-CU81-02 SIN_PROGRAMACION
+  #
+  #   CU-83 Enrutar el envio — trabajador de cola, con SKIP LOCKED entre replicas.
+  #         AP-CU83-01 SIN_PROVEEDOR_PARA_CANAL - AP-CU83-02 ENVIO_YA_PROCESADO
+  #         AP-CU83-03 RITMO_EXCEDIDO           - AP-CU83-04 PROVEEDOR_DEGRADADO
+  #         AP-CU83-05 AGOTADOS_LOS_REINTENTOS
+  #
+  # Sus codigos quedan declarados igual: el catalogo de errores es del contrato, no
+  # del transporte.
+
 components:
   parameters:
     ClaveIdempotencia:
@@ -57,6 +108,32 @@ components:
         seguro, y la clave se valida ANTES de escribir (invariante 7).
       schema: { type: string, format: uuid }
   schemas:
+    EntradaRespuesta:
+      type: object
+      additionalProperties: false
+      required: [remitente, firma, cargaUtil, claveIdempotencia]
+      properties:
+        canal:      { type: string, enum: [IN_APP, CORREO, PUSH, WHATSAPP, SMS, LLAMADA_VOZ] }
+        remitente:  { type: string, maxLength: 200 }
+        firma:      { type: string }
+        cargaUtil:  { type: string }
+        contenido:  { type: string }
+        claveIdempotencia: { type: string, maxLength: 120 }
+        notificacionRelacionadaId: { type: string, format: uuid }
+    SalidaRespuesta:
+      type: object
+      additionalProperties: false
+      required: [intencion, accion]
+      properties:
+        respuestaId: { type: string, format: uuid, nullable: true }
+        intencion:
+          type: string
+          enum: [YA_PAGUE, NO_PUEDO, BAJA, CONSULTA, NO_RECONOZCO, DESCONOCIDA]
+        accion:
+          type: string
+          enum: [PAGO_CONFIRMADO, COMPROBANTE_SOLICITADO, PROMESA_REGISTRADA,
+                 SUPRESION_APLICADA, RECLAMO_ABIERTO, TICKET_ABIERTO]
+        referenciaId: { type: string, format: uuid, nullable: true }
     Dinero:
       type: object
       additionalProperties: false
