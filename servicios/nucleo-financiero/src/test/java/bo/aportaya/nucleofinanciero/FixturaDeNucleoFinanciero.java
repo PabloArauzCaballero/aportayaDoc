@@ -139,12 +139,109 @@ final class FixturaDeNucleoFinanciero {
         return id;
     }
 
+    /**
+     * La cuenta puente de custodia: el otro lado de todo ingreso.
+     *
+     * <p>Toda transaccion de billetera cuadra —debitos igual a creditos, y distinto de
+     * cero— porque la plata viene de algun lado. El puente admite saldo negativo: es
+     * una cuenta de sistema que representa lo que entro desde afuera, no el bolsillo
+     * de nadie.
+     */
+    UUID puenteDeCustodia() {
+        UUID id = UUID.randomUUID();
+        dsl.execute(
+                """
+                INSERT INTO nucleo_financiero.cuenta_billetera
+                    (id, numero_cuenta, tipo, politica_billetera_id, moneda, estado,
+                     nivel_debida_diligencia, saldo_disponible, saldo_retenido,
+                     permite_saldo_negativo, fecha_apertura, version)
+                VALUES (?, ?, 'PUENTE_CUSTODIA', ?, 'BOB', 'ACTIVA', 'SIMPLIFICADA', 0, 0,
+                        true, now(), 0)
+                """,
+                id,
+                "PUE-" + id.toString().substring(0, 12),
+                politica());
+        return id;
+    }
+
+    /**
+     * Deja saldo en la billetera **por el camino real**: una transaccion cuadrada.
+     *
+     * <p>El trigger recalcula el disponible desde el libro, asi que escribir la
+     * columna a mano se perderia en el primer recalculo. Y las tres sentencias van en
+     * UNA transaccion porque {@code tg_transaccion_cuadrada} es DEFERRABLE: si la
+     * cabecera se confirma sola, salta por no tener movimientos.
+     */
+    void acreditar(UUID cuentaId, BigDecimal monto) {
+        tipoDeCambioDeHoy();
+        UUID puente = puenteDeCustodia();
+        dsl.transaction(config -> {
+            var tx = org.jooq.impl.DSL.using(config);
+            UUID transaccion = UUID.randomUUID();
+            tx.execute(
+                    """
+                    INSERT INTO nucleo_financiero.transaccion_billetera
+                        (id, tipo, estado, moneda, monto_total, origen_tipo, origen_id, canal,
+                         clave_idempotencia, hash_registro, ocurrida_en, registrada_en)
+                    VALUES (?, 'RECARGA', 'APLICADA', 'BOB', ?, 'ORDEN_RECARGA', gen_random_uuid(), 'API',
+                            ?, repeat('a', 64), now(), now())
+                    """,
+                    transaccion,
+                    monto,
+                    "semilla-" + transaccion);
+            tx.execute(
+                    """
+                    INSERT INTO nucleo_financiero.movimiento_billetera
+                        (id, transaccion_id, cuenta_billetera_id, orden, sentido, monto,
+                         saldo_disponible_posterior, saldo_retenido_posterior, glosa, registrado_en)
+                    VALUES (gen_random_uuid(), ?, ?, 1, 'DEBITO', ?, 0, 0, 'Ingreso desde custodia', now())
+                    """,
+                    transaccion,
+                    puente,
+                    monto);
+            tx.execute(
+                    """
+                    INSERT INTO nucleo_financiero.movimiento_billetera
+                        (id, transaccion_id, cuenta_billetera_id, orden, sentido, monto,
+                         saldo_disponible_posterior, saldo_retenido_posterior, glosa, registrado_en)
+                    VALUES (gen_random_uuid(), ?, ?, 2, 'CREDITO', ?, ?, 0, 'Saldo de prueba', now())
+                    """,
+                    transaccion,
+                    cuentaId,
+                    monto,
+                    monto);
+        });
+    }
+
+    /**
+     * El tipo de cambio del dia.
+     *
+     * <p>Una regla UIF convierte todo movimiento a dolares para compararlo con los
+     * umbrales del instructivo, y sin cotizacion no puede: la operacion se rechaza
+     * antes de escribirse. Es correcto —un umbral que no se puede evaluar no se
+     * puede dar por cumplido— y por eso la fixtura la carga en vez de esquivarla.
+     */
+    void tipoDeCambioDeHoy() {
+        dsl.execute(
+                """
+                INSERT INTO catalogo.tipo_cambio
+                    (id, moneda_origen, moneda_destino, fecha, tipo_cambio, fuente, cargado_en)
+                VALUES (gen_random_uuid(), 'BOB', 'USD', current_date, 6.96, 'BCB', now())
+                ON CONFLICT DO NOTHING
+                """);
+    }
+
+    /**
+     * Lo unico que se puede borrar entre pruebas.
+     *
+     * <p>El libro **no se toca**: {@code movimiento_billetera} y
+     * {@code transaccion_billetera} son append-only y R-AUD-01 lo hace cumplir con un
+     * trigger. Tampoco hace falta — cada prueba abre sus propias cuentas, asi que lo
+     * que quedo de la anterior no le suma ni le resta. Lo que si hay que limpiar es
+     * lo unico por clave: los limites del catalogo chocarian entre pruebas.
+     */
     void limpiarBilleteras() {
         dsl.execute("DELETE FROM nucleo_financiero.consumo_limite");
-        dsl.execute("DELETE FROM nucleo_financiero.movimiento_billetera");
-        dsl.execute("DELETE FROM nucleo_financiero.transaccion_billetera");
-        dsl.execute("DELETE FROM nucleo_financiero.cuenta_billetera");
-        dsl.execute("DELETE FROM nucleo_financiero.politica_billetera");
         dsl.execute("DELETE FROM catalogo.limite_operativo_billetera");
         dsl.execute("DELETE FROM nucleo_financiero.evento_dominio");
     }

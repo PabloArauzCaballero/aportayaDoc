@@ -1,8 +1,10 @@
 package bo.aportaya.nucleofinanciero;
 
+import bo.aportaya.nucleofinanciero.aplicacion.CU13RetenerSaldo;
 import bo.aportaya.nucleofinanciero.aplicacion.CU40EvaluarLimites;
 import bo.aportaya.nucleofinanciero.infraestructura.CuentaBilleteraRepositorio;
 import bo.aportaya.nucleofinanciero.infraestructura.LimiteRepositorio;
+import bo.aportaya.nucleofinanciero.infraestructura.RetencionRepositorio;
 import bo.aportaya.plataforma.datos.Datos;
 import bo.aportaya.plataforma.dominio.ContextoSesion;
 import bo.aportaya.plataforma.dominio.Reloj;
@@ -30,6 +32,7 @@ abstract class BaseDeBilletera {
     protected static FixturaDeNucleoFinanciero fixtura;
     protected static Consumidos consumidos;
     protected static CU40EvaluarLimites limitesCU;
+    protected static CU13RetenerSaldo retencionCU;
 
     @BeforeAll
     static void armarBilletera() {
@@ -46,6 +49,12 @@ abstract class BaseDeBilletera {
                 new Datos(dsl),
                 new CuentaBilleteraRepositorio(),
                 new LimiteRepositorio(),
+                new Outbox("nucleo_financiero"),
+                Reloj.delSistema());
+        retencionCU = new CU13RetenerSaldo(
+                new Datos(dsl),
+                new CuentaBilleteraRepositorio(),
+                new RetencionRepositorio(),
                 new Outbox("nucleo_financiero"),
                 Reloj.delSistema());
     }
