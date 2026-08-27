@@ -82,36 +82,6 @@ paths:
           # AP-CU04-05 DEMASIADOS_INTENTOS · AP-CU04-06 FACTOR_NO_ENROLADO
           # AP-CU04-07 FACTOR_NO_ADMISIBLE (R-SEG-10)
 
-  /usuarios/{usuarioId}/preferencias-notificacion:
-    get:
-      operationId: consultarPreferenciaNotificacion
-      summary: La preferencia de avisos del titular, para el servicio que va a avisarle
-      description: >-
-        [CONTRATO] Agregada para desbloquear el carril `1D`. CU-80 necesita el canal
-        primario, la franja de no molestar y el tope diario ANTES de decidir por donde
-        manda un aviso, y esa fila vive en `identidad.preferencia_notificacion`: por
-        el invariante 11, `notificaciones` no la puede consultar por SQL.
-
-        Es una LECTURA y se hace ANTES del BEGIN de quien la consume: un dato de otro
-        servicio para decidir nunca entra dentro de la transaccion.
-
-        Un usuario sin fila devuelve la preferencia por omision (ADR-035: BANDEJA,
-        PUSH y CORREO encendidos; WhatsApp y SMS apagados), no un 404: la ausencia de
-        preferencia no es un error, es que nadie la toco todavia.
-      parameters:
-        - name: usuarioId
-          in: path
-          required: true
-          schema: { type: string, format: uuid }
-      responses:
-        '200':
-          description: La preferencia vigente, o la de omision
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/PreferenciaNotificacion' }
-        '401':
-          $ref: '#/components/responses/NoAutenticado'
-
 components:
   parameters:
     ClaveIdempotencia:
@@ -198,28 +168,6 @@ components:
         concepto: { type: string }
         ventana:  { type: string }
         monto:    { $ref: '#/components/schemas/Dinero' }
-    PreferenciaNotificacion:
-      type: object
-      additionalProperties: false
-      required: [usuarioId, canalPrimario, aceptaCorreo, aceptaPush, aceptaWhatsapp, aceptaSms, topeDiarioMensajes, porOmision]
-      properties:
-        usuarioId:     { type: string, format: uuid }
-        canalPrimario: { type: string, enum: [BANDEJA, PUSH, CORREO, WHATSAPP, SMS] }
-        canalRespaldo: { type: string, enum: [BANDEJA, PUSH, CORREO, WHATSAPP, SMS] }
-        aceptaCorreo:   { type: boolean }
-        aceptaPush:     { type: boolean }
-        aceptaWhatsapp: { type: boolean }
-        aceptaSms:      { type: boolean }
-        topeDiarioMensajes:
-          type: integer
-          description: >-
-            Tope por dia. Pasarlo no descarta el aviso: lo pospone.
-        horaNoMolestarDesde: { type: string, pattern: '^\d{2}:\d{2}$' }
-        horaNoMolestarHasta: { type: string, pattern: '^\d{2}:\d{2}$' }
-        porOmision:
-          type: boolean
-          description: >-
-            true cuando el usuario no tiene fila propia y rige ADR-035
     SalidaRegistro:
       type: object
       additionalProperties: false

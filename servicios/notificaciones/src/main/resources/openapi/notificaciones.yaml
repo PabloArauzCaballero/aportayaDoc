@@ -6,10 +6,8 @@
 #   Una ruta fuera de ellos es un rechazo automatico, no una discusion de diseno.
 #   Toda ruta exige sesion: 401 sin token, 403 con rol insuficiente.
 #
-#   Nota de ruta: CU-82 dice `POST /webhooks/mensajeria/:proveedor`, y `/webhooks` no
-#   esta entre los prefijos reservados. Va bajo `/notificaciones/webhooks/...` para no
-#   invadir un prefijo sin dueno — el mismo criterio que uso `grupos` con
-#   `/grupos/calendario`.
+# BORRADOR DE LA FASE 0 (planes/01 §0.8). El carril dueno lo amplia; NO puede
+# romperlo sin avisar, y la prueba de contrato falla en el CI del que rompe.
 openapi: 3.1.0
 info:
   title: notificaciones
@@ -24,134 +22,27 @@ servers:
 paths:
   /notificaciones:
     post:
-      operationId: despacharNotificacion     # CU-80
-      summary: Despacha un aviso por el canal que corresponde, o explica por que no
+      operationId: emitirNotificacion
+      summary: Emite un aviso por los canales habilitados del destinatario
       description: >-
-        Un hecho, un mensaje. El servicio decide el canal segun consentimiento,
-        supresion y horario permitido; el emisor NO lo elige. Los canales por defecto
-        son BANDEJA, PUSH y CORREO (ADR-035): WhatsApp y SMS estan apagados y no se
-        usan en un flujo nuevo.
-
-        El aviso se ENCOLA: esta operacion no espera al proveedor. Un envio sincronico
-        ata la transaccion de dinero a la disponibilidad de un tercero.
-
-        Los datos sensibles no viajan en el cuerpo del mensaje: monto y concepto si,
-        numero de cuenta y documento nunca (R-SEG-02).
+        Los canales por defecto son IN_APP, PUSH y CORREO (ADR-035). WhatsApp, SMS
+        y voz estan APAGADOS: no se usan en un flujo nuevo. El servicio decide el
+        canal segun consentimiento y supresion; el emisor no lo elige.
       parameters:
         - $ref: '#/components/parameters/ClaveIdempotencia'
       requestBody:
         required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/EntradaDespacho' }
+            schema: { $ref: '#/components/schemas/EntradaNotificacion' }
       responses:
         '202':
-          description: >-
-            Aceptada. Encolada, suprimida o reprogramada: las tres son desenlaces
-            validos y el cuerpo dice cual.
+          description: Aceptada para envio
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/SalidaDespacho' }
+              schema: { $ref: '#/components/schemas/SalidaNotificacion' }
         '422':
           $ref: '#/components/responses/ReglaDeNegocio'
-          # AP-CU80-01 SIN_PLANTILLA_APROBADA · AP-CU80-02 CANAL_NO_VERIFICADO
-          # AP-CU80-03 DESTINATARIO_SUPRIMIDO · AP-CU80-04 EVENTO_RESERVADO
-        '401':
-          $ref: '#/components/responses/NoAutenticado'
-
-  /notificaciones/recordatorios:
-    post:
-      operationId: programarRecordatorios    # CU-81
-      summary: Corre un escalon de la escalera de recordatorios de un periodo
-      description: >-
-        Lo dispara el planificador, una vez por dia y por escalon, con bloqueo entre
-        replicas. Es idempotente por dia: correrlo dos veces no manda dos mensajes.
-
-        Recordar bien recupera mas que insistir. Por eso hay tope por ventana y por
-        eso una obligacion ya pagada CANCELA su recordatorio en vez de enviarlo.
-      parameters:
-        - $ref: '#/components/parameters/ClaveIdempotencia'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: '#/components/schemas/EntradaRecordatorios' }
-      responses:
-        '200':
-          description: Resumen del escalon, con el desenlace de cada obligacion
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/SalidaRecordatorios' }
-        '422':
-          $ref: '#/components/responses/ReglaDeNegocio'
-          # AP-CU81-01 PERIODO_NO_ABIERTO · AP-CU81-02 SIN_PROGRAMACION
-        '401':
-          $ref: '#/components/responses/NoAutenticado'
-
-  /notificaciones/webhooks/{proveedor}:
-    post:
-      operationId: procesarRespuestaEntrante # CU-82
-      summary: Recibe la respuesta de una persona y actua en consecuencia
-      description: >-
-        Si alguien contesta "ya pague", "no puedo este mes" o "no me escriban mas", el
-        sistema tiene que entenderlo y actuar. Un buzon que nadie lee es peor que no
-        tener canal de respuesta.
-
-        Se autentica por FIRMA del proveedor, no por sesion. Un remitente que no
-        corresponde a ningun canal verificado se rechaza sin revelar nada: confirmar
-        que un numero existe ya es informacion.
-      parameters:
-        - name: proveedor
-          in: path
-          required: true
-          schema: { type: string, maxLength: 40 }
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: '#/components/schemas/EntradaRespuesta' }
-      responses:
-        '200':
-          description: Respuesta clasificada, con la accion que disparo
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/SalidaRespuesta' }
-        '422':
-          $ref: '#/components/responses/ReglaDeNegocio'
-          # AP-CU82-01 FIRMA_INVALIDA · AP-CU82-02 REMITENTE_DESCONOCIDO
-          # AP-CU82-03 MENSAJE_DUPLICADO
-
-  /notificaciones/envios/despachar:
-    post:
-      operationId: despacharLote             # CU-83
-      summary: Toma un lote de la cola y lo enruta por proveedor
-      description: >-
-        El enrutado NO vuelve a decidir si se manda, solo por donde (R-NOT-03): las
-        preferencias y la supresion ya se resolvieron en CU-80.
-
-        La clave de idempotencia es DEL ENVIO y no del proveedor: conmutar de
-        proveedor no puede volver a mandar el mismo mensaje.
-
-        La particion separa lo obligatorio de lo masivo. Un recordatorio comercial
-        nunca demora un aviso de vencimiento.
-      parameters:
-        - $ref: '#/components/parameters/ClaveIdempotencia'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: '#/components/schemas/EntradaLote' }
-      responses:
-        '200':
-          description: Desenlace de cada envio del lote
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/SalidaLote' }
-        '422':
-          $ref: '#/components/responses/ReglaDeNegocio'
-          # AP-CU83-01 SIN_PROVEEDOR_PARA_CANAL · AP-CU83-02 ENVIO_YA_PROCESADO
-          # AP-CU83-03 RITMO_EXCEDIDO · AP-CU83-04 PROVEEDOR_DEGRADADO
-          # AP-CU83-05 AGOTADOS_LOS_REINTENTOS
         '401':
           $ref: '#/components/responses/NoAutenticado'
 
@@ -263,142 +154,27 @@ components:
         mensaje:  { type: string }
         detalle:  { type: object }
         trazaId:  { type: string }
-
-    Canal:
-      type: string
-      enum: [BANDEJA, PUSH, CORREO, WHATSAPP, SMS]
-
-    EntradaDespacho:
+    EntradaNotificacion:
       type: object
       additionalProperties: false
-      required: [eventoDominioId, destinatarioId, evento, variables]
+      required: [destinatarioId, evento, datos]
       properties:
-        eventoDominioId: { type: string, format: uuid }
-        destinatarioId:  { type: string, format: uuid }
+        destinatarioId: { type: string, format: uuid }
         evento:
           type: string
-          maxLength: 40
-          description: Tipo de evento_notificable; la plantilla la resuelve el servicio
-        variables:
+          description: Codigo de evento_notificable; la plantilla la resuelve el servicio
+        datos:
           type: object
-          additionalProperties: { type: string }
           description: Variables de la plantilla, ya resueltas por el emisor
-        canalPreferido: { $ref: '#/components/schemas/Canal' }
-        esObligatorio:
-          type: boolean
-          default: false
-          description: >-
-            Un mensaje regulatorio ignora la preferencia comercial, pero NUNCA la
-            supresion legal.
-    SalidaDespacho:
+    SalidaNotificacion:
       type: object
       additionalProperties: false
-      required: [notificacionId, estado]
+      required: [notificacionId, canales]
       properties:
         notificacionId: { type: string, format: uuid }
-        envioId:        { type: string, format: uuid }
-        canal:          { $ref: '#/components/schemas/Canal' }
-        estado:
-          type: string
-          enum: [ENCOLADA, SUPRIMIDA, REPROGRAMADA, DUPLICADA]
-        motivoNoEnvio:    { type: string }
-        reprogramadaPara: { type: string, format: date-time }
-
-    EntradaRecordatorios:
-      type: object
-      additionalProperties: false
-      required: [periodoId, escalon]
-      properties:
-        periodoId: { type: string, format: uuid }
-        escalon:
-          type: string
-          enum: [PREVIO, VENCIMIENTO, GRACIA, POST_GRACIA]
-    SalidaRecordatorios:
-      type: object
-      additionalProperties: false
-      required: [programados, enviados, cancelados, pospuestos, detalle]
-      properties:
-        programados: { type: integer }
-        enviados:    { type: integer }
-        cancelados:  { type: integer }
-        pospuestos:  { type: integer }
-        detalle:
+        canales:
           type: array
-          items:
-            type: object
-            additionalProperties: false
-            required: [obligacionId, resultado]
-            properties:
-              obligacionId: { type: string, format: uuid }
-              resultado:
-                type: string
-                enum: [ENVIADO, CANCELADO_YA_PAGADO, POSPUESTO_TOPE, SUPRIMIDO]
-
-    EntradaRespuesta:
-      type: object
-      additionalProperties: false
-      required: [firma, contenido, remitente, claveIdempotencia]
-      properties:
-        firma:     { type: string, maxLength: 200 }
-        contenido: { type: string, maxLength: 2000 }
-        remitente: { type: string, maxLength: 120 }
-        claveIdempotencia:
-          type: string
-          maxLength: 120
-          description: El identificador del mensaje en el proveedor
-    SalidaRespuesta:
-      type: object
-      additionalProperties: false
-      required: [respuestaId, intencion, accion]
-      properties:
-        respuestaId: { type: string, format: uuid }
-        intencion:
-          type: string
-          enum: [YA_PAGUE, NO_PUEDO, BAJA, CONSULTA, NO_RECONOZCO, DESCONOCIDA]
-        accion:
-          type: string
-          enum:
-            [COMPROBANTE_SOLICITADO, PROMESA_SOLICITADA, SUPRESION_APLICADA, RECLAMO_ABIERTO, TICKET_ABIERTO]
-        referenciaId: { type: string, format: uuid }
-
-    EntradaLote:
-      type: object
-      additionalProperties: false
-      required: [particion]
-      properties:
-        particion:
-          type: string
-          enum: [OBLIGATORIO, TRANSACCIONAL, COMERCIAL, MASIVO]
-        tamano:
-          type: integer
-          minimum: 1
-          maximum: 200
-          default: 50
-    SalidaLote:
-      type: object
-      additionalProperties: false
-      required: [tomados, despachados, resultados]
-      properties:
-        tomados:     { type: integer }
-        despachados: { type: integer }
-        resultados:
-          type: array
-          items:
-            type: object
-            additionalProperties: false
-            required: [envioId, estado, intentos, proveedoresIntentados]
-            properties:
-              envioId:  { type: string, format: uuid }
-              estado:
-                type: string
-                enum: [ENVIADO, REPROGRAMADO, COLA_MUERTA]
-              proveedorCodigo: { type: string }
-              intentos: { type: integer }
-              proveedoresIntentados:
-                type: array
-                items: { type: string }
-              costo: { $ref: '#/components/schemas/Dinero' }
-              proximoIntento: { type: string, format: date-time }
+          items: { type: string, enum: [IN_APP, PUSH, CORREO] }
   responses:
     ReglaDeNegocio:
       description: Regla de negocio de la aplicacion (422, no 400)
