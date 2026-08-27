@@ -1,12 +1,17 @@
 package bo.aportaya.auditoria;
 
 import bo.aportaya.auditoria.aplicacion.CU07EjercerDerechos;
+import bo.aportaya.auditoria.aplicacion.CU58DescargarExportacion;
+import bo.aportaya.auditoria.aplicacion.CU58EjecutarReporte;
 import bo.aportaya.auditoria.aplicacion.CU98PublicarTablero;
 import bo.aportaya.auditoria.infraestructura.AnonimizacionRepositorio;
+import bo.aportaya.auditoria.infraestructura.EjecutorDeConsulta;
 import bo.aportaya.auditoria.infraestructura.IndicadorRepositorio;
 import bo.aportaya.auditoria.infraestructura.PoliticaRetencionRepositorio;
+import bo.aportaya.auditoria.infraestructura.ReporteRepositorio;
 import bo.aportaya.auditoria.infraestructura.SolicitudDatosRepositorio;
 import bo.aportaya.plataforma.datos.Datos;
+import bo.aportaya.plataforma.datos.TransaccionAparte;
 import bo.aportaya.plataforma.dominio.ContextoSesion;
 import bo.aportaya.plataforma.dominio.Reloj;
 import bo.aportaya.plataforma.dominio.Traza;
@@ -30,8 +35,14 @@ abstract class BaseDeAuditoria {
     protected static DSLContext dslFixtura;
     protected static TransactionTemplate transaccion;
     protected static FixturaDeAuditoria fixtura;
+    protected static FixturaDeReportes reportes;
     protected static CU98PublicarTablero tableroCU;
     protected static CU07EjercerDerechos derechosCU;
+    protected static CU58EjecutarReporte reportesCU;
+    protected static CU58DescargarExportacion descargasCU;
+
+    /** El tope de descargas con el que se arma el caso de uso en las pruebas. */
+    protected static final int TOPE_DE_DESCARGAS = 3;
 
     /** Un operador con permiso de ver indicadores. El rol decide que filas ve. */
     protected static final UUID OPERADOR = UUID.fromString("00000000-0000-4000-8000-0000000000a1");
@@ -46,8 +57,13 @@ abstract class BaseDeAuditoria {
         // de hacer `SET LOCAL`, con lo cual el contexto de RLS no aplica.
         dsl = DSL.using(new TransactionAwareDataSourceProxy(fuente), SQLDialect.POSTGRES);
         dslFixtura = DSL.using(fuente, SQLDialect.POSTGRES);
-        transaccion = new TransactionTemplate(new DataSourceTransactionManager(fuente));
+        var gestor = new DataSourceTransactionManager(fuente);
+        transaccion = new TransactionTemplate(gestor);
         fixtura = new FixturaDeAuditoria(dslFixtura);
+        // El operador de las pruebas existe de verdad: `ejecucion_reporte` lo exige por
+        // clave foranea, y con razon — un reporte lo saca alguien.
+        fixtura.usuarioConId(OPERADOR);
+        reportes = new FixturaDeReportes(dslFixtura);
         tableroCU = new CU98PublicarTablero(new Datos(dsl), new IndicadorRepositorio());
         derechosCU = new CU07EjercerDerechos(
                 new Datos(dsl),
@@ -60,11 +76,42 @@ abstract class BaseDeAuditoria {
                 // lo que hace la prueba determinista sin depender del calendario real.
                 CalendarioVacio.SIN_FERIADOS,
                 15);
+        reportesCU = new CU58EjecutarReporte(
+                new Datos(dsl),
+                new ReporteRepositorio(),
+                // Un segundo de tope: alcanza para cualquier consulta de prueba y deja
+                // comprobar el corte con un `pg_sleep` sin que la suite tarde.
+                new EjecutorDeConsulta(1),
+                new TransaccionAparte(gestor),
+                new Outbox("auditoria"),
+                Reloj.delSistema(),
+                72);
+        descargasCU = new CU58DescargarExportacion(
+                new Datos(dsl),
+                new ReporteRepositorio(),
+                new Outbox("auditoria"),
+                Reloj.delSistema(),
+                TOPE_DE_DESCARGAS);
     }
 
+    /**
+     * El rol va en MAYUSCULAS porque asi lo compara {@code fn_seg_rol_privilegiado()}:
+     * la politica de {@code registro_acceso_datos} acepta BACKOFFICE, CUMPLIMIENTO o
+     * AUDITOR y nada mas. Con «auditor» en minusculas la prueba pasaria igual —el
+     * contenedor conecta como superusuario y omite RLS— y en produccion el INSERT
+     * quedaria rechazado por la politica. Una prueba que solo pasa porque no aplica la
+     * regla que dice probar es peor que no tenerla.
+     */
     protected static ContextoSesion contexto() {
         return ContextoSesion.de(
-                OPERADOR, "auditor", new Traza(UUID.randomUUID().toString()));
+                OPERADOR, "AUDITOR", new Traza(UUID.randomUUID().toString()));
+    }
+
+    protected static boolean politicaExiste(String nombre) {
+        Number cuantas = (Number) dslFixtura
+                .fetchOne("SELECT count(*) FROM pg_policies WHERE policyname = ?", nombre)
+                .get(0);
+        return cuantas.intValue() > 0;
     }
 
     /** Corre el SQL, espera que la base lo rechace y devuelve el mensaje del motor. */

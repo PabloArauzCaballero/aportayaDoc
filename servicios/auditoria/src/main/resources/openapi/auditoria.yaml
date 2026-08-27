@@ -70,6 +70,81 @@ paths:
         '401':
           $ref: '#/components/responses/NoAutenticado'
 
+  /reportes/{definicionId}/ejecuciones:
+    post:
+      operationId: ejecutarReporte            # CU-58
+      summary: Ejecuta un reporte definido, deja huella y opcionalmente lo exporta
+      description: >-
+        Que sacar informacion del sistema sea una operacion con permiso, huella y
+        vencimiento, y no una consulta suelta que alguien corre contra produccion y
+        manda por correo.
+
+        Los parametros van por LISTA BLANCA contra `parametros_esperados`: lo que no
+        esta declarado no entra, y el valor viaja como ligadura — nunca concatenado en
+        la consulta. La alternativa, aceptar lo que venga y filtrar lo peligroso, es
+        como se escriben las inyecciones: siempre falta un caso.
+
+        El `hashResultado` es la huella canonica del resultado. Dos ejecuciones con los
+        mismos parametros y los mismos datos dan el mismo hash, y eso permite probar
+        que un reporte entregado no fue alterado despues.
+
+        Un reporte sin filas se entrega igual, con cero: «no hubo» es una respuesta, y
+        para los regulatorios es la obligatoria (`R-UIF-06`).
+
+        El estado terminal exitoso es COMPLETADA, que es lo que admite
+        `ck_ejecucion_reporte_estado`. Donde el texto del caso de uso dice LISTA y la
+        tabla dice COMPLETADA, manda la tabla: es la que rechaza.
+      parameters:
+        - name: definicionId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaReporte' }
+      responses:
+        '201':
+          description: Ejecucion registrada, con su huella y su exportacion si se pidio
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaReporte' }
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU58-01 SIN_PERMISO             · AP-CU58-02 PARAMETRO_INVALIDO
+          # AP-CU58-03 JUSTIFICACION_REQUERIDA · AP-CU58-04 TIEMPO_EXCEDIDO
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+
+  /reportes/exportaciones/{exportacionId}/descargas:
+    post:
+      operationId: descargarExportacion       # CU-58
+      summary: Cuenta una descarga del archivo y dice si todavia se puede entregar
+      description: >-
+        No devuelve el archivo: lo autoriza. La descarga se cuenta ANTES de entregar
+        porque contar despues significa no contar la vez que fallo a mitad, y el tope
+        deja de ser un tope.
+
+        Un enlace que se descarga indefinidamente deja de ser una entrega y pasa a ser
+        una copia publicada. Agotado el tope, hay que volver a pedir el reporte, con
+        justificacion nueva — que es exactamente el rastro que una auditoria busca.
+      parameters:
+        - name: exportacionId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      responses:
+        '204':
+          description: Descarga autorizada y contada
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU58-05 EXPORTACION_VENCIDA · AP-CU58-06 TOPE_DESCARGAS
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+
   /indicadores:
     get:
       operationId: publicarTablero           # CU-98
@@ -169,6 +244,57 @@ components:
         estrategia:
           type: string
           enum: [BORRADO_TOTAL, BORRADO_PARCIAL, SEUDONIMIZACION]
+    EntradaReporte:
+      type: object
+      additionalProperties: false
+      required: [parametros]
+      properties:
+        parametros:
+          type: object
+          additionalProperties: { type: string }
+          description: >-
+            Se validan contra `parametros_esperados` de la definicion. Viajan como
+            cadena a proposito: el tipo lo declara el reporte, no el llamador, y asi
+            no hay dos opiniones sobre si «2026-01» es una fecha o un texto.
+        formato:
+          type: string
+          enum: [CSV, JSON, PDF, XLSX]
+          description: >-
+            Ausente para ejecutar sin exportar. Los cuatro que admite
+            `ck_exportacion_reporte_formato`.
+        justificacion:
+          type: string
+          minLength: 10
+          maxLength: 300
+          description: >-
+            Obligatoria cuando la definicion tiene `contiene_datos_sensibles`. El
+            minimo de diez no es capricho: lo exige `ck_acceso_justificacion`, porque
+            una justificacion de tres letras no se puede leer dentro de un ano.
+    SalidaReporte:
+      type: object
+      additionalProperties: false
+      required: [ejecucionId, estado, filasGeneradas, hashResultado]
+      properties:
+        ejecucionId: { type: string, format: uuid }
+        estado:
+          type: string
+          enum: [COMPLETADA, EJECUTANDO, EN_COLA, EXPIRADA, FALLIDA]
+        filasGeneradas:
+          type: integer
+          description: Cero es un resultado valido, no un error.
+        hashResultado:
+          type: string
+          minLength: 64
+          maxLength: 64
+          description: >-
+            SHA-256 de la forma canonica del resultado. Es lo que permite probar que
+            el archivo que alguien presenta es el que salio de aca.
+        exportacionId:
+          type: string
+          format: uuid
+          description: >-
+            Presente solo si se pidio formato. El archivo se cifra y caduca cuando la
+            definicion tiene datos sensibles; no lo elige quien exporta.
     Dinero:
       type: object
       additionalProperties: false

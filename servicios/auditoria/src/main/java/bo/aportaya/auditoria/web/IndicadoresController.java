@@ -35,7 +35,7 @@ public class IndicadoresController implements IndicadoresApi {
     }
 
     @Override
-    @Permiso("INDICADORES_VER")
+    @Permiso("AUDITORIA_LEER")
     public ResponseEntity<SalidaTablero> publicarTablero(
             String periodo, String dimension, UUID dimensionId, Integer periodosDeSerie) {
 

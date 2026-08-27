@@ -32,7 +32,7 @@ public class DerechosController implements AuditoriaApi {
     }
 
     @Override
-    @Permiso("DATOS_PERSONALES_ATENDER")
+    @Permiso("DATOS_SENSIBLES_LEER")
     public ResponseEntity<SalidaDerechos> ejercerDerechos(UUID idempotencyKey, EntradaDerechos cuerpo) {
         Traza.marcarCasoDeUso("CU-07", String.valueOf(cuerpo.getUsuarioId()));
 

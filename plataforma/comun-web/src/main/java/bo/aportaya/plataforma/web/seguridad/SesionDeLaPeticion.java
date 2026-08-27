@@ -4,6 +4,8 @@ import bo.aportaya.plataforma.dominio.ContextoSesion;
 import bo.aportaya.plataforma.dominio.SinContextoDeSesion;
 import bo.aportaya.plataforma.dominio.Traza;
 import bo.aportaya.plataforma.web.traza.TrazaDeLaPeticion;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -35,6 +37,17 @@ public class SesionDeLaPeticion {
     static final String RECLAMO_ROL = "rol";
 
     static final String RECLAMO_DISPOSITIVO = "dispositivo";
+
+    /**
+     * Los permisos efectivos, que CU-08 calcula al asignar el rol y el token lleva.
+     *
+     * <p>Estan en el token y no se consultan porque preguntarselos a `identidad` en
+     * cada peticion seria acoplar la disponibilidad de los catorce servicios a la de
+     * uno, y hacerlo contra su esquema violaria el invariante 11. El precio es la
+     * ventana entre revocar un permiso y que expire el token, y por eso los tokens de
+     * operador son cortos (CU-08 ya cierra las sesiones al revocar).
+     */
+    static final String RECLAMO_PERMISOS = "permisos";
 
     /**
      * El contexto de quien esta operando.
@@ -69,6 +82,24 @@ public class SesionDeLaPeticion {
                 rol,
                 new Traza(TrazaDeLaPeticion.actual()),
                 token.getClaimAsString(RECLAMO_DISPOSITIVO));
+    }
+
+    /**
+     * Los permisos que trae el token. Conjunto vacio si no trae ninguno — y vacio
+     * significa <b>no puede nada</b>: denegar por omision (invariante 9). Un token sin
+     * el reclamo no es un token con todos los permisos.
+     *
+     * <p>La mayoria de los endpoints no necesita esto: declaran su permiso fijo con
+     * {@link Permiso}. Lo necesita el caso donde el permiso exigido <b>lo decide el
+     * dato</b> y no la ruta — CU-58, donde cada definicion de reporte declara el suyo.
+     */
+    public Set<String> permisos() {
+        Authentication autenticacion = SecurityContextHolder.getContext().getAuthentication();
+        if (autenticacion == null || !(autenticacion.getPrincipal() instanceof Jwt token)) {
+            throw new SinContextoDeSesion("la peticion llego sin token verificado");
+        }
+        List<String> permisos = token.getClaimAsStringList(RECLAMO_PERMISOS);
+        return permisos == null ? Set.of() : Set.copyOf(permisos);
     }
 
     private static UUID usuarioDe(String sujeto) {

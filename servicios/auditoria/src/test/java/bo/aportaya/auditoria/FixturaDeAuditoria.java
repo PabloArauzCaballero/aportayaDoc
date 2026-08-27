@@ -69,7 +69,19 @@ class FixturaDeAuditoria {
      * exactamente lo que se quiere de un expediente de datos personales.
      */
     UUID usuario() {
-        UUID id = UUID.randomUUID();
+        return usuarioConId(UUID.randomUUID());
+    }
+
+    /**
+     * El mismo titular, con un identificador elegido. Lo necesita el OPERADOR de las
+     * pruebas: `ejecucion_reporte.solicitado_por` tiene clave foranea a
+     * `identidad.usuario`, asi que un operador inventado no puede pedir un reporte — y
+     * esta bien que no pueda, porque «quien saco que» tiene que apuntar a alguien.
+     */
+    UUID usuarioConId(UUID id) {
+        if (existeUsuario(id)) {
+            return id;
+        }
         dsl.execute(
                 """
                 INSERT INTO identidad.usuario
@@ -82,6 +94,12 @@ class FixturaDeAuditoria {
                 "AUD-" + id.toString().substring(0, 8),
                 "+591" + SECUENCIA.incrementAndGet());
         return id;
+    }
+
+    private boolean existeUsuario(UUID id) {
+        Number cuantos = (Number) dsl.fetchOne("SELECT count(*) FROM identidad.usuario WHERE id = ?", id)
+                .get(0);
+        return cuantos.intValue() > 0;
     }
 
     /** Una politica de retencion vigente, que es catalogo y no constante. */
