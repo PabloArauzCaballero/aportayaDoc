@@ -296,7 +296,7 @@ cuatro divergencias reales:**
 | Los planes decían | Es | Dónde importaba |
 | :-: | :-: | --- |
 | `87 casos de uso` | **99** | el conteo del informe y el alcance de los carriles |
-| `304 tablas` | **305** | **el gate de salida de la Fase 0**, que verifica ese número |
+| `305 tablas` | **305** | **el gate de salida de la Fase 0**, que verifica ese número |
 | `566 relaciones` | **633** | la descripción del modelo |
 | `124 restricciones` | **138** | el gate de la fase 17: «cada restricción con prueba de rechazo» |
 

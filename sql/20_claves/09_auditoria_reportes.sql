@@ -63,6 +63,10 @@ ALTER TABLE auditoria.exportacion_reporte
   ADD CONSTRAINT fk_exportacion_reporte_ejecucion_id
   FOREIGN KEY (ejecucion_id) REFERENCES auditoria.ejecucion_reporte (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 
+ALTER TABLE auditoria.indicador_kpi
+  ADD CONSTRAINT fk_indicador_kpi_definicion_indicador_id
+  FOREIGN KEY (definicion_indicador_id) REFERENCES auditoria.definicion_indicador (id) ON DELETE RESTRICT ON UPDATE CASCADE;
+
 ALTER TABLE auditoria.proceso_anonimizacion
   ADD CONSTRAINT fk_proceso_anonimizacion_solicitud_id
   FOREIGN KEY (solicitud_id) REFERENCES auditoria.solicitud_datos_personales (id) ON DELETE SET NULL ON UPDATE CASCADE;

@@ -3,12 +3,12 @@ tags:
   - moc
   - modulo/09-auditoria-reportes-y-cumplimiento
 modulo: "09 — Auditoría, Reportes y Cumplimiento"
-entidades: 18
+entidades: 19
 ---
 
 # 09 — Auditoría, Reportes y Cumplimiento · entidades
 
-Las **18 tablas** de este módulo. Justificación de negocio en [[09_auditoria_reportes]].
+Las **19 tablas** de este módulo. Justificación de negocio en [[09_auditoria_reportes]].
 
 [[_Entidades|← Todas las entidades]] · [[Index]]
 
@@ -21,7 +21,8 @@ Las **18 tablas** de este módulo. Justificación de negocio en [[09_auditoria_r
 | [[ejecucion_reporte]] | 12 | 3 | 1 |
 | [[exportacion_reporte]] | 11 | 1 | 0 |
 | [[programacion_reporte]] | 10 | 1 | 0 |
-| [[indicador_kpi]] | 11 | 0 | 0 |
+| [[definicion_indicador]] | 11 | 0 | 1 |
+| [[indicador_kpi]] | 14 | 1 | 0 |
 | [[regla_cumplimiento]] | 10 | 0 | 1 |
 | [[alerta_cumplimiento]] | 15 | 5 | 0 |
 | [[reporte_operacion_sospechosa]] | 10 | 2 | 2 |

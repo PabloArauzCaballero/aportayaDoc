@@ -254,6 +254,10 @@ def rol_de(esquema):
 # svc_* dueño para que el relevo del outbox pueda marcar publicado. El payload
 # es inmutable de facto (solo se otorga UPDATE sobre publicado_en/estado/intentos).
 APPEND_ONLY = {
+    # Un indicador corregido entra como fila nueva, con la version de definicion
+    # con que se recalculo: pisarlo con UPDATE borraria la serie que CU-98 promete
+    # mantener disponible.
+    "indicador_kpi",
     "evento_reputacion", "registro_sellado", "bitacora_evento",
     "registro_acceso_datos", "movimiento_fondo", "abono_recuperacion",
     "historial_estado_incumplimiento", "registro_incumplimiento",

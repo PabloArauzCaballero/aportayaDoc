@@ -64,8 +64,14 @@ CREATE INDEX IF NOT EXISTS ix_programacion_reporte_definicion_id
 CREATE INDEX IF NOT EXISTS ix_programacion_reporte_proxima_ejecucion_en
   ON auditoria.programacion_reporte (proxima_ejecucion_en);
 
-CREATE UNIQUE INDEX IF NOT EXISTS uq_indicador_kpi_dimension_dimension_id_periodo_codigo
-  ON auditoria.indicador_kpi (dimension, dimension_id, periodo, codigo);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_definicion_indicador_version_codigo
+  ON auditoria.definicion_indicador (version, codigo);
+
+CREATE INDEX IF NOT EXISTS ix_indicador_kpi_definicion_indicador_id
+  ON auditoria.indicador_kpi (definicion_indicador_id);
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_indicador_kpi_dimension_dimension_id_periodo_defini_d9c645
+  ON auditoria.indicador_kpi (dimension, dimension_id, periodo, definicion_indicador_id, codigo);
 
 CREATE UNIQUE INDEX IF NOT EXISTS uq_regla_cumplimiento_codigo
   ON auditoria.regla_cumplimiento (codigo);

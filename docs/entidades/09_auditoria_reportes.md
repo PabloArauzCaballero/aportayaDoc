@@ -270,8 +270,54 @@ valor absoluto, importa si va hacia donde tiene que ir.
 tres niveles, que es como se detecta que la morosidad global es aceptable pero está
 concentrada en los grupos de un organizador específico.
 
+`provisorio` acompaña al número y **no se deduce al consultarlo**. Un indicador
+calculado sobre un período cuyos cierres todavía no cuadraron es una opinión, y quien
+lo calculó es el único que sabe si cuadraron. Deducirlo al publicar obligaría a
+auditoría a mirar el esquema de `nucleo-financiero`, que no puede: por eso el dato
+viaja con la fila.
+
+`casos` es el tamaño de la muestra con la que se calculó. Sin él no se puede aplicar
+el mínimo de privacidad y el valor se publicaría identificando a las personas que lo
+componen: un promedio de tres personas identifica a las tres.
+
 **Por qué debe existir.** Sin KPIs persistidos no hay serie temporal, y sin serie
 temporal no hay tendencia — solo fotos sueltas.
+
+---
+
+### `DefinicionIndicador` / `definicion_indicador` — Política configurable
+
+**Qué es.** Qué mide cada indicador, cómo se calcula, de dónde sale el dato, quién
+responde por él y para qué lado se cumple su meta. Versionada y con vigencia.
+
+**Para qué sirve (negocio).** Resuelve el problema que no es técnico: **que dos
+personas lleguen a una reunión con números distintos de la misma cosa**. Un indicador
+es una definición, no una consulta; si dos lugares lo recalculan, ya hay dos
+indicadores.
+
+- `sentido_meta` decide de qué lado se cumple. Sin él, «morosidad 7 % con meta 5 %»
+  se leería como que cumple, porque 7 es mayor que 5. La mitad de los indicadores de
+  riesgo y de cumplimiento son de los que **cuanto menos, mejor**, y el semáforo se
+  pinta al revés de lo que sugiere la aritmética ingenua.
+- `dueno_familia` es quien escribe la explicación cuando su indicador está en rojo.
+  Un indicador sin dueño es un número que nadie defiende y que, la tercera vez que
+  aparece en rojo, deja de mirarse.
+- `minimo_casos` es el piso de muestra para publicar sin identificar personas.
+- `formula` y `fuente` son lo que se responde cuando alguien pregunta «¿y esto de
+  dónde salió?» — que es la discusión que se lleva la reunión entera.
+
+**Por qué debe existir.** Por la **reproducibilidad**. `indicador_kpi` apunta a la
+versión de definición con la que se calculó, y por eso un número de hace un año vuelve
+a salir igual. Cuando la fórmula cambia, se cierra la vigencia de una versión y se
+abre otra: la serie vieja conserva la suya, y **el corte se puede señalar en el
+gráfico** en vez de aparecer como una mejora del 40 % que nadie explica.
+
+Sin esta tabla la definición vive en el código, y entonces se pierde en cuanto alguien
+despliega: el número queda sin forma de auditarse hacia atrás.
+
+> La columna se llama `definicion_indicador_id` y no `definicion_id` a propósito:
+> `definicion_id` ya está tomado por `definicion_reporte`, en este mismo módulo, y la
+> clave foránea habría resuelto en silencio a la tabla equivocada.
 
 ---
 

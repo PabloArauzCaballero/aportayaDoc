@@ -212,9 +212,9 @@ ahora todo lo que las 20 fases van a necesitar, aunque parezca prematuro.
 | **Puesto · tramo · fase** | **P1** · Mac M5 · **T1** · fase 1 |
 | **Documento** | [[02 Fases 1 y 2 · Capa de datos y núcleo transversal]] |
 | **Alcance** | `plataforma/comun-datos`: clases jOOQ **generadas** desde la base viva por `EntityGenerator`, `DineroType`, configuración de PgBouncer en modo *transaction* |
-| **Tamaño** | ●●○○○ · 304 tablas generadas, no escritas a mano |
+| **Tamaño** | ●●○○○ · 305 tablas generadas, no escritas a mano |
 
-**Necesita en `dev`.** `T0` cerrado. La base con las 304 tablas aplicadas y los 20
+**Necesita en `dev`.** `T0` cerrado. La base con las 305 tablas aplicadas y los 20
 catálogos mínimos sembrados.
 
 **Entrega, y quién espera.** Las clases de jOOQ por esquema — **lo esperan los 18

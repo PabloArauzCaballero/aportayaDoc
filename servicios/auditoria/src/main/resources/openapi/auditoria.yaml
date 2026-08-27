@@ -16,7 +16,7 @@ info:
 servers:
   - url: /api/v1
 
-paths: {}
+# Plantilla para los casos de uso que faltan de este servicio:
   # Una operacion por caso de uso. Plantilla:
   #
   #   /auditoria/…:
@@ -30,6 +30,56 @@ paths: {}
   #       responses:
   #         '200': …
   #         '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+paths:
+  /indicadores:
+    get:
+      operationId: publicarTablero           # CU-98
+      summary: Los indicadores del periodo, con su meta, su variacion y su serie
+      description: >-
+        [CONTRATO] Que la direccion mire siempre los mismos numeros, calculados de la
+        misma forma: un indicador es una DEFINICION, no una consulta, y si dos lugares
+        lo recalculan ya hay dos indicadores.
+
+        Se lee de `auditoria.indicador_kpi`, que es donde el calculo los deja. Esta
+        operacion NO calcula: publica.
+
+        La `dimension` es la del modelo —GLOBAL, POR_GRUPO, POR_ORGANIZADOR— y no la
+        que enumera el texto de CU-98. Donde el caso de uso y la tabla no coinciden,
+        manda la tabla: es la que rechaza.
+      parameters:
+        - name: periodo
+          in: query
+          required: true
+          description: Formato AAAA, AAAA-MM o AAAA-MM-DD, segun la granularidad
+          schema: { type: string, maxLength: 10, minLength: 4 }
+        - name: dimension
+          in: query
+          required: true
+          schema: { type: string, enum: [GLOBAL, POR_GRUPO, POR_ORGANIZADOR] }
+        - name: dimensionId
+          in: query
+          description: Obligatorio salvo en GLOBAL, donde no corresponde
+          schema: { type: string, format: uuid }
+        - name: periodosDeSerie
+          in: query
+          description: >-
+            Cuantos periodos anteriores traer para el grafico. Cero trae solo el
+            actual.
+          schema: { type: integer, minimum: 0, maximum: 24, default: 6 }
+      responses:
+        '200':
+          description: El tablero del periodo
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaTablero' }
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU98-01 PERIODO_NO_CERRADO   · AP-CU98-02 SIN_DEFINICION
+          # AP-CU98-03 SIN_META_DEL_PERIODO · AP-CU98-04 MUESTRA_INSUFICIENTE
+          # AP-CU98-05 INDICADOR_DUPLICADO
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
 
 components:
   parameters:
@@ -62,9 +112,99 @@ components:
         mensaje:  { type: string }
         detalle:  { type: object }
         trazaId:  { type: string }
+    SalidaTablero:
+      type: object
+      additionalProperties: false
+      required: [periodo, dimension, provisorio, indicadores]
+      properties:
+        periodo: { type: string }
+        provisorio:
+          type: boolean
+          description: >-
+            Verdadero si algun indicador del periodo se calculo sin que los cierres
+            cuadraran. Es del tablero entero y no de cada tarjeta: si uno solo es
+            provisorio, la lectura de todos queda condicionada.
+        dimension: { type: string, enum: [GLOBAL, POR_GRUPO, POR_ORGANIZADOR] }
+        dimensionId: { type: string, format: uuid }
+        indicadores:
+          type: array
+          items: { $ref: '#/components/schemas/Indicador' }
+    Indicador:
+      type: object
+      additionalProperties: false
+      required:
+        [codigo, nombre, unidad, familia, duenoFamilia, definicionVersion, suprimidoPorPrivacidad, calculadoEn]
+      properties:
+        codigo: { type: string, maxLength: 40 }
+        nombre: { type: string, maxLength: 80 }
+        valor:
+          type: string
+          description: >-
+            Cadena decimal, con la escala que guardo el calculo. No se redondea al
+            publicar: el numero del tablero tiene que ser el numero de la tabla.
+
+            AUSENTE cuando se suprimio por privacidad. La serie tambien viene vacia en
+            ese caso: publicarla seria dar el numero por la puerta de atras.
+        unidad: { type: string, maxLength: 15 }
+        meta:
+          type: string
+          description: >-
+            Ausente cuando no hay meta fijada para el periodo. Sin meta no hay
+            semaforo, y ponerla despues de ver el resultado no es medir.
+        cumpleMeta:
+          type: boolean
+          description: Ausente cuando no hay meta.
+        variacionPeriodoAnterior:
+          type: string
+          description: >-
+            Ausente en un indicador sin historia. Sin periodo anterior no hay
+            comparacion, y un cero fingido afirmaria que se mantuvo igual.
+        serie:
+          type: array
+          description: Los periodos anteriores, del mas viejo al mas nuevo.
+          items:
+            type: object
+            additionalProperties: false
+            required: [periodo, valor]
+            properties:
+              periodo: { type: string }
+              valor: { type: string }
+        familia:
+          type: string
+          enum: [NEGOCIO, RIESGO, CUMPLIMIENTO, OPERACION, FINANZAS]
+          description: >-
+            Sale del catalogo de definiciones del servicio, no de la tabla:
+            `indicador_kpi` no tiene columna de familia (hueco declarado).
+        duenoFamilia:
+          type: string
+          maxLength: 80
+          description: Quien responde cuando el indicador esta en rojo.
+        definicionVersion:
+          type: string
+          maxLength: 20
+          description: >-
+            Con que version de la definicion se calculo. Es lo que permite que un
+            numero de hace un ano vuelva a salir igual.
+        suprimidoPorPrivacidad:
+          type: boolean
+          description: >-
+            Verdadero cuando la muestra no alcanza el minimo de la definicion. Un
+            promedio de tres personas identifica a las tres (R-SEG-03).
+        casos:
+          type: integer
+          description: Tamano de la muestra, para poder explicar la supresion.
+        minimoCasos:
+          type: integer
+          description: El piso que fija la definicion del indicador.
+        calculadoEn: { type: string, format: date-time }
   responses:
     ReglaDeNegocio:
       description: Regla de negocio de la aplicacion (422, no 400)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NoAutenticado:
+      description: Sin sesion valida
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }

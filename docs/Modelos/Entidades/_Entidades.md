@@ -2,12 +2,12 @@
 tags:
   - moc
   - indice
-entidades: 304
+entidades: 305
 ---
 
 # Índice de entidades
 
-Las **304 tablas** del modelo, agrupadas por módulo. «Sal.» y «Ent.» son claves foráneas salientes y entrantes.
+Las **305 tablas** del modelo, agrupadas por módulo. «Sal.» y «Ent.» son claves foráneas salientes y entrantes.
 
 [[Index|← Índice general]] · [[_Relaciones|Relaciones →]]
 
@@ -236,7 +236,8 @@ Las **304 tablas** del modelo, agrupadas por módulo. «Sal.» y «Ent.» son cl
 | [[ejecucion_reporte]] | 12 | 3 | 1 | — |
 | [[exportacion_reporte]] | 11 | 1 | 0 | — |
 | [[programacion_reporte]] | 10 | 1 | 0 | — |
-| [[indicador_kpi]] | 11 | 0 | 0 | — |
+| [[definicion_indicador]] | 11 | 0 | 1 | — |
+| [[indicador_kpi]] | 14 | 1 | 0 | — |
 | [[regla_cumplimiento]] | 10 | 0 | 1 | — |
 | [[alerta_cumplimiento]] | 15 | 5 | 0 | — |
 | [[reporte_operacion_sospechosa]] | 10 | 2 | 2 | — |

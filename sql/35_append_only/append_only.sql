@@ -98,6 +98,11 @@ CREATE TRIGGER tg_impresion_anuncio_append_only
   BEFORE UPDATE OR DELETE ON publicidad.impresion_anuncio
   FOR EACH ROW EXECUTE FUNCTION fn_aud_bloquear_mutacion();
 
+DROP TRIGGER IF EXISTS tg_indicador_kpi_append_only ON auditoria.indicador_kpi;
+CREATE TRIGGER tg_indicador_kpi_append_only
+  BEFORE UPDATE OR DELETE ON auditoria.indicador_kpi
+  FOR EACH ROW EXECUTE FUNCTION fn_aud_bloquear_mutacion();
+
 DROP TRIGGER IF EXISTS tg_movimiento_billetera_append_only ON nucleo_financiero.movimiento_billetera;
 CREATE TRIGGER tg_movimiento_billetera_append_only
   BEFORE UPDATE OR DELETE ON nucleo_financiero.movimiento_billetera

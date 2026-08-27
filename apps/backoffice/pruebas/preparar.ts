@@ -22,3 +22,25 @@ afterEach(() => {
   soltarClientes()
 })
 afterAll(() => servidorDePruebas.close())
+
+// jsdom no implementa `<dialog>`: `showModal` y `close` no existen y toda prueba que
+// abra un dialogo revienta. Se rellenan aca, lo minimo para que el elemento se
+// comporte como el navegador en lo que las pruebas observan —el atributo `open`, el
+// evento `close` y `Escape`—.
+//
+// Lo que NO se rellena, y hay que saberlo: el foco atrapado y la inercia del fondo.
+// Eso lo da el navegador de verdad y ninguna prueba de jsdom lo comprueba; se verifica
+// con Playwright cuando ese corredor exista.
+if (typeof HTMLDialogElement !== 'undefined' && !HTMLDialogElement.prototype.showModal) {
+  HTMLDialogElement.prototype.showModal = function abrir(this: HTMLDialogElement) {
+    this.open = true
+  }
+  HTMLDialogElement.prototype.close = function cerrar(this: HTMLDialogElement) {
+    this.open = false
+    this.dispatchEvent(new Event('close'))
+  }
+  document.addEventListener('keydown', (evento) => {
+    if (evento.key !== 'Escape') return
+    document.querySelectorAll('dialog[open]').forEach((d) => (d as HTMLDialogElement).close())
+  })
+}

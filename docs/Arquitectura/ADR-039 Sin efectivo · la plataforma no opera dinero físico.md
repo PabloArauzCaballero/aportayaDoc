@@ -101,7 +101,7 @@ En concreto:
 ## Cómo se verifica
 
 ```bash
-python3 scripts/generar_boveda.py       # 304 entidades, sin PuntoAtencion ni ArqueoPuntoAtencion
+python3 scripts/generar_boveda.py       # 305 entidades, sin PuntoAtencion ni ArqueoPuntoAtencion
 python3 scripts/generar_ddl.py          # el esquema no vuelve a crear las tablas
 python3 scripts/generar_semillas.py     # ninguna semilla escribe un punto de atención
 python3 scripts/verificar_boveda.py     # cifras al día y ningún CU citando una tabla inexistente
