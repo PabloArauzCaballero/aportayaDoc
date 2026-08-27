@@ -181,6 +181,36 @@ paths:
   # CU-57 Operar un punto de atencion quedo OBSOLETO con su numero reservado:
   # ADR-039 retiro el efectivo del alcance el 20-08-2026.
 
+  /billetera/retiros:
+    post:
+      operationId: solicitarRetiro             # CU-11
+      summary: Solicitar un retiro hacia una cuenta de destino
+      description: >-
+        Retencion primero, pago despues, nunca al reves. Si se instruyera el pago
+        antes de retener, entre las dos cosas la persona podria gastar el mismo
+        saldo en otra operacion y el retiro saldria contra un disponible que ya no
+        existe. El proveedor se instruye FUERA de la transaccion (invariante 6).
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaRetiro' }
+      responses:
+        '201':
+          description: Orden creada y saldo ya retenido
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaRetiro' }
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU11-01 SALDO_INSUFICIENTE          · AP-CU11-02 MFA_REQUERIDO
+          # AP-CU11-03 INSTRUMENTO_EN_ENFRIAMIENTO · AP-CU11-04 TITULAR_NO_COINCIDE
+          # AP-CU11-05 BLOQUEO_DE_AUTORIDAD        · AP-CU11-06 ENCAJE_INCUMPLIDO
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+
 components:
   parameters:
     ClaveIdempotencia:
@@ -192,6 +222,25 @@ components:
         seguro, y la clave se valida ANTES de escribir (invariante 7).
       schema: { type: string, format: uuid }
   schemas:
+    EntradaRetiro:
+      type: object
+      additionalProperties: false
+      required: [cuentaBilleteraId, monto, instrumentoDestinoId, factorMfa]
+      properties:
+        cuentaBilleteraId:    { type: string, format: uuid }
+        monto:                { $ref: '#/components/schemas/Dinero' }
+        instrumentoDestinoId: { type: string, format: uuid }
+        factorMfa:            { type: string, minLength: 6, maxLength: 8 }
+    SalidaRetiro:
+      type: object
+      additionalProperties: false
+      required: [ordenRetiroId, estado, costoRetiro, montoNeto, retencionId]
+      properties:
+        ordenRetiroId: { type: string, format: uuid }
+        estado:        { type: string, enum: [PENDIENTE, EN_REVISION, AUTORIZADA, PAGADA, RECHAZADA] }
+        costoRetiro:   { $ref: '#/components/schemas/Dinero' }
+        montoNeto:     { $ref: '#/components/schemas/Dinero' }
+        retencionId:   { type: string, format: uuid }
     EntradaRecarga:
       type: object
       additionalProperties: false

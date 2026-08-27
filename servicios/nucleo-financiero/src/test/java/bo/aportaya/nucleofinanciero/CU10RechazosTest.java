@@ -71,7 +71,7 @@ class CU10RechazosTest extends BaseDeBilletera {
         // cuadra. Hace falta una pata sola, sin contrapartida, que es el descuadre
         // real. Y como el trigger es DEFERRABLE, solo salta al intentar el COMMIT.
         UUID asiento = UUID.randomUUID();
-        UUID cuenta = fixtura.cuentaDeMovimiento("CU10-" + asiento.toString().substring(0, 6), "ACTIVO", "DEUDORA");
+        UUID cuenta = contable.cuentaDeMovimiento("CU10-" + asiento.toString().substring(0, 6), "ACTIVO", "DEUDORA");
 
         assertThatThrownBy(() -> transaccion.execute(estado -> {
                     dsl.execute(

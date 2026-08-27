@@ -1,12 +1,14 @@
 package bo.aportaya.nucleofinanciero;
 
 import bo.aportaya.nucleofinanciero.aplicacion.CU10RecargarSaldo;
+import bo.aportaya.nucleofinanciero.aplicacion.CU11RetirarSaldo;
 import bo.aportaya.nucleofinanciero.aplicacion.CU13RetenerSaldo;
 import bo.aportaya.nucleofinanciero.aplicacion.CU40EvaluarLimites;
 import bo.aportaya.nucleofinanciero.infraestructura.CuentaBilleteraRepositorio;
 import bo.aportaya.nucleofinanciero.infraestructura.LibroDeBilletera;
 import bo.aportaya.nucleofinanciero.infraestructura.LimiteRepositorio;
 import bo.aportaya.nucleofinanciero.infraestructura.OrdenRecargaRepositorio;
+import bo.aportaya.nucleofinanciero.infraestructura.OrdenRetiroRepositorio;
 import bo.aportaya.nucleofinanciero.infraestructura.RetencionRepositorio;
 import bo.aportaya.plataforma.datos.Datos;
 import bo.aportaya.plataforma.dominio.ContextoSesion;
@@ -32,11 +34,16 @@ abstract class BaseDeBilletera {
     protected static DSLContext dsl;
     protected static DSLContext dslFixtura;
     protected static TransactionTemplate transaccion;
-    protected static FixturaDeNucleoFinanciero fixtura;
+    protected static FixturaDeBilletera fixtura;
+
+    /** La contable: el retiro escribe asientos, y esos necesitan cuentas. */
+    protected static FixturaDeNucleoFinanciero contable;
+
     protected static Consumidos consumidos;
     protected static CU40EvaluarLimites limitesCU;
     protected static CU13RetenerSaldo retencionCU;
     protected static CU10RecargarSaldo recargaCU;
+    protected static CU11RetirarSaldo retiroCU;
 
     /** La cuenta puente: el otro lado de todo ingreso. Una sola para toda la corrida. */
     protected static UUID puente;
@@ -49,7 +56,8 @@ abstract class BaseDeBilletera {
         dsl = DSL.using(new TransactionAwareDataSourceProxy(fuente), SQLDialect.POSTGRES);
         dslFixtura = DSL.using(fuente, SQLDialect.POSTGRES);
         transaccion = new TransactionTemplate(new DataSourceTransactionManager(fuente));
-        fixtura = new FixturaDeNucleoFinanciero(dslFixtura);
+        fixtura = new FixturaDeBilletera(dslFixtura);
+        contable = new FixturaDeNucleoFinanciero(dslFixtura);
         consumidos = new Consumidos("nucleo_financiero");
 
         limitesCU = new CU40EvaluarLimites(
@@ -74,6 +82,16 @@ abstract class BaseDeBilletera {
                 new Outbox("nucleo_financiero"),
                 Reloj.delSistema(),
                 java.time.Duration.ofMinutes(30),
+                puente);
+        retiroCU = new CU11RetirarSaldo(
+                new Datos(dsl),
+                new CuentaBilleteraRepositorio(),
+                new OrdenRetiroRepositorio(),
+                retencionCU,
+                limitesCU,
+                new LibroDeBilletera(),
+                new Outbox("nucleo_financiero"),
+                Reloj.delSistema(),
                 puente);
     }
 

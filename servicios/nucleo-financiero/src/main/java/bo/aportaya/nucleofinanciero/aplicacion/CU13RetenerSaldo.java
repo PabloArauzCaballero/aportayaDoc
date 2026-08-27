@@ -132,10 +132,30 @@ public class CU13RetenerSaldo {
         return cerrar(retencionId, "EJECUTADA", "nucleo_financiero.retencion_ejecutada", ctx);
     }
 
-    private SalidaCierre cerrar(UUID retencionId, String estado, String evento, ContextoSesion ctx) {
-        OffsetDateTime ahora = reloj.ahora().atOffset(ZoneOffset.UTC);
+    /**
+     * Las variantes para usar DENTRO de la transaccion de otro caso de uso.
+     *
+     * <p>Existen porque el retiro cierra su retencion en la misma transaccion en que
+     * escribe el movimiento: abrir una segunda transaccion romperia el invariante 2 y,
+     * peor, dejaria una ventana en la que la retencion ya se cerro pero el movimiento
+     * todavia no existe — un instante en que la plata no esta ni retenida ni gastada.
+     */
+    public SalidaCierre liberarDentroDe(DSLContext dsl, UUID retencionId, ContextoSesion ctx) {
+        return cerrarDentroDe(dsl, retencionId, "LIBERADA", "nucleo_financiero.retencion_liberada", ctx);
+    }
 
-        return datos.conContexto(ctx, dsl -> {
+    public SalidaCierre ejecutarDentroDe(DSLContext dsl, UUID retencionId, ContextoSesion ctx) {
+        return cerrarDentroDe(dsl, retencionId, "EJECUTADA", "nucleo_financiero.retencion_ejecutada", ctx);
+    }
+
+    private SalidaCierre cerrar(UUID retencionId, String estado, String evento, ContextoSesion ctx) {
+        return datos.conContexto(ctx, dsl -> cerrarDentroDe(dsl, retencionId, estado, evento, ctx));
+    }
+
+    private SalidaCierre cerrarDentroDe(
+            DSLContext dsl, UUID retencionId, String estado, String evento, ContextoSesion ctx) {
+        OffsetDateTime ahora = reloj.ahora().atOffset(ZoneOffset.UTC);
+        {
             var retencion = retenciones
                     .ver(dsl, retencionId)
                     .orElseThrow(() -> new ErrorDeNegocio(CodigoError.de(13, 3), "Esa retencion no existe."));
@@ -164,7 +184,7 @@ public class CU13RetenerSaldo {
 
             var despues = cuentas.ver(dsl, retencion.cuentaId()).orElseThrow();
             return new SalidaCierre(retencionId, estado, despues.disponible(), despues.retenido());
-        });
+        }
     }
 
     /** Trabajo programado: lo que vencio deja de retener plata ajena. */
