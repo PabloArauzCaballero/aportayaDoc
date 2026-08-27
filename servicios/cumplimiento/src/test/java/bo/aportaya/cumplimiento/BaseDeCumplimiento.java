@@ -1,8 +1,12 @@
 package bo.aportaya.cumplimiento;
 
+import bo.aportaya.cumplimiento.aplicacion.CU02ElevarDiligencia;
 import bo.aportaya.cumplimiento.aplicacion.CU03DeclararPep;
 import bo.aportaya.cumplimiento.aplicacion.CU05AceptarContrato;
 import bo.aportaya.cumplimiento.aplicacion.CU46VerificarAlcance;
+import bo.aportaya.cumplimiento.dominio.NivelDeDiligencia;
+import bo.aportaya.cumplimiento.dominio.PeriodicidadDeRevision;
+import bo.aportaya.cumplimiento.dominio.RequisitosDeNivel;
 import bo.aportaya.cumplimiento.infraestructura.AceptacionRepositorio;
 import bo.aportaya.cumplimiento.infraestructura.CalificacionRiesgoRepositorio;
 import bo.aportaya.cumplimiento.infraestructura.CasoLftRepositorio;
@@ -10,6 +14,7 @@ import bo.aportaya.cumplimiento.infraestructura.ContratoRepositorio;
 import bo.aportaya.cumplimiento.infraestructura.DeclaracionPepRepositorio;
 import bo.aportaya.cumplimiento.infraestructura.DiligenciaRepositorio;
 import bo.aportaya.cumplimiento.infraestructura.LicenciaRepositorio;
+import bo.aportaya.cumplimiento.infraestructura.LimiteRepositorio;
 import bo.aportaya.cumplimiento.infraestructura.SandboxRepositorio;
 import bo.aportaya.plataforma.datos.Datos;
 import bo.aportaya.plataforma.dominio.ContextoSesion;
@@ -41,6 +46,16 @@ abstract class BaseDeCumplimiento {
     protected static CU46VerificarAlcance alcanceCU;
     protected static CU05AceptarContrato contratoCU;
     protected static CU03DeclararPep pepCU;
+    protected static CU02ElevarDiligencia diligenciaCU;
+
+    /** Los requisitos por nivel son configuracion declarada, no catalogo de la boveda. */
+    protected static final RequisitosDeNivel REQUISITOS = new RequisitosDeNivel(java.util.Map.of(
+            NivelDeDiligencia.ESTANDAR,
+            java.util.List.of("CEDULA", "DOMICILIO"),
+            NivelDeDiligencia.AMPLIADA,
+            java.util.List.of("CEDULA", "DOMICILIO", "INGRESOS"),
+            NivelDeDiligencia.REFORZADA,
+            java.util.List.of("CEDULA", "DOMICILIO", "INGRESOS", "ORIGEN_FONDOS")));
 
     @BeforeAll
     static void armar() {
@@ -75,6 +90,17 @@ abstract class BaseDeCumplimiento {
                 Reloj.delSistema(),
                 6,
                 30);
+        diligenciaCU = new CU02ElevarDiligencia(
+                new Datos(dsl),
+                new DiligenciaRepositorio(),
+                new CalificacionRiesgoRepositorio(),
+                new DeclaracionPepRepositorio(),
+                new CasoLftRepositorio(),
+                new LimiteRepositorio(),
+                new Outbox("cumplimiento"),
+                Reloj.delSistema(),
+                REQUISITOS,
+                new PeriodicidadDeRevision(6, 12, 24));
     }
 
     protected ContextoSesion contexto() {
