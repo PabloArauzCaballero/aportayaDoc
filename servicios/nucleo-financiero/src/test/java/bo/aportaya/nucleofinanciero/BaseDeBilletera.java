@@ -1,9 +1,12 @@
 package bo.aportaya.nucleofinanciero;
 
+import bo.aportaya.nucleofinanciero.aplicacion.CU10RecargarSaldo;
 import bo.aportaya.nucleofinanciero.aplicacion.CU13RetenerSaldo;
 import bo.aportaya.nucleofinanciero.aplicacion.CU40EvaluarLimites;
 import bo.aportaya.nucleofinanciero.infraestructura.CuentaBilleteraRepositorio;
+import bo.aportaya.nucleofinanciero.infraestructura.LibroDeBilletera;
 import bo.aportaya.nucleofinanciero.infraestructura.LimiteRepositorio;
+import bo.aportaya.nucleofinanciero.infraestructura.OrdenRecargaRepositorio;
 import bo.aportaya.nucleofinanciero.infraestructura.RetencionRepositorio;
 import bo.aportaya.plataforma.datos.Datos;
 import bo.aportaya.plataforma.dominio.ContextoSesion;
@@ -33,6 +36,10 @@ abstract class BaseDeBilletera {
     protected static Consumidos consumidos;
     protected static CU40EvaluarLimites limitesCU;
     protected static CU13RetenerSaldo retencionCU;
+    protected static CU10RecargarSaldo recargaCU;
+
+    /** La cuenta puente: el otro lado de todo ingreso. Una sola para toda la corrida. */
+    protected static UUID puente;
 
     @BeforeAll
     static void armarBilletera() {
@@ -57,6 +64,17 @@ abstract class BaseDeBilletera {
                 new RetencionRepositorio(),
                 new Outbox("nucleo_financiero"),
                 Reloj.delSistema());
+        puente = fixtura.puenteDeCustodia();
+        recargaCU = new CU10RecargarSaldo(
+                new Datos(dsl),
+                new CuentaBilleteraRepositorio(),
+                new OrdenRecargaRepositorio(),
+                new LibroDeBilletera(),
+                limitesCU,
+                new Outbox("nucleo_financiero"),
+                Reloj.delSistema(),
+                java.time.Duration.ofMinutes(30),
+                puente);
     }
 
     protected ContextoSesion contextoDe(UUID usuarioId) {
@@ -66,6 +84,33 @@ abstract class BaseDeBilletera {
 
     protected int contar(String consulta, Object... parametros) {
         return ((Number) dsl.fetchOne(consulta, parametros).get(0)).intValue();
+    }
+
+    /**
+     * Igual que {@link #rechazaLaBase}, pero para restricciones DIFERIDAS.
+     *
+     * <p>Un {@code CONSTRAINT TRIGGER ... INITIALLY DEFERRED} solo dispara al COMMIT,
+     * y estas pruebas revierten a proposito para no ensuciar el contenedor. Sin
+     * adelantarlo, la prueba veria que el INSERT «paso» y daria por buena una fila
+     * que en produccion nunca se habria confirmado. {@code SET CONSTRAINTS ALL
+     * IMMEDIATE} lo hace disparar donde se lo puede observar.
+     */
+    protected String rechazaLaBaseAlCerrar(String sql) {
+        try {
+            transaccion.execute(estado -> {
+                dsl.execute("SET CONSTRAINTS ALL IMMEDIATE");
+                dsl.execute(sql);
+                estado.setRollbackOnly();
+                return null;
+            });
+            return "";
+        } catch (RuntimeException e) {
+            Throwable raiz = e;
+            while (raiz.getCause() != null && raiz.getCause() != raiz) {
+                raiz = raiz.getCause();
+            }
+            return String.valueOf(raiz.getMessage());
+        }
     }
 
     protected String rechazaLaBase(String sql) {
