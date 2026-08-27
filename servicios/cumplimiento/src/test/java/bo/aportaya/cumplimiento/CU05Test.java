@@ -244,8 +244,8 @@ class CU05Test extends BaseDeCumplimiento {
     }
 
     @Test
-    @DisplayName("los consentimientos por finalidad salen por evento, no por INSERT en esquema ajeno")
-    void consentimientosPorEvento() {
+    @DisplayName("rechaza escribir en esquema ajeno: los consentimientos salen por evento")
+    void rechazaEscrituraCruzada() {
         // `identidad.consentimiento` es esquema ajeno (invariante 11): cumplimiento
         // pide que se registre, no lo registra.
         UUID contrato = fixtura.contrato(BILLETERA, 1, "VIGENTE");

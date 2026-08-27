@@ -130,6 +130,42 @@ final class FixturaDeCumplimiento {
         dsl.execute("DELETE FROM catalogo.tarifario");
     }
 
+    /** El perfil DECLARADO: la referencia contra la que compara el monitoreo. */
+    UUID perfilDeclarado(UUID usuarioId, BigDecimal montoMensual) {
+        UUID id = UUID.randomUUID();
+        dsl.execute(
+                """
+                INSERT INTO cumplimiento.perfil_transaccional
+                    (id, usuario_id, tipo, monto_mensual_estimado, cantidad_operaciones_estimada,
+                     actividad_economica, origen_fondos_declarado, moneda, fuente,
+                     vigente_desde, actualizado_en)
+                VALUES (?, ?, 'DECLARADO', ?, 10, 'COMERCIO', 'SALARIO', 'BOB', 'DECLARACION',
+                        now() - interval '1 day', now())
+                """,
+                id,
+                usuarioId,
+                montoMensual);
+        return id;
+    }
+
+    /** Una regla de monitoreo activa: la alerta la exige con FK RESTRICT. */
+    UUID reglaDeMonitoreo(String codigo) {
+        UUID id = UUID.randomUUID();
+        dsl.execute(
+                """
+                INSERT INTO cumplimiento.regla_monitoreo_lft
+                    (id, codigo, tipologia, descripcion, expresion, ventana_evaluacion,
+                     umbral_monto, severidad, accion_automatica, fuente_normativa, activa, vigente_desde)
+                VALUES (?, ?, 'DESVIO_PERFIL', 'Desvio sobre el perfil declarado',
+                        '{"regla": "observado > declarado * 3"}'::jsonb, 'MES', 0, 'ALTA', 'SOLO_ALERTAR',
+                        'ASFI 540/2025', true, now() - interval '1 day')
+                ON CONFLICT DO NOTHING
+                """,
+                id,
+                codigo);
+        return id;
+    }
+
     /** Devuelve la tabla al vacio con que arranca el contenedor. */
     void restaurarLicencia() {
         dsl.execute("DELETE FROM cumplimiento.entorno_prueba_regulado");

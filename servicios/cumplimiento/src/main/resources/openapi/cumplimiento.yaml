@@ -16,20 +16,129 @@ info:
 servers:
   - url: /api/v1
 
-paths: {}
-  # Una operacion por caso de uso. Plantilla:
-  #
-  #   /cumplimiento/…:
-  #     post:
-  #       operationId: <verboObjeto>          # CU-NN
-  #       parameters:
-  #         - name: Idempotency-Key
-  #           in: header
-  #           required: true                   # toda operacion con efecto
-  #           schema: { type: string, format: uuid }
-  #       responses:
-  #         '200': …
-  #         '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+paths:
+  /cumplimiento/usuarios/{usuarioId}/diligencia:
+    post:
+      operationId: elevarDiligencia          # CU-02
+      summary: Elevar el nivel de debida diligencia
+      description: >-
+        Subir de nivel desbloquea topes mas altos, asi que la puerta es igual de
+        dura que los topes que abre. Nunca baja: un destino que no supera al nivel
+        actual se rechaza en vez de aplicarse.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+        - name: usuarioId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaDiligencia' }
+      responses:
+        '200':
+          description: Diligencia elevada, u observada con lo que falta
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaDiligencia' }
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU02-01 DOCUMENTACION_INSUFICIENTE - AP-CU02-02 REQUIERE_SEGUNDA_REVISION
+          # AP-CU02-03 COINCIDENCIA_PENDIENTE     - AP-CU02-04 NIVEL_NO_ASCENDENTE
+
+  /cumplimiento/usuarios/{usuarioId}/pep:
+    post:
+      operationId: declararPep               # CU-03
+      summary: Declaracion PEP y beneficiario final
+      description: >-
+        Mira tambien a los beneficiarios finales: un titular que no es PEP pero
+        cuya estructura de control termina en un PEP es exactamente el caso que la
+        norma quiere ver.
+      parameters:
+        - name: usuarioId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaPep' }
+      responses:
+        '200':
+          description: Declaracion registrada y cliente recalificado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaPep' }
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU03-01 DECLARACION_INCOMPLETA - AP-CU03-02 BENEFICIARIO_SIN_DOCUMENTO
+
+  /cumplimiento/contratos/{contratoId}/aceptaciones:
+    post:
+      operationId: aceptarContrato           # CU-05
+      summary: Aceptar el contrato de adhesion y el tarifario
+      description: >-
+        Vive aca y no en identidad —aunque la ficha del CU apunte alla— porque
+        contrato_adhesion y aceptacion_contrato estan en el esquema de
+        cumplimiento, y el esquema tiene precedencia sobre la ficha.
+        Append-only: publicar una version nueva no toca las aceptaciones viejas.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+        - name: contratoId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaAceptacion' }
+      responses:
+        '200':
+          description: Aceptacion registrada con su evidencia sellada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaAceptacion' }
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU05-01 CONTRATO_NO_VIGENTE - AP-CU05-02 VERSION_DESACTUALIZADA
+          # AP-CU05-03 TARIFARIO_NO_PUBLICADO
+
+  /licencia/alcance:
+    get:
+      operationId: verificarAlcance          # CU-46
+      summary: Verificar el alcance de la licencia
+      description: >-
+        Lo consultan los otros servicios antes de habilitar una operacion.
+        Deniega por omision: sin licencia legible, sin alcance o sin sandbox, la
+        respuesta es no. Un fallo de lectura no puede traducirse en «segui».
+        No lleva Idempotency-Key porque no tiene efecto: solo responde.
+      parameters:
+        - name: servicio
+          in: query
+          required: true
+          schema: { type: string, maxLength: 40 }
+        - name: usuarioId
+          in: query
+          required: false
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Decision de habilitacion, con la via y sus limites
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaAlcance' }
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU46-01 LICENCIA_NO_OTORGADA - AP-CU46-02 FUERA_DE_ALCANCE
+          # AP-CU46-03 SANDBOX_AGOTADO      - AP-CU46-04 LICENCIA_SUSPENDIDA
+
+  # CU-06 no tiene endpoint: lo dispara el planificador. Sus codigos quedan
+  # declarados igual, porque el catalogo de errores es del contrato y no del
+  # transporte:
+  #   AP-CU06-01 SIN_CALIFICACION_VIGENTE - AP-CU06-02 PERFIL_NO_DECLARADO
 
 components:
   parameters:
@@ -42,6 +151,103 @@ components:
         seguro, y la clave se valida ANTES de escribir (invariante 7).
       schema: { type: string, format: uuid }
   schemas:
+    EntradaDiligencia:
+      type: object
+      additionalProperties: false
+      required: [nivelDestino, documentos, aprobadaPor]
+      properties:
+        nivelDestino: { type: string, enum: [ESTANDAR, AMPLIADA, REFORZADA] }
+        documentos:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [tipo, url, hash]
+            properties:
+              tipo: { type: string }
+              url:  { type: string, format: uri }
+              hash: { type: string, minLength: 64, maxLength: 64 }
+        aprobadaPor:        { type: string, format: uuid }
+        segundaRevisionPor: { type: string, format: uuid }
+    SalidaDiligencia:
+      type: object
+      additionalProperties: false
+      required: [diligenciaId, estado, faltantes, limitesNuevos]
+      properties:
+        diligenciaId: { type: string, format: uuid }
+        estado:       { type: string, enum: [EN_PROCESO, COMPLETA, OBSERVADA] }
+        faltantes:    { type: array, items: { type: string } }
+        limitesNuevos:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [concepto, ventana]
+            properties:
+              concepto: { type: string }
+              monto:    { type: string, pattern: '^-?\\d+\\.\\d{2}$' }
+              ventana:  { type: string }
+    EntradaPep:
+      type: object
+      additionalProperties: false
+      required: [esPep]
+      properties:
+        esPep:   { type: boolean }
+        tipoPep: { type: string, enum: [NACIONAL, EXTRANJERO, ORG_INTERNACIONAL, FAMILIAR, ALLEGADO] }
+        cargo:       { type: string, maxLength: 120 }
+        institucion: { type: string, maxLength: 120 }
+        beneficiariosFinales:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [nombre, documento]
+            properties:
+              nombre:    { type: string }
+              documento: { type: string }
+              esPep:     { type: boolean }
+              tipoPep:   { type: string, enum: [NACIONAL, EXTRANJERO, ORG_INTERNACIONAL, FAMILIAR, ALLEGADO] }
+    SalidaPep:
+      type: object
+      additionalProperties: false
+      required: [declaracionId, exigeDiligenciaReforzada, nivelRiesgo]
+      properties:
+        declaracionId:            { type: string, format: uuid }
+        exigeDiligenciaReforzada: { type: boolean }
+        nivelRiesgo:              { type: string, enum: [BAJO, MEDIO, ALTO] }
+    EntradaAceptacion:
+      type: object
+      additionalProperties: false
+      required: [usuarioId, version]
+      properties:
+        usuarioId:  { type: string, format: uuid }
+        version:    { type: integer }
+        tokenFirma: { type: string, format: uuid }
+        consentimientos: { type: array, items: { type: string } }
+    SalidaAceptacion:
+      type: object
+      additionalProperties: false
+      required: [aceptacionId, hashEvidencia, aceptadoEn]
+      properties:
+        aceptacionId:  { type: string, format: uuid }
+        hashEvidencia: { type: string, minLength: 64, maxLength: 64 }
+        aceptadoEn:    { type: string, format: date-time }
+    SalidaAlcance:
+      type: object
+      additionalProperties: false
+      required: [habilitado, via]
+      properties:
+        habilitado: { type: boolean }
+        via:        { type: string, enum: [LICENCIA, SANDBOX, NINGUNA] }
+        limitesSandbox:
+          type: object
+          nullable: true
+          additionalProperties: false
+          required: [usuarios, montoOperacion]
+          properties:
+            usuarios:       { type: integer }
+            montoOperacion: { type: string, pattern: '^-?\\d+\\.\\d{2}$' }
+        motivo: { type: string, nullable: true }
     Dinero:
       type: object
       additionalProperties: false

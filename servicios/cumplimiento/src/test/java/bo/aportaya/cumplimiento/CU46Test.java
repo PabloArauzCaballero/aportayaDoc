@@ -206,8 +206,8 @@ class CU46Test extends BaseDeCumplimiento {
     }
 
     @Test
-    @DisplayName("denegar por omision: sin licencia legible, el servicio no se habilita")
-    void deniegaPorOmision() {
+    @DisplayName("rechaza sin licencia legible: denegar por omision es la unica lectura segura")
+    void rechazaSinLicenciaLegible() {
         // Sin una sola fila de licencia, que es como arranca el contenedor: la
         // lectura segura de una tabla vacia es «no», nunca «segui adelante».
         assertThat(preguntar("BILLETERA").habilitado()).isFalse();

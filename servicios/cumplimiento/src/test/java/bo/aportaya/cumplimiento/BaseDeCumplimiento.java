@@ -3,7 +3,9 @@ package bo.aportaya.cumplimiento;
 import bo.aportaya.cumplimiento.aplicacion.CU02ElevarDiligencia;
 import bo.aportaya.cumplimiento.aplicacion.CU03DeclararPep;
 import bo.aportaya.cumplimiento.aplicacion.CU05AceptarContrato;
+import bo.aportaya.cumplimiento.aplicacion.CU06RevisarConocimiento;
 import bo.aportaya.cumplimiento.aplicacion.CU46VerificarAlcance;
+import bo.aportaya.cumplimiento.dominio.DesvioDePerfil;
 import bo.aportaya.cumplimiento.dominio.NivelDeDiligencia;
 import bo.aportaya.cumplimiento.dominio.PeriodicidadDeRevision;
 import bo.aportaya.cumplimiento.dominio.RequisitosDeNivel;
@@ -15,6 +17,8 @@ import bo.aportaya.cumplimiento.infraestructura.DeclaracionPepRepositorio;
 import bo.aportaya.cumplimiento.infraestructura.DiligenciaRepositorio;
 import bo.aportaya.cumplimiento.infraestructura.LicenciaRepositorio;
 import bo.aportaya.cumplimiento.infraestructura.LimiteRepositorio;
+import bo.aportaya.cumplimiento.infraestructura.PerfilTransaccionalRepositorio;
+import bo.aportaya.cumplimiento.infraestructura.RevisionKycRepositorio;
 import bo.aportaya.cumplimiento.infraestructura.SandboxRepositorio;
 import bo.aportaya.plataforma.datos.Datos;
 import bo.aportaya.plataforma.dominio.ContextoSesion;
@@ -47,6 +51,13 @@ abstract class BaseDeCumplimiento {
     protected static CU05AceptarContrato contratoCU;
     protected static CU03DeclararPep pepCU;
     protected static CU02ElevarDiligencia diligenciaCU;
+    protected static CU06RevisarConocimiento revisionCU;
+
+    /** Umbrales de desvio: politica de cumplimiento, declarada, no constantes. */
+    protected static final DesvioDePerfil.Umbrales UMBRALES = new DesvioDePerfil.Umbrales(
+            new java.math.BigDecimal("100"), new java.math.BigDecimal("200"), new java.math.BigDecimal("500"));
+
+    protected static final String REGLA_DESVIO = "RM-DESVIO-PERFIL";
 
     /** Los requisitos por nivel son configuracion declarada, no catalogo de la boveda. */
     protected static final RequisitosDeNivel REQUISITOS = new RequisitosDeNivel(java.util.Map.of(
@@ -101,6 +112,16 @@ abstract class BaseDeCumplimiento {
                 Reloj.delSistema(),
                 REQUISITOS,
                 new PeriodicidadDeRevision(6, 12, 24));
+        revisionCU = new CU06RevisarConocimiento(
+                new Datos(dsl),
+                new CalificacionRiesgoRepositorio(),
+                new PerfilTransaccionalRepositorio(),
+                new RevisionKycRepositorio(),
+                new Outbox("cumplimiento"),
+                Reloj.delSistema(),
+                new PeriodicidadDeRevision(6, 12, 24),
+                UMBRALES,
+                REGLA_DESVIO);
     }
 
     protected ContextoSesion contexto() {
