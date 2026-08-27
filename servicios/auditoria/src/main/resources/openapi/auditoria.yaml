@@ -32,6 +32,44 @@ servers:
   #         '422': { $ref: '#/components/responses/ReglaDeNegocio' }
 
 paths:
+  /auditoria/derechos:
+    post:
+      operationId: ejercerDerechos            # CU-07
+      summary: Atiende un derecho del titular sobre sus datos personales
+      description: >-
+        Acceso, rectificacion, oposicion, portabilidad y cancelacion. El plazo legal
+        se calcula al abrir y SE GUARDA: recalcularlo al consultar lo haria moverse
+        solo, y basta que alguien declare un feriado despues para que el vencimiento
+        cambie sin que nadie lo decida.
+
+        La cancelacion NO elige entre el derecho y la obligacion de conservar: reparte.
+        Borra lo que ya vencio, seudonimiza lo que la ley obliga a guardar, y devuelve
+        la lista de lo que quedo con su base legal. Responder «no se puede borrar
+        nada» seria mentirle al titular; borrar todo seria un incumplimiento.
+
+        Por eso el estado puede ser PARCIAL: decir ATENDIDA sobre una solicitud que no
+        se cumplio entera es la forma mas rapida de que el reclamo vuelva con la razon
+        del otro lado.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaDerechos' }
+      responses:
+        '201':
+          description: Solicitud abierta, con su plazo y su desenlace
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaDerechos' }
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU07-01 IDENTIDAD_NO_VERIFICADA · AP-CU07-02 RELACION_VIGENTE
+          # AP-CU07-03 RETENCION_LEGAL_VIGENTE · AP-CU07-04 REQUERIMIENTO_ABIERTO
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+
   /indicadores:
     get:
       operationId: publicarTablero           # CU-98
@@ -92,6 +130,45 @@ components:
         seguro, y la clave se valida ANTES de escribir (invariante 7).
       schema: { type: string, format: uuid }
   schemas:
+    EntradaDerechos:
+      type: object
+      additionalProperties: false
+      required: [usuarioId, tipo, descripcion, ultimaActividad]
+      properties:
+        usuarioId: { type: string, format: uuid }
+        tipo:
+          type: string
+          enum: [ACCESO, RECTIFICACION, OPOSICION, PORTABILIDAD, CANCELACION]
+          description: >-
+            Los cinco que admite la tabla. CU-07 llama «supresion» a CANCELACION y el
+            servicio acepta las dos palabras; el modelo guarda CANCELACION.
+        descripcion: { type: string, minLength: 10, maxLength: 400 }
+        ultimaActividad:
+          type: string
+          format: date
+          description: >-
+            Desde cuando corre la retencion. Lo aporta quien atiende porque la ultima
+            operacion del titular vive en `nucleo-financiero` y este servicio no la
+            puede consultar. Hueco declarado: deja de ser parametro cuando el contrato
+            de la billetera exponga la fecha.
+    SalidaDerechos:
+      type: object
+      additionalProperties: false
+      required: [solicitudId, fechaLimiteLegal, estado, datosRetenidosPorLey]
+      properties:
+        solicitudId:      { type: string, format: uuid }
+        fechaLimiteLegal: { type: string, format: date-time }
+        estado:
+          type: string
+          enum: [RECIBIDA, EN_PROCESO, ATENDIDA, PARCIAL, RECHAZADA]
+        datosRetenidosPorLey:
+          type: array
+          description: Que quedo conservado y con que base legal. Se le dice al titular.
+          items: { type: string }
+        procesoAnonimizacionId: { type: string, format: uuid }
+        estrategia:
+          type: string
+          enum: [BORRADO_TOTAL, BORRADO_PARCIAL, SEUDONIMIZACION]
     Dinero:
       type: object
       additionalProperties: false

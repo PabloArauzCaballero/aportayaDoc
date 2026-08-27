@@ -17,6 +17,9 @@ class FixturaDeAuditoria {
 
     private static final org.jooq.Name DEFINICION = DSL.name("auditoria", "definicion_indicador");
     private static final org.jooq.Name KPI = DSL.name("auditoria", "indicador_kpi");
+    private static final org.jooq.Name RETENCION = DSL.name("auditoria", "politica_retencion");
+    private static final org.jooq.Name ANONIMIZACION = DSL.name("auditoria", "proceso_anonimizacion");
+    private static final org.jooq.Name EVENTOS = DSL.name("auditoria", "evento_dominio");
 
     private final DSLContext dsl;
 
@@ -55,6 +58,67 @@ class FixturaDeAuditoria {
         dsl.update(DSL.table(KPI))
                 .set(DSL.field("definicion_indicador_id", UUID.class), (UUID) null)
                 .execute();
+    }
+
+    private static final java.util.concurrent.atomic.AtomicInteger SECUENCIA =
+            new java.util.concurrent.atomic.AtomicInteger(70_000_000);
+
+    /**
+     * Un titular. La clave foranea a `identidad.usuario` cruza esquemas y la base la
+     * verifica igual: una solicitud sobre alguien que no existe no entra, que es
+     * exactamente lo que se quiere de un expediente de datos personales.
+     */
+    UUID usuario() {
+        UUID id = UUID.randomUUID();
+        dsl.execute(
+                """
+                INSERT INTO identidad.usuario
+                    (id, codigo_publico, nombres, apellidos, telefono_e164, fecha_nacimiento,
+                     estado, nivel_kyc, idioma, zona_horaria, fecha_registro)
+                VALUES (?, ?, 'Auditoria', 'Prueba', ?, DATE '1990-01-01', 'ACTIVO', 'BASICO',
+                        'es', 'America/La_Paz', now())
+                """,
+                id,
+                "AUD-" + id.toString().substring(0, 8),
+                "+591" + SECUENCIA.incrementAndGet());
+        return id;
+    }
+
+    /** Una politica de retencion vigente, que es catalogo y no constante. */
+    void politicaDeRetencion(String entidad, int mesesActiva, int mesesHistorica, String baseLegal) {
+        dsl.insertInto(DSL.table(RETENCION))
+                .columns(
+                        DSL.field("id", UUID.class),
+                        DSL.field("entidad", String.class),
+                        DSL.field("meses_retencion_activa", Integer.class),
+                        DSL.field("meses_retencion_historica", Integer.class),
+                        DSL.field("accion_al_vencer", String.class),
+                        DSL.field("base_legal", String.class),
+                        DSL.field("vigente_desde", java.time.LocalDate.class))
+                .values(
+                        UUID.randomUUID(),
+                        entidad,
+                        mesesActiva,
+                        mesesHistorica,
+                        "ANONIMIZAR",
+                        baseLegal,
+                        java.time.LocalDate.now().minusYears(1))
+                .execute();
+    }
+
+    String estadoDelProceso(UUID procesoId) {
+        return dsl.select(DSL.field("estado", String.class))
+                .from(DSL.table(ANONIMIZACION))
+                .where(DSL.field("id").eq(procesoId))
+                .fetchOne(0, String.class);
+    }
+
+    boolean hayEventoDeTipo(String tipo) {
+        Number cuantos = (Number) dsl.selectCount()
+                .from(DSL.table(EVENTOS))
+                .where(DSL.field("tipo").eq(tipo))
+                .fetchOne(0);
+        return cuantos.intValue() > 0;
     }
 
     UUID definicion(String codigo, String familia, String sentido, int minimoCasos, String version) {

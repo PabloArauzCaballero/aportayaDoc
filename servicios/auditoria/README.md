@@ -17,7 +17,12 @@ Modulo 09 de la boveda — Auditoría, Reportes y Cumplimiento.
 
 | CU | Nombre | Estado |
 | --- | --- | --- |
+| CU-07 | Ejercer derechos sobre datos personales | **Implementado** |
 | CU-98 | Publicar el tablero de indicadores | **Implementado** |
+
+**CU-07 no elige entre el derecho y la obligacion de conservar: reparte.** Borra lo
+que ya vencio, seudonimiza lo que la ley obliga a guardar, y le devuelve al titular la
+lista de lo que quedo con su base legal. Por eso el estado puede ser `PARCIAL`.
 
 **El tablero publica, no calcula.** El valor lo deja el trabajo de calculo en
 `indicador_kpi`; CU-98 lo lee unido a su `definicion_indicador` y decide tres cosas
