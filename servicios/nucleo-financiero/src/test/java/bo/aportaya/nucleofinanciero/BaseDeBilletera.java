@@ -2,6 +2,7 @@ package bo.aportaya.nucleofinanciero;
 
 import bo.aportaya.nucleofinanciero.aplicacion.CU10RecargarSaldo;
 import bo.aportaya.nucleofinanciero.aplicacion.CU11RetirarSaldo;
+import bo.aportaya.nucleofinanciero.aplicacion.CU12TransferirSaldo;
 import bo.aportaya.nucleofinanciero.aplicacion.CU13RetenerSaldo;
 import bo.aportaya.nucleofinanciero.aplicacion.CU40EvaluarLimites;
 import bo.aportaya.nucleofinanciero.infraestructura.CuentaBilleteraRepositorio;
@@ -10,6 +11,7 @@ import bo.aportaya.nucleofinanciero.infraestructura.LimiteRepositorio;
 import bo.aportaya.nucleofinanciero.infraestructura.OrdenRecargaRepositorio;
 import bo.aportaya.nucleofinanciero.infraestructura.OrdenRetiroRepositorio;
 import bo.aportaya.nucleofinanciero.infraestructura.RetencionRepositorio;
+import bo.aportaya.nucleofinanciero.infraestructura.TransferenciaRepositorio;
 import bo.aportaya.plataforma.datos.Datos;
 import bo.aportaya.plataforma.dominio.ContextoSesion;
 import bo.aportaya.plataforma.dominio.Reloj;
@@ -39,11 +41,18 @@ abstract class BaseDeBilletera {
     /** La contable: el retiro escribe asientos, y esos necesitan cuentas. */
     protected static FixturaDeNucleoFinanciero contable;
 
+    /** La cadena de grupo que una obligacion de aporte necesita para existir. */
+    protected static FixturaDeObligacion obligaciones;
+
+    /** La cuenta de destino y la custodia: lo que la billetera toca de afuera. */
+    protected static FixturaDeCustodia custodia;
+
     protected static Consumidos consumidos;
     protected static CU40EvaluarLimites limitesCU;
     protected static CU13RetenerSaldo retencionCU;
     protected static CU10RecargarSaldo recargaCU;
     protected static CU11RetirarSaldo retiroCU;
+    protected static CU12TransferirSaldo transferenciaCU;
 
     /** La cuenta puente: el otro lado de todo ingreso. Una sola para toda la corrida. */
     protected static UUID puente;
@@ -58,6 +67,8 @@ abstract class BaseDeBilletera {
         transaccion = new TransactionTemplate(new DataSourceTransactionManager(fuente));
         fixtura = new FixturaDeBilletera(dslFixtura);
         contable = new FixturaDeNucleoFinanciero(dslFixtura);
+        obligaciones = new FixturaDeObligacion(dslFixtura);
+        custodia = new FixturaDeCustodia(dslFixtura);
         consumidos = new Consumidos("nucleo_financiero");
 
         limitesCU = new CU40EvaluarLimites(
@@ -93,6 +104,14 @@ abstract class BaseDeBilletera {
                 new Outbox("nucleo_financiero"),
                 Reloj.delSistema(),
                 puente);
+        transferenciaCU = new CU12TransferirSaldo(
+                new Datos(dsl),
+                new CuentaBilleteraRepositorio(),
+                new TransferenciaRepositorio(),
+                new LibroDeBilletera(),
+                limitesCU,
+                new Outbox("nucleo_financiero"),
+                Reloj.delSistema());
     }
 
     protected ContextoSesion contextoDe(UUID usuarioId) {

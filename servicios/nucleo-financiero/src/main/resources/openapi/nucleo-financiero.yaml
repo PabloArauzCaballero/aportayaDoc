@@ -211,6 +211,36 @@ paths:
         '401':
           $ref: '#/components/responses/NoAutenticado'
 
+  /billetera/transferencias:
+    post:
+      operationId: transferirSaldo             # CU-12
+      summary: Transferir saldo entre billeteras
+      description: >-
+        La unica operacion donde el dinero no entra ni sale del sistema: cambia de
+        bolsillo, y el saldo total permanece constante. Las dos cuentas se bloquean
+        en orden de identificador — dos transferencias cruzadas que bloqueen cada
+        una primero la suya se esperan para siempre.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaTransferencia' }
+      responses:
+        '201':
+          description: Transferencia ejecutada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaTransferencia' }
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU12-01 SALDO_INSUFICIENTE          · AP-CU12-02 DESTINO_INEXISTENTE
+          # AP-CU12-03 CUENTA_DESTINO_NO_OPERATIVA · AP-CU12-04 LIMITE_EXCEDIDO
+          # AP-CU12-05 P2P_NO_HABILITADO
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+
 components:
   parameters:
     ClaveIdempotencia:
@@ -222,6 +252,31 @@ components:
         seguro, y la clave se valida ANTES de escribir (invariante 7).
       schema: { type: string, format: uuid }
   schemas:
+    EntradaTransferencia:
+      type: object
+      additionalProperties: false
+      required: [cuentaOrigenId, destino, monto, concepto]
+      properties:
+        cuentaOrigenId: { type: string, format: uuid }
+        destino:
+          type: object
+          additionalProperties: false
+          required: [tipo, valor]
+          properties:
+            tipo:  { type: string, enum: [ALIAS, GRUPO] }
+            valor: { type: string }
+        monto:        { $ref: '#/components/schemas/Dinero' }
+        concepto:     { type: string, maxLength: 140 }
+        obligacionId: { type: string, format: uuid }
+    SalidaTransferencia:
+      type: object
+      additionalProperties: false
+      required: [transaccionId, saldoDespues, obligacionSaldada]
+      properties:
+        transaccionId: { type: string, format: uuid }
+        saldoDespues:  { $ref: '#/components/schemas/Dinero' }
+        destinatarioId: { type: string, format: uuid }
+        obligacionSaldada: { type: boolean }
     EntradaRetiro:
       type: object
       additionalProperties: false

@@ -39,13 +39,13 @@ class CU11RechazosTest extends BaseDeBilletera {
 
     private Escenario escenario(String saldo) {
         fixtura.tipoDeCambioDeHoy();
-        fixtura.custodiaQueCumpleEncaje();
+        custodia.cumpleEncaje();
         fixtura.limite("RETIRO", ESTANDAR, "MES", new BigDecimal("100000.00"), null);
         UUID usuario = fixtura.usuario();
         UUID cuenta = fixtura.billetera(usuario, ESTANDAR, BigDecimal.ZERO);
         fixtura.acreditar(cuenta, new BigDecimal(saldo));
         return new Escenario(
-                usuario, cuenta, fixtura.instrumentoDestino(usuario, true, true, null), contextoDe(usuario));
+                usuario, cuenta, custodia.instrumentoDestino(usuario, true, true, null), contextoDe(usuario));
     }
 
     private SalidaRetiro pedir(Escenario e, String monto, String clave) {
@@ -163,10 +163,10 @@ class CU11RechazosTest extends BaseDeBilletera {
         // El instrumento de destino tiene que estar verificado, a nombre del titular
         // y fuera de su ventana de enfriamiento. Lo exige el trigger, no la app.
         fixtura.tipoDeCambioDeHoy();
-        fixtura.custodiaQueCumpleEncaje();
+        custodia.cumpleEncaje();
         UUID usuario = fixtura.usuario();
         UUID cuenta = fixtura.billetera(usuario, ESTANDAR, BigDecimal.ZERO);
-        UUID sinVerificar = fixtura.instrumentoDestino(usuario, false, true, null);
+        UUID sinVerificar = custodia.instrumentoDestino(usuario, false, true, null);
 
         assertThat(rechazaLaBase(
                         """
@@ -189,9 +189,9 @@ class CU11RechazosTest extends BaseDeBilletera {
         UUID usuario = fixtura.usuario();
         UUID cuenta = fixtura.billetera(usuario, ESTANDAR, BigDecimal.ZERO);
         fixtura.acreditar(cuenta, new BigDecimal("500.00"));
-        UUID instrumento = fixtura.instrumentoDestino(usuario, true, true, null);
+        UUID instrumento = custodia.instrumentoDestino(usuario, true, true, null);
         fixtura.limite("RETIRO", ESTANDAR, "MES", new BigDecimal("100000.00"), null);
-        fixtura.custodiaQueNoCumpleEncaje();
+        custodia.noCumpleEncaje();
         ContextoSesion ctx = contextoDe(usuario);
 
         assertThatThrownBy(() -> transaccion.execute(t -> retiroCU.solicitar(
@@ -227,11 +227,11 @@ class CU11RechazosTest extends BaseDeBilletera {
     void rechazaRLIM01() {
         // Sin limite configurado no se retira: denegar por omision.
         fixtura.tipoDeCambioDeHoy();
-        fixtura.custodiaQueCumpleEncaje();
+        custodia.cumpleEncaje();
         UUID usuario = fixtura.usuario();
         UUID cuenta = fixtura.billetera(usuario, ESTANDAR, BigDecimal.ZERO);
         fixtura.acreditar(cuenta, new BigDecimal("500.00"));
-        UUID instrumento = fixtura.instrumentoDestino(usuario, true, true, null);
+        UUID instrumento = custodia.instrumentoDestino(usuario, true, true, null);
         ContextoSesion ctx = contextoDe(usuario);
 
         assertThatThrownBy(() -> transaccion.execute(t -> retiroCU.solicitar(

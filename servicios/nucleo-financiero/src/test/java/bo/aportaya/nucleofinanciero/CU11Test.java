@@ -38,12 +38,12 @@ class CU11Test extends BaseDeBilletera {
     /** Una billetera con saldo, su instrumento habilitado y la custodia en regla. */
     private Escenario escenario(String saldo, Integer horasDeBloqueo) {
         fixtura.tipoDeCambioDeHoy();
-        fixtura.custodiaQueCumpleEncaje();
+        custodia.cumpleEncaje();
         fixtura.limite("RETIRO", ESTANDAR, "MES", new BigDecimal("100000.00"), null);
         UUID usuario = fixtura.usuario();
         UUID cuenta = fixtura.billetera(usuario, ESTANDAR, BigDecimal.ZERO);
         fixtura.acreditar(cuenta, new BigDecimal(saldo));
-        UUID instrumento = fixtura.instrumentoDestino(usuario, true, true, horasDeBloqueo);
+        UUID instrumento = custodia.instrumentoDestino(usuario, true, true, horasDeBloqueo);
         return new Escenario(usuario, cuenta, instrumento, contextoDe(usuario));
     }
 
