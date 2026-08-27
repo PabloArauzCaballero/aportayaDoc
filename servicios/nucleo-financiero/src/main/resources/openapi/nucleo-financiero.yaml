@@ -81,9 +81,9 @@ paths:
               schema: { $ref: '#/components/schemas/SalidaRecarga' }
         '422':
           $ref: '#/components/responses/ReglaDeNegocio'
-          # AP-CU10-01 LIMITE_EXCEDIDO      · AP-CU10-02 MONTO_INVALIDO
-          # AP-CU10-03 MEDIO_NO_VERIFICADO  · AP-CU10-04 CUENTA_NO_OPERATIVA
-          # AP-CU10-05 ORDEN_NO_ACREDITABLE
+          # AP-CU10-01 LIMITE_EXCEDIDO           · AP-CU10-02 SALDO_MAXIMO_ALCANZADO
+          # AP-CU10-03 INSTRUMENTO_NO_VERIFICADO · AP-CU10-04 CUENTA_NO_OPERATIVA
+          # AP-CU10-05 ORDEN_EXPIRADA
         '401':
           $ref: '#/components/responses/NoAutenticado'
 
@@ -109,7 +109,7 @@ paths:
               schema: { $ref: '#/components/schemas/SalidaAcreditacion' }
         '422':
           $ref: '#/components/responses/ReglaDeNegocio'
-          # AP-CU10-05 ORDEN_NO_ACREDITABLE
+          # AP-CU10-05 ORDEN_EXPIRADA
         '401':
           $ref: '#/components/responses/NoAutenticado'
 
@@ -136,8 +136,8 @@ paths:
               schema: { $ref: '#/components/schemas/SalidaRetencion' }
         '422':
           $ref: '#/components/responses/ReglaDeNegocio'
-          # AP-CU13-01 CUENTA_NO_OPERATIVA · AP-CU13-02 FECHA_INVALIDA
-          # AP-CU13-03 RETENCION_NO_ABIERTA
+          # AP-CU13-01 SALDO_INSUFICIENTE · AP-CU13-02 VENCIMIENTO_REQUERIDO
+          # AP-CU13-03 RETENCION_YA_EJECUTADA
         '401':
           $ref: '#/components/responses/NoAutenticado'
 
@@ -148,7 +148,7 @@ paths:
       description: >-
         [CONTRATO] Una retencion se cierra una sola vez. Si otra operacion la cerro
         primero, la segunda no la vuelve a cerrar: se responde
-        `RETENCION_NO_ABIERTA`, que no es una falla sino concurrencia sana.
+        `RETENCION_YA_EJECUTADA`, que no es una falla sino concurrencia sana.
       parameters:
         - name: retencionId
           in: path
@@ -168,9 +168,18 @@ paths:
               schema: { $ref: '#/components/schemas/SalidaCierreRetencion' }
         '422':
           $ref: '#/components/responses/ReglaDeNegocio'
-          # AP-CU13-03 RETENCION_NO_ABIERTA
+          # AP-CU13-03 RETENCION_YA_EJECUTADA
         '401':
           $ref: '#/components/responses/NoAutenticado'
+
+  # CU-40 Evaluar limites NO tiene endpoint propio: corre DENTRO de la transaccion
+  # de la operacion que evalua. Exponerlo dejaria que alguien consulte el limite,
+  # vea que entra, y opere despues contra un acumulado ya cambiado.
+  #   AP-CU40-01 SIN_LIMITE_CONFIGURADO · AP-CU40-02 LIMITE_EXCEDIDO
+  #   AP-CU40-03 CANTIDAD_EXCEDIDA
+  #
+  # CU-57 Operar un punto de atencion quedo OBSOLETO con su numero reservado:
+  # ADR-039 retiro el efectivo del alcance el 20-08-2026.
 
 components:
   parameters:

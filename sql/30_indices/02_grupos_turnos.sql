@@ -49,9 +49,6 @@ CREATE INDEX IF NOT EXISTS ix_invitacion_grupo_id
 CREATE INDEX IF NOT EXISTS ix_invitacion_telefono_invitado
   ON grupos.invitacion (telefono_invitado);
 
-CREATE UNIQUE INDEX IF NOT EXISTS uq_invitacion_token_id
-  ON grupos.invitacion (token_id);
-
 CREATE INDEX IF NOT EXISTS ix_periodo_grupo_id
   ON grupos.periodo (grupo_id);
 
@@ -66,12 +63,6 @@ CREATE INDEX IF NOT EXISTS ix_periodo_estado
 
 CREATE INDEX IF NOT EXISTS ix_turno_grupo_id
   ON grupos.turno (grupo_id);
-
-CREATE UNIQUE INDEX IF NOT EXISTS uq_turno_grupo_id_orden_asignado
-  ON grupos.turno (grupo_id, orden_asignado);
-
-CREATE UNIQUE INDEX IF NOT EXISTS uq_sorteo_turnos_grupo_id
-  ON grupos.sorteo_turnos (grupo_id);
 
 CREATE INDEX IF NOT EXISTS ix_sorteo_turnos_estado
   ON grupos.sorteo_turnos (estado);

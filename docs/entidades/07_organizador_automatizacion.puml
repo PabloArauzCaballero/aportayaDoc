@@ -442,7 +442,7 @@ entity "evaluacion_desempeno" as evaldes {
   * id : UUID <<PK>>
   --
   # organizador_id : UUID <<FK, IDX>>
-  periodo_evaluado : VARCHAR(10) <<UQ+organizador_id>>
+  periodo_evaluado : VARCHAR(10)
   indice_morosidad_cartera : DECIMAL(5,2)
   tasa_finalizacion_grupos : DECIMAL(5,2)
   satisfaccion_participantes : DECIMAL(3,2)
@@ -459,7 +459,7 @@ entity "metrica_organizador" as metrorg {
   * id : UUID <<PK>>
   --
   # evaluacion_id : UUID <<FK, IDX>>
-  codigo : VARCHAR(40) <<UQ+evaluacion_id>>
+  codigo : VARCHAR(40)
   valor : DECIMAL(12,4)
   meta : DECIMAL(12,4)
   cumple : BOOLEAN
@@ -482,7 +482,7 @@ entity "sancion_organizador" as sancorg {
 entity "apelacion_sancion_org" as apelorg {
   * id : UUID <<PK>>
   --
-  # sancion_organizador_id : UUID <<FK, UQ>>
+  # sancion_organizador_id : UUID <<FK>>
   argumento : TEXT
   evidencias : JSONB
   estado : VARCHAR(15) <<CK>>

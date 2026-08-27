@@ -606,7 +606,7 @@ entity "cuenta_billetera" as ctabill {
   estado : VARCHAR(25) <<CK, IDX>>
   nivel_debida_diligencia : VARCHAR(15) <<CK>>
   saldo_disponible : DECIMAL(16,2)
-  saldo_retenido : DECIMAL(16,2) <<CK: >= 0>>
+  saldo_retenido : DECIMAL(16,2)
   saldo_total : DECIMAL(16,2) <<GENERATED>>
   permite_saldo_negativo : BOOLEAN
   fecha_apertura : TIMESTAMPTZ
@@ -618,7 +618,7 @@ entity "saldo_diario_billetera" as saldodia {
   * id : UUID <<PK>>
   --
   # cuenta_billetera_id : UUID <<FK, IDX>>
-  fecha : DATE <<UQ+cuenta_billetera_id>>
+  fecha : DATE
   saldo_disponible : DECIMAL(16,2)
   saldo_retenido : DECIMAL(16,2)
   cantidad_movimientos : INTEGER
@@ -728,7 +728,7 @@ entity "orden_recarga" as orecarga {
   monto_acreditado : DECIMAL(16,2)
   moneda : CHAR(3)
   estado : VARCHAR(15) <<CK, IDX>>
-  referencia_externa : VARCHAR(80) <<UQ, NULL>>
+  referencia_externa : VARCHAR(80) <<NULL>>
   clave_idempotencia : VARCHAR(100)
   solicitada_en : TIMESTAMPTZ
   acreditada_en : TIMESTAMPTZ <<NULL>>
@@ -813,7 +813,7 @@ entity "conciliacion_custodia" as concust {
   # cuenta_custodia_id : UUID <<FK, IDX>>
   # cierre_diario_id : UUID <<FK, NULL, M3>>
   # ejecutada_por : UUID <<FK, NULL>>
-  fecha : DATE <<UQ+cuenta_custodia_id>>
+  fecha : DATE
   saldo_dinero_electronico : DECIMAL(18,2)
   saldo_custodia : DECIMAL(18,2)
   saldo_en_transito : DECIMAL(18,2)
@@ -843,7 +843,7 @@ entity "descuadre_custodia" as descuadre {
 entity "limite_operativo_billetera" as limite {
   * id : UUID <<PK>>
   --
-  concepto : VARCHAR(25) <<CK, UQ+nivel_debida_diligencia+ventana>>
+  concepto : VARCHAR(25) <<CK>>
   nivel_debida_diligencia : VARCHAR(15) <<CK>>
   ventana : VARCHAR(10) <<CK>>
   monto_maximo : DECIMAL(16,2) <<NULL>>
@@ -860,7 +860,7 @@ entity "consumo_limite" as consumo {
   --
   # cuenta_billetera_id : UUID <<FK, IDX>>
   # limite_id : UUID <<FK, IDX>>
-  ventana_inicio : TIMESTAMPTZ <<UQ+cuenta_billetera_id+limite_id>>
+  ventana_inicio : TIMESTAMPTZ
   ventana_fin : TIMESTAMPTZ
   monto_acumulado : DECIMAL(16,2)
   cantidad_acumulada : INTEGER
@@ -917,7 +917,7 @@ entity "bloqueo_saldo" as bloqsaldo {
   # levantada_por : UUID <<FK, NULL>>
   autoridad : VARCHAR(20) <<CK>>
   tipo_orden : VARCHAR(30) <<CK>>
-  numero_oficio : VARCHAR(60) <<UQ>>
+  numero_oficio : VARCHAR(60)
   monto_bloqueado : DECIMAL(16,2) <<NULL>>
   alcance : VARCHAR(10) <<CK>>
   documento_url : VARCHAR(255)

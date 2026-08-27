@@ -28,7 +28,6 @@ COMMENT ON COLUMN cumplimiento.reporte_regulatorio.catalogo_reporte_id IS 'FK, I
 COMMENT ON COLUMN cumplimiento.reporte_regulatorio.generado_por IS 'FK, NULL';
 COMMENT ON COLUMN cumplimiento.reporte_regulatorio.revisado_por IS 'FK, NULL';
 COMMENT ON COLUMN cumplimiento.reporte_regulatorio.aprobado_por IS 'FK, NULL';
-COMMENT ON COLUMN cumplimiento.reporte_regulatorio.periodo IS 'UQ+catalogo_reporte_id';
 COMMENT ON COLUMN cumplimiento.reporte_regulatorio.estado IS 'CK, IDX';
 COMMENT ON COLUMN cumplimiento.reporte_regulatorio.url_archivo IS 'NULL';
 COMMENT ON COLUMN cumplimiento.reporte_regulatorio.hash_archivo IS 'NULL';

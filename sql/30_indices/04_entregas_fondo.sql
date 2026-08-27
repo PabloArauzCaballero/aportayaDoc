@@ -4,12 +4,6 @@
 CREATE INDEX IF NOT EXISTS ix_entrega_fondo_grupo_id
   ON entregas.entrega_fondo (grupo_id);
 
-CREATE UNIQUE INDEX IF NOT EXISTS uq_entrega_fondo_periodo_id
-  ON entregas.entrega_fondo (periodo_id);
-
-CREATE UNIQUE INDEX IF NOT EXISTS uq_entrega_fondo_turno_id
-  ON entregas.entrega_fondo (turno_id);
-
 CREATE INDEX IF NOT EXISTS ix_entrega_fondo_beneficiario_participante_id
   ON entregas.entrega_fondo (beneficiario_participante_id);
 
@@ -30,9 +24,6 @@ CREATE INDEX IF NOT EXISTS ix_validacion_pre_entrega_entrega_id
 
 CREATE INDEX IF NOT EXISTS ix_cuenta_bancaria_beneficiario_usuario_id
   ON entregas.cuenta_bancaria_beneficiario (usuario_id);
-
-CREATE UNIQUE INDEX IF NOT EXISTS uq_cuenta_bancaria_beneficiario_usuario_id_hash_numero_cuenta
-  ON entregas.cuenta_bancaria_beneficiario (usuario_id, hash_numero_cuenta);
 
 CREATE INDEX IF NOT EXISTS ix_orden_desembolso_entrega_id
   ON entregas.orden_desembolso (entrega_id);

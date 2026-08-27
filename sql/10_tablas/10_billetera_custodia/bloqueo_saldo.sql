@@ -32,7 +32,6 @@ COMMENT ON COLUMN nucleo_financiero.bloqueo_saldo.retencion_id IS 'FK, NULL';
 COMMENT ON COLUMN nucleo_financiero.bloqueo_saldo.levantada_por IS 'FK, NULL';
 COMMENT ON COLUMN nucleo_financiero.bloqueo_saldo.autoridad IS 'CK';
 COMMENT ON COLUMN nucleo_financiero.bloqueo_saldo.tipo_orden IS 'CK';
-COMMENT ON COLUMN nucleo_financiero.bloqueo_saldo.numero_oficio IS 'UQ';
 COMMENT ON COLUMN nucleo_financiero.bloqueo_saldo.monto_bloqueado IS 'NULL';
 COMMENT ON COLUMN nucleo_financiero.bloqueo_saldo.alcance IS 'CK';
 COMMENT ON COLUMN nucleo_financiero.bloqueo_saldo.estado IS 'CK, IDX';

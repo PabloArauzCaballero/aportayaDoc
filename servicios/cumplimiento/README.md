@@ -17,13 +17,16 @@ Modulo 12 de la boveda — Cumplimiento Regulatorio y Consumidor Financiero.
 
 | CU | Nombre | Estado |
 | --- | --- | --- |
-| CU-46 | Verificar el alcance de la licencia | ⬜ sin implementar |
+| CU-46 | Verificar el alcance de la licencia | **Implementado** |
+| CU-05 | Aceptar contrato de adhesión y tarifario | **Implementado** |
+| CU-03 | Declaración PEP y beneficiario final | **Implementado** |
+| CU-02 | Elevar nivel de debida diligencia | **Implementado** |
+| CU-06 | Revisión periódica de conocimiento del cliente | **Implementado** |
 
-| CU-03 | Declaración PEP y beneficiario final | ⬜ sin implementar |
-
-| CU-02 | Elevar nivel de debida diligencia | ⬜ sin implementar |
-
-| CU-06 | Revisión periódica de conocimiento del cliente | ⬜ sin implementar |
+**CU-05 vive acá y no en `identidad`**, aunque su ficha apunte a
+`openapi/identidad.yaml`: sus dos tablas —`contrato_adhesion` y
+`aceptacion_contrato`— están en este esquema, y el esquema tiene precedencia sobre
+la ficha. Implementarlo en identidad exigiría leer un esquema ajeno (invariante 11).
 
 ## Eventos que emite
 

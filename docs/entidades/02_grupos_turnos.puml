@@ -790,7 +790,7 @@ entity "invitacion" as inv {
   telefono_invitado : VARCHAR(20) <<IDX>>
   nombre_sugerido : VARCHAR(80) <<NULL>>
   # emisor_id : UUID <<FK>>
-  # token_id : UUID <<FK, UQ, M1>>
+  # token_id : UUID <<FK, M1>>
   canal : VARCHAR(15) <<CK>>
   estado : VARCHAR(15) <<CK>>
   envios_realizados : SMALLINT
@@ -820,7 +820,7 @@ entity "turno" as turno {
   # grupo_id : UUID <<FK, IDX>>
   # periodo_id : UUID <<FK>>
   # cupo_id : UUID <<FK>>
-  orden_asignado : SMALLINT <<UQ+grupo_id>>
+  orden_asignado : SMALLINT
   estado : VARCHAR(15) <<CK>>
   criterio_asignacion : VARCHAR(25)
   monto_estimado_cobro : DECIMAL(14,2)
@@ -832,7 +832,7 @@ entity "turno" as turno {
 entity "sorteo_turnos" as sorteo {
   * id : UUID <<PK>>
   --
-  # grupo_id : UUID <<FK, UQ parcial>>
+  # grupo_id : UUID <<FK parcial>>
   algoritmo : VARCHAR(30)
   estado : VARCHAR(15) <<CK, IDX>>
   hash_semilla_previo : VARCHAR(64)

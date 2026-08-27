@@ -395,7 +395,7 @@ entity "anunciante" as anunc {
 entity "cuenta_publicitaria" as cuentapub {
   * id : UUID <<PK>>
   --
-  # anunciante_id : UUID <<FK, UQ>>
+  # anunciante_id : UUID <<FK>>
   limite_gasto_mensual : DECIMAL(14,2) <<NULL>>
   moneda : CHAR(3)
   saldo_consumido_mes : DECIMAL(14,2)
@@ -434,7 +434,7 @@ entity "espacio_publicitario" as espacpub {
   codigo : VARCHAR(30) <<UQ>>
   nombre : VARCHAR(80)
   tipo : VARCHAR(25) <<CK>>
-  capacidad_maxima_simultanea : SMALLINT <<CK: > 0>>
+  capacidad_maxima_simultanea : SMALLINT
   activo : BOOLEAN
 }
 

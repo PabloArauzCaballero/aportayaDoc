@@ -40,9 +40,6 @@ CREATE INDEX IF NOT EXISTS ix_asignacion_tarifario_tarifario_id
 CREATE INDEX IF NOT EXISTS ix_asignacion_tarifario_ambito
   ON tarifas.asignacion_tarifario (ambito);
 
-CREATE UNIQUE INDEX IF NOT EXISTS uq_tarifa_congelada_grupo_grupo_id
-  ON tarifas.tarifa_congelada_grupo (grupo_id);
-
 CREATE INDEX IF NOT EXISTS ix_simulacion_tarifa_tarifario_id
   ON tarifas.simulacion_tarifa (tarifario_id);
 
@@ -84,9 +81,6 @@ CREATE INDEX IF NOT EXISTS ix_devengo_comision_periodo_contable
 
 CREATE INDEX IF NOT EXISTS ix_cargo_comision_devengo_id
   ON tarifas.cargo_comision (devengo_id);
-
-CREATE UNIQUE INDEX IF NOT EXISTS uq_cargo_comision_deduccion_entrega_id
-  ON tarifas.cargo_comision (deduccion_entrega_id);
 
 CREATE INDEX IF NOT EXISTS ix_cargo_comision_estado
   ON tarifas.cargo_comision (estado);
@@ -175,9 +169,6 @@ CREATE INDEX IF NOT EXISTS ix_factura_electronica_usuario_id
 CREATE UNIQUE INDEX IF NOT EXISTS uq_factura_electronica_sucursal_punto_venta_numero_factura
   ON tarifas.factura_electronica (sucursal, punto_venta, numero_factura);
 
-CREATE UNIQUE INDEX IF NOT EXISTS uq_factura_electronica_cuf
-  ON tarifas.factura_electronica (cuf);
-
 CREATE INDEX IF NOT EXISTS ix_factura_electronica_fecha_emision
   ON tarifas.factura_electronica (fecha_emision);
 
@@ -186,9 +177,6 @@ CREATE INDEX IF NOT EXISTS ix_factura_electronica_estado_fiscal
 
 CREATE INDEX IF NOT EXISTS ix_nota_credito_debito_factura_id
   ON tarifas.nota_credito_debito (factura_id);
-
-CREATE UNIQUE INDEX IF NOT EXISTS uq_nota_credito_debito_cuf
-  ON tarifas.nota_credito_debito (cuf);
 
 CREATE UNIQUE INDEX IF NOT EXISTS uq_liquidacion_ingresos_periodo
   ON tarifas.liquidacion_ingresos (periodo);

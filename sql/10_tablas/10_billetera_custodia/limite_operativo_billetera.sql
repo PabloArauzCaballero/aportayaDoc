@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS catalogo.limite_operativo_billetera (
 
 COMMENT ON TABLE catalogo.limite_operativo_billetera IS 'Módulo 10 — Billetera, Custodia y Dinero Electrónico. El saldo no se guarda: se deriva, y todos los días cuadra contra el banco';
 COMMENT ON COLUMN catalogo.limite_operativo_billetera.id IS 'PK';
-COMMENT ON COLUMN catalogo.limite_operativo_billetera.concepto IS 'CK, UQ+nivel_debida_diligencia+ventana';
+COMMENT ON COLUMN catalogo.limite_operativo_billetera.concepto IS 'CK';
 COMMENT ON COLUMN catalogo.limite_operativo_billetera.nivel_debida_diligencia IS 'CK';
 COMMENT ON COLUMN catalogo.limite_operativo_billetera.ventana IS 'CK';
 COMMENT ON COLUMN catalogo.limite_operativo_billetera.monto_maximo IS 'NULL';

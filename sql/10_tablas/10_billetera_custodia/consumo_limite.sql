@@ -18,4 +18,3 @@ COMMENT ON TABLE nucleo_financiero.consumo_limite IS 'Módulo 10 — Billetera, 
 COMMENT ON COLUMN nucleo_financiero.consumo_limite.id IS 'PK';
 COMMENT ON COLUMN nucleo_financiero.consumo_limite.cuenta_billetera_id IS 'FK, IDX';
 COMMENT ON COLUMN nucleo_financiero.consumo_limite.limite_id IS 'FK, IDX';
-COMMENT ON COLUMN nucleo_financiero.consumo_limite.ventana_inicio IS 'UQ+cuenta_billetera_id+limite_id';

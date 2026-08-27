@@ -20,7 +20,6 @@ CREATE TABLE IF NOT EXISTS cumplimiento.evaluacion_riesgo_producto (
 
 COMMENT ON TABLE cumplimiento.evaluacion_riesgo_producto IS 'Módulo 12 — Cumplimiento Regulatorio y Consumidor Financiero. Que una inspección se responda con consultas, no armando carpetas';
 COMMENT ON COLUMN cumplimiento.evaluacion_riesgo_producto.id IS 'PK';
-COMMENT ON COLUMN cumplimiento.evaluacion_riesgo_producto.producto IS 'UQ+version';
 COMMENT ON COLUMN cumplimiento.evaluacion_riesgo_producto.aprobada_por IS 'FK, NULL';
 COMMENT ON COLUMN cumplimiento.evaluacion_riesgo_producto.nivel_riesgo_lft IS 'CK';
 COMMENT ON COLUMN cumplimiento.evaluacion_riesgo_producto.estado IS 'CK';

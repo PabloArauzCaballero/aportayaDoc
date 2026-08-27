@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS notificaciones.respuesta_entrante (
   procesada_en                       TIMESTAMPTZ,
   accion_ejecutada                   VARCHAR(120),
   CONSTRAINT pk_respuesta_entrante PRIMARY KEY (id),
-  CONSTRAINT ck_respuesta_entrante_intencion_detectada CHECK (intencion_detectada IN ('AYUDA', 'BAJA', 'CONSULTAR_SALDO', 'DESCONOCIDA', 'YA_PAGUE'))
+  CONSTRAINT ck_respuesta_entrante_intencion_detectada CHECK (intencion_detectada IN ('AYUDA', 'BAJA', 'CONSULTAR_SALDO', 'DESCONOCIDA', 'NO_PUEDO', 'NO_RECONOZCO', 'YA_PAGUE'))
 );
 
 COMMENT ON TABLE notificaciones.respuesta_entrante IS 'Módulo 05 — Notificaciones y Comunicaciones. WhatsApp como canal real de cobro, sin spam ni doble aviso';

@@ -23,7 +23,6 @@ COMMENT ON COLUMN grupos.turno.id IS 'PK';
 COMMENT ON COLUMN grupos.turno.grupo_id IS 'FK, IDX';
 COMMENT ON COLUMN grupos.turno.periodo_id IS 'FK';
 COMMENT ON COLUMN grupos.turno.cupo_id IS 'FK';
-COMMENT ON COLUMN grupos.turno.orden_asignado IS 'UQ+grupo_id';
 COMMENT ON COLUMN grupos.turno.estado IS 'CK';
 COMMENT ON COLUMN grupos.turno.descuento_subasta IS 'NULL';
 COMMENT ON COLUMN grupos.turno.permutado_con_turno_id IS 'FK, NULL';

@@ -20,6 +20,5 @@ CREATE TABLE IF NOT EXISTS transparencia.bloque_transparencia (
 COMMENT ON TABLE transparencia.bloque_transparencia IS 'Módulo 06 — Transparencia y Reputación. Que nadie tenga que "creerle" al organizador';
 COMMENT ON COLUMN transparencia.bloque_transparencia.id IS 'PK';
 COMMENT ON COLUMN transparencia.bloque_transparencia.grupo_id IS 'FK, IDX';
-COMMENT ON COLUMN transparencia.bloque_transparencia.numero_bloque IS 'UQ+grupo_id';
 COMMENT ON COLUMN transparencia.bloque_transparencia.hash_bloque IS 'UQ';
 COMMENT ON COLUMN transparencia.bloque_transparencia.sello_externo IS 'NULL';

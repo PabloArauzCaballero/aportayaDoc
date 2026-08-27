@@ -23,5 +23,4 @@ CREATE TABLE IF NOT EXISTS organizador.evaluacion_desempeno (
 COMMENT ON TABLE organizador.evaluacion_desempeno IS 'Módulo 07 — Organizador y Automatización. Administrar es un rol, no un negocio: el organizador no cobra ni custodia';
 COMMENT ON COLUMN organizador.evaluacion_desempeno.id IS 'PK';
 COMMENT ON COLUMN organizador.evaluacion_desempeno.organizador_id IS 'FK, IDX';
-COMMENT ON COLUMN organizador.evaluacion_desempeno.periodo_evaluado IS 'UQ+organizador_id';
 COMMENT ON COLUMN organizador.evaluacion_desempeno.nivel_sugerido IS 'CK';

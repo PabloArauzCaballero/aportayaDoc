@@ -33,6 +33,6 @@ COMMENT ON COLUMN nucleo_financiero.orden_recarga.pago_id IS 'FK, NULL, M3';
 COMMENT ON COLUMN nucleo_financiero.orden_recarga.transaccion_id IS 'FK, NULL';
 COMMENT ON COLUMN nucleo_financiero.orden_recarga.monto_bruto IS 'CK: > 0';
 COMMENT ON COLUMN nucleo_financiero.orden_recarga.estado IS 'CK, IDX';
-COMMENT ON COLUMN nucleo_financiero.orden_recarga.referencia_externa IS 'UQ, NULL';
+COMMENT ON COLUMN nucleo_financiero.orden_recarga.referencia_externa IS 'NULL';
 COMMENT ON COLUMN nucleo_financiero.orden_recarga.acreditada_en IS 'NULL';
 COMMENT ON COLUMN nucleo_financiero.orden_recarga.expira_en IS 'NULL';

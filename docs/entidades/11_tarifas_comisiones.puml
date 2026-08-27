@@ -733,7 +733,7 @@ entity "asignacion_tarifario" as asigtar {
 entity "tarifa_congelada_grupo" as congelada {
   * id : UUID <<PK>>
   --
-  # grupo_id : UUID <<FK, UQ, M2>>
+  # grupo_id : UUID <<FK, M2>>
   # tarifario_id : UUID <<FK>>
   # acuerdo_id : UUID <<FK, NULL, M2>>
   snapshot_conceptos : JSONB
@@ -817,7 +817,7 @@ entity "cargo_comision" as cargo {
   * id : UUID <<PK>>
   --
   # devengo_id : UUID <<FK, IDX>>
-  # deduccion_entrega_id : UUID <<FK, NULL, UQ, M4>>
+  # deduccion_entrega_id : UUID <<FK, NULL, M4>>
   # transaccion_id : UUID <<FK, NULL, M10>>
   # obligacion_id : UUID <<FK, NULL, M3>>
   forma_cobro : VARCHAR(30) <<CK>>
@@ -981,7 +981,7 @@ entity "factura_electronica" as factura {
   sucursal : SMALLINT
   punto_venta : SMALLINT
   numero_factura : BIGINT <<UQ+sucursal+punto_venta>>
-  cuf : VARCHAR(80) <<UQ>>
+  cuf : VARCHAR(80)
   cufd : VARCHAR(120)
   codigo_control : VARCHAR(20) <<NULL>>
   fecha_emision : TIMESTAMPTZ <<IDX>>
@@ -1007,7 +1007,7 @@ entity "nota_credito_debito" as notacd {
   tipo : VARCHAR(8) <<CK>>
   motivo : VARCHAR(200)
   monto : DECIMAL(12,2)
-  cuf : VARCHAR(80) <<UQ>>
+  cuf : VARCHAR(80)
   fecha_emision : TIMESTAMPTZ
   estado_fiscal : VARCHAR(20) <<CK>>
 }

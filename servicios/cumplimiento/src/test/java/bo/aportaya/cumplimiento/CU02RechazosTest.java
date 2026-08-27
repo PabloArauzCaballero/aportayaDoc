@@ -85,17 +85,11 @@ class CU02RechazosTest extends BaseDeCumplimiento {
     @Test
     @DisplayName("rechaza por R-LIM-03")
     void rechazaRLIM03() {
-        // R-LIM-03 quiere que dos limites activos del mismo concepto, nivel y ventana
-        // no solapen vigencias, y lo escribe como un EXCLUDE sobre daterange.
-        //
-        // HALLAZGO: ese EXCLUDE esta TAPADO. Sobre la misma tabla hay un indice unico
-        // en (nivel_debida_diligencia, ventana, concepto) **sin la fecha**, que es
-        // estrictamente mas estricto y salta primero. En la practica la regla que
-        // rige es «un limite por combinacion, punto», no «vigencias sin solape»:
-        // hoy es imposible cargar el limite del mes que viene antes de que empiece.
-        // Se prueba lo que la base hace de verdad, y queda declarado en el informe
-        // del carril: bajar el indice unico seria una decision de modelo, troncal, y
-        // no de este carril.
+        // ex_limite_vigencia: dos limites activos del mismo concepto, nivel y ventana
+        // no pueden solapar vigencias. Hasta el 27-08-2026 esta regla estaba TAPADA
+        // por un unico sin fechas que saltaba primero; al quitarlo, el EXCLUDE pasa a
+        // hacer su trabajo y ademas deja cargar el tope del mes que viene, que antes
+        // era imposible.
         dslFixtura.execute(
                 """
                 INSERT INTO catalogo.limite_operativo_billetera
@@ -115,7 +109,7 @@ class CU02RechazosTest extends BaseDeCumplimiento {
                         VALUES (gen_random_uuid(), 'TRANSFERENCIA', 'ESTANDAR', 'MES', 2000, 'BOB',
                                 'ASFI 540/2025', current_date, current_date + 20, true)
                         """))
-                .contains("uq_limite_operativo_billetera");
+                .contains("ex_limite_vigencia");
 
         dslFixtura.execute("DELETE FROM catalogo.limite_operativo_billetera WHERE concepto = 'TRANSFERENCIA'");
     }

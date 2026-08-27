@@ -19,9 +19,6 @@ CREATE INDEX IF NOT EXISTS ix_anunciante_socio_comercial_id
 CREATE INDEX IF NOT EXISTS ix_anunciante_estado
   ON publicidad.anunciante (estado);
 
-CREATE UNIQUE INDEX IF NOT EXISTS uq_cuenta_publicitaria_anunciante_id
-  ON publicidad.cuenta_publicitaria (anunciante_id);
-
 CREATE INDEX IF NOT EXISTS ix_cuenta_publicitaria_estado
   ON publicidad.cuenta_publicitaria (estado);
 

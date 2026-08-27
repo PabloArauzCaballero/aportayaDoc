@@ -22,5 +22,4 @@ COMMENT ON COLUMN tarifas.nota_credito_debito.id IS 'PK';
 COMMENT ON COLUMN tarifas.nota_credito_debito.factura_id IS 'FK, IDX';
 COMMENT ON COLUMN tarifas.nota_credito_debito.devolucion_comision_id IS 'FK, NULL';
 COMMENT ON COLUMN tarifas.nota_credito_debito.tipo IS 'CK';
-COMMENT ON COLUMN tarifas.nota_credito_debito.cuf IS 'UQ';
 COMMENT ON COLUMN tarifas.nota_credito_debito.estado_fiscal IS 'CK';
