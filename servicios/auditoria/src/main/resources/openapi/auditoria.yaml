@@ -16,7 +16,7 @@ info:
 servers:
   - url: /api/v1
 
-paths: {}
+# Plantilla para los casos de uso que faltan de este servicio:
   # Una operacion por caso de uso. Plantilla:
   #
   #   /auditoria/…:
@@ -30,6 +30,62 @@ paths: {}
   #       responses:
   #         '200': …
   #         '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+paths:
+  /indicadores:
+    get:
+      operationId: publicarTablero           # CU-98
+      summary: Los indicadores del periodo, con su meta, su variacion y su definicion
+      description: >-
+        [CONTRATO] Agregada para que el backoffice tenga contra que programar el
+        tablero. Que la direccion mire siempre los mismos numeros, calculados de la
+        misma forma: un indicador es una DEFINICION, no una consulta, y si dos lugares
+        lo recalculan ya hay dos indicadores.
+
+        Se calcula contra la replica de lectura: un tablero nunca compite con el
+        camino del dinero.
+
+        `provisorio` viaja SIEMPRE y no es un detalle: un numero sobre datos sin
+        cuadrar es una opinion, y publicarlo sin la marca es la forma mas facil de
+        que alguien decida con el.
+
+        `valor` es `null` cuando la muestra queda por debajo del minimo: un promedio
+        de tres personas identifica a las tres (R-SEG-03). En ese caso
+        `suprimidoPorPrivacidad` es true y la interfaz dice POR QUE no hay numero, en
+        vez de mostrar un hueco.
+      parameters:
+        - name: periodo
+          in: query
+          required: true
+          schema: { type: string, pattern: '^\d{4}(-\d{2})?(-\d{2})?$' }
+        - name: dimension
+          in: query
+          required: true
+          schema: { type: string, enum: [PLATAFORMA, GRUPO, ORGANIZADOR, PRODUCTO] }
+        - name: dimensionId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: familias
+          in: query
+          description: Familias a incluir. Ausente = todas.
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [NEGOCIO, RIESGO, CUMPLIMIENTO, OPERACION, FINANZAS]
+      responses:
+        '200':
+          description: El tablero del periodo
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaTablero' }
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU98-01 PERIODO_NO_CERRADO · AP-CU98-02 SIN_DEFINICION
+          # AP-CU98-03 SIN_META_DEL_PERIODO · AP-CU98-04 MUESTRA_INSUFICIENTE
+          # AP-CU98-05 INDICADOR_DUPLICADO
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
 
 components:
   parameters:
@@ -62,9 +118,74 @@ components:
         mensaje:  { type: string }
         detalle:  { type: object }
         trazaId:  { type: string }
+    SalidaTablero:
+      type: object
+      additionalProperties: false
+      required: [periodo, provisorio, indicadores]
+      properties:
+        periodo: { type: string }
+        provisorio:
+          type: boolean
+          description: >-
+            true mientras el periodo este abierto o sin cuadrar. Se muestra siempre.
+        indicadores:
+          type: array
+          items: { $ref: '#/components/schemas/Indicador' }
+    Indicador:
+      type: object
+      additionalProperties: false
+      required: [codigo, nombre, unidad, familia, duenoFamilia, definicionVersion, suprimidoPorPrivacidad]
+      properties:
+        codigo: { type: string, maxLength: 40 }
+        nombre: { type: string, maxLength: 80 }
+        valor:
+          type: string
+          description: >-
+            Cadena decimal. null cuando se suprimio por minimo de casos.
+        unidad: { type: string, enum: [CANTIDAD, PORCENTAJE, MONTO, DIAS] }
+        moneda: { type: string, enum: [BOB, USD] }
+        familia: { type: string, enum: [NEGOCIO, RIESGO, CUMPLIMIENTO, OPERACION, FINANZAS] }
+        meta: { type: string }
+        cumpleMeta:
+          type: boolean
+          description: >-
+            null cuando no hay meta fijada para el periodo: sin meta no hay semaforo,
+            y ponerla despues de ver el resultado no es medir.
+        variacionPeriodoAnterior:
+          type: string
+          description: >-
+            null en un indicador nuevo. Sin historia no hay comparacion, y un cero
+            fingido desinforma.
+        serie:
+          type: array
+          description: >-
+            Los ultimos periodos, para el grafico de la tarjeta. Puede venir vacia.
+          items:
+            type: object
+            additionalProperties: false
+            required: [periodo, valor]
+            properties:
+              periodo: { type: string }
+              valor: { type: string }
+        suprimidoPorPrivacidad: { type: boolean }
+        casos:
+          type: integer
+          description: Tamano de la muestra, para poder explicar la supresion.
+        duenoFamilia: { type: string, maxLength: 80 }
+        explicacion:
+          type: string
+          description: >-
+            La escribe el dueno cuando su indicador esta en rojo. Un indicador que no
+            cumple su meta no se maquilla.
+        definicionVersion: { type: string, maxLength: 20 }
   responses:
     ReglaDeNegocio:
       description: Regla de negocio de la aplicacion (422, no 400)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NoAutenticado:
+      description: Sin sesion valida
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
