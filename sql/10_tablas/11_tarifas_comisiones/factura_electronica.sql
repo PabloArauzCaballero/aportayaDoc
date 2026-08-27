@@ -41,7 +41,6 @@ COMMENT ON COLUMN tarifas.factura_electronica.datos_facturacion_id IS 'FK';
 COMMENT ON COLUMN tarifas.factura_electronica.lote_envio_sin_id IS 'FK, NULL';
 COMMENT ON COLUMN tarifas.factura_electronica.evento_significativo_id IS 'FK, NULL';
 COMMENT ON COLUMN tarifas.factura_electronica.numero_factura IS 'UQ+sucursal+punto_venta';
-COMMENT ON COLUMN tarifas.factura_electronica.cuf IS 'UQ';
 COMMENT ON COLUMN tarifas.factura_electronica.codigo_control IS 'NULL';
 COMMENT ON COLUMN tarifas.factura_electronica.fecha_emision IS 'IDX';
 COMMENT ON COLUMN tarifas.factura_electronica.estado_fiscal IS 'CK, IDX';

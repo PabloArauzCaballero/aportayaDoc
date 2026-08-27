@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS tarifas.tarifa_congelada_grupo (
 
 COMMENT ON TABLE tarifas.tarifa_congelada_grupo IS 'Módulo 11 — Tarifas, Comisiones, Impuestos y Facturación. La política de cobro es dato, no código: se cambia con un seeder';
 COMMENT ON COLUMN tarifas.tarifa_congelada_grupo.id IS 'PK';
-COMMENT ON COLUMN tarifas.tarifa_congelada_grupo.grupo_id IS 'FK, UQ, M2';
+COMMENT ON COLUMN tarifas.tarifa_congelada_grupo.grupo_id IS 'FK, M2';
 COMMENT ON COLUMN tarifas.tarifa_congelada_grupo.tarifario_id IS 'FK';
 COMMENT ON COLUMN tarifas.tarifa_congelada_grupo.acuerdo_id IS 'FK, NULL, M2';
 COMMENT ON COLUMN tarifas.tarifa_congelada_grupo.vigente_hasta_ciclo_nro IS 'NULL';

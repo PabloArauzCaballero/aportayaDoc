@@ -409,14 +409,14 @@ entity "entrega_fondo" as entrega {
   * id : UUID <<PK>>
   --
   # grupo_id : UUID <<FK, IDX>>
-  # periodo_id : UUID <<FK, UQ>>
-  # turno_id : UUID <<FK, UQ>>
+  # periodo_id : UUID <<FK>>
+  # turno_id : UUID <<FK>>
   # cupo_id : UUID <<FK>>
   # beneficiario_participante_id : UUID <<FK, IDX>>
   # cuenta_destino_id : UUID <<FK, NULL>>
   monto_bolsa_bruto : DECIMAL(14,2)
   total_deducciones : DECIMAL(14,2)
-  monto_neto_a_entregar : DECIMAL(14,2) <<CK: >= 0>>
+  monto_neto_a_entregar : DECIMAL(14,2)
   monto_efectivamente_entregado : DECIMAL(14,2)
   moneda : CHAR(3)
   estado : VARCHAR(35) <<CK, IDX>>
@@ -479,7 +479,7 @@ entity "cuenta_bancaria_beneficiario" as ctabco {
   entidad_financiera : VARCHAR(60)
   numero_cuenta_cifrado : VARCHAR(255)
   version_llave : SMALLINT
-  hash_numero_cuenta : VARCHAR(64) <<UQ+usuario_id>>
+  hash_numero_cuenta : VARCHAR(64)
   numero_enmascarado : VARCHAR(30)
   titular_nombre : VARCHAR(120)
   titular_documento : VARCHAR(30)

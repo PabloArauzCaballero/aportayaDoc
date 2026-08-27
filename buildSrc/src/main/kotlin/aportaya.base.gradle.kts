@@ -75,9 +75,29 @@ tasks.withType<Test>().configureEach {
     }
 }
 
+// --------------------------------------------------------------- contenedores --
+//
+// Cada modulo corre en su propia JVM, asi que cada uno arranca su PostgreSQL de
+// Testcontainers y le aplica las 304 tablas de `sql/aplicar.sql`. Con
+// `org.gradle.parallel=true` y seis modulos con pruebas de integracion, eso son
+// seis contenedores compitiendo por CPU y disco: las pruebas empiezan a fallar por
+// tiempo sin que nada este mal, que es la peor clase de fallo — enseña a
+// desconfiar del gate.
+//
+// El limite se pone aca y no subiendo los timeouts: el gate que dice «ninguna
+// prueba de caso de uso tarda mas de 120s» sigue intacto, que es el que importa.
+// Lo que se acota es cuantas arrancan a la vez.
+abstract class LimiteDeContenedores : BuildService<BuildServiceParameters.None>
+
+val limiteDeContenedores =
+    gradle.sharedServices.registerIfAbsent("limiteDeContenedores", LimiteDeContenedores::class) {
+        maxParallelUsages.set(2)
+    }
+
 // Los cinco corredores. Uno solo con todo adentro es un corredor que nadie corre
 // en local porque tarda cinco minutos.
 tasks.named<Test>("test") {
+    usesService(limiteDeContenedores)
     // Sin filtro de motores: corren Jupiter, jqwik y ArchUnit. Nombrar dos deja
     // fuera al tercero, y un servicio entero se queda sin pruebas de arquitectura
     // sin que nadie lo note.
@@ -100,6 +120,7 @@ tasks.named<Test>("test") {
 // realiza la tarea — es decir, en la maquina de otro.
 val pruebas = the<SourceSetContainer>()["test"]
 
+
 fun corredor(nombre: String, descripcion: String, patrones: List<String>, tiempo: String) =
     tasks.register<Test>(nombre) {
         group = "verification"
@@ -111,6 +132,16 @@ fun corredor(nombre: String, descripcion: String, patrones: List<String>, tiempo
         // Un servicio sin sagas todavia no es un servicio roto.
         failOnNoDiscoveredTests = false
         systemProperty("junit.jupiter.execution.timeout.default", tiempo)
+        // El arranque del contenedor NO es una prueba, y por eso tiene su propio
+        // presupuesto. Cada modulo corre en su JVM, asi que con `org.gradle.parallel`
+        // arrancan tantos PostgreSQL como servicios haya, y cada uno aplica las 304
+        // tablas de `sql/aplicar.sql`. Con tres servicios entraba en 120s; con cinco
+        // ya no, y las pruebas fallaban por «timeout» sin que nada estuviera mal.
+        //
+        // Se separa en vez de subir el limite de las pruebas: el gate que dice
+        // «ningun caso de uso tarda mas de 120s» sigue intacto, que es el que importa.
+        systemProperty("junit.jupiter.execution.timeout.beforeall.method.default", "600s")
+        usesService(limiteDeContenedores)
         testLogging { events("failed") }
     }
 

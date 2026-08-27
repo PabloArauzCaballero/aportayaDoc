@@ -23,8 +23,7 @@ CREATE TABLE IF NOT EXISTS nucleo_financiero.cuenta_billetera (
   CONSTRAINT pk_cuenta_billetera PRIMARY KEY (id),
   CONSTRAINT ck_cuenta_billetera_tipo CHECK (tipo IN ('FONDO_GARANTIA', 'GRUPO', 'LIQUIDACION_PROVEEDOR', 'PLATAFORMA_IMPUESTOS_POR_PAGAR', 'PLATAFORMA_INGRESOS', 'PUENTE_CUSTODIA', 'SUSPENSO_NO_IDENTIFICADO', 'USUARIO')),
   CONSTRAINT ck_cuenta_billetera_estado CHECK (estado IN ('ACTIVA', 'BLOQUEADA_AUTORIDAD', 'CERRADA', 'CONGELADA', 'EN_APERTURA', 'EN_CIERRE', 'LIMITADA')),
-  CONSTRAINT ck_cuenta_billetera_nivel_debida_diligencia CHECK (nivel_debida_diligencia IN ('AMPLIADA', 'ESTANDAR', 'REFORZADA', 'SIMPLIFICADA')),
-  CONSTRAINT ck_cuenta_billetera_saldo_retenido CHECK (saldo_retenido >= 0)
+  CONSTRAINT ck_cuenta_billetera_nivel_debida_diligencia CHECK (nivel_debida_diligencia IN ('AMPLIADA', 'ESTANDAR', 'REFORZADA', 'SIMPLIFICADA'))
 );
 
 COMMENT ON TABLE nucleo_financiero.cuenta_billetera IS 'Módulo 10 — Billetera, Custodia y Dinero Electrónico. El saldo no se guarda: se deriva, y todos los días cuadra contra el banco';
@@ -37,6 +36,5 @@ COMMENT ON COLUMN nucleo_financiero.cuenta_billetera.politica_billetera_id IS 'F
 COMMENT ON COLUMN nucleo_financiero.cuenta_billetera.cuenta_contable_id IS 'FK, NULL, M3';
 COMMENT ON COLUMN nucleo_financiero.cuenta_billetera.estado IS 'CK, IDX';
 COMMENT ON COLUMN nucleo_financiero.cuenta_billetera.nivel_debida_diligencia IS 'CK';
-COMMENT ON COLUMN nucleo_financiero.cuenta_billetera.saldo_retenido IS 'CK: >= 0';
 COMMENT ON COLUMN nucleo_financiero.cuenta_billetera.saldo_total IS 'GENERATED';
 COMMENT ON COLUMN nucleo_financiero.cuenta_billetera.fecha_cierre IS 'NULL';

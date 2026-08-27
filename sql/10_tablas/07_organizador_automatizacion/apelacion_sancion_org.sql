@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS organizador.apelacion_sancion_org (
 
 COMMENT ON TABLE organizador.apelacion_sancion_org IS 'Módulo 07 — Organizador y Automatización. Administrar es un rol, no un negocio: el organizador no cobra ni custodia';
 COMMENT ON COLUMN organizador.apelacion_sancion_org.id IS 'PK';
-COMMENT ON COLUMN organizador.apelacion_sancion_org.sancion_organizador_id IS 'FK, UQ';
+COMMENT ON COLUMN organizador.apelacion_sancion_org.sancion_organizador_id IS 'FK';
 COMMENT ON COLUMN organizador.apelacion_sancion_org.estado IS 'CK';
 COMMENT ON COLUMN organizador.apelacion_sancion_org.resuelta_por IS 'FK, NULL';
 COMMENT ON COLUMN organizador.apelacion_sancion_org.resolucion IS 'NULL';

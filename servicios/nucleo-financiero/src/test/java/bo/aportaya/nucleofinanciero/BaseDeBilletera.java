@@ -95,6 +95,15 @@ abstract class BaseDeBilletera {
      * que en produccion nunca se habria confirmado. {@code SET CONSTRAINTS ALL
      * IMMEDIATE} lo hace disparar donde se lo puede observar.
      */
+    /** El mensaje del fondo de la cadena: lo de arriba suele ser «JDBC commit failed». */
+    protected String raizDe(Throwable e) {
+        Throwable raiz = e;
+        while (raiz.getCause() != null && raiz.getCause() != raiz) {
+            raiz = raiz.getCause();
+        }
+        return String.valueOf(raiz.getMessage());
+    }
+
     protected String rechazaLaBaseAlCerrar(String sql) {
         try {
             transaccion.execute(estado -> {

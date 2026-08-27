@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS grupos.sorteo_turnos (
 
 COMMENT ON TABLE grupos.sorteo_turnos IS 'Módulo 02 — Grupos, Cupos, Turnos y Gobernanza. Reglas del juego, orden de cobro y decisiones colectivas';
 COMMENT ON COLUMN grupos.sorteo_turnos.id IS 'PK';
-COMMENT ON COLUMN grupos.sorteo_turnos.grupo_id IS 'FK, UQ parcial';
+COMMENT ON COLUMN grupos.sorteo_turnos.grupo_id IS 'FK parcial';
 COMMENT ON COLUMN grupos.sorteo_turnos.estado IS 'CK, IDX';
 COMMENT ON COLUMN grupos.sorteo_turnos.aportes_entropia IS 'NULL';
 COMMENT ON COLUMN grupos.sorteo_turnos.fecha_revelado_prevista IS 'NULL';

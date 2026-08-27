@@ -61,23 +61,24 @@ public final class IntencionEntrante {
     /**
      * Como se GUARDA la intencion.
      *
-     * <p>**Hueco declarado (H-2).** El contrato del caso de uso enumera seis
-     * intenciones —YA_PAGUE, NO_PUEDO, BAJA, CONSULTA, NO_RECONOZCO, DESCONOCIDA— y
-     * {@code ck_respuesta_entrante_intencion_detectada} admite otras cinco: AYUDA,
-     * BAJA, CONSULTAR_SALDO, DESCONOCIDA, YA_PAGUE. No coinciden.
+     * <p>Traduce las seis del contrato a los siete valores que admite
+     * {@code ck_respuesta_entrante_intencion_detectada}. **Ya no se pierde nada**:
+     * NO_PUEDO y NO_RECONOZCO se agregaron al modelo el 27-08-2026 justamente porque
+     * caian en DESCONOCIDA, y una promesa de pago archivada como «no se entendio» es
+     * una gestion de cobranza que nadie puede hacer despues.
      *
-     * <p>Manda la base, porque es la que rechaza. La clasificacion completa se
-     * devuelve al llamador y se conserva en el evento; lo que se persiste en la
-     * columna es el valor que la base admite. NO_PUEDO y NO_RECONOZCO **no tienen
-     * representacion** y caen en DESCONOCIDA, que es informacion perdida: ampliar el
-     * CHECK es una decision de modelo, troncal, no de este carril.
+     * <p>CONSULTA se guarda como CONSULTAR_SALDO: el modelo distingue ademas AYUDA,
+     * que es mas fina que lo que el contrato pide. Se conserva esa distincion en la
+     * base aunque este caso de uso todavia no la produzca.
      */
     public static String comoLoGuardaLaBase(Intencion intencion) {
         return switch (intencion) {
             case YA_PAGUE -> "YA_PAGUE";
+            case NO_PUEDO -> "NO_PUEDO";
+            case NO_RECONOZCO -> "NO_RECONOZCO";
             case BAJA -> "BAJA";
             case CONSULTA -> "CONSULTAR_SALDO";
-            case NO_PUEDO, NO_RECONOZCO, DESCONOCIDA -> "DESCONOCIDA";
+            case DESCONOCIDA -> "DESCONOCIDA";
         };
     }
 

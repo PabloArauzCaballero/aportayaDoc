@@ -624,7 +624,7 @@ entity "bloque_transparencia" as bloque {
   * id : UUID <<PK>>
   --
   # grupo_id : UUID <<FK, IDX>>
-  numero_bloque : BIGINT <<UQ+grupo_id>>
+  numero_bloque : BIGINT
   hash_bloque_anterior : VARCHAR(64)
   raiz_merkle : VARCHAR(64)
   hash_bloque : VARCHAR(64) <<UQ>>

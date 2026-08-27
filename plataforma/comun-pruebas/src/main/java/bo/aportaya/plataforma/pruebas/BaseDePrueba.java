@@ -50,7 +50,13 @@ public final class BaseDePrueba {
                 .withDatabaseName(NOMBRE)
                 .withUsername(NOMBRE)
                 .withPassword(NOMBRE)
-                .withFileSystemBind(repositorio.resolve("sql").toString(), "/repo/sql", BindMode.READ_ONLY);
+                .withFileSystemBind(repositorio.resolve("sql").toString(), "/repo/sql", BindMode.READ_ONLY)
+                // Cinco minutos para estar listo, no el minuto por omision. No es
+                // tolerancia a un contenedor lento: es que la maquina de desarrollo
+                // corre otros stacks y con carga alta un PostgreSQL tarda mas en
+                // aceptar conexiones. Con el valor por omision la prueba falla por
+                // «no arranco» y manda a buscar un defecto donde no lo hay.
+                .withStartupTimeout(java.time.Duration.ofMinutes(5));
         nuevo.start();
 
         // El DDL califica cada tabla con su esquema; el SQL escrito a mano que viene

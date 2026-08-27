@@ -22,9 +22,6 @@ CREATE INDEX IF NOT EXISTS ix_cuenta_billetera_estado
 CREATE INDEX IF NOT EXISTS ix_saldo_diario_billetera_cuenta_billetera_id
   ON nucleo_financiero.saldo_diario_billetera (cuenta_billetera_id);
 
-CREATE UNIQUE INDEX IF NOT EXISTS uq_saldo_diario_billetera_cuenta_billetera_id_fecha
-  ON nucleo_financiero.saldo_diario_billetera (cuenta_billetera_id, fecha);
-
 CREATE UNIQUE INDEX IF NOT EXISTS uq_transaccion_billetera_secuencia
   ON nucleo_financiero.transaccion_billetera (secuencia);
 
@@ -82,9 +79,6 @@ CREATE INDEX IF NOT EXISTS ix_orden_recarga_cuenta_billetera_id
 CREATE INDEX IF NOT EXISTS ix_orden_recarga_estado
   ON nucleo_financiero.orden_recarga (estado);
 
-CREATE UNIQUE INDEX IF NOT EXISTS uq_orden_recarga_referencia_externa
-  ON nucleo_financiero.orden_recarga (referencia_externa);
-
 CREATE INDEX IF NOT EXISTS ix_orden_retiro_cuenta_billetera_id
   ON nucleo_financiero.orden_retiro (cuenta_billetera_id);
 
@@ -127,9 +121,6 @@ CREATE INDEX IF NOT EXISTS ix_movimiento_custodia_conciliado
 CREATE INDEX IF NOT EXISTS ix_conciliacion_custodia_cuenta_custodia_id
   ON nucleo_financiero.conciliacion_custodia (cuenta_custodia_id);
 
-CREATE UNIQUE INDEX IF NOT EXISTS uq_conciliacion_custodia_cuenta_custodia_id_fecha
-  ON nucleo_financiero.conciliacion_custodia (cuenta_custodia_id, fecha);
-
 CREATE INDEX IF NOT EXISTS ix_conciliacion_custodia_cumple_encaje
   ON nucleo_financiero.conciliacion_custodia (cumple_encaje);
 
@@ -145,17 +136,11 @@ CREATE INDEX IF NOT EXISTS ix_descuadre_custodia_severidad
 CREATE INDEX IF NOT EXISTS ix_descuadre_custodia_estado
   ON nucleo_financiero.descuadre_custodia (estado);
 
-CREATE UNIQUE INDEX IF NOT EXISTS uq_limite_operativo_billetera_nivel_debida_diligencia__b809a0
-  ON catalogo.limite_operativo_billetera (nivel_debida_diligencia, ventana, concepto);
-
 CREATE INDEX IF NOT EXISTS ix_consumo_limite_cuenta_billetera_id
   ON nucleo_financiero.consumo_limite (cuenta_billetera_id);
 
 CREATE INDEX IF NOT EXISTS ix_consumo_limite_limite_id
   ON nucleo_financiero.consumo_limite (limite_id);
-
-CREATE UNIQUE INDEX IF NOT EXISTS uq_consumo_limite_cuenta_billetera_id_limite_id_ventana_inicio
-  ON nucleo_financiero.consumo_limite (cuenta_billetera_id, limite_id, ventana_inicio);
 
 CREATE INDEX IF NOT EXISTS ix_respuesta_idempotente_usuario_id
   ON nucleo_financiero.respuesta_idempotente (usuario_id);
@@ -189,9 +174,6 @@ CREATE INDEX IF NOT EXISTS ix_evaluacion_antifraude_evaluada_en
 
 CREATE INDEX IF NOT EXISTS ix_bloqueo_saldo_cuenta_billetera_id
   ON nucleo_financiero.bloqueo_saldo (cuenta_billetera_id);
-
-CREATE UNIQUE INDEX IF NOT EXISTS uq_bloqueo_saldo_numero_oficio
-  ON nucleo_financiero.bloqueo_saldo (numero_oficio);
 
 CREATE INDEX IF NOT EXISTS ix_bloqueo_saldo_estado
   ON nucleo_financiero.bloqueo_saldo (estado);

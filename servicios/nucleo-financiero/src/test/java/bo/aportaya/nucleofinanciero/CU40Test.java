@@ -120,16 +120,7 @@ class CU40Test extends BaseDeBilletera {
     @Test
     @DisplayName("rechaza por R-LIM-02")
     void rechazaRLIM02() {
-        // Un consumo por ventana, no dos.
-        //
-        // HALLAZGO: la regla esta DUPLICADA en la base. `generar_ddl.py` ya emite un
-        // unico sobre (cuenta_billetera_id, limite_id, ventana_inicio) y
-        // sql/40_reglas lo vuelve a declarar como `uq_consumo_ventana`: hay dos
-        // indices identicos sobre las mismas tres columnas, y el que salta es el
-        // generado. La regla se cumple —por duplicado—, pero cada escritura paga dos
-        // indices. Quitar uno es decision de modelo, troncal, no de este carril.
-        // Por eso la prueba afirma que la base RECHAZA y sobre que columnas, en vez
-        // de atarse al nombre de cual de los dos gano.
+        // uq_consumo_ventana: un consumo por ventana, no dos.
         UUID usuario = fixtura.usuario();
         UUID cuenta = fixtura.billetera(usuario, ESTANDAR, new BigDecimal("100.00"));
         UUID limite = fixtura.limite(RETIRO, ESTANDAR, "MES", new BigDecimal("1000.00"), null);
@@ -144,16 +135,15 @@ class CU40Test extends BaseDeBilletera {
                         .formatted(cuenta, limite);
         dslFixtura.execute(insert);
 
-        assertThat(rechazaLaBase(insert))
-                .contains("duplicate key")
-                .contains("cuenta_billetera_id, limite_id, ventana_inicio");
+        assertThat(rechazaLaBase(insert)).contains("uq_consumo_ventana");
     }
 
     @Test
     @DisplayName("rechaza por R-LIM-03")
     void rechazaRLIM03() {
-        // Vigencias sin solape por concepto, nivel y ventana. En la practica el que
-        // salta primero es el indice unico, que es mas estricto: ver el informe.
+        // ex_limite_vigencia: dos limites activos del mismo concepto, nivel y ventana
+        // no pueden solapar vigencias. El EXCLUDE mira el rango de fechas, asi que
+        // cargar el tope del mes que viene sin tocar el de este SI se puede.
         fixtura.limite(RETIRO, ESTANDAR, "MES", new BigDecimal("1000.00"), null);
 
         assertThat(
@@ -165,7 +155,7 @@ class CU40Test extends BaseDeBilletera {
                         VALUES (gen_random_uuid(), 'RETIRO', 'ESTANDAR', 'MES', 2000.00, 'BOB',
                                 'ASFI 540/2025', current_date, true)
                         """))
-                .contains("uq_limite_operativo_billetera");
+                .contains("ex_limite_vigencia");
     }
 
     @Test

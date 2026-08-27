@@ -51,6 +51,70 @@ paths:
         '401':
           $ref: '#/components/responses/NoAutenticado'
 
+  /billetera/recargas:
+    post:
+      operationId: solicitarRecarga            # CU-10
+      summary: Solicitar una recarga de saldo
+      description: >-
+        Crea la orden y devuelve el QR. NO acredita: el saldo se mueve cuando el
+        dinero llega, no cuando la persona dice que pago. Acreditar al pedir seria
+        regalarle saldo a quien abandona el pago a medias.
+        AGENTE no existe (ADR-039): el unico ingreso de fondos es electronico.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaRecarga' }
+      responses:
+        '201':
+          description: Orden creada, pendiente de pago
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaRecarga' }
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU10-01 LIMITE_EXCEDIDO           - AP-CU10-02 SALDO_MAXIMO_ALCANZADO
+          # AP-CU10-03 INSTRUMENTO_NO_VERIFICADO - AP-CU10-04 CUENTA_NO_OPERATIVA
+          # AP-CU10-05 ORDEN_EXPIRADA
+
+  /billetera/retenciones:
+    post:
+      operationId: retenerSaldo                # CU-13
+      summary: Retener saldo disponible
+      description: >-
+        Aparta plata que sigue siendo de la persona pero que todavia no puede usar.
+        No escribe los saldos: los recalcula el trigger desde el libro. Toda
+        retencion expira salvo la orden de autoridad — una sin fecha es plata ajena
+        inmovilizada porque un proceso se olvido de soltarla.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaRetencion' }
+      responses:
+        '201':
+          description: Retencion vigente, con los saldos ya recalculados
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaRetencion' }
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU13-01 SALDO_INSUFICIENTE - AP-CU13-02 VENCIMIENTO_REQUERIDO
+          # AP-CU13-03 RETENCION_YA_EJECUTADA
+
+  # CU-40 Evaluar limites NO tiene endpoint propio: corre DENTRO de la transaccion
+  # de la operacion que evalua. Exponerlo dejaria que alguien consulte el limite,
+  # vea que entra, y opere despues contra un acumulado ya cambiado.
+  #   AP-CU40-01 SIN_LIMITE_CONFIGURADO - AP-CU40-02 LIMITE_EXCEDIDO
+  #   AP-CU40-03 CANTIDAD_EXCEDIDA
+  #
+  # CU-57 Operar un punto de atencion quedo OBSOLETO con su numero reservado:
+  # ADR-039 retiro el efectivo del alcance el 20-08-2026.
+
 components:
   parameters:
     ClaveIdempotencia:
@@ -62,6 +126,45 @@ components:
         seguro, y la clave se valida ANTES de escribir (invariante 7).
       schema: { type: string, format: uuid }
   schemas:
+    EntradaRecarga:
+      type: object
+      additionalProperties: false
+      required: [cuentaBilleteraId, monto, medio]
+      properties:
+        cuentaBilleteraId: { type: string, format: uuid }
+        monto:  { $ref: '#/components/schemas/Dinero' }
+        medio:  { type: string, enum: [QR, TARJETA, TRANSFERENCIA] }
+        instrumentoFondeoId: { type: string, format: uuid }
+    SalidaRecarga:
+      type: object
+      additionalProperties: false
+      required: [ordenRecargaId, estado]
+      properties:
+        ordenRecargaId: { type: string, format: uuid }
+        estado:   { type: string, enum: [PENDIENTE, ACREDITADA, RECHAZADA, EXPIRADA] }
+        expiraEn: { type: string, format: date-time }
+        acreditara: { $ref: '#/components/schemas/Dinero' }
+    EntradaRetencion:
+      type: object
+      additionalProperties: false
+      required: [cuentaBilleteraId, monto, motivo]
+      properties:
+        cuentaBilleteraId: { type: string, format: uuid }
+        monto:  { $ref: '#/components/schemas/Dinero' }
+        motivo:
+          type: string
+          enum: [APORTE_PROGRAMADO, ENTREGA_EN_CURSO, DISPUTA, ORDEN_AUTORIDAD,
+                 ANTIFRAUDE, COMISION_PENDIENTE]
+        expiraEn: { type: string, format: date-time }
+    SalidaRetencion:
+      type: object
+      additionalProperties: false
+      required: [retencionId, saldoDisponible, saldoRetenido]
+      properties:
+        retencionId:     { type: string, format: uuid }
+        saldoDisponible: { $ref: '#/components/schemas/Dinero' }
+        saldoRetenido:   { $ref: '#/components/schemas/Dinero' }
+        expiraEn:        { type: string, format: date-time, nullable: true }
     Dinero:
       type: object
       additionalProperties: false

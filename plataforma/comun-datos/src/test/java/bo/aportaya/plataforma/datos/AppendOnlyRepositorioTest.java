@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -25,6 +26,19 @@ import org.junit.jupiter.api.Test;
  * una tabla sellada de mas —o de menos— aparece aca sin que nadie actualice nada.
  */
 class AppendOnlyRepositorioTest {
+    /**
+     * Arranca el contenedor ANTES de que empiece a correr el reloj de las pruebas.
+     *
+     * <p>Sin esto, la primera prueba que toca la base paga el arranque del PostgreSQL
+     * y la aplicacion de las 304 tablas dentro de su propio limite de tiempo, y falla
+     * por «timeout» sin que nada este mal. El limite de 120s existe para decir
+     * «ningun caso de uso tarda mas de eso»; cobrarle el costo de la infraestructura
+     * lo convierte en una medida de lo cargada que esta la maquina.
+     */
+    @BeforeAll
+    static void calentarElContenedor() {
+        BaseDePrueba.contenedor();
+    }
 
     /** Las que el plan nombra explicitamente: si alguna deja de estar sellada, se sabe. */
     private static final List<String> IMPRESCINDIBLES = List.of(

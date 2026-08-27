@@ -53,19 +53,13 @@ class CU13RechazosTest extends BaseDeBilletera {
     @Test
     @DisplayName("rechaza por R-BIL-03")
     void rechazaRBIL03() {
-        // El retenido no baja de cero.
-        //
-        // HALLAZGO (el tercero de su clase): `generar_ddl.py` ya emite
-        // `ck_cuenta_billetera_saldo_retenido` y sql/40_reglas declara ademas
-        // `ck_cuenta_retenido_no_negativo`. Son la misma regla escrita dos veces, y
-        // la que salta es la generada. Se afirma que la base RECHAZA y por que, sin
-        // atarse a cual de las dos gano: quitar la duplicada es decision troncal.
+        // ck_cuenta_retenido_no_negativo: el retenido no baja de cero.
         UUID usuario = fixtura.usuario();
         UUID cuenta = billeteraCon("100.00", usuario);
 
         assertThat(rechazaLaBase("UPDATE nucleo_financiero.cuenta_billetera SET saldo_retenido = -1 WHERE id = '%s'"
                         .formatted(cuenta)))
-                .contains("saldo_retenido");
+                .contains("ck_cuenta_retenido_no_negativo");
     }
 
     @Test

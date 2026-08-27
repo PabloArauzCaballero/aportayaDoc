@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -24,6 +25,19 @@ import org.junit.jupiter.params.provider.MethodSource;
  * de comprobar los permisos y no la conectividad.
  */
 class AislamientoEsquemaTest {
+    /**
+     * Arranca el contenedor ANTES de que empiece a correr el reloj de las pruebas.
+     *
+     * <p>Sin esto, la primera prueba que toca la base paga el arranque del PostgreSQL
+     * y la aplicacion de las 304 tablas dentro de su propio limite de tiempo, y falla
+     * por «timeout» sin que nada este mal. El limite de 120s existe para decir
+     * «ningun caso de uso tarda mas de eso»; cobrarle el costo de la infraestructura
+     * lo convierte en una medida de lo cargada que esta la maquina.
+     */
+    @BeforeAll
+    static void calentarElContenedor() {
+        BaseDePrueba.contenedor();
+    }
 
     private static final List<String> SERVICIOS = List.of(
             "aportes",

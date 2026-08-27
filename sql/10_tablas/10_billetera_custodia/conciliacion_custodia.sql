@@ -25,7 +25,6 @@ COMMENT ON COLUMN nucleo_financiero.conciliacion_custodia.id IS 'PK';
 COMMENT ON COLUMN nucleo_financiero.conciliacion_custodia.cuenta_custodia_id IS 'FK, IDX';
 COMMENT ON COLUMN nucleo_financiero.conciliacion_custodia.cierre_diario_id IS 'FK, NULL, M3';
 COMMENT ON COLUMN nucleo_financiero.conciliacion_custodia.ejecutada_por IS 'FK, NULL';
-COMMENT ON COLUMN nucleo_financiero.conciliacion_custodia.fecha IS 'UQ+cuenta_custodia_id';
 COMMENT ON COLUMN nucleo_financiero.conciliacion_custodia.diferencia IS 'GENERATED';
 COMMENT ON COLUMN nucleo_financiero.conciliacion_custodia.ratio_cobertura IS 'GENERATED';
 COMMENT ON COLUMN nucleo_financiero.conciliacion_custodia.cumple_encaje IS 'IDX';

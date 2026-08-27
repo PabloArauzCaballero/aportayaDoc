@@ -16,4 +16,3 @@ CREATE TABLE IF NOT EXISTS organizador.metrica_organizador (
 COMMENT ON TABLE organizador.metrica_organizador IS 'Módulo 07 — Organizador y Automatización. Administrar es un rol, no un negocio: el organizador no cobra ni custodia';
 COMMENT ON COLUMN organizador.metrica_organizador.id IS 'PK';
 COMMENT ON COLUMN organizador.metrica_organizador.evaluacion_id IS 'FK, IDX';
-COMMENT ON COLUMN organizador.metrica_organizador.codigo IS 'UQ+evaluacion_id';

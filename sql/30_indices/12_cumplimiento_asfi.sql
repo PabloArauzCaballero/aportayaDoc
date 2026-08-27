@@ -139,9 +139,6 @@ CREATE INDEX IF NOT EXISTS ix_catalogo_reporte_regulatorio_organismo
 CREATE INDEX IF NOT EXISTS ix_reporte_regulatorio_catalogo_reporte_id
   ON cumplimiento.reporte_regulatorio (catalogo_reporte_id);
 
-CREATE UNIQUE INDEX IF NOT EXISTS uq_reporte_regulatorio_catalogo_reporte_id_periodo
-  ON cumplimiento.reporte_regulatorio (catalogo_reporte_id, periodo);
-
 CREATE INDEX IF NOT EXISTS ix_reporte_regulatorio_estado
   ON cumplimiento.reporte_regulatorio (estado);
 
@@ -201,9 +198,6 @@ CREATE INDEX IF NOT EXISTS ix_documento_publicado_tipo
 
 CREATE UNIQUE INDEX IF NOT EXISTS uq_punto_reclamo_codigo
   ON cumplimiento.punto_reclamo (codigo);
-
-CREATE UNIQUE INDEX IF NOT EXISTS uq_reclamo_cliente_codigo
-  ON cumplimiento.reclamo_cliente (codigo);
 
 CREATE INDEX IF NOT EXISTS ix_reclamo_cliente_usuario_id
   ON cumplimiento.reclamo_cliente (usuario_id);
@@ -285,9 +279,6 @@ CREATE INDEX IF NOT EXISTS ix_plan_accion_riesgo_fecha_compromiso
 
 CREATE INDEX IF NOT EXISTS ix_plan_accion_riesgo_estado
   ON cumplimiento.plan_accion_riesgo (estado);
-
-CREATE UNIQUE INDEX IF NOT EXISTS uq_evaluacion_riesgo_producto_version_producto
-  ON cumplimiento.evaluacion_riesgo_producto (version, producto);
 
 CREATE INDEX IF NOT EXISTS ix_oficial_cumplimiento_usuario_id
   ON cumplimiento.oficial_cumplimiento (usuario_id);

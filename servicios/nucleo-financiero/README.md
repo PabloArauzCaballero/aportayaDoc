@@ -18,7 +18,18 @@ Modulo 10 de la boveda — Billetera, Custodia y Dinero Electrónico.
 | CU | Nombre | Estado |
 | --- | --- | --- |
 | [CU-24](../../docs/CasosDeUso/CU-24%20Registrar%20el%20asiento%20contable%20de%20una%20operación.md) | Registrar el asiento contable de una operación | **Implementado** (carril 1B) |
-| CU-10 – CU-17, 50, 57 | Billetera y custodia | Pendiente — carril 2A, Ola 2 |
+| CU-40 | Evaluar límites antes de una operación | **Implementado** (carril 2A) |
+| CU-13 | Retener y liberar saldo | **Implementado** (carril 2A) |
+| CU-10 | Recargar saldo | **Implementado** (carril 2A) |
+| CU-11, 12, 14 – 17, 50 | Resto de billetera y custodia | Pendiente — carril 2A |
+| CU-57 | Operar un punto de atención | **Obsoleto**, número reservado (ADR-039) |
+
+**CU-40 vive acá y no en `cumplimiento`**, aunque planes/07 lo asigne al carril 1C:
+su tabla central `consumo_limite` está en este esquema, y su propia descomposición
+dice «se ejecuta dentro de la transacción de la operación» — que es esta.
+
+**CU-57 no se implementa.** [[ADR-039]] retiró el efectivo del alcance el 20-08-2026;
+el único ingreso de fondos es electrónico.
 
 **CU-24 no tiene endpoint.** Lo invoca otro caso de uso —el que registra el hecho
 económico— pasándole el `DSLContext` de **su** transacción, que es lo que hace que el

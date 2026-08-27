@@ -326,7 +326,7 @@ package "Interaccion y accion directa" {
     - id: UUID
     - canalVinculadoId: UUID
     - contenido: String
-    - intencionDetectada: String <<YA_PAGUE | CONSULTAR_SALDO | AYUDA | BAJA | DESCONOCIDA>>
+    - intencionDetectada: String <<YA_PAGUE | NO_PUEDO | NO_RECONOZCO | CONSULTAR_SALDO | AYUDA | BAJA | DESCONOCIDA>>
     - notificacionRelacionadaId: UUID
     - recibidaEn: DateTime
     - procesadaEn: DateTime

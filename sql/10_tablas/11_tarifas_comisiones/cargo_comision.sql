@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS tarifas.cargo_comision (
 COMMENT ON TABLE tarifas.cargo_comision IS 'Módulo 11 — Tarifas, Comisiones, Impuestos y Facturación. La política de cobro es dato, no código: se cambia con un seeder';
 COMMENT ON COLUMN tarifas.cargo_comision.id IS 'PK';
 COMMENT ON COLUMN tarifas.cargo_comision.devengo_id IS 'FK, IDX';
-COMMENT ON COLUMN tarifas.cargo_comision.deduccion_entrega_id IS 'FK, NULL, UQ, M4';
+COMMENT ON COLUMN tarifas.cargo_comision.deduccion_entrega_id IS 'FK, NULL, M4';
 COMMENT ON COLUMN tarifas.cargo_comision.transaccion_id IS 'FK, NULL, M10';
 COMMENT ON COLUMN tarifas.cargo_comision.obligacion_id IS 'FK, NULL, M3';
 COMMENT ON COLUMN tarifas.cargo_comision.forma_cobro IS 'CK';

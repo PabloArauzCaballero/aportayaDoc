@@ -26,7 +26,7 @@ COMMENT ON COLUMN grupos.invitacion.grupo_id IS 'FK, IDX';
 COMMENT ON COLUMN grupos.invitacion.telefono_invitado IS 'IDX';
 COMMENT ON COLUMN grupos.invitacion.nombre_sugerido IS 'NULL';
 COMMENT ON COLUMN grupos.invitacion.emisor_id IS 'FK';
-COMMENT ON COLUMN grupos.invitacion.token_id IS 'FK, UQ, M1';
+COMMENT ON COLUMN grupos.invitacion.token_id IS 'FK, M1';
 COMMENT ON COLUMN grupos.invitacion.canal IS 'CK';
 COMMENT ON COLUMN grupos.invitacion.estado IS 'CK';
 COMMENT ON COLUMN grupos.invitacion.fecha_respuesta IS 'NULL';

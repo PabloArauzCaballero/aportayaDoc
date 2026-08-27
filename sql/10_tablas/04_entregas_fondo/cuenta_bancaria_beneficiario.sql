@@ -28,7 +28,6 @@ COMMENT ON TABLE entregas.cuenta_bancaria_beneficiario IS 'Módulo 04 — Entreg
 COMMENT ON COLUMN entregas.cuenta_bancaria_beneficiario.id IS 'PK';
 COMMENT ON COLUMN entregas.cuenta_bancaria_beneficiario.usuario_id IS 'FK, IDX';
 COMMENT ON COLUMN entregas.cuenta_bancaria_beneficiario.tipo_cuenta IS 'CK';
-COMMENT ON COLUMN entregas.cuenta_bancaria_beneficiario.hash_numero_cuenta IS 'UQ+usuario_id';
 COMMENT ON COLUMN entregas.cuenta_bancaria_beneficiario.estado_verificacion IS 'CK';
 COMMENT ON COLUMN entregas.cuenta_bancaria_beneficiario.metodo_verificacion IS 'NULL';
 COMMENT ON COLUMN entregas.cuenta_bancaria_beneficiario.verificada_en IS 'NULL';
