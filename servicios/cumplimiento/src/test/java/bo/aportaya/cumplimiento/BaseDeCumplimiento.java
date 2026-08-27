@@ -1,9 +1,14 @@
 package bo.aportaya.cumplimiento;
 
+import bo.aportaya.cumplimiento.aplicacion.CU03DeclararPep;
 import bo.aportaya.cumplimiento.aplicacion.CU05AceptarContrato;
 import bo.aportaya.cumplimiento.aplicacion.CU46VerificarAlcance;
 import bo.aportaya.cumplimiento.infraestructura.AceptacionRepositorio;
+import bo.aportaya.cumplimiento.infraestructura.CalificacionRiesgoRepositorio;
+import bo.aportaya.cumplimiento.infraestructura.CasoLftRepositorio;
 import bo.aportaya.cumplimiento.infraestructura.ContratoRepositorio;
+import bo.aportaya.cumplimiento.infraestructura.DeclaracionPepRepositorio;
+import bo.aportaya.cumplimiento.infraestructura.DiligenciaRepositorio;
 import bo.aportaya.cumplimiento.infraestructura.LicenciaRepositorio;
 import bo.aportaya.cumplimiento.infraestructura.SandboxRepositorio;
 import bo.aportaya.plataforma.datos.Datos;
@@ -35,6 +40,7 @@ abstract class BaseDeCumplimiento {
     protected static Consumidos consumidos;
     protected static CU46VerificarAlcance alcanceCU;
     protected static CU05AceptarContrato contratoCU;
+    protected static CU03DeclararPep pepCU;
 
     @BeforeAll
     static void armar() {
@@ -59,6 +65,16 @@ abstract class BaseDeCumplimiento {
                 new AceptacionRepositorio(),
                 new Outbox("cumplimiento"),
                 Reloj.delSistema());
+        pepCU = new CU03DeclararPep(
+                new Datos(dsl),
+                new DeclaracionPepRepositorio(),
+                new CalificacionRiesgoRepositorio(),
+                new DiligenciaRepositorio(),
+                new CasoLftRepositorio(),
+                new Outbox("cumplimiento"),
+                Reloj.delSistema(),
+                6,
+                30);
     }
 
     protected ContextoSesion contexto() {
