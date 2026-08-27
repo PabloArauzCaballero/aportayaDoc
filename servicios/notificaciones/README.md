@@ -17,7 +17,13 @@ Modulo 05 de la boveda — Notificaciones y Comunicaciones.
 
 | CU | Nombre | Estado |
 | --- | --- | --- |
-| | *(los llena `nuevo_cu.py`)* | |
+| CU-80 | Despachar una notificación | ⬜ sin implementar |
+
+| CU-81 | Programar recordatorios de aporte | ⬜ sin implementar |
+
+| CU-82 | Procesar una respuesta entrante | ⬜ sin implementar |
+
+| CU-83 | Enrutar el envío por proveedor de mensajería | ⬜ sin implementar |
 
 ## Eventos que emite
 
