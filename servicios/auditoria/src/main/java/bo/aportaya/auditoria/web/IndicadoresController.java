@@ -55,6 +55,7 @@ public class IndicadoresController implements IndicadoresApi {
     private static SalidaTablero mapear(CU98PublicarTablero.SalidaTablero salida) {
         SalidaTablero cuerpo = new SalidaTablero(
                 salida.periodo(),
+                salida.provisorio(),
                 SalidaTablero.DimensionEnum.fromValue(salida.dimension()),
                 salida.indicadores().stream().map(IndicadoresController::mapear).toList());
         salida.dimensionId().ifPresent(cuerpo::setDimensionId);
@@ -65,13 +66,16 @@ public class IndicadoresController implements IndicadoresApi {
         Indicador cuerpo = new Indicador(
                 indicador.codigo(),
                 indicador.nombre(),
-                comoCadena(indicador.valor()),
                 indicador.unidad(),
                 Indicador.FamiliaEnum.fromValue(indicador.familia()),
                 indicador.duenoFamilia(),
                 indicador.definicionVersion(),
+                indicador.suprimidoPorPrivacidad(),
                 indicador.calculadoEn());
 
+        indicador.valor().map(IndicadoresController::comoCadena).ifPresent(cuerpo::setValor);
+        indicador.casos().ifPresent(cuerpo::setCasos);
+        cuerpo.setMinimoCasos(indicador.minimoCasos());
         indicador.meta().map(IndicadoresController::comoCadena).ifPresent(cuerpo::setMeta);
         indicador.cumpleMeta().ifPresent(cuerpo::setCumpleMeta);
         indicador

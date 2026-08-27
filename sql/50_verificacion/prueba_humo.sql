@@ -145,10 +145,12 @@ $q$);
 -- alguien actualice esta cifra, se agregó una tabla append-only sin repasar la
 -- prueba. Sube con APPEND_ONLY en scripts/modelo.py (19 → 30 al incorporar los
 -- módulos 13 y 14; 30 → 29 al bajar el outbox a infraestructura por esquema con
--- UPDATE de estado, ADR-027: evento_dominio ya no está sellado).
-SELECT CASE WHEN count(*) = 29
-            THEN 'OK    · R-AUD-01 las 29 tablas append-only están selladas'
-            ELSE 'FALLA · R-AUD-01 ' || count(*) || ' de 29 tablas selladas' END
+-- UPDATE de estado, ADR-027: evento_dominio ya no está sellado; 29 → 30 al sellar
+-- indicador_kpi, que pasó a append-only para que un indicador recalculado no pise
+-- la serie anterior).
+SELECT CASE WHEN count(*) = 30
+            THEN 'OK    · R-AUD-01 las 30 tablas append-only están selladas'
+            ELSE 'FALLA · R-AUD-01 ' || count(*) || ' de 30 tablas selladas' END
   FROM pg_trigger tg
   JOIN pg_class c ON c.oid = tg.tgrelid
  WHERE NOT tg.tgisinternal AND tg.tgname LIKE '%append\_only'

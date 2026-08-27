@@ -22,8 +22,9 @@ import org.springframework.stereotype.Component;
 public class IndicadorRepositorio {
 
     private static final org.jooq.Name TABLA = DSL.name("auditoria", "indicador_kpi");
+    private static final org.jooq.Name DEFINICION = DSL.name("auditoria", "definicion_indicador");
 
-    /** Un indicador tal como quedo guardado, sin interpretar. */
+    /** Un indicador tal como quedo guardado, con la definicion que lo explica. */
     public record Fila(
             String codigo,
             String nombre,
@@ -31,6 +32,13 @@ public class IndicadorRepositorio {
             String unidad,
             Optional<BigDecimal> meta,
             Optional<BigDecimal> variacion,
+            boolean provisorio,
+            Optional<Integer> casos,
+            String familia,
+            String duenoFamilia,
+            String sentidoMeta,
+            String definicionVersion,
+            int minimoCasos,
             OffsetDateTime calculadoEn) {}
 
     public record PuntoDeSerie(String periodo, BigDecimal valor) {}
@@ -41,19 +49,41 @@ public class IndicadorRepositorio {
      * pantalla discuten sobre filas distintas.
      */
     public List<Fila> delPeriodo(DSLContext dsl, String periodo, String dimension, UUID dimensionId) {
+        // La union es interna a proposito: un indicador sin definicion vigente NO se
+        // publica. CU-98 pone la definicion escrita como precondicion, y una fila que
+        // se cuela sin ella es un numero que nadie sabe interpretar.
         return dsl.select(
-                        DSL.field("codigo", String.class),
-                        DSL.field("nombre", String.class),
-                        DSL.field("valor", BigDecimal.class),
-                        DSL.field("unidad", String.class),
-                        DSL.field("meta", BigDecimal.class),
-                        DSL.field("variacion_periodo_anterior", BigDecimal.class),
-                        DSL.field("calculado_en", OffsetDateTime.class))
-                .from(DSL.table(TABLA))
-                .where(DSL.field("periodo").eq(periodo))
-                .and(DSL.field("dimension").eq(dimension))
+                        DSL.field("k.codigo", String.class).as("codigo"),
+                        DSL.field("k.nombre", String.class).as("nombre"),
+                        DSL.field("k.valor", BigDecimal.class).as("valor"),
+                        DSL.field("k.unidad", String.class).as("unidad"),
+                        DSL.field("k.meta", BigDecimal.class).as("meta"),
+                        DSL.field("k.variacion_periodo_anterior", BigDecimal.class)
+                                .as("variacion_periodo_anterior"),
+                        DSL.field("k.provisorio", Boolean.class).as("provisorio"),
+                        DSL.field("k.casos", Integer.class).as("casos"),
+                        DSL.field("d.familia", String.class).as("familia"),
+                        DSL.field("d.dueno_familia", String.class).as("dueno_familia"),
+                        DSL.field("d.sentido_meta", String.class).as("sentido_meta"),
+                        DSL.field("d.version", String.class).as("version"),
+                        DSL.field("d.minimo_casos", Integer.class).as("minimo_casos"),
+                        DSL.field("k.calculado_en", OffsetDateTime.class).as("calculado_en"))
+                .from(DSL.table(TABLA).as("k"))
+                .join(DSL.table(DEFINICION).as("d"))
+                .on(DSL.field("k.definicion_indicador_id").eq(DSL.field("d.id")))
+                .where(DSL.field("k.periodo").eq(periodo))
+                .and(DSL.field("k.dimension").eq(dimension))
                 .and(condicionDeDimension(dimensionId))
-                .orderBy(DSL.field("codigo").asc())
+                // La tabla es append-only: un indicador recalculado deja fila nueva.
+                // Se publica la ULTIMA por codigo, y las anteriores siguen ahi para la
+                // serie y para explicar el corte.
+                .and(DSL.field("k.calculado_en")
+                        .eq(DSL.select(DSL.max(DSL.field("k2.calculado_en", java.time.OffsetDateTime.class)))
+                                .from(DSL.table(TABLA).as("k2"))
+                                .where(DSL.field("k2.codigo").eq(DSL.field("k.codigo")))
+                                .and(DSL.field("k2.periodo").eq(DSL.field("k.periodo")))
+                                .and(DSL.field("k2.dimension").eq(DSL.field("k.dimension")))))
+                .orderBy(DSL.field("k.codigo").asc())
                 .fetch()
                 .map(IndicadorRepositorio::aFila);
     }
@@ -78,7 +108,7 @@ public class IndicadorRepositorio {
                 .and(DSL.field("dimension").eq(dimension))
                 .and(condicionDeDimension(dimensionId))
                 .and(DSL.field("periodo", String.class).lessThan(hastaPeriodo))
-                .orderBy(DSL.field("periodo").desc())
+                .orderBy(DSL.field("periodo").desc(), DSL.field("calculado_en").desc())
                 .limit(cuantos)
                 .fetch()
                 .map(f -> new PuntoDeSerie(f.get("periodo", String.class), f.get("valor", BigDecimal.class)));
@@ -112,6 +142,13 @@ public class IndicadorRepositorio {
                 f.get("unidad", String.class),
                 Optional.ofNullable(f.get("meta", BigDecimal.class)),
                 Optional.ofNullable(f.get("variacion_periodo_anterior", BigDecimal.class)),
+                Boolean.TRUE.equals(f.get("provisorio", Boolean.class)),
+                Optional.ofNullable(f.get("casos", Integer.class)),
+                f.get("familia", String.class),
+                f.get("dueno_familia", String.class),
+                f.get("sentido_meta", String.class),
+                f.get("version", String.class),
+                f.get("minimo_casos", Integer.class),
                 f.get("calculado_en", OffsetDateTime.class));
     }
 }

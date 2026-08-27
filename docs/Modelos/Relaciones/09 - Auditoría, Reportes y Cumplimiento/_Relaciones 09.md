@@ -3,12 +3,12 @@ tags:
   - moc
   - modulo/09-auditoria-reportes-y-cumplimiento
 modulo: "09 — Auditoría, Reportes y Cumplimiento"
-relaciones_fk: 26
+relaciones_fk: 27
 ---
 
 # 09 — Auditoría, Reportes y Cumplimiento · relaciones
 
-Las **26 claves foráneas** que salen de las tablas de este módulo.
+Las **27 claves foráneas** que salen de las tablas de este módulo.
 
 [[_Relaciones|← Todas las relaciones]] · [[Index]]
 
@@ -29,6 +29,7 @@ Las **26 claves foráneas** que salen de las tablas de este módulo.
 | [[ejecucion_reporte.grupo_id → grupo]] | [[grupo]] | ↗ 02 | sí |
 | [[ejecucion_reporte.solicitado_por → usuario]] | [[usuario]] | ↗ 01 | no |
 | [[exportacion_reporte.ejecucion_id → ejecucion_reporte]] | [[ejecucion_reporte]] | — | no |
+| [[indicador_kpi.definicion_indicador_id → definicion_indicador]] | [[definicion_indicador]] | — | no |
 | [[proceso_anonimizacion.solicitud_id → solicitud_datos_personales]] | [[solicitud_datos_personales]] | — | sí |
 | [[proceso_anonimizacion.usuario_id → usuario]] | [[usuario]] | ↗ 01 | no |
 | [[programacion_reporte.definicion_id → definicion_reporte]] | [[definicion_reporte]] | — | no |

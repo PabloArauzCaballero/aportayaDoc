@@ -97,6 +97,7 @@ REVOKE UPDATE, DELETE ON erp.factura_proveedor FROM svc_erp;
 REVOKE UPDATE, DELETE ON publicidad.factura_publicidad FROM svc_publicidad;
 REVOKE UPDATE, DELETE ON garantia.historial_estado_incumplimiento FROM svc_garantia;
 REVOKE UPDATE, DELETE ON publicidad.impresion_anuncio FROM svc_publicidad;
+REVOKE UPDATE, DELETE ON auditoria.indicador_kpi FROM svc_auditoria;
 REVOKE UPDATE, DELETE ON nucleo_financiero.movimiento_billetera FROM svc_nucleo_financiero;
 REVOKE UPDATE, DELETE ON nucleo_financiero.movimiento_contable FROM svc_nucleo_financiero;
 REVOKE UPDATE, DELETE ON nucleo_financiero.movimiento_custodia FROM svc_nucleo_financiero;

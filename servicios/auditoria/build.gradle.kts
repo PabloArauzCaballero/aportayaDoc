@@ -29,6 +29,9 @@ dependencies {
 
     testImplementation(project(":plataforma:comun-pruebas"))
     testImplementation(libs.bundles.pruebas)   // JUnit 5, AssertJ, Testcontainers, ArchUnit
+    // Las pruebas de integracion arman el DataSource y la transaccion a mano, sin
+    // levantar Spring: es lo que las hace correr en segundos en vez de en minutos.
+    testImplementation(libs.spring.boot.jdbc)
 }
 
 // JPA esta PROHIBIDO (ADR-016): compite con sql/ por la propiedad del esquema y

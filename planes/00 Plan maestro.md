@@ -45,7 +45,7 @@ alcance: servicios/* · plataforma/* · despliegue/*
 
 | Artefacto | Estado |
 | --- | --- |
-| `docs/` — bóveda | **Completa**: 99 casos de uso, 304 entidades, 633 relaciones, 140 restricciones, 42 ADR |
+| `docs/` — bóveda | **Completa**: 99 casos de uso, 305 entidades, 633 relaciones, 140 restricciones, 42 ADR |
 | `sql/` — esquema | **Generado y aplicable**: `psql -v ON_ERROR_STOP=1 -f sql/aplicar.sql` |
 | `seeders/` — catálogos | **Listos**: **20** catálogos mínimos (van a producción) + **14** de prueba |
 | `scripts/` — generadores | **Listos**: DDL, bóveda, semillas, verificador. **Falta**: asignación de esquema por servicio (Fase 1) |

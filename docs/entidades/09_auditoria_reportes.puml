@@ -204,7 +204,7 @@ package "Reportes y Explotacion" {
 
   class EjecucionReporte {
     - id: UUID
-    - definicionId: UUID
+    - definicionIndicadorId: UUID
     - parametros: JSON
     - grupoId: UUID
     - solicitadoPor: UUID
@@ -239,7 +239,7 @@ package "Reportes y Explotacion" {
 
   class ProgramacionReporte {
     - id: UUID
-    - definicionId: UUID
+    - definicionIndicadorId: UUID
     - expresionCron: String
     - parametrosFijos: JSON
     - destinatarios: List<UUID>
@@ -252,8 +252,26 @@ package "Reportes y Explotacion" {
     + ejecutar(): EjecucionReporte
   }
 
+  class DefinicionIndicador <<Pol>> {
+    - id: UUID
+    - codigo: String
+    - version: String
+    - familia: String <<NEGOCIO | RIESGO | CUMPLIMIENTO | OPERACION | FINANZAS>>
+    - duenoFamilia: String
+    - sentidoMeta: String <<MAYOR_ES_MEJOR | MENOR_ES_MEJOR>>
+    - formula: String
+    - fuente: String
+    - minimoCasos: Integer
+    - vigenteDesde: DateTime
+    - vigenteHasta: DateTime
+    --
+    + cumple(valor, meta): Boolean
+    + publicable(casos): Boolean
+  }
+
   class IndicadorKPI {
     - id: UUID
+    - definicionIndicadorId: UUID
     - codigo: String <<TASA_MOROSIDAD_GLOBAL | GRUPOS_ACTIVOS | MONTO_ADMINISTRADO | TASA_CONCILIACION_AUTOMATICA>>
     - nombre: String
     - valor: Decimal
@@ -263,11 +281,15 @@ package "Reportes y Explotacion" {
     - periodo: String
     - meta: Decimal
     - variacionPeriodoAnterior: Decimal
+    - provisorio: Boolean
+    - casos: Integer
     - calculadoEn: DateTime
     --
     + recalcular()
     + tendencia(): String
   }
+
+  DefinicionIndicador "1" --> "0..*" IndicadorKPI : define
 }
 
 ' ============================================================
@@ -649,10 +671,39 @@ entity "programacion_reporte" as progrep {
   proxima_ejecucion_en : TIMESTAMPTZ <<IDX>>
 }
 
+entity "definicion_indicador" as definkpi {
+  * id : UUID <<PK>>
+  --
+  codigo : VARCHAR(40) <<UQ+version>>
+  version : VARCHAR(20)
+  familia : VARCHAR(20) <<CK>>
+  dueno_familia : VARCHAR(80)
+  sentido_meta : VARCHAR(20) <<CK>>
+  formula : VARCHAR(400)
+  fuente : VARCHAR(300)
+  minimo_casos : SMALLINT
+  vigente_desde : TIMESTAMPTZ
+  vigente_hasta : TIMESTAMPTZ <<NULL>>
+}
+
+note top of definkpi
+  Un indicador es una DEFINICION, no una consulta: si dos lugares lo recalculan,
+  ya hay dos indicadores. Aca vive lo que permite interpretarlo y lo que hace que
+  un numero de hace un ano vuelva a salir igual.
+
+  La `version` se cierra y se abre otra cuando la formula cambia; la serie vieja
+  conserva la suya, y por eso el corte de serie se puede senalar en el grafico en
+  vez de aparecer como una mejora del 40 por ciento que nadie explica.
+
+  `minimo_casos` es el piso de muestra para publicar sin identificar personas:
+  un promedio de tres personas identifica a las tres (R-SEG-03).
+end note
+
 entity "indicador_kpi" as kpi {
   * id : UUID <<PK>>
   --
-  codigo : VARCHAR(40) <<UQ+dimension+dimension_id+periodo>>
+  # definicion_indicador_id : UUID <<FK, IDX>>
+  codigo : VARCHAR(40) <<UQ+dimension+dimension_id+periodo+definicion_indicador_id>>
   nombre : VARCHAR(80)
   valor : DECIMAL(16,4)
   unidad : VARCHAR(15)
@@ -661,8 +712,31 @@ entity "indicador_kpi" as kpi {
   periodo : VARCHAR(10)
   meta : DECIMAL(16,4) <<NULL>>
   variacion_periodo_anterior : DECIMAL(8,4) <<NULL>>
+  provisorio : BOOLEAN
+  casos : INTEGER <<NULL>>
   calculado_en : TIMESTAMPTZ
 }
+
+note bottom of kpi
+  `provisorio` viaja con el numero y no se deduce al consultar: un indicador sobre
+  un periodo sin cuadrar es una opinion, y quien lo calculo es el unico que sabe si
+  los cierres cerraron. Deducirlo al publicar obligaria a auditoria a leer el
+  esquema de nucleo-financiero, que no puede.
+
+  `casos` es el tamano de la muestra. Sin el no se puede aplicar el minimo de
+  privacidad, y el valor se publicaria identificando a las personas que lo componen.
+
+  La tabla es APPEND-ONLY: un indicador corregido no pisa al anterior, entra como
+  fila nueva con la version de definicion con que se recalculo. Por eso la unicidad
+  incluye `definicion_indicador_id`: la serie vieja sigue disponible y el corte queda
+  senalado, en vez de desaparecer bajo un UPDATE que nadie ve.
+
+  `definicion_indicador_id` ata el numero a la version de definicion con que se
+  calculo: es lo
+  que lo vuelve reproducible. El nombre lleva la tabla entera a proposito:
+  `definicion_id` a secas ya esta tomado por `definicion_reporte`, en este mismo
+  modulo, y la FK habria resuelto silenciosamente a la tabla equivocada.
+end note
 
 entity "regla_cumplimiento" as reglacump {
   * id : UUID <<PK>>

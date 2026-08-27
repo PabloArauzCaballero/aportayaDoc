@@ -191,6 +191,7 @@ SET search_path TO aportes, auditoria, cumplimiento, entregas, erp, garantia, gr
 \ir 10_tablas/09_auditoria_reportes/ejecucion_reporte.sql
 \ir 10_tablas/09_auditoria_reportes/exportacion_reporte.sql
 \ir 10_tablas/09_auditoria_reportes/programacion_reporte.sql
+\ir 10_tablas/09_auditoria_reportes/definicion_indicador.sql
 \ir 10_tablas/09_auditoria_reportes/indicador_kpi.sql
 \ir 10_tablas/09_auditoria_reportes/regla_cumplimiento.sql
 \ir 10_tablas/09_auditoria_reportes/alerta_cumplimiento.sql

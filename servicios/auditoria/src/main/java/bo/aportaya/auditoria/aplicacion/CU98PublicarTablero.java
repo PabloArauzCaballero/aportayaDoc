@@ -1,7 +1,6 @@
 package bo.aportaya.auditoria.aplicacion;
 
-import bo.aportaya.auditoria.dominio.CatalogoDeDefiniciones;
-import bo.aportaya.auditoria.dominio.DefinicionDeIndicador;
+import bo.aportaya.auditoria.dominio.SentidoDeMeta;
 import bo.aportaya.auditoria.dominio.Variacion;
 import bo.aportaya.auditoria.infraestructura.IndicadorRepositorio;
 import bo.aportaya.plataforma.datos.Datos;
@@ -24,15 +23,15 @@ import org.springframework.transaction.annotation.Transactional;
  * cifra.
  *
  * <p><b>Esta clase no calcula ningun indicador.</b> Lee lo que el trabajo de calculo
- * dejo en {@code indicador_kpi} y le agrega lo que hace falta para interpretarlo:
- * la familia, el dueno, si cumple la meta y con que version de la definicion se
- * calculo. Calcular aca crearia un segundo lugar donde nace el mismo numero, y
- * entonces hay dos numeros.
+ * dejo en {@code indicador_kpi}, unido a la {@code definicion_indicador} con la que se
+ * calculo, y decide tres cosas de publicacion: si cumple la meta, si el valor se puede
+ * mostrar sin identificar personas, y como se lee la variacion. Calcular aca crearia
+ * un segundo lugar donde nace el mismo numero, y entonces hay dos numeros.
  *
  * <p><b>La transaccion es de solo lectura</b> y existe igual: {@code conContexto}
  * exige una transaccion abierta para que {@code SET LOCAL} fije el contexto de RLS.
  * Sin eso, la consulta correria sin politica de fila y devolveria indicadores de
- * dimensiones que quien pregunta no puede ver.
+ * dimensiones que quien pregunta no puede ver — sin error y sin rastro.
  */
 @Service
 public class CU98PublicarTablero {
@@ -47,8 +46,6 @@ public class CU98PublicarTablero {
 
     @Transactional(readOnly = true)
     public SalidaTablero ejecutar(EntradaTablero entrada, ContextoSesion ctx) {
-        // AP-CU98-02 antes de tocar la base: una dimension que la tabla no admite no
-        // es «cero indicadores», es una consulta mal formada.
         Dimension dimension = Dimension.de(entrada.dimension());
 
         if (dimension != Dimension.GLOBAL && entrada.dimensionId().isEmpty()) {
@@ -59,28 +56,19 @@ public class CU98PublicarTablero {
         UUID dimensionId = entrada.dimensionId().orElse(null);
 
         return datos.conContexto(ctx, dsl -> {
-            List<IndicadorRepositorio.Fila> filas =
-                    indicadores.delPeriodo(dsl, entrada.periodo(), dimension.name(), dimensionId);
+            List<Indicador> publicados =
+                    indicadores.delPeriodo(dsl, entrada.periodo(), dimension.name(), dimensionId).stream()
+                            .map(fila -> publicar(dsl, fila, entrada, dimension, dimensionId))
+                            .toList();
 
-            // AP-CU98-02. CU-98 pone la definicion escrita como PRECONDICION, no como
-            // adorno: un numero que nadie sabe interpretar no se puede discutir en un
-            // comite. Se corta el tablero entero y se nombran los codigos que faltan,
-            // en vez de publicar una fila muda entre nueve que se entienden.
-            List<String> sinDefinicion = filas.stream()
-                    .map(IndicadorRepositorio.Fila::codigo)
-                    .filter(codigo -> CatalogoDeDefiniciones.de(codigo).isEmpty())
-                    .toList();
-            if (!sinDefinicion.isEmpty()) {
-                throw new ErrorDeNegocio(
-                        CodigoError.de(98, 2),
-                        "Estos indicadores no tienen definicion escrita: " + String.join(", ", sinDefinicion));
-            }
+            // Provisorio es del tablero entero y no de cada tarjeta: si un solo
+            // indicador del periodo se calculo sin cuadrar, la lectura de todos queda
+            // condicionada. Decirlo una vez arriba evita que alguien cite el unico que
+            // estaba definitivo como si el resto tambien lo estuviera.
+            boolean provisorio = publicados.stream().anyMatch(Indicador::provisorio);
 
-            List<Indicador> publicados = filas.stream()
-                    .map(fila -> publicar(dsl, fila, entrada, dimension, dimensionId))
-                    .toList();
-
-            return new SalidaTablero(entrada.periodo(), dimension.name(), entrada.dimensionId(), publicados);
+            return new SalidaTablero(
+                    entrada.periodo(), dimension.name(), entrada.dimensionId(), provisorio, publicados);
         });
     }
 
@@ -91,12 +79,8 @@ public class CU98PublicarTablero {
             Dimension dimension,
             UUID dimensionId) {
 
-        // Existe: lo garantizo la comprobacion de arriba, antes de publicar nada.
-        DefinicionDeIndicador definicion = CatalogoDeDefiniciones.de(fila.codigo())
-                .orElseThrow(() -> new IllegalStateException("definicion perdida para " + fila.codigo()));
-
-        // La variacion guardada manda; si el calculo no la dejo, se deriva del
-        // periodo anterior. Nunca se inventa un cero.
+        // La variacion guardada manda; si el calculo no la dejo, se deriva del periodo
+        // anterior. Nunca se inventa un cero.
         Optional<BigDecimal> variacion = fila.variacion().isPresent()
                 ? fila.variacion()
                 : Variacion.entre(
@@ -105,32 +89,58 @@ public class CU98PublicarTablero {
 
         // Sin meta no hay semaforo. `Optional` vacio y no `false`: decir «no cumple»
         // sobre un indicador que nadie se comprometio a mover es inventar un rojo.
-        Optional<Boolean> cumpleMeta =
-                fila.meta().map(meta -> definicion.sentido().cumple(fila.valor(), meta));
+        Optional<Boolean> cumpleMeta = fila.meta()
+                .map(meta -> SentidoDeMeta.valueOf(fila.sentidoMeta()).cumple(fila.valor(), meta));
 
-        // La serie se traduce ACA y no en el controlador: el tipo del repositorio no
-        // sale de la capa de infraestructura. ArchUnit lo hace cumplir, y tiene razon
-        // — dejarlo pasar ata la forma de la respuesta HTTP a la forma de una consulta.
-        List<PuntoDeSerie> serie = indicadores
-                .serieDe(
-                        dsl, fila.codigo(), dimension.name(), dimensionId, entrada.periodo(), entrada.periodosDeSerie())
-                .stream()
-                .map(punto -> new PuntoDeSerie(punto.periodo(), punto.valor()))
-                .toList();
+        boolean suprimido = suprimirPorMinimo(fila);
+
+        List<PuntoDeSerie> serie = suprimido
+                // Si el valor se suprime, la serie tambien: publicarla seria dar el
+                // numero por la puerta de atras, y la supresion quedaria decorativa.
+                ? List.of()
+                : indicadores
+                        .serieDe(
+                                dsl,
+                                fila.codigo(),
+                                dimension.name(),
+                                dimensionId,
+                                entrada.periodo(),
+                                entrada.periodosDeSerie())
+                        .stream()
+                        .map(punto -> new PuntoDeSerie(punto.periodo(), punto.valor()))
+                        .toList();
 
         return new Indicador(
                 fila.codigo(),
                 fila.nombre(),
-                fila.valor(),
+                suprimido ? Optional.empty() : Optional.of(fila.valor()),
                 fila.unidad(),
                 fila.meta(),
-                cumpleMeta,
-                variacion,
+                suprimido ? Optional.empty() : cumpleMeta,
+                suprimido ? Optional.empty() : variacion,
                 serie,
-                definicion.familia().name(),
-                definicion.duenoFamilia(),
-                definicion.version(),
+                suprimido,
+                fila.casos(),
+                fila.minimoCasos(),
+                fila.provisorio(),
+                fila.familia(),
+                fila.duenoFamilia(),
+                fila.definicionVersion(),
                 fila.calculadoEn());
+    }
+
+    /**
+     * Un promedio de tres personas identifica a las tres (`R-SEG-03`).
+     *
+     * <p>Sin {@code casos} no se puede saber si la muestra alcanza, y **la duda se
+     * resuelve suprimiendo**: publicar un valor cuyo tamano de muestra se desconoce es
+     * apostar con datos de personas.
+     */
+    private static boolean suprimirPorMinimo(IndicadorRepositorio.Fila fila) {
+        if (fila.minimoCasos() <= 0) {
+            return false;
+        }
+        return fila.casos().map(casos -> casos < fila.minimoCasos()).orElse(true);
     }
 
     /** Las tres que admite {@code ck_indicador_kpi_dimension}. Manda la tabla. */
@@ -156,17 +166,25 @@ public class CU98PublicarTablero {
     public record EntradaTablero(String periodo, String dimension, Optional<UUID> dimensionId, int periodosDeSerie) {}
 
     public record SalidaTablero(
-            String periodo, String dimension, Optional<UUID> dimensionId, List<Indicador> indicadores) {}
+            String periodo,
+            String dimension,
+            Optional<UUID> dimensionId,
+            boolean provisorio,
+            List<Indicador> indicadores) {}
 
     public record Indicador(
             String codigo,
             String nombre,
-            BigDecimal valor,
+            Optional<BigDecimal> valor,
             String unidad,
             Optional<BigDecimal> meta,
             Optional<Boolean> cumpleMeta,
             Optional<BigDecimal> variacionPeriodoAnterior,
             List<PuntoDeSerie> serie,
+            boolean suprimidoPorPrivacidad,
+            Optional<Integer> casos,
+            int minimoCasos,
+            boolean provisorio,
             String familia,
             String duenoFamilia,
             String definicionVersion,

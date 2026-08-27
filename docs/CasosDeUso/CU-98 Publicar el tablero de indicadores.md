@@ -25,14 +25,16 @@ normas: [ASFI gobierno corporativo, control interno, protección de datos]
 1. Los cierres del período están cuadrados
    ([[CU-51 Ejecutar el cierre diario]], [[CU-35 Cerrar la liquidación mensual de ingresos]]).
    **Un indicador sobre datos sin cuadrar es una opinión.**
-2. Cada indicador tiene definición escrita: fórmula, fuente, dimensión y meta.
+2. Cada indicador tiene [[definicion_indicador]] vigente: fórmula, fuente, familia,
+   dueño, sentido de la meta y mínimo de casos para publicar.
 3. Las metas del período están fijadas **antes** del período.
 
 ## Flujo principal
 
 1. Se calcula cada [[indicador_kpi]] con `codigo`, `nombre`, `valor`, `unidad`,
-   `dimension` —`PLATAFORMA`, `GRUPO`, `ORGANIZADOR`, `PRODUCTO`—, `dimension_id`,
-   `periodo`, `meta` y `variacion_periodo_anterior`. La combinación de código,
+   `dimension` —`GLOBAL`, `POR_GRUPO`, `POR_ORGANIZADOR`—, `dimension_id`, `periodo`,
+   `meta`, `variacion_periodo_anterior`, `provisorio`, `casos` y la
+   `definicion_indicador_id` con la que se calculó. La combinación de código,
    dimensión, identificador y período es única.
 2. El cálculo corre **contra la réplica de lectura**, con la misma consulta que
    define el indicador: no hay una planilla aparte donde alguien recalcula a mano.
@@ -47,9 +49,11 @@ normas: [ASFI gobierno corporativo, control interno, protección de datos]
 5. Los indicadores que agregan datos de personas se publican **solo agregados**: por
    debajo del mínimo de casos, no se muestra el valor
    —un promedio de tres personas identifica a las tres.
-6. El tablero es reproducible: cada indicador guarda con qué definición y qué
-   período se calculó, de modo que un número de hace un año se puede volver a
-   obtener igual.
+6. El tablero es reproducible: cada indicador apunta a la [[definicion_indicador]]
+   con la que se calculó, de modo que un número de hace un año se puede volver a
+   obtener igual. Cuando la fórmula cambia se cierra la vigencia de esa versión y se
+   abre otra: **la serie vieja conserva la suya**, y por eso el corte se puede señalar
+   en el gráfico en vez de aparecer como una mejora que nadie explica.
 7. Los indicadores alimentan las sesiones de comité y las evaluaciones de
    organizador ([[CU-92 Evaluar el desempeño del organizador]]), sin recalcularse por
    separado en cada lugar.
@@ -146,9 +150,13 @@ export const ErroresCU98 = {
 
 `R-SEG-03` · `R-AUD-01` · `R-AUD-07` · `R-BIL-12` · `R-LIC-03`
 
+> **`provisorio` viaja con la fila y no se deduce al consultar.** Quien calcula es el
+> único que sabe si los cierres del período cuadraron; deducirlo al publicar obligaría
+> a `auditoria` a leer el esquema de `nucleo-financiero`, que no puede (invariante 11).
+
 ## Evidencia que deja
 
-[[indicador_kpi]] · [[metrica_grupo]] · [[metrica_organizador]] ·
+[[definicion_indicador]] · [[indicador_kpi]] · [[metrica_grupo]] · [[metrica_organizador]] ·
 [[cierre_diario]] · [[liquidacion_ingresos]] · `evento_dominio`
 
 ## Criterios de aceptación

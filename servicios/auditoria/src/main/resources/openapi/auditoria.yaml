@@ -115,9 +115,15 @@ components:
     SalidaTablero:
       type: object
       additionalProperties: false
-      required: [periodo, dimension, indicadores]
+      required: [periodo, dimension, provisorio, indicadores]
       properties:
         periodo: { type: string }
+        provisorio:
+          type: boolean
+          description: >-
+            Verdadero si algun indicador del periodo se calculo sin que los cierres
+            cuadraran. Es del tablero entero y no de cada tarjeta: si uno solo es
+            provisorio, la lectura de todos queda condicionada.
         dimension: { type: string, enum: [GLOBAL, POR_GRUPO, POR_ORGANIZADOR] }
         dimensionId: { type: string, format: uuid }
         indicadores:
@@ -126,7 +132,8 @@ components:
     Indicador:
       type: object
       additionalProperties: false
-      required: [codigo, nombre, valor, unidad, familia, duenoFamilia, definicionVersion, calculadoEn]
+      required:
+        [codigo, nombre, unidad, familia, duenoFamilia, definicionVersion, suprimidoPorPrivacidad, calculadoEn]
       properties:
         codigo: { type: string, maxLength: 40 }
         nombre: { type: string, maxLength: 80 }
@@ -135,6 +142,9 @@ components:
           description: >-
             Cadena decimal, con la escala que guardo el calculo. No se redondea al
             publicar: el numero del tablero tiene que ser el numero de la tabla.
+
+            AUSENTE cuando se suprimio por privacidad. La serie tambien viene vacia en
+            ese caso: publicarla seria dar el numero por la puerta de atras.
         unidad: { type: string, maxLength: 15 }
         meta:
           type: string
@@ -175,6 +185,17 @@ components:
           description: >-
             Con que version de la definicion se calculo. Es lo que permite que un
             numero de hace un ano vuelva a salir igual.
+        suprimidoPorPrivacidad:
+          type: boolean
+          description: >-
+            Verdadero cuando la muestra no alcanza el minimo de la definicion. Un
+            promedio de tres personas identifica a las tres (R-SEG-03).
+        casos:
+          type: integer
+          description: Tamano de la muestra, para poder explicar la supresion.
+        minimoCasos:
+          type: integer
+          description: El piso que fija la definicion del indicador.
         calculadoEn: { type: string, format: date-time }
   responses:
     ReglaDeNegocio:

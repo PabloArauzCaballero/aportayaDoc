@@ -3,8 +3,8 @@ tags:
   - moc
   - indice
 titulo: "AportaYa — modelo de datos"
-entidades: 304
-relaciones_fk: 629
+entidades: 305
+relaciones_fk: 630
 modulos: 14
 ---
 
@@ -21,11 +21,11 @@ modulos: 14
 docs/
 ├── Index.md                 ← estás acá
 ├── Modelos/
-│   ├── Entidades/           ← una nota por tabla (304), en 14 carpetas
+│   ├── Entidades/           ← una nota por tabla (305), en 14 carpetas
 │   │   ├── 01 - Identidad, Usuarios y Seguridad/
 │   │   ├── 02 - Grupos, Cupos, Turnos y Gobernanza/
 │   │   └── ...
-│   └── Relaciones/          ← una nota por clave foránea (629), en 14 carpetas
+│   └── Relaciones/          ← una nota por clave foránea (630), en 14 carpetas
 │       ├── 01 - Identidad, Usuarios y Seguridad/
 │       └── ...
 ├── CasosDeUso/              ← un caso de uso por flujo (99), con criterios de aceptación
@@ -65,7 +65,7 @@ Casi todo el modelo se explica con cinco ideas. Si vas a leer solo cinco notas, 
 | 06 | Transparencia y Reputación | Que nadie tenga que "creerle" al organizador | 16 | 22 | [[06_transparencia_reputacion\|negocio]] |
 | 07 | Organizador y Automatización | Administrar es un rol, no un negocio: el organizador no cobra ni custodia | 12 | 17 | [[07_organizador_automatizacion\|negocio]] |
 | 08 | Garantía, Incumplimiento, Cobranza y Sanciones | El grupo no se detiene, pero la deuda no se perdona sola | 33 | 99 | [[08_garantia_incumplimiento\|negocio]] |
-| 09 | Auditoría, Reportes y Cumplimiento | Poder demostrar todo lo anterior ante un reclamo o un regulador | 18 | 26 | [[09_auditoria_reportes\|negocio]] |
+| 09 | Auditoría, Reportes y Cumplimiento | Poder demostrar todo lo anterior ante un reclamo o un regulador | 19 | 27 | [[09_auditoria_reportes\|negocio]] |
 | 10 | Billetera, Custodia y Dinero Electrónico | El saldo no se guarda: se deriva, y todos los días cuadra contra el banco | 24 | 61 | [[10_billetera_custodia\|negocio]] |
 | 11 | Tarifas, Comisiones, Impuestos y Facturación | La política de cobro es dato, no código: se cambia con un seeder | 27 | 65 | [[11_tarifas_comisiones\|negocio]] |
 | 12 | Cumplimiento Regulatorio y Consumidor Financiero | Que una inspección se responda con consultas, no armando carpetas | 47 | 102 | [[12_cumplimiento_asfi\|negocio]] |
@@ -93,7 +93,7 @@ El grado (FK entrantes + salientes) es un buen proxy de importancia estructural:
 
 ## Acoplamiento entre módulos
 
-De las 629 claves foráneas, **326 cruzan módulos**. La matriz muestra
+De las 630 claves foráneas, **326 cruzan módulos**. La matriz muestra
 cuántas FK van de un módulo (fila) a otro (columna):
 
 | desde \ hacia | 01 | 02 | 03 | 04 | 05 | 06 | 07 | 08 | 09 | 10 | 11 | 12 | 13 | 14 |

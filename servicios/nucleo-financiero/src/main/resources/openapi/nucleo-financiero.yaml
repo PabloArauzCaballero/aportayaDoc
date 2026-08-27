@@ -51,6 +51,127 @@ paths:
         '401':
           $ref: '#/components/responses/NoAutenticado'
 
+  /billetera/recargas:
+    post:
+      operationId: solicitarRecarga           # CU-10
+      summary: Abre una orden de recarga y devuelve cuanto se va a acreditar
+      description: >-
+        [CONTRATO] Derivada de la implementacion del carril 2A, que llego antes que
+        su contrato.
+
+        La orden NO acredita: reserva la intencion y vence. Acreditar es el paso
+        siguiente y ocurre cuando el proveedor confirma, porque acreditar contra una
+        promesa es acreditar plata que puede no llegar.
+
+        `acreditara` viaja en la respuesta ya calculado: el cliente **no** resta el
+        costo del proveedor por su cuenta. Un cliente que recalcula produce un numero
+        que no es el del libro contable.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaRecarga' }
+      responses:
+        '201':
+          description: Orden abierta, con su vencimiento
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaRecarga' }
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU10-01 LIMITE_EXCEDIDO      · AP-CU10-02 MONTO_INVALIDO
+          # AP-CU10-03 MEDIO_NO_VERIFICADO  · AP-CU10-04 CUENTA_NO_OPERATIVA
+          # AP-CU10-05 ORDEN_NO_ACREDITABLE
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+
+  /billetera/recargas/{ordenId}/acreditacion:
+    post:
+      operationId: acreditarRecarga           # CU-10
+      summary: Acredita una orden que el proveedor confirmo
+      description: >-
+        [CONTRATO] La confirmacion del proveedor. Es idempotente por la orden: si dos
+        confirmaciones llegan juntas, una acredita y la otra encuentra la orden ya
+        acreditada — la red duplica, y eso no puede duplicar el saldo.
+      parameters:
+        - name: ordenId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      responses:
+        '200':
+          description: Acreditada, con el saldo resultante
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaAcreditacion' }
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU10-05 ORDEN_NO_ACREDITABLE
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+
+  /billetera/retenciones:
+    post:
+      operationId: retenerSaldo               # CU-13
+      summary: Aparta saldo sin sacarlo de la cuenta
+      description: >-
+        [CONTRATO] Retener no es debitar: el dinero sigue siendo del titular y por eso
+        se ve como retenido y no desaparece. Lo que cambia es que deja de estar
+        disponible mientras dure el motivo.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaRetencion' }
+      responses:
+        '201':
+          description: Retenido, con el saldo disponible y el retenido despues
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaRetencion' }
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU13-01 CUENTA_NO_OPERATIVA · AP-CU13-02 FECHA_INVALIDA
+          # AP-CU13-03 RETENCION_NO_ABIERTA
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+
+  /billetera/retenciones/{retencionId}/cierre:
+    post:
+      operationId: cerrarRetencion            # CU-13
+      summary: Libera o ejecuta una retencion
+      description: >-
+        [CONTRATO] Una retencion se cierra una sola vez. Si otra operacion la cerro
+        primero, la segunda no la vuelve a cerrar: se responde
+        `RETENCION_NO_ABIERTA`, que no es una falla sino concurrencia sana.
+      parameters:
+        - name: retencionId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaCierreRetencion' }
+      responses:
+        '200':
+          description: Cerrada, con el saldo resultante
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaCierreRetencion' }
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU13-03 RETENCION_NO_ABIERTA
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+
 components:
   parameters:
     ClaveIdempotencia:
@@ -62,6 +183,76 @@ components:
         seguro, y la clave se valida ANTES de escribir (invariante 7).
       schema: { type: string, format: uuid }
   schemas:
+    EntradaRecarga:
+      type: object
+      additionalProperties: false
+      required: [cuentaBilleteraId, monto, medio]
+      properties:
+        cuentaBilleteraId: { type: string, format: uuid }
+        monto: { $ref: '#/components/schemas/Dinero' }
+        costoProveedor: { $ref: '#/components/schemas/Dinero' }
+        medio: { type: string, maxLength: 30 }
+        instrumentoFondeoId: { type: string, format: uuid }
+    SalidaRecarga:
+      type: object
+      additionalProperties: false
+      required: [ordenRecargaId, estado, expiraEn, acreditara]
+      properties:
+        ordenRecargaId: { type: string, format: uuid }
+        estado: { type: string, maxLength: 20 }
+        expiraEn: { type: string, format: date-time }
+        acreditara:
+          $ref: '#/components/schemas/Dinero'
+    SalidaAcreditacion:
+      type: object
+      additionalProperties: false
+      required: [ordenRecargaId, transaccionId, saldoDespues]
+      properties:
+        ordenRecargaId: { type: string, format: uuid }
+        transaccionId:  { type: string, format: uuid }
+        saldoDespues:   { $ref: '#/components/schemas/Dinero' }
+
+    EntradaRetencion:
+      type: object
+      additionalProperties: false
+      required: [cuentaBilleteraId, monto, motivo]
+      properties:
+        cuentaBilleteraId: { type: string, format: uuid }
+        monto:  { $ref: '#/components/schemas/Dinero' }
+        motivo: { type: string, maxLength: 40 }
+        transaccionOrigenId: { type: string, format: uuid }
+        referenciaTipo: { type: string, maxLength: 30 }
+        referenciaId:   { type: string, format: uuid }
+        expiraEn:       { type: string, format: date-time }
+    SalidaRetencion:
+      type: object
+      additionalProperties: false
+      required: [retencionId, saldoDisponible, saldoRetenido]
+      properties:
+        retencionId:     { type: string, format: uuid }
+        saldoDisponible: { $ref: '#/components/schemas/Dinero' }
+        saldoRetenido:   { $ref: '#/components/schemas/Dinero' }
+        expiraEn:        { type: string, format: date-time }
+    EntradaCierreRetencion:
+      type: object
+      additionalProperties: false
+      required: [desenlace]
+      properties:
+        desenlace:
+          type: string
+          enum: [LIBERADA, EJECUTADA]
+          description: >-
+            Liberar devuelve el saldo a disponible; ejecutar lo convierte en un
+            movimiento del libro. Son dos finales distintos y el llamador dice cual.
+    SalidaCierreRetencion:
+      type: object
+      additionalProperties: false
+      required: [retencionId, estado, saldoDisponible, saldoRetenido]
+      properties:
+        retencionId:     { type: string, format: uuid }
+        estado:          { type: string, maxLength: 20 }
+        saldoDisponible: { $ref: '#/components/schemas/Dinero' }
+        saldoRetenido:   { $ref: '#/components/schemas/Dinero' }
     Dinero:
       type: object
       additionalProperties: false
