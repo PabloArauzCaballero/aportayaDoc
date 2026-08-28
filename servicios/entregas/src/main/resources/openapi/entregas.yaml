@@ -5,6 +5,32 @@
 # Prefijos reservados de este servicio: /entregas, /desembolsos, /cuentas-bancarias
 #   Una ruta fuera de ellos es un rechazo automatico, no una discusion de diseno.
 #   Toda ruta exige sesion: 401 sin token, 403 con rol insuficiente.
+#
+# Codigos de error de los tres casos de uso. Viven aca aunque el caso de uso no tenga
+# ruta HTTP propia: scripts/verificar_criterios.py los busca en este archivo.
+#
+# CU-18 · Registrar y verificar una cuenta bancaria de destino
+#   AP-CU18-01  TITULAR_NO_COINCIDE   · la cuenta no es de quien la registra (R-SEG-02)
+#   AP-CU18-02  CUENTA_YA_REGISTRADA  · misma cuenta: se devuelve la que ya tiene
+#   AP-CU18-03  ENTIDAD_NO_SOPORTADA  · aca: numero demasiado corto para ser uno
+#   AP-CU18-04  VERIFICACION_FALLIDA  · la cuenta no existe
+#   AP-CU18-05  MONEDA_INCOMPATIBLE   · reservado
+#   AP-CU18-06  LIMITE_DE_CUENTAS     · tope de cuentas por usuario
+#
+# CU-22 · Liquidar y entregar el fondo
+#   AP-CU22-01  BOLSA_INCOMPLETA      · se recaudo menos de lo prometido
+#   AP-CU22-02  VALIDACION_BLOQUEANTE · hay validaciones previas sin resolver
+#   AP-CU22-03  ENTREGA_DUPLICADA     · la entrega no existe o ya no admite el cambio
+#   AP-CU22-04  SEGREGACION_INCUMPLIDA · quien ejecuta autorizo (R-SEG-04)
+#   AP-CU22-05  NETO_NEGATIVO         · las deducciones superan la bolsa
+#
+# CU-28 · Emitir la orden de desembolso y ejecutar el intento
+#   AP-CU28-01  ENTREGA_NO_AUTORIZADA · la entrega no esta autorizada
+#   AP-CU28-02  CUENTA_NO_VERIFICADA  · cuenta sin verificar o en enfriamiento (R-DES-02)
+#   AP-CU28-03  SIN_PROVEEDOR_DISPONIBLE · reservado; el enrutamiento es de CU-99
+#   AP-CU28-04  SALDO_NO_RETENIDO     · el saldo de la entrega no esta retenido
+#   AP-CU28-05  ORDEN_YA_EXISTE       · la orden no existe (el duplicado devuelve la que hay)
+#   AP-CU28-06  RECHAZO_DEFINITIVO    · error que no se reintenta
 openapi: 3.1.0
 info:
   title: entregas
@@ -16,20 +42,227 @@ info:
 servers:
   - url: /api/v1
 
-paths: {}
-  # Una operacion por caso de uso. Plantilla:
-  #
-  #   /entregas/…:
-  #     post:
-  #       operationId: <verboObjeto>          # CU-NN
-  #       parameters:
-  #         - name: Idempotency-Key
-  #           in: header
-  #           required: true                   # toda operacion con efecto
-  #           schema: { type: string, format: uuid }
-  #       responses:
-  #         '200': …
-  #         '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+paths:
+  /cuentas-bancarias:
+    post:
+      operationId: registrarCuentaDestino       # CU-18
+      summary: Registrar una cuenta bancaria de destino
+      description: >-
+        El numero NUNCA se guarda en claro (R-SEG-01): la fila lleva el cifrado, un
+        hash con pimienta para buscar, y una version enmascarada. Y la cuenta esta a
+        nombre de quien la registra (R-SEG-02): una cuenta de destino ajena es la forma
+        mas simple de sacar plata de un grupo hacia afuera.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaRegistroCuenta' }
+      responses:
+        '201':
+          description: Cuenta registrada, en estado PENDIENTE
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaRegistroCuenta' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /cuentas-bancarias/{cuentaId}/verificacion:
+    post:
+      operationId: verificarCuentaDestino       # CU-18
+      summary: Verificar la titularidad de la cuenta
+      description: >-
+        Verificada no es utilizable: empieza la ventana de enfriamiento y su fin se
+        GUARDA. Si alguien toma una cuenta ajena, lo primero que hace es cambiar el
+        destino y retirar; la ventana le da al titular real el tiempo de enterarse.
+      parameters:
+        - name: cuentaId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [metodo]
+              properties:
+                metodo: { type: string, maxLength: 20 }
+      responses:
+        '200':
+          description: Cuenta verificada, con su fecha de disponibilidad
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaVerificacionCuenta' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /cuentas-bancarias/{cuentaId}/disponibilidad:
+    get:
+      operationId: consultarDisponibilidad      # CU-18
+      summary: Si la cuenta puede recibir plata ahora, y si no, cuanto falta
+      description: >-
+        Se dice CUANTO falta, no solo que no se puede: negar sin explicar convierte una
+        medida de seguridad en una falla del sistema.
+      parameters:
+        - name: cuentaId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Disponibilidad con su motivo
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Disponibilidad' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /cuentas-bancarias/{cuentaId}/principal:
+    post:
+      operationId: designarCuentaPrincipal      # CU-18
+      summary: Designar la cuenta principal
+      description: >-
+        Una sola principal por usuario (R-BIL-17). Dos harian que el destino de un
+        retiro dependiera del orden en que la base devuelve las filas.
+      parameters:
+        - name: cuentaId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Cuenta designada
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [designada]
+                properties:
+                  designada: { type: boolean }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /entregas:
+    post:
+      operationId: liquidarEntrega              # CU-22
+      summary: Liquidar la entrega del turno
+      description: >-
+        Una entrega por turno (R-GRP-01) y el neto NUNCA negativo: que las deducciones
+        superen la bolsa significa que el beneficiario terminaria debiendo por cobrar
+        su turno. Cada deduccion viaja con su tipo y su origen.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaLiquidacion' }
+      responses:
+        '201':
+          description: Entrega liquidada, en estado PROGRAMADA
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaLiquidacion' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /entregas/{entregaId}/autorizacion:
+    post:
+      operationId: autorizarEntrega             # CU-22
+      summary: Autorizar la entrega
+      description: >-
+        Una validacion bloqueante sin resolver la frena. Saltearlas para «no demorar la
+        entrega» es como se entrega mal.
+      parameters:
+        - name: entregaId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Entrega autorizada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaAutorizacion' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /entregas/{entregaId}/ejecucion:
+    post:
+      operationId: ejecutarEntrega              # CU-22
+      summary: Ejecutar la entrega
+      description: >-
+        Quien autoriza NO ejecuta (R-SEG-04). Una sola persona que hace las dos cosas
+        puede sacar el fondo entero de un grupo sin que nadie mas lo vea pasar.
+      parameters:
+        - name: entregaId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [montoEntregado]
+              properties:
+                montoEntregado: { $ref: '#/components/schemas/Dinero' }
+      responses:
+        '200':
+          description: Entrega ejecutada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaEjecucionEntrega' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /desembolsos:
+    post:
+      operationId: emitirOrdenDesembolso        # CU-28
+      summary: Emitir la orden de desembolso
+      description: >-
+        Una orden VIVA por entrega (R-DES-01) y ninguna a cuenta sin verificar
+        (R-DES-02). Dos ordenes de la misma entrega es pagar dos veces, y no se
+        descubre hasta que alguien concilia el extracto.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaOrdenDesembolso' }
+      responses:
+        '201':
+          description: Orden emitida, o la que ya existia
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaOrdenDesembolso' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /desembolsos/{ordenId}/respuesta:
+    post:
+      operationId: anotarRespuestaDesembolso    # CU-28
+      summary: Registrar lo que contesto el proveedor
+      description: >-
+        La llamada al proveedor la hace quien orquesta, FUERA de esta transaccion
+        (invariante 6). Un error definitivo NO se reintenta: insistir contra una cuenta
+        que no existe solo demora el momento en que alguien mira el caso, mientras la
+        plata del beneficiario sigue retenida.
+      parameters:
+        - name: ordenId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaRespuestaDesembolso' }
+      responses:
+        '200':
+          description: Resultado del intento
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaIntentoDesembolso' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
 
 components:
   parameters:
@@ -42,6 +275,174 @@ components:
         seguro, y la clave se valida ANTES de escribir (invariante 7).
       schema: { type: string, format: uuid }
   schemas:
+    EntradaRegistroCuenta:
+      type: object
+      additionalProperties: false
+      required: [tipoCuenta, entidadFinanciera, numeroCifrado, titularNombre, titularDocumento, moneda]
+      properties:
+        tipoCuenta:        { type: string, enum: [AHORRO, CORRIENTE, BILLETERA] }
+        entidadFinanciera: { type: string, maxLength: 60 }
+        numeroCifrado:
+          type: string
+          description: >-
+            ya cifrado por el almacen de llaves. **El numero en claro nunca viaja en
+            este campo ni se persiste** (R-SEG-01)
+        titularNombre:    { type: string, maxLength: 120 }
+        titularDocumento: { type: string, maxLength: 30 }
+        moneda:           { type: string, enum: [BOB, USD] }
+    SalidaRegistroCuenta:
+      type: object
+      additionalProperties: false
+      required: [cuentaId, numeroEnmascarado, estado, esNueva]
+      properties:
+        cuentaId: { type: string, format: uuid }
+        numeroEnmascarado:
+          type: string
+          description: lo unico que se muestra — los ultimos cuatro digitos
+        estado:  { type: string, enum: [PENDIENTE, VERIFICADA, RECHAZADA] }
+        esNueva: { type: boolean }
+    SalidaVerificacionCuenta:
+      type: object
+      additionalProperties: false
+      required: [cuentaId, estado, esNueva]
+      properties:
+        cuentaId: { type: string, format: uuid }
+        estado:   { type: string }
+        disponibleDesde:
+          type: [string, 'null']
+          format: date-time
+          description: el fin de la ventana de enfriamiento; se GUARDA, no se recalcula
+        esNueva: { type: boolean }
+    Disponibilidad:
+      type: object
+      additionalProperties: false
+      required: [disponible, restanteSegundos, motivo]
+      properties:
+        disponible:       { type: boolean }
+        restanteSegundos: { type: integer, minimum: 0 }
+        motivo:
+          type: string
+          description: en texto; negar sin explicar convierte una medida de seguridad en una falla
+    DeduccionEntrega:
+      type: object
+      additionalProperties: false
+      required: [tipo, descripcion, monto, esObligatoria]
+      properties:
+        tipo:
+          type: string
+          enum: [AJUSTE_ACORDADO, APORTE_PROPIO_DEL_PERIODO, COMISION_PLATAFORMA,
+                 COSTO_TRANSFERENCIA, DEUDA_VENCIDA_PROPIA, RECARGO_MORA_PROPIO,
+                 REPOSICION_FONDO_GARANTIA, RETENCION_IMPUESTO]
+        descripcion: { type: string, maxLength: 200 }
+        monto:       { $ref: '#/components/schemas/Dinero' }
+        referenciaOrigenId:
+          type: [string, 'null']
+          format: uuid
+          description: la fila que justifica el descuento. Sin ella la deduccion no se puede auditar
+        esObligatoria: { type: boolean }
+    EntradaLiquidacion:
+      type: object
+      additionalProperties: false
+      required: [grupoId, periodoId, turnoId, cupoId, beneficiarioId, bruto, recaudado,
+                 deducciones, metodoDesembolso, fechaProgramada]
+      properties:
+        grupoId:        { type: string, format: uuid }
+        periodoId:      { type: string, format: uuid }
+        turnoId:        { type: string, format: uuid }
+        cupoId:         { type: string, format: uuid }
+        beneficiarioId: { type: string, format: uuid }
+        bruto:     { $ref: '#/components/schemas/Dinero' }
+        recaudado: { $ref: '#/components/schemas/Dinero' }
+        deducciones:
+          type: array
+          items: { $ref: '#/components/schemas/DeduccionEntrega' }
+        metodoDesembolso:
+          type: string
+          enum: [BILLETERA_MOVIL, COMPENSACION_INTERNA, EFECTIVO_ORGANIZADOR, QR_ENVIO,
+                 TRANSFERENCIA_BANCARIA]
+        fechaProgramada: { type: string, format: date }
+    SalidaLiquidacion:
+      type: object
+      additionalProperties: false
+      required: [entregaId, bruto, totalDeducciones, neto, estado]
+      properties:
+        entregaId:        { type: string, format: uuid }
+        bruto:            { $ref: '#/components/schemas/Dinero' }
+        totalDeducciones: { $ref: '#/components/schemas/Dinero' }
+        neto:             { $ref: '#/components/schemas/Dinero' }
+        estado:           { type: string }
+    SalidaAutorizacion:
+      type: object
+      additionalProperties: false
+      required: [entregaId, estado, autorizadaPor]
+      properties:
+        entregaId:     { type: string, format: uuid }
+        estado:        { type: string, enum: [AUTORIZADA] }
+        autorizadaPor: { type: string, format: uuid }
+    SalidaEjecucionEntrega:
+      type: object
+      additionalProperties: false
+      required: [entregaId, estado, montoEntregado]
+      properties:
+        entregaId:      { type: string, format: uuid }
+        estado:         { type: string, enum: [ENTREGADA] }
+        montoEntregado: { $ref: '#/components/schemas/Dinero' }
+    EntradaOrdenDesembolso:
+      type: object
+      additionalProperties: false
+      required: [entregaId, proveedorId, cuentaDestinoId, glosa, saldoRetenido]
+      properties:
+        entregaId:       { type: string, format: uuid }
+        proveedorId:     { type: string, format: uuid }
+        cuentaDestinoId: { type: string, format: uuid }
+        glosa:           { type: string, maxLength: 140 }
+        saldoRetenido:
+          type: boolean
+          description: >-
+            sin el saldo retenido, desembolsar seria pagar con plata que todavia puede
+            gastarse en otra cosa
+    SalidaOrdenDesembolso:
+      type: object
+      additionalProperties: false
+      required: [ordenId, estado, claveIdempotencia, intentos, esNueva]
+      properties:
+        ordenId: { type: string, format: uuid }
+        estado:
+          type: string
+          enum: [CREADA, ENVIADA_A_PROVEEDOR, EN_PROCESO, ACREDITADA, RECHAZADA,
+                 DEVUELTA_POR_BANCO, CANCELADA]
+        claveIdempotencia: { type: string }
+        intentos:          { type: integer, minimum: 0 }
+        esNueva:           { type: boolean }
+    EntradaRespuestaDesembolso:
+      type: object
+      additionalProperties: false
+      required: [iniciado, exitoso]
+      properties:
+        iniciado: { type: string, format: date-time }
+        exitoso:  { type: boolean }
+        referenciaProveedor:
+          type: [string, 'null']
+          description: obligatoria si fue exitoso — es contra lo que cruza el extracto
+        codigoError:
+          type: [string, 'null']
+          description: >-
+            CUENTA_INEXISTENTE, CUENTA_CERRADA, TITULAR_NO_COINCIDE y
+            MONEDA_INCOMPATIBLE son definitivos: no se reintentan
+        mensajeProveedor: { type: [string, 'null'], maxLength: 255 }
+    SalidaIntentoDesembolso:
+      type: object
+      additionalProperties: false
+      required: [estado, numeroIntento, esNuevo]
+      properties:
+        ordenId:       { type: [string, 'null'], format: uuid }
+        estado:        { type: string }
+        numeroIntento: { type: integer, minimum: 0 }
+        reintentableEn:
+          type: [string, 'null']
+          format: date-time
+          description: null cuando el error fue definitivo o se agotaron los intentos
+        esNuevo: { type: boolean }
     Dinero:
       type: object
       additionalProperties: false
