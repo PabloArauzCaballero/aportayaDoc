@@ -7,6 +7,7 @@ import bo.aportaya.plataforma.dominio.ErrorDeNegocio;
 import bo.aportaya.plataforma.dominio.Reloj;
 import bo.aportaya.plataforma.mensajeria.EventoDominio;
 import bo.aportaya.plataforma.mensajeria.Outbox;
+import bo.aportaya.transparencia.dominio.IndicadoresDeReputacion;
 import bo.aportaya.transparencia.dominio.PuntajeDeReputacion;
 import bo.aportaya.transparencia.infraestructura.ModeloRepositorio;
 import bo.aportaya.transparencia.infraestructura.ReputacionRepositorio;
@@ -164,7 +165,7 @@ public class CU71RecalcularPuntaje {
             UUID usuarioId,
             List<PuntajeDeReputacion.Medicion> mediciones,
             List<PuntajeDeReputacion.Medicion> medicionesAnteriores,
-            ReputacionRepositorio.Indicadores indicadores) {}
+            IndicadoresDeReputacion indicadores) {}
 
     public record SalidaPuntaje(
             UUID puntajeId,

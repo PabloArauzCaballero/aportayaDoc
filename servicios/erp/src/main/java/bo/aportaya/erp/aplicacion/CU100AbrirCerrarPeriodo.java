@@ -127,7 +127,8 @@ public class CU100AbrirCerrarPeriodo {
                                     "totalHaber", cuadre.totalHaber().toPlainString()),
                             UUID.fromString(ctx.traza().id())));
 
-            return new SalidaCierre(cierreId, entrada.periodoId(), cuadre.totalDebe(), cuadre.totalHaber(), true);
+            return new SalidaCierre(
+                    cierreId, entrada.periodoId(), cuadre.totalDebe(), cuadre.totalHaber(), true, ahora);
         });
     }
 
@@ -153,5 +154,6 @@ public class CU100AbrirCerrarPeriodo {
             UUID periodoId,
             java.math.BigDecimal totalDebe,
             java.math.BigDecimal totalHaber,
-            boolean cuadrado) {}
+            boolean cuadrado,
+            OffsetDateTime cerradoEn) {}
 }

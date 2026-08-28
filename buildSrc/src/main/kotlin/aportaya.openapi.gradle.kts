@@ -9,6 +9,14 @@ plugins {
 }
 
 val servicio = project.name
+
+// El paquete Java del servicio NO es su nombre de proyecto: `nucleo-financiero` vive
+// en `bo.aportaya.nucleofinanciero`. Si el generador arma su paquete desde el nombre
+// del proyecto, el guion se convierte en guion bajo y el codigo generado cae en
+// `bo.aportaya.nucleo_financiero` — otro arbol de paquetes. El controlador que lo
+// importa deja de cumplir `ArquitecturaTest > ningunImportCruzado`, porque para
+// ArchUnit es otro servicio.
+val paquete = servicio.replace("-", "")
 val contrato = layout.projectDirectory.file("src/main/resources/openapi/$servicio.yaml")
 
 // El generador interpreta `inputSpec` como URI. Una ruta absoluta de Windows
@@ -32,8 +40,8 @@ val generarServidor = tasks.register<GenerateTask>("generarServidorOpenApi") {
     generatorName.set("spring")
     inputSpec.set(rutaDelContrato)
     outputDir.set(servidor.map { it.asFile.absolutePath })
-    apiPackage.set("bo.aportaya.$servicio.web.generado")
-    modelPackage.set("bo.aportaya.$servicio.web.generado.modelo")
+    apiPackage.set("bo.aportaya.$paquete.web.generado")
+    modelPackage.set("bo.aportaya.$paquete.web.generado.modelo")
     configOptions.set(
         mapOf(
             "interfaceOnly" to "true",

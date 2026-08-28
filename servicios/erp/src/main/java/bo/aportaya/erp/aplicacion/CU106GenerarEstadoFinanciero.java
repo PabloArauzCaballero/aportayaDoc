@@ -105,7 +105,7 @@ public class CU106GenerarEstadoFinanciero {
                                     Integer.toString(saldos.size())),
                             UUID.fromString(ctx.traza().id())));
 
-            return new SalidaEstado(id, tipo, estado, hash);
+            return new SalidaEstado(id, tipo, estado, hash, ahora);
         });
     }
 
@@ -188,5 +188,10 @@ public class CU106GenerarEstadoFinanciero {
         }
     }
 
-    public record SalidaEstado(UUID estadoId, String tipo, CuadreContable.Estado estado, String hashContenido) {}
+    public record SalidaEstado(
+            UUID estadoId,
+            String tipo,
+            CuadreContable.Estado estado,
+            String hashContenido,
+            OffsetDateTime generadoEn) {}
 }

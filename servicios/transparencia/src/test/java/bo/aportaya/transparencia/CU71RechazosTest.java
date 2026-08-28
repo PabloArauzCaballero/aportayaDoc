@@ -5,8 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import bo.aportaya.plataforma.dominio.ContextoSesion;
 import bo.aportaya.transparencia.aplicacion.CU70RegistrarEventoReputacion.EntradaEvento;
 import bo.aportaya.transparencia.aplicacion.CU71RecalcularPuntaje.EntradaPuntaje;
+import bo.aportaya.transparencia.dominio.IndicadoresDeReputacion;
 import bo.aportaya.transparencia.dominio.PuntajeDeReputacion;
-import bo.aportaya.transparencia.infraestructura.ReputacionRepositorio;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 /** CU-71 · Lo que la base y el caso de uso rechazan. */
 class CU71RechazosTest extends BaseDeTransparencia {
 
-    private static final ReputacionRepositorio.Indicadores INDICADORES = new ReputacionRepositorio.Indicadores(
+    private static final IndicadoresDeReputacion INDICADORES = new IndicadoresDeReputacion(
             new BigDecimal("0.90"), new BigDecimal("0.05"), new BigDecimal("6000.00"), 2, 0, 0, 14);
 
     private record Caso(UUID usuario, UUID grupo, UUID participante, ContextoSesion ctx) {}

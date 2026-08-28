@@ -34,12 +34,45 @@ public class CumplimientoController implements CumplimientoApi {
     private final CU54RegistrarRiesgoOperativo cu54;
     private final CU55GestionarIncidente cu55;
     private final SesionDeLaPeticion sesion;
+    private final AdhesionController adhesion;
 
     public CumplimientoController(
-            CU54RegistrarRiesgoOperativo cu54, CU55GestionarIncidente cu55, SesionDeLaPeticion sesion) {
+            CU54RegistrarRiesgoOperativo cu54,
+            CU55GestionarIncidente cu55,
+            bo.aportaya.cumplimiento.aplicacion.CU02ElevarDiligencia cu02,
+            bo.aportaya.cumplimiento.aplicacion.CU03DeclararPep cu03,
+            bo.aportaya.cumplimiento.aplicacion.CU05AceptarContrato cu05,
+            SesionDeLaPeticion sesion,
+            jakarta.servlet.http.HttpServletRequest peticion) {
         this.cu54 = cu54;
         this.cu55 = cu55;
         this.sesion = sesion;
+        this.adhesion = new AdhesionController(cu02, cu03, cu05, sesion, peticion);
+    }
+
+    @Override
+    @Permiso("PARTICIPANTE")
+    public ResponseEntity<bo.aportaya.cumplimiento.web.generado.modelo.SalidaAceptacion> aceptarContrato(
+            UUID idempotencyKey,
+            UUID contratoId,
+            bo.aportaya.cumplimiento.web.generado.modelo.EntradaAceptacion cuerpo) {
+        return adhesion.aceptarContrato(contratoId, cuerpo);
+    }
+
+    @Override
+    @Permiso("PARTICIPANTE")
+    public ResponseEntity<bo.aportaya.cumplimiento.web.generado.modelo.SalidaPep> declararPep(
+            UUID usuarioId, bo.aportaya.cumplimiento.web.generado.modelo.EntradaPep cuerpo) {
+        return adhesion.declararPep(usuarioId, cuerpo);
+    }
+
+    @Override
+    @Permiso("ANALISTA_CUMPLIMIENTO")
+    public ResponseEntity<bo.aportaya.cumplimiento.web.generado.modelo.SalidaDiligencia> elevarDiligencia(
+            UUID idempotencyKey,
+            UUID usuarioId,
+            bo.aportaya.cumplimiento.web.generado.modelo.EntradaDiligencia cuerpo) {
+        return adhesion.elevarDiligencia(idempotencyKey, usuarioId, cuerpo);
     }
 
     /**

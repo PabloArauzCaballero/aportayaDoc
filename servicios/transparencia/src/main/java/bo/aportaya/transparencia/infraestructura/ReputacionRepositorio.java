@@ -1,5 +1,6 @@
 package bo.aportaya.transparencia.infraestructura;
 
+import bo.aportaya.transparencia.dominio.IndicadoresDeReputacion;
 import bo.aportaya.transparencia.dominio.PuntajeDeReputacion;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -216,7 +217,7 @@ public class ReputacionRepositorio {
             UUID modeloId,
             String modeloVersion,
             PuntajeDeReputacion.Resultado resultado,
-            Indicadores indicadores,
+            IndicadoresDeReputacion indicadores,
             int eventosConsiderados,
             OffsetDateTime ahora,
             OffsetDateTime proximoRecalculo) {
@@ -275,13 +276,4 @@ public class ReputacionRepositorio {
             String modeloVersion,
             int eventosConsiderados,
             OffsetDateTime calculadoEn) {}
-
-    public record Indicadores(
-            BigDecimal puntualidad,
-            BigDecimal incumplimiento,
-            BigDecimal montoAportado,
-            int gruposCompletados,
-            int gruposAbandonados,
-            int incumplimientosAbiertos,
-            int antiguedadMeses) {}
 }
