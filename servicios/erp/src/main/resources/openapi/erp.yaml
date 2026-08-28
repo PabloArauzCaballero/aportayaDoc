@@ -5,6 +5,63 @@
 # Prefijos reservados de este servicio: /erp
 #   Una ruta fuera de ellos es un rechazo automatico, no una discusion de diseno.
 #   Toda ruta exige sesion: 401 sin token, 403 con rol insuficiente.
+#
+# Codigos de error de los siete casos de uso, tal como los nombra la boveda.
+# Viven aca aunque el caso de uso no tenga ruta HTTP propia:
+# scripts/verificar_criterios.py los busca en este archivo.
+#
+# CU-100 · Abrir y cerrar el periodo contable
+#   AP-CU100-01  PERIODO_YA_CERRADO           · el periodo ya tiene su cierre
+#   AP-CU100-02  PERIODO_NO_ES_EL_MAS_ANTIGUO · hay un mes anterior todavia abierto
+#   AP-CU100-03  DESCUADRE_DETECTADO          · total_debe != total_haber al cerrar
+#
+# CU-101 · Presupuestar por centro de costo
+#   AP-CU101-01  CENTRO_COSTO_INEXISTENTE     · el centro no existe o esta inactivo
+#   AP-CU101-02  PRESUPUESTO_DUPLICADO        · ya hay presupuesto para ese centro y ejercicio
+#   AP-CU101-03  PARTIDA_SOBRE_PRESUPUESTO_CERRADO · un presupuesto cerrado no admite partidas
+#
+# CU-102 · Dar de alta un tercero comercial y su orden de compra
+#   AP-CU102-01  TERCERO_BLOQUEADO            · el tercero existe pero no esta ACTIVO
+#   AP-CU102-02  DOCUMENTO_YA_REGISTRADO_A_OTRO_TERCERO · el NIT ya es de otro tercero
+#   AP-CU102-03  ORDEN_SIN_APROBACION         · la orden sigue en BORRADOR
+#
+# CU-103 · Registrar y pagar una factura de proveedor
+#   AP-CU103-01  PERIODO_CERRADO              · la emision cae en un mes ya cerrado
+#   AP-CU103-02  MISMO_APROBADOR_Y_PAGADOR    · R-CTB-05: cuatro ojos sobre el egreso
+#   AP-CU103-03  FACTURA_DUPLICADA            · ese proveedor ya tiene ese numero
+#   AP-CU103-04  MONTO_PAGO_MAYOR_AL_SALDO    · el pago excede el saldo pendiente
+#
+# CU-104 · Cobrar una cuenta por cobrar
+#   AP-CU104-01  CUENTA_INEXISTENTE           · el identificador no corresponde a una cuenta
+#   AP-CU104-02  MONTO_MAYOR_AL_SALDO         · el cobro excede lo adeudado
+#   AP-CU104-03  CUENTA_YA_INCOBRABLE         · una cuenta incobrable no se cobra
+#
+# CU-105 · Depreciar un activo fijo
+#   AP-CU105-01  DEPRECIACION_YA_CALCULADA    · ya hay cuota de ese activo en ese mes
+#   AP-CU105-02  ACTIVO_YA_AGOTADO            · el valor en libros llego al residual
+#   AP-CU105-03  ACTIVO_DADO_DE_BAJA          · el activo no esta ACTIVO
+#
+# CU-106 · Generar el estado financiero del periodo
+#   AP-CU106-01  YA_GENERADO_PARA_ESE_PERIODO · un estado por periodo y tipo (R-CTB-08)
+#   AP-CU106-02  CUENTA_PLANTILLA_INVALIDA    · la plantilla apunta a una sumarizadora
+#
+# NOTA · divergencias declaradas contra la boveda, con su detalle en
+# planes/informes/carril-3D-erp.md:
+#   · El catalogo no tiene codigo de «referencia inexistente». Las consultas por un
+#     identificador que no existe reutilizan, dentro de cada CU, el codigo mas
+#     cercano: AP-CU100-01, AP-CU101-01, AP-CU102-03, AP-CU103-03, AP-CU104-01,
+#     AP-CU105-03 y AP-CU106-02.
+#   · CU-103 devuelve `asientoContableId`; erp no escribe el libro (invariante 12).
+#     El campo viaja nulo hasta que nucleo-financiero responde el evento
+#     `erp.factura_proveedor_registrada`, y este contrato lo declara nulable.
+#   · CU-102 nombra `montoTotal` y una salida con un unico `ordenCompraId`; el alta
+#     del tercero y la de la orden son dos operaciones, porque el tercero se reusa
+#     entre ordenes.
+#   · CU-100 declara `cerradoEn`; la columna es `cerrado_en` y viaja como
+#     date-time UTC.
+#   · No hay operacion de reapertura de periodo, de anulacion de factura ni de
+#     marcado de una cuenta como incobrable: esas tablas son append-only y el estado
+#     se decide al insertar.
 openapi: 3.1.0
 info:
   title: erp
@@ -16,20 +73,303 @@ info:
 servers:
   - url: /api/v1
 
-paths: {}
-  # Una operacion por caso de uso. Plantilla:
-  #
-  #   /erp/…:
-  #     post:
-  #       operationId: <verboObjeto>          # CU-NN
-  #       parameters:
-  #         - name: Idempotency-Key
-  #           in: header
-  #           required: true                   # toda operacion con efecto
-  #           schema: { type: string, format: uuid }
-  #       responses:
-  #         '200': …
-  #         '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+paths:
+  /erp/ejercicios:
+    post:
+      operationId: abrirEjercicioFiscal
+      summary: CU-100 · Abre el ejercicio y sus doce periodos
+      description: Exige CONTABILIDAD_ERP_CERRAR.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaEjercicio' }
+      responses:
+        '201':
+          description: Ejercicio abierto, con sus doce periodos en ABIERTO
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaEjercicio' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /erp/periodos/{periodoId}/cierre:
+    post:
+      operationId: cerrarPeriodoContable
+      summary: CU-100 · Cierra el mes contra su cuadre
+      description: Exige CONTABILIDAD_ERP_CERRAR. El cierre es irreversible.
+      parameters:
+        - $ref: '#/components/parameters/PeriodoId'
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaCierre' }
+      responses:
+        '201':
+          description: Periodo cerrado, con la constancia del cuadre
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaCierre' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /erp/presupuestos:
+    post:
+      operationId: crearPresupuesto
+      summary: CU-101 · Presupuesta un centro de costo para el ejercicio
+      description: Exige CONTABILIDAD_ERP_PRESUPUESTO.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaPresupuesto' }
+      responses:
+        '201':
+          description: Presupuesto en BORRADOR, con sus partidas
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaPresupuesto' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /erp/presupuestos/{presupuestoId}/aprobacion:
+    post:
+      operationId: aprobarPresupuesto
+      summary: CU-101 · Aprueba el presupuesto y lo deja vigente
+      description: Exige CONTABILIDAD_ERP_PRESUPUESTO.
+      parameters:
+        - $ref: '#/components/parameters/PresupuestoId'
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      responses:
+        '200':
+          description: Presupuesto APROBADO, con su total
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaPresupuesto' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /erp/terceros:
+    post:
+      operationId: darDeAltaTercero
+      summary: CU-102 · Da de alta un tercero comercial
+      description: >-
+        Exige CONTABILIDAD_ERP_COMPRAS. Reintentar con el mismo documento devuelve el
+        tercero que ya hay; con otro tipo devuelve AP-CU102-02.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaTercero' }
+      responses:
+        '201':
+          description: Tercero dado de alta, o el que ya existia con ese documento
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaTercero' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /erp/ordenes-de-compra:
+    post:
+      operationId: crearOrdenDeCompra
+      summary: CU-102 · Crea la orden de compra en BORRADOR
+      description: Exige CONTABILIDAD_ERP_COMPRAS.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaOrden' }
+      responses:
+        '201':
+          description: Orden creada en BORRADOR
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaOrden' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /erp/ordenes-de-compra/{ordenId}/aprobacion:
+    post:
+      operationId: aprobarOrdenDeCompra
+      summary: CU-102 · Aprueba la orden y habilita facturarla
+      description: Exige CONTABILIDAD_ERP_COMPRAS.
+      parameters:
+        - $ref: '#/components/parameters/OrdenId'
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      responses:
+        '200':
+          description: Orden APROBADA
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaOrden' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /erp/facturas-de-proveedor:
+    post:
+      operationId: registrarFacturaDeProveedor
+      summary: CU-103 · Registra la factura del proveedor
+      description: >-
+        Exige CONTABILIDAD_ERP_CUENTAS_POR_PAGAR. La aprobacion es un dato del alta:
+        `factura_proveedor` es append-only y no admite aprobarse despues.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaFactura' }
+      responses:
+        '201':
+          description: Factura registrada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaFactura' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /erp/facturas-de-proveedor/{facturaId}/pagos:
+    post:
+      operationId: pagarFacturaDeProveedor
+      summary: CU-103 · Paga, total o parcialmente, una factura aprobada
+      description: >-
+        Exige CONTABILIDAD_ERP_PAGAR. Quien aprobo la factura no puede autorizar su
+        pago (R-CTB-05).
+      parameters:
+        - $ref: '#/components/parameters/FacturaId'
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaPago' }
+      responses:
+        '201':
+          description: Pago registrado, con el saldo pendiente resultante
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaFactura' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /erp/cuentas-por-cobrar:
+    post:
+      operationId: abrirCuentaPorCobrar
+      summary: CU-104 · Abre la cuenta por cobrar de un tercero
+      description: Exige CONTABILIDAD_ERP_COBRAR.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaCuentaPorCobrar' }
+      responses:
+        '201':
+          description: Cuenta por cobrar abierta
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaCuentaPorCobrar' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /erp/cuentas-por-cobrar/{cuentaId}/cobros:
+    post:
+      operationId: registrarCobro
+      summary: CU-104 · Registra un cobro contra la cuenta
+      description: Exige CONTABILIDAD_ERP_COBRAR.
+      parameters:
+        - $ref: '#/components/parameters/CuentaId'
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaCobro' }
+      responses:
+        '201':
+          description: Cobro registrado, con el saldo pendiente resultante
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaCobro' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /erp/activos/{activoId}/depreciaciones:
+    post:
+      operationId: depreciarActivo
+      summary: CU-105 · Calcula la cuota del activo en el periodo
+      description: Exige CONTABILIDAD_ERP_ACTIVOS_FIJOS.
+      parameters:
+        - $ref: '#/components/parameters/ActivoId'
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaDepreciacion' }
+      responses:
+        '201':
+          description: Cuota calculada, con el valor en libros resultante
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaDepreciacion' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /erp/periodos/{periodoId}/depreciaciones:
+    post:
+      operationId: correrDepreciacionDelPeriodo
+      summary: CU-105 · Corre la depreciacion de todos los activos del mes
+      description: >-
+        Exige CONTABILIDAD_ERP_ACTIVOS_FIJOS. Es idempotente: los activos ya corridos
+        se informan en `yaCorridos` y no se vuelven a depreciar.
+      parameters:
+        - $ref: '#/components/parameters/PeriodoId'
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      responses:
+        '200':
+          description: Resumen de la corrida
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaCorrida' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /erp/periodos/{periodoId}/estados-financieros:
+    post:
+      operationId: generarEstadoFinanciero
+      summary: CU-106 · Genera el balance o el estado de resultados del mes
+      description: Exige CONTABILIDAD_ERP_REPORTES.
+      parameters:
+        - $ref: '#/components/parameters/PeriodoId'
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaEstadoFinanciero' }
+      responses:
+        '201':
+          description: Estado financiero generado, con el hash de su contenido
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaEstadoFinanciero' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /erp/plantillas-de-asiento/{plantillaId}/validacion:
+    get:
+      operationId: validarPlantillaDeAsiento
+      summary: CU-106 · Comprueba que la plantilla no apunte a sumarizadoras
+      description: >-
+        Exige CONTABILIDAD_ERP_REPORTES. Sin efecto, asi que no exige clave.
+      parameters:
+        - $ref: '#/components/parameters/PlantillaId'
+      responses:
+        '200':
+          description: Plantilla balanceada y contra cuentas de movimiento
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaPlantilla' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
 
 components:
   parameters:
@@ -40,6 +380,41 @@ components:
       description: >-
         Toda operacion con efecto la exige. La red duplica; reintentar tiene que ser
         seguro, y la clave se valida ANTES de escribir (invariante 7).
+      schema: { type: string, format: uuid }
+    PeriodoId:
+      name: periodoId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    PresupuestoId:
+      name: presupuestoId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    OrdenId:
+      name: ordenId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    FacturaId:
+      name: facturaId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    CuentaId:
+      name: cuentaId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    ActivoId:
+      name: activoId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    PlantillaId:
+      name: plantillaId
+      in: path
+      required: true
       schema: { type: string, format: uuid }
   schemas:
     Dinero:
@@ -53,6 +428,250 @@ components:
         moneda:
           type: string
           enum: [BOB, USD]
+    Monto:
+      type: string
+      pattern: '^-?\d+\.\d{2}$'
+      description: Importe como CADENA decimal. Un number JSON es un doble.
+    EntradaEjercicio:
+      type: object
+      additionalProperties: false
+      required: [anio]
+      properties:
+        anio: { type: integer, minimum: 2000, maximum: 2999 }
+    SalidaEjercicio:
+      type: object
+      additionalProperties: false
+      required: [ejercicioId, anio, periodos]
+      properties:
+        ejercicioId: { type: string, format: uuid }
+        anio: { type: integer }
+        periodos: { type: integer, description: Siempre doce, uno por mes }
+    EntradaCierre:
+      type: object
+      additionalProperties: false
+      required: [glosa]
+      properties:
+        glosa: { type: string, maxLength: 300 }
+    SalidaCierre:
+      type: object
+      additionalProperties: false
+      required: [cierreId, periodoId, totalDebe, totalHaber, cerradoEn]
+      properties:
+        cierreId: { type: string, format: uuid }
+        periodoId: { type: string, format: uuid }
+        totalDebe: { $ref: '#/components/schemas/Monto' }
+        totalHaber: { $ref: '#/components/schemas/Monto' }
+        cerradoEn: { type: string, format: date-time }
+        ejercicioCerrado:
+          type: boolean
+          description: Cierto si era el ultimo mes del ejercicio
+    EntradaPresupuesto:
+      type: object
+      additionalProperties: false
+      required: [centroCostoId, ejercicioFiscalId, nombre, moneda, partidas]
+      properties:
+        centroCostoId: { type: string, format: uuid }
+        ejercicioFiscalId: { type: string, format: uuid }
+        nombre: { type: string, maxLength: 100 }
+        moneda: { type: string, enum: [BOB, USD] }
+        partidas:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            additionalProperties: false
+            required: [cuentaContableId, periodoContableId, montoPresupuestado]
+            properties:
+              cuentaContableId: { type: string, format: uuid }
+              periodoContableId: { type: string, format: uuid }
+              montoPresupuestado: { $ref: '#/components/schemas/Monto' }
+    SalidaPresupuesto:
+      type: object
+      additionalProperties: false
+      required: [presupuestoId, estado, total]
+      properties:
+        presupuestoId: { type: string, format: uuid }
+        estado: { type: string, enum: [BORRADOR, APROBADO, CERRADO] }
+        total: { $ref: '#/components/schemas/Monto' }
+    EntradaTercero:
+      type: object
+      additionalProperties: false
+      required: [tipo, razonSocial, numeroDocumento]
+      properties:
+        tipo: { type: string, enum: [PROVEEDOR, CLIENTE, AMBOS] }
+        razonSocial: { type: string, maxLength: 150 }
+        numeroDocumento: { type: string, maxLength: 30 }
+        email: { type: string, format: email }
+        cuentaContableId: { type: string, format: uuid }
+    SalidaTercero:
+      type: object
+      additionalProperties: false
+      required: [terceroComercialId]
+      properties:
+        terceroComercialId: { type: string, format: uuid }
+    EntradaOrden:
+      type: object
+      additionalProperties: false
+      required: [terceroComercialId, numero, descripcion, monto, moneda]
+      properties:
+        terceroComercialId: { type: string, format: uuid }
+        centroCostoId: { type: string, format: uuid }
+        numero: { type: string, maxLength: 30 }
+        descripcion: { type: string, maxLength: 300 }
+        monto: { $ref: '#/components/schemas/Monto' }
+        moneda: { type: string, enum: [BOB, USD] }
+    SalidaOrden:
+      type: object
+      additionalProperties: false
+      required: [ordenCompraId, estado, monto]
+      properties:
+        ordenCompraId: { type: string, format: uuid }
+        estado: { type: string, enum: [BORRADOR, APROBADA, RECIBIDA, CANCELADA] }
+        monto: { $ref: '#/components/schemas/Monto' }
+    EntradaFactura:
+      type: object
+      additionalProperties: false
+      required: [terceroComercialId, numeroFactura, fechaEmision, fechaVencimiento, monto, moneda]
+      properties:
+        terceroComercialId: { type: string, format: uuid }
+        ordenCompraId: { type: string, format: uuid }
+        centroCostoId: { type: string, format: uuid }
+        numeroFactura: { type: string, maxLength: 30 }
+        fechaEmision: { type: string, format: date }
+        fechaVencimiento: { type: string, format: date }
+        monto: { $ref: '#/components/schemas/Monto' }
+        moneda: { type: string, enum: [BOB, USD] }
+        cuentaGastoId: { type: string, format: uuid }
+        aprobadaPor:
+          type: string
+          format: uuid
+          description: >-
+            Quien aprueba, en el alta. La tabla es append-only: no hay aprobacion
+            posterior.
+    SalidaFactura:
+      type: object
+      additionalProperties: false
+      required: [facturaProveedorId, estado, monto, montoPagado, saldoPendiente]
+      properties:
+        facturaProveedorId: { type: string, format: uuid }
+        estado:
+          type: string
+          enum: [REGISTRADA, APROBADA, PAGADA_PARCIAL, PAGADA, ANULADA]
+        monto: { $ref: '#/components/schemas/Monto' }
+        montoPagado: { $ref: '#/components/schemas/Monto' }
+        saldoPendiente: { $ref: '#/components/schemas/Monto' }
+        asientoContableId:
+          type: [string, 'null']
+          format: uuid
+          description: >-
+            Lo escribe nucleo-financiero (invariante 12). Viaja nulo hasta que
+            responde el evento.
+    EntradaPago:
+      type: object
+      additionalProperties: false
+      required: [monto, moneda, formaPago, autorizadoPor]
+      properties:
+        monto: { $ref: '#/components/schemas/Monto' }
+        moneda: { type: string, enum: [BOB, USD] }
+        formaPago:
+          type: string
+          enum: [TRANSFERENCIA, CHEQUE, EFECTIVO, QR]
+        autorizadoPor:
+          type: string
+          format: uuid
+          description: Distinto de quien aprobo la factura (R-CTB-05)
+    EntradaCuentaPorCobrar:
+      type: object
+      additionalProperties: false
+      required: [origenTipo, origenId, terceroComercialId, monto, moneda, fechaVencimiento]
+      properties:
+        origenTipo: { type: string }
+        origenId: { type: string, format: uuid }
+        terceroComercialId: { type: string, format: uuid }
+        monto: { $ref: '#/components/schemas/Monto' }
+        moneda: { type: string, enum: [BOB, USD] }
+        fechaVencimiento: { type: string, format: date }
+    SalidaCuentaPorCobrar:
+      type: object
+      additionalProperties: false
+      required: [cuentaPorCobrarId]
+      properties:
+        cuentaPorCobrarId: { type: string, format: uuid }
+    EntradaCobro:
+      type: object
+      additionalProperties: false
+      required: [monto, formaCobro]
+      properties:
+        monto: { $ref: '#/components/schemas/Monto' }
+        formaCobro:
+          type: string
+          enum: [TRANSFERENCIA, QR, TARJETA, EFECTIVO]
+    SalidaCobro:
+      type: object
+      additionalProperties: false
+      required: [cobroId, cuentaPorCobrarId, estado, cobrado, saldoPendiente]
+      properties:
+        cobroId: { type: string, format: uuid }
+        cuentaPorCobrarId: { type: string, format: uuid }
+        estado:
+          type: string
+          enum: [PENDIENTE, COBRADA_PARCIAL, COBRADA, INCOBRABLE]
+          description: Derivado de la suma de cobros; la columna es append-only
+        cobrado: { $ref: '#/components/schemas/Monto' }
+        saldoPendiente: { $ref: '#/components/schemas/Monto' }
+    EntradaDepreciacion:
+      type: object
+      additionalProperties: false
+      required: [periodoContableId]
+      properties:
+        periodoContableId: { type: string, format: uuid }
+    SalidaDepreciacion:
+      type: object
+      additionalProperties: false
+      required: [activoFijoId, depreciacionId, monto, valorEnLibros, totalmenteDepreciado]
+      properties:
+        activoFijoId: { type: string, format: uuid }
+        depreciacionId: { type: string, format: uuid }
+        monto: { $ref: '#/components/schemas/Monto' }
+        valorEnLibros: { $ref: '#/components/schemas/Monto' }
+        totalmenteDepreciado: { type: boolean }
+    SalidaCorrida:
+      type: object
+      additionalProperties: false
+      required: [periodoId, depreciaciones, totalDepreciado, yaCorridos, totalmenteDepreciados]
+      properties:
+        periodoId: { type: string, format: uuid }
+        depreciaciones:
+          type: array
+          items: { $ref: '#/components/schemas/SalidaDepreciacion' }
+        totalDepreciado: { $ref: '#/components/schemas/Monto' }
+        yaCorridos: { type: integer }
+        totalmenteDepreciados: { type: integer }
+    EntradaEstadoFinanciero:
+      type: object
+      additionalProperties: false
+      required: [tipo]
+      properties:
+        tipo: { type: string, enum: [BALANCE_GENERAL, ESTADO_RESULTADOS] }
+    SalidaEstadoFinanciero:
+      type: object
+      additionalProperties: false
+      required: [estadoFinancieroId, tipo, cuadra, hashContenido, generadoEn]
+      properties:
+        estadoFinancieroId: { type: string, format: uuid }
+        tipo: { type: string, enum: [BALANCE_GENERAL, ESTADO_RESULTADOS] }
+        cuadra: { type: boolean }
+        hashContenido: { type: string }
+        generadoEn: { type: string, format: date-time }
+    SalidaPlantilla:
+      type: object
+      additionalProperties: false
+      required: [plantillaId, lineas, debes, haberes]
+      properties:
+        plantillaId: { type: string, format: uuid }
+        lineas: { type: integer }
+        debes: { type: integer }
+        haberes: { type: integer }
     Error:
       type: object
       additionalProperties: false
