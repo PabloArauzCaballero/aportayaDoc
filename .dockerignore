@@ -8,7 +8,12 @@ docs
 planes
 landing
 seeders
+# `scripts/` queda fuera, MENOS lo que la construccion necesita: el catalogo de
+# errores se genera desde `sql/` con generar_errores.py, y sin el la imagen no
+# compila. Entra el generador y su modelo, no las cuarenta herramientas del carril.
 scripts
+!scripts/generar_errores.py
+!scripts/modelo.py
 # `apps/` sigue fuera de las imagenes de backend, que llevan un jar. La excepcion es
 # `apps/web`: el sitio publico tiene su propia imagen y necesita su fuente en el
 # contexto. Se reincluye el codigo y se dejan afuera sus artefactos.

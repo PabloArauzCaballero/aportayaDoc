@@ -41,6 +41,10 @@ servicios/*/build/
 plataforma/*/build/
 clientes/typescript/
 despliegue/k8s/generado/
+# El perfil `todo` del compose: lo genera scripts/generar_compose.py leyendo que
+# variables exige cada servicio. Versionarlo seria versionar una copia que se
+# desactualiza sola en cuanto alguien agregue una clave.
+despliegue/compose/servicios.yml
 
 # --- secretos: nunca versionados (docs/Seguridad.md §3.4, prohibición 1) ---
 .env

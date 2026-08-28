@@ -30,6 +30,41 @@ reputación), el Parche A (organizador digital automatizado, organizador humano 
 comisión y fondo de garantía) y el **Parche B: billetera móvil con custodia,
 comisión de plataforma y cumplimiento regulatorio** (módulos 10 a 12).
 
+## Levantar el backend
+
+Los catorce servicios arrancan, sirven sus rutas y niegan sin token. Estos comandos
+estan ejecutados, no supuestos.
+
+```bash
+# 1 · la base, con las 305 tablas, los roles y los catalogos
+docker compose -f despliegue/compose/base.yml --profile base up -d --wait
+
+# 2 · el gate completo: formato, arquitectura, atomos, casos de uso, contratos y sagas
+./gradlew verificar
+
+# 3 · que los catorce LEVANTAN, no solo que compilan
+./gradlew integrationTest        # incluye ArranqueTest de cada servicio
+
+# 4 · el stack entero en contenedores
+python3 scripts/generar_compose.py
+docker compose -f despliegue/compose/base.yml -f despliegue/compose/servicios.yml \
+  --profile todo up -d --wait
+```
+
+Los cuatro verificadores de la boveda corren solos y no necesitan nada levantado:
+
+```bash
+python3 scripts/verificar_boveda.py      # cifras, enlaces y cobertura de la boveda
+python3 scripts/verificar_carriles.py    # cada servicio con su dueno y su descriptor
+python3 scripts/verificar_criterios.py   # cada criterio de aceptacion, con su prueba
+python3 scripts/verificar_seguridad.py   # patrones prohibidos, secretos y rutas abiertas
+```
+
+**Que hay y que falta** esta en
+[`planes/informes/carril-T.md`](planes/informes/carril-T.md): 122 de las 138
+operaciones servidas, dieciseis declaradas como huecos de contrato entre carriles, y
+la lista de lo que la Fase 17 todavia debe.
+
 ## De la bóveda al código
 
 La carpeta `docs/` no es solo documentación: es la **especificación ejecutable**

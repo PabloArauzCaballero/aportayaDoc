@@ -17,11 +17,25 @@ ARG SERVICIO
 ARG MODULO
 WORKDIR /construccion
 
+# Python, y no por gusto: `comun-web:erroresCatalogo` genera el catalogo
+# `constraint_name -> R-XXX-nn` con scripts/generar_errores.py, y sin el la imagen no
+# compila. Vive solo en la etapa de construccion — la de runtime no lo lleva.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends python3 \
+    && rm -rf /var/lib/apt/lists/*
+
 # Primero lo que casi nunca cambia: asi el cache sobrevive a un cambio de codigo.
 COPY gradlew settings.gradle.kts build.gradle.kts gradle.properties ./
 COPY gradle gradle
 COPY buildSrc buildSrc
 COPY bd bd
+
+# El catalogo de errores se GENERA desde `sql/` en cada build: es lo que impide que
+# el mensaje de una restriccion y su codigo AP-CU se separen. Por eso `sql/` y
+# `scripts/` entran a la imagen de construccion, aunque no al runtime.
+COPY scripts scripts
+COPY sql/40_reglas/restricciones.sql sql/40_reglas/restricciones.sql
+COPY sql/50_verificacion/prueba_humo.sql sql/50_verificacion/prueba_humo.sql
 
 # Solo plataforma/ y EL servicio que se empaqueta: settings.gradle.kts descubre
 # servicios/ por barrido, asi que la imagen de un servicio no arrastra a los otros
