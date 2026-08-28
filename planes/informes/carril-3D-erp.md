@@ -88,7 +88,25 @@ CU-103, que lo declara requerido en su salida.
 
 ---
 
-## Hueco 6 · El catalogo de errores no tiene codigo de «no existe»
+## Hueco 6 · erp lee el esquema de nucleo-financiero
+
+El invariante 11 dice que un servicio no lee la base de otro. El cierre de CU-100 y los
+estados financieros de CU-106, en cambio, se calculan sumando
+`nucleo_financiero.movimiento_contable` contra `nucleo_financiero.cuenta_contable`, y
+el `periodo_contable_id` vive en `nucleo_financiero.asiento_contable`.
+
+**No hay forma de evitarlo con el modelo tal como esta**: la clave que ata un asiento a
+un mes contable esta del lado del mayor, no del lado de erp. Cerrar el mes preguntando
+por HTTP tampoco sirve — seria una llamada de red dentro de la transaccion del cierre,
+que el invariante 6 prohibe.
+
+Este carril lee esas tres tablas y no escribe ninguna. Queda declarado para que la
+decision se tome en la boveda: o el mayor expone una vista de solo lectura con contrato
+propio, o el invariante 11 admite explicitamente la lectura del libro.
+
+---
+
+## Hueco 7 · El catalogo de errores no tiene codigo de «no existe»
 
 La boveda cierra los codigos de cada CU en tres o cuatro, y ninguno cubre «el
 identificador no corresponde a nada». Inventar `AP-CU103-05` seria inventar una
@@ -110,7 +128,7 @@ declarado tambien en la NOTA de `openapi/erp.yaml`.
 
 ---
 
-## Hueco 7 · CU-106 no tiene codigo para el descuadre
+## Hueco 8 · CU-106 no tiene codigo para el descuadre
 
 CU-100 tiene `DESCUADRE_DETECTADO` (`AP-CU100-03`), pero CU-106 —que tambien
 comprueba que activo = pasivo + patrimonio antes de publicar— solo tiene
@@ -119,7 +137,7 @@ un balance devuelve `AP-CU106-02`.
 
 ---
 
-## Hueco 8 · La ecuacion contable depende de la naturaleza, no del tipo
+## Hueco 9 · La ecuacion contable depende de la naturaleza, no del tipo
 
 Sumar `debe - haber` para todas las cuentas no cierra: las acreedoras (pasivo,
 patrimonio, ingreso) tienen su saldo en el otro sentido. `PresupuestoRepositorio`
@@ -132,7 +150,7 @@ descuadre exactamente igual a la depreciacion acumulada.
 
 ---
 
-## Hueco 9 · `asiento_plantilla` no se llama como el CU la nombra
+## Hueco 10 · `asiento_plantilla` no se llama como el CU la nombra
 
 El CU-106 habla de `descripcion` y `evento_origen`; las columnas son `glosa`,
 `periodicidad` y `creada_por` (NOT NULL). `periodicidad` es un catalogo cerrado:

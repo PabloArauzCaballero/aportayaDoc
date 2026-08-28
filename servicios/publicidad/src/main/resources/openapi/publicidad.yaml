@@ -2,9 +2,56 @@
 # SE ESCRIBE PRIMERO, antes que la implementacion (ADR-020). Es lo que permite que
 # otro carril genere el cliente y programe contra vos sin esperar a que termines.
 #
-# Prefijos reservados de este servicio: /publicidad, /campanas, /anunciantes
+# Prefijos reservados de este servicio: /publicidad
 #   Una ruta fuera de ellos es un rechazo automatico, no una discusion de diseno.
 #   Toda ruta exige sesion: 401 sin token, 403 con rol insuficiente.
+#
+# Codigos de error de los cinco casos de uso, tal como los nombra la boveda.
+# Viven aca aunque el caso de uso no tenga ruta HTTP propia:
+# scripts/verificar_criterios.py los busca en este archivo.
+#
+# CU-110 · Dar de alta un anunciante y su cuenta publicitaria
+#   AP-CU110-01  ORGANIZADOR_NO_HABILITADO   · el organizador citado no esta HABILITADO
+#   AP-CU110-02  TIPO_Y_REFERENCIA_INCONSISTENTES · dos referencias, ninguna, o la que no toca
+#   AP-CU110-03  SOCIO_COMERCIAL_NO_VERIFICADO · el socio todavia no esta ACTIVO
+#
+# CU-111 · Crear y aprobar una campana publicitaria
+#   AP-CU111-01  LIMITE_DE_GASTO_EXCEDIDO    · el presupuesto no cabe en lo que queda del mes
+#   AP-CU111-02  ESPACIO_PUBLICITARIO_INACTIVO · el espacio esta apagado; no se enciende
+#   AP-CU111-03  CUENTA_PUBLICITARIA_NO_ACTIVA · la cuenta no admite gasto nuevo
+#
+# CU-112 · Moderar una pieza creativa
+#   AP-CU112-01  PIEZA_YA_REVISADA           · una pieza se revisa una vez
+#   AP-CU112-02  MOTIVO_OBLIGATORIO_EN_RECHAZO · un rechazo sin motivo no dice nada
+#   AP-CU112-03  MODERADOR_ES_EL_ANUNCIANTE  · R-PUB-05: quien sube no se autoaprueba
+#
+# CU-113 · Entregar un anuncio y medir su desempeno
+#   AP-CU113-01  SIN_ANUNCIO_ELEGIBLE        · el espacio no muestra nada. NO es un error
+#                                              de cliente: viaja con 200 y anuncioId nulo
+#   AP-CU113-02  ESPACIO_SIN_CUPO            · el espacio esta en su capacidad maxima
+#
+# CU-114 · Liquidar y facturar el gasto publicitario
+#   AP-CU114-01  SIN_CONSUMO_EN_EL_PERIODO   · no hay obligacion de facturar cero
+#   AP-CU114-02  PERIODO_YA_LIQUIDADO        · un periodo por cuenta (R-PUB-06)
+#   AP-CU114-03  EMISION_FISCAL_FALLIDA      · el SIN rechazo o no respondio el comprobante
+#
+# NOTA · divergencias declaradas contra la boveda, con su detalle en
+# planes/informes/carril-3E-publicidad.md:
+#   · CU-114 describe emitir el comprobante fiscal y crear la cuenta por cobrar DENTRO
+#     de la transaccion. Las dos tablas viven en otros esquemas (invariante 11) y
+#     pedirlas por red seria una llamada dentro de la transaccion (invariante 6). Como
+#     `factura_publicidad` es append-only, tampoco se pueden completar despues: los dos
+#     identificadores ENTRAN como dato de la liquidacion. Por eso AP-CU114-03 lo
+#     devuelve quien orquesta la corrida, no esta operacion.
+#   · Por lo mismo, `factura_publicidad.estado` no avanza nunca: nace GENERADA (sin
+#     comprobante) o FACTURADA (con el), y COBRADA es inalcanzable.
+#   · CU-110 declara una unica salida con `terceroComercialId`; el alta del socio, su
+#     verificacion y el alta del anunciante son tres operaciones, porque entre la
+#     primera y la tercera tiene que pasar una persona de Operaciones.
+#   · CU-111 nombra `campana_publicitaria.motivo` para el rechazo; la tabla no tiene esa
+#     columna y el motivo viaja en el evento `publicidad.campana_rechazada`.
+#   · `conjunto_anuncios` no tiene columna de gasto del dia: se deriva sumando las
+#     impresiones y los clics de la fecha.
 openapi: 3.1.0
 info:
   title: publicidad
@@ -16,20 +63,292 @@ info:
 servers:
   - url: /api/v1
 
-paths: {}
-  # Una operacion por caso de uso. Plantilla:
-  #
-  #   /publicidad/…:
-  #     post:
-  #       operationId: <verboObjeto>          # CU-NN
-  #       parameters:
-  #         - name: Idempotency-Key
-  #           in: header
-  #           required: true                   # toda operacion con efecto
-  #           schema: { type: string, format: uuid }
-  #       responses:
-  #         '200': …
-  #         '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+paths:
+  /publicidad/socios-comerciales:
+    post:
+      operationId: postularSocioComercial
+      summary: CU-110 · Postula un negocio externo como socio comercial
+      description: >-
+        Exige PUBLICIDAD_ANUNCIANTES. Reintentar con el mismo documento devuelve el
+        socio que ya hay.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaSocio' }
+      responses:
+        '201':
+          description: Socio POSTULADO, a la espera de verificacion
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaSocio' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /publicidad/socios-comerciales/{socioId}/verificacion:
+    post:
+      operationId: verificarSocioComercial
+      summary: CU-110 · Operaciones verifica al socio y lo deja ACTIVO
+      description: Exige PUBLICIDAD_ANUNCIANTES.
+      parameters:
+        - $ref: '#/components/parameters/SocioId'
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      responses:
+        '200':
+          description: Socio ACTIVO, con su verificador registrado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaSocio' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /publicidad/anunciantes:
+    post:
+      operationId: darDeAltaAnunciante
+      summary: CU-110 · Da de alta el anunciante y abre su cuenta publicitaria
+      description: >-
+        Exige PUBLICIDAD_ANUNCIANTES. El anunciante es un organizador o un socio
+        comercial, nunca los dos (R-PUB-01).
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaAnunciante' }
+      responses:
+        '201':
+          description: Anunciante y cuenta publicitaria, creados juntos
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaAnunciante' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /publicidad/campanas:
+    post:
+      operationId: crearCampana
+      summary: CU-111 · Crea la campana con sus conjuntos y la manda a revision
+      description: Exige PUBLICIDAD_APROBAR_CAMPANA para el anunciante autenticado.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaCampana' }
+      responses:
+        '201':
+          description: Campana EN_REVISION, con sus conjuntos pausados
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaCampana' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /publicidad/campanas/{campanaId}/aprobacion:
+    post:
+      operationId: aprobarCampana
+      summary: CU-111 · Operaciones aprueba y la campana empieza a entregar
+      description: Exige PUBLICIDAD_APROBAR_CAMPANA.
+      parameters:
+        - $ref: '#/components/parameters/CampanaId'
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      responses:
+        '200':
+          description: Campana ACTIVA, con su aprobador registrado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaCampana' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /publicidad/campanas/{campanaId}/rechazo:
+    post:
+      operationId: rechazarCampana
+      summary: CU-111 · Operaciones rechaza la campana, con motivo
+      description: >-
+        Exige PUBLICIDAD_APROBAR_CAMPANA. El motivo viaja en el evento: la tabla no
+        tiene columna donde guardarlo.
+      parameters:
+        - $ref: '#/components/parameters/CampanaId'
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaRechazo' }
+      responses:
+        '200':
+          description: Campana RECHAZADA
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaCampana' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /publicidad/piezas-creativas:
+    post:
+      operationId: subirPiezaCreativa
+      summary: CU-112 · El anunciante sube una pieza, que nace PENDIENTE
+      description: Exige PUBLICIDAD_ANUNCIANTES para el anunciante autenticado.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaPieza' }
+      responses:
+        '201':
+          description: Pieza subida, en cola de moderacion
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaPieza' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /publicidad/piezas-creativas/{piezaId}/revision:
+    post:
+      operationId: moderarPiezaCreativa
+      summary: CU-112 · Un moderador aprueba o rechaza la pieza
+      description: >-
+        Exige PUBLICIDAD_MODERAR. Quien subio la pieza no la modera (R-PUB-05), y un
+        rechazo exige motivo.
+      parameters:
+        - $ref: '#/components/parameters/PiezaId'
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaRevision' }
+      responses:
+        '201':
+          description: Revision registrada y pieza con su estado de moderacion
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaRevision' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /publicidad/anuncios:
+    post:
+      operationId: programarAnuncio
+      summary: CU-113 · Programa un anuncio con una pieza aprobada
+      description: >-
+        Exige PUBLICIDAD_ANUNCIANTES. Una pieza que no esta APROBADA no entra
+        (R-PUB-04).
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaAnuncio' }
+      responses:
+        '201':
+          description: Anuncio PROGRAMADO
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaAnuncio' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /publicidad/espacios/{espacioId}/entrega:
+    post:
+      operationId: entregarAnuncio
+      summary: CU-113 · Elige que anuncio mostrar y registra su impresion
+      description: >-
+        Interno del motor de entrega. Si ningun anuncio tiene presupuesto para hoy,
+        responde 200 con `anuncioId` nulo y el motivo: que el espacio no muestre nada
+        es el comportamiento correcto, no un error.
+      parameters:
+        - $ref: '#/components/parameters/EspacioId'
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaEntrega' }
+      responses:
+        '200':
+          description: El anuncio elegido y su impresion, o ninguno
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaEntrega' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /publicidad/impresiones/{impresionId}/clic:
+    post:
+      operationId: registrarClic
+      summary: CU-113 · Registra el clic sobre una impresion
+      description: Interno del motor de entrega. En CPC, es el clic el que cuesta.
+      parameters:
+        - $ref: '#/components/parameters/ImpresionId'
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      responses:
+        '201':
+          description: Clic registrado, con su costo
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaClic' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /publicidad/conversiones:
+    post:
+      operationId: registrarConversion
+      summary: CU-113 · Registra el hecho de negocio al que llevo el anuncio
+      description: Interno. Una postulacion a un grupo, un registro o una descarga.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaConversion' }
+      responses:
+        '201':
+          description: Conversion registrada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaConversion' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /publicidad/cuentas/{cuentaId}/consumo:
+    get:
+      operationId: consumoDelPeriodo
+      summary: CU-114 · Lo consumido en un mes, sin emitir nada
+      description: >-
+        Exige PUBLICIDAD_ANUNCIANTES. Sin efecto, asi que no exige clave: es lo que
+        mira Contabilidad antes de correr la liquidacion.
+      parameters:
+        - $ref: '#/components/parameters/CuentaId'
+        - $ref: '#/components/parameters/Periodo'
+      responses:
+        '200':
+          description: El consumo del periodo, al centavo
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaConsumo' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /publicidad/cuentas/{cuentaId}/liquidaciones:
+    post:
+      operationId: liquidarPeriodo
+      summary: CU-114 · Factura el gasto publicitario del mes
+      description: >-
+        Interno (worker mensual). El comprobante fiscal y la cuenta por cobrar viven en
+        otros esquemas: llegan como dato, ya emitidos. La factura es append-only y nace
+        con ellos o no los tiene nunca.
+      parameters:
+        - $ref: '#/components/parameters/CuentaId'
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaLiquidacion' }
+      responses:
+        '201':
+          description: Factura de publicidad del periodo
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaLiquidacion' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
 
 components:
   parameters:
@@ -41,7 +360,53 @@ components:
         Toda operacion con efecto la exige. La red duplica; reintentar tiene que ser
         seguro, y la clave se valida ANTES de escribir (invariante 7).
       schema: { type: string, format: uuid }
+    SocioId:
+      name: socioId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    CampanaId:
+      name: campanaId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    PiezaId:
+      name: piezaId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    EspacioId:
+      name: espacioId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    ImpresionId:
+      name: impresionId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    CuentaId:
+      name: cuentaId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    Periodo:
+      name: periodo
+      in: query
+      required: true
+      description: El mes a mirar, en formato YYYY-MM.
+      schema: { type: string, pattern: '^\d{4}-\d{2}$' }
   schemas:
+    Monto:
+      type: string
+      pattern: '^-?\d+\.\d{2}$'
+      description: Importe como CADENA decimal. Un number JSON es un doble.
+    MontoFino:
+      type: string
+      pattern: '^-?\d+\.\d{4}$'
+      description: >-
+        El costo de una impresion o un clic, con cuatro decimales. Una impresion suelta
+        cuesta fracciones de centavo; el redondeo se hace una sola vez, al facturar.
     Dinero:
       type: object
       additionalProperties: false
@@ -53,6 +418,221 @@ components:
         moneda:
           type: string
           enum: [BOB, USD]
+    EntradaSocio:
+      type: object
+      additionalProperties: false
+      required: [razonSocial, numeroDocumento, emailContacto]
+      properties:
+        razonSocial: { type: string, maxLength: 150 }
+        numeroDocumento: { type: string, maxLength: 30 }
+        rubro: { type: string, maxLength: 60 }
+        emailContacto: { type: string, format: email, maxLength: 120 }
+    SalidaSocio:
+      type: object
+      additionalProperties: false
+      required: [socioComercialId, estado]
+      properties:
+        socioComercialId: { type: string, format: uuid }
+        estado: { type: string, enum: [POSTULADO, ACTIVO, SUSPENDIDO, DADO_DE_BAJA] }
+    EntradaAnunciante:
+      type: object
+      additionalProperties: false
+      required: [tipo, razonSocialFacturacion, moneda]
+      properties:
+        tipo: { type: string, enum: [ORGANIZADOR, SOCIO_COMERCIAL] }
+        organizadorId:
+          type: [string, 'null']
+          format: uuid
+          description: Obligatorio si tipo es ORGANIZADOR, y prohibido si no (R-PUB-01).
+        socioComercialId:
+          type: [string, 'null']
+          format: uuid
+          description: Obligatorio si tipo es SOCIO_COMERCIAL, y prohibido si no.
+        razonSocialFacturacion: { type: string, maxLength: 150 }
+        limiteGastoMensual:
+          oneOf:
+            - $ref: '#/components/schemas/Monto'
+            - type: 'null'
+          description: Opcional. Sin limite, la cuenta no tiene techo mensual.
+        moneda: { type: string, enum: [BOB, USD] }
+    SalidaAnunciante:
+      type: object
+      additionalProperties: false
+      required: [anuncianteId, cuentaPublicitariaId]
+      properties:
+        anuncianteId: { type: string, format: uuid }
+        cuentaPublicitariaId: { type: string, format: uuid }
+    Conjunto:
+      type: object
+      additionalProperties: false
+      required: [segmentoAudienciaId, espacioPublicitarioId, nombre, presupuestoDiario, pujaMaxima, modeloPuja]
+      properties:
+        segmentoAudienciaId: { type: string, format: uuid }
+        espacioPublicitarioId: { type: string, format: uuid }
+        nombre: { type: string, maxLength: 120 }
+        presupuestoDiario: { $ref: '#/components/schemas/Monto' }
+        pujaMaxima: { $ref: '#/components/schemas/Monto' }
+        modeloPuja: { type: string, enum: [CPM, CPC] }
+    EntradaCampana:
+      type: object
+      additionalProperties: false
+      required: [cuentaPublicitariaId, nombre, objetivo, presupuestoTotal, moneda, fechaInicio, conjuntos]
+      properties:
+        cuentaPublicitariaId: { type: string, format: uuid }
+        nombre: { type: string, maxLength: 120 }
+        objetivo:
+          type: string
+          enum: [VISIBILIDAD_MARCA, TRAFICO, POSTULACION_GRUPO, DESCARGA_APP, CONVERSION]
+        presupuestoTotal: { $ref: '#/components/schemas/Monto' }
+        moneda: { type: string, enum: [BOB, USD] }
+        fechaInicio: { type: string, format: date-time }
+        fechaFin: { type: [string, 'null'], format: date-time }
+        conjuntos:
+          type: array
+          minItems: 1
+          items: { $ref: '#/components/schemas/Conjunto' }
+    SalidaCampana:
+      type: object
+      additionalProperties: false
+      required: [campanaPublicitariaId, estado, presupuestoTotal]
+      properties:
+        campanaPublicitariaId: { type: string, format: uuid }
+        estado:
+          type: string
+          enum: [BORRADOR, EN_REVISION, ACTIVA, PAUSADA, FINALIZADA, RECHAZADA]
+        presupuestoTotal: { $ref: '#/components/schemas/Monto' }
+    EntradaRechazo:
+      type: object
+      additionalProperties: false
+      required: [motivo]
+      properties:
+        motivo: { type: string, maxLength: 300 }
+    EntradaPieza:
+      type: object
+      additionalProperties: false
+      required: [anuncianteId, titulo, urlRecurso, tipoRecurso]
+      properties:
+        anuncianteId: { type: string, format: uuid }
+        titulo: { type: string, maxLength: 120 }
+        texto: { type: [string, 'null'], maxLength: 300 }
+        urlRecurso: { type: string, maxLength: 300 }
+        tipoRecurso: { type: string, enum: [IMAGEN, VIDEO] }
+    SalidaPieza:
+      type: object
+      additionalProperties: false
+      required: [piezaCreativaId, estadoModeracion]
+      properties:
+        piezaCreativaId: { type: string, format: uuid }
+        estadoModeracion: { type: string, enum: [PENDIENTE, APROBADA, RECHAZADA] }
+    EntradaRevision:
+      type: object
+      additionalProperties: false
+      required: [decision]
+      properties:
+        decision: { type: string, enum: [APROBADA, RECHAZADA] }
+        motivo:
+          type: [string, 'null']
+          maxLength: 300
+          description: Obligatorio cuando la decision es RECHAZADA.
+    SalidaRevision:
+      type: object
+      additionalProperties: false
+      required: [revisionId, estadoModeracion]
+      properties:
+        revisionId: { type: string, format: uuid }
+        estadoModeracion: { type: string, enum: [PENDIENTE, APROBADA, RECHAZADA] }
+    EntradaAnuncio:
+      type: object
+      additionalProperties: false
+      required: [conjuntoAnunciosId, piezaCreativaId]
+      properties:
+        conjuntoAnunciosId: { type: string, format: uuid }
+        piezaCreativaId: { type: string, format: uuid }
+    SalidaAnuncio:
+      type: object
+      additionalProperties: false
+      required: [anuncioId, estado]
+      properties:
+        anuncioId: { type: string, format: uuid }
+        estado:
+          type: string
+          enum: [PROGRAMADO, EN_ENTREGA, PAUSADO, FINALIZADO, RECHAZADO]
+    EntradaEntrega:
+      type: object
+      additionalProperties: false
+      properties:
+        usuarioId:
+          type: [string, 'null']
+          format: uuid
+          description: Nulo si quien mira no tiene sesion. La entrega se registra igual.
+    SalidaEntrega:
+      type: object
+      additionalProperties: false
+      required: [anuncioId, impresionId, costo]
+      properties:
+        anuncioId: { type: [string, 'null'], format: uuid }
+        impresionId: { type: [string, 'null'], format: uuid }
+        costo: { $ref: '#/components/schemas/MontoFino' }
+        motivo:
+          type: [string, 'null']
+          enum: [SIN_ANUNCIO_ELEGIBLE, ESPACIO_INACTIVO, null]
+          description: Por que el espacio no muestra nada. Nulo cuando si entrega.
+    SalidaClic:
+      type: object
+      additionalProperties: false
+      required: [clicId, costo]
+      properties:
+        clicId: { type: string, format: uuid }
+        costo: { $ref: '#/components/schemas/MontoFino' }
+    EntradaConversion:
+      type: object
+      additionalProperties: false
+      required: [tipo]
+      properties:
+        clicId: { type: [string, 'null'], format: uuid }
+        impresionId: { type: [string, 'null'], format: uuid }
+        tipo: { type: string, enum: [POSTULACION_GRUPO, REGISTRO, DESCARGA_APP] }
+        referenciaId: { type: [string, 'null'], format: uuid }
+    SalidaConversion:
+      type: object
+      additionalProperties: false
+      required: [conversionId]
+      properties:
+        conversionId: { type: string, format: uuid }
+    SalidaConsumo:
+      type: object
+      additionalProperties: false
+      required: [cuentaPublicitariaId, periodo, total]
+      properties:
+        cuentaPublicitariaId: { type: string, format: uuid }
+        periodo: { type: string, pattern: '^\d{4}-\d{2}$' }
+        total: { $ref: '#/components/schemas/Monto' }
+    EntradaLiquidacion:
+      type: object
+      additionalProperties: false
+      required: [periodo]
+      properties:
+        periodo: { type: string, pattern: '^\d{4}-\d{2}$' }
+        facturaElectronicaId:
+          type: [string, 'null']
+          format: uuid
+          description: >-
+            El comprobante fiscal, ya emitido por modulo 11. Sin el, la factura nace
+            GENERADA y no puede avanzar: la tabla es append-only.
+        cuentaPorCobrarId:
+          type: [string, 'null']
+          format: uuid
+          description: La cuenta por cobrar, ya abierta por modulo 13 (CU-104).
+    SalidaLiquidacion:
+      type: object
+      additionalProperties: false
+      required: [facturaPublicidadId, montoTotal, moneda, estado]
+      properties:
+        facturaPublicidadId: { type: string, format: uuid }
+        montoTotal: { $ref: '#/components/schemas/Monto' }
+        moneda: { type: string, enum: [BOB, USD] }
+        estado: { type: string, enum: [GENERADA, FACTURADA, COBRADA, ANULADA] }
+        cuentaPorCobrarId: { type: [string, 'null'], format: uuid }
     Error:
       type: object
       additionalProperties: false

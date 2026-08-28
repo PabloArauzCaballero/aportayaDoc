@@ -5,10 +5,11 @@ centro de costo, las facturas de proveedores, las cuentas por cobrar, la depreci
 de los activos y los estados financieros.
 
 **Lo que este servicio no hace: escribir el libro contable.** El mayor lo escribe
-`nucleo-financiero` y nadie mas (invariante 12). erp lee `nucleo_financiero` solo a
-traves de las vistas que su contrato expone y pide los asientos por evento; el
-`asiento_contable_id` de una factura, un cobro o una depreciacion se completa cuando
-`nucleo-financiero` responde.
+`nucleo-financiero` y nadie mas (invariante 12). erp **lee** el mayor —el cierre del
+mes y los estados financieros se calculan sumando `movimiento_contable`— pero no
+escribe ni un asiento: los pide por evento, y el `asiento_contable_id` de una factura,
+un cobro o una depreciacion se completa cuando `nucleo-financiero` responde. Esa
+lectura cruzada esta declarada como hueco en el informe del carril.
 
 ## Casos de uso
 
