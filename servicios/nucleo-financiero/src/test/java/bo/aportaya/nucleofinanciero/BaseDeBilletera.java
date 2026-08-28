@@ -5,8 +5,16 @@ import bo.aportaya.nucleofinanciero.aplicacion.CU11RetirarSaldo;
 import bo.aportaya.nucleofinanciero.aplicacion.CU12TransferirSaldo;
 import bo.aportaya.nucleofinanciero.aplicacion.CU13RetenerSaldo;
 import bo.aportaya.nucleofinanciero.aplicacion.CU14ReversarTransaccion;
+import bo.aportaya.nucleofinanciero.aplicacion.CU15EmitirExtracto;
+import bo.aportaya.nucleofinanciero.aplicacion.CU16CerrarBilletera;
+import bo.aportaya.nucleofinanciero.aplicacion.CU17BloquearPorAutoridad;
 import bo.aportaya.nucleofinanciero.aplicacion.CU40EvaluarLimites;
+import bo.aportaya.nucleofinanciero.aplicacion.CU50ConciliarCustodia;
+import bo.aportaya.nucleofinanciero.infraestructura.BloqueoRepositorio;
+import bo.aportaya.nucleofinanciero.infraestructura.CierreRepositorio;
+import bo.aportaya.nucleofinanciero.infraestructura.ConciliacionRepositorio;
 import bo.aportaya.nucleofinanciero.infraestructura.CuentaBilleteraRepositorio;
+import bo.aportaya.nucleofinanciero.infraestructura.ExtractoRepositorio;
 import bo.aportaya.nucleofinanciero.infraestructura.LibroDeBilletera;
 import bo.aportaya.nucleofinanciero.infraestructura.LimiteRepositorio;
 import bo.aportaya.nucleofinanciero.infraestructura.OrdenRecargaRepositorio;
@@ -56,6 +64,11 @@ abstract class BaseDeBilletera {
     protected static CU11RetirarSaldo retiroCU;
     protected static CU12TransferirSaldo transferenciaCU;
     protected static CU14ReversarTransaccion reversoCU;
+    protected static CU15EmitirExtracto extractoCU;
+    protected static CU16CerrarBilletera cierreCU;
+    protected static CU17BloquearPorAutoridad bloqueoCU;
+    protected static CU50ConciliarCustodia conciliacionCU;
+    protected static ConciliacionRepositorio conciliaciones;
 
     /** La cuenta puente: el otro lado de todo ingreso. Una sola para toda la corrida. */
     protected static UUID puente;
@@ -122,6 +135,29 @@ abstract class BaseDeBilletera {
                 new LibroDeBilletera(),
                 new Outbox("nucleo_financiero"),
                 Reloj.delSistema());
+        conciliaciones = new ConciliacionRepositorio();
+        extractoCU = new CU15EmitirExtracto(
+                new Datos(dsl),
+                new ExtractoRepositorio(),
+                new CuentaBilleteraRepositorio(),
+                new Outbox("nucleo_financiero"),
+                Reloj.delSistema());
+        bloqueoCU = new CU17BloquearPorAutoridad(
+                new Datos(dsl),
+                new BloqueoRepositorio(),
+                new CuentaBilleteraRepositorio(),
+                retencionCU,
+                new Outbox("nucleo_financiero"),
+                Reloj.delSistema());
+        cierreCU = new CU16CerrarBilletera(
+                new Datos(dsl),
+                new CuentaBilleteraRepositorio(),
+                new CierreRepositorio(),
+                new BloqueoRepositorio(),
+                new Outbox("nucleo_financiero"),
+                Reloj.delSistema());
+        conciliacionCU = new CU50ConciliarCustodia(
+                new Datos(dsl), conciliaciones, new Outbox("nucleo_financiero"), Reloj.delSistema());
     }
 
     protected ContextoSesion contextoDe(UUID usuarioId) {

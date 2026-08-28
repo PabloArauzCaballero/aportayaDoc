@@ -202,7 +202,27 @@ final class FixturaDeBilletera {
      * que quedo de la anterior no le suma ni le resta. Lo que si hay que limpiar es
      * lo unico por clave: los limites del catalogo chocarian entre pruebas.
      */
+    /** Un cierre diario: es contra lo que el extracto y la conciliacion comparan. */
+    void cierreDelDia(UUID cuentaId, java.time.LocalDate fecha, java.math.BigDecimal disponible, int movimientos) {
+        dsl.execute(
+                """
+                INSERT INTO nucleo_financiero.saldo_diario_billetera
+                    (id, cuenta_billetera_id, fecha, saldo_disponible, saldo_retenido,
+                     cantidad_movimientos, hash_registro, cerrado_en)
+                VALUES (gen_random_uuid(), ?, ?, ?, 0, ?, repeat('c', 64), now())
+                """,
+                cuentaId,
+                fecha,
+                disponible,
+                movimientos);
+    }
+
     void limpiarBilleteras() {
+        // `saldo_diario_billetera` y `certificado_saldo` NO se borran: son
+        // append-only y R-AUD-01 lo hace cumplir. Tampoco hace falta — cada prueba
+        // abre sus propias cuentas, asi que lo de la anterior no le suma ni le resta.
+        dsl.execute("DELETE FROM nucleo_financiero.solicitud_cierre_billetera");
+        dsl.execute("DELETE FROM nucleo_financiero.bloqueo_saldo");
         dsl.execute("DELETE FROM nucleo_financiero.transferencia_p2p");
         dsl.execute("DELETE FROM aportes.obligacion_aporte");
         dsl.execute("DELETE FROM grupos.periodo");

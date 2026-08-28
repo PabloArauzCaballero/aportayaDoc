@@ -21,7 +21,13 @@ Modulo 10 de la boveda — Billetera, Custodia y Dinero Electrónico.
 | CU-40 | Evaluar límites antes de una operación | **Implementado** (carril 2A) |
 | CU-13 | Retener y liberar saldo | **Implementado** (carril 2A) |
 | CU-10 | Recargar saldo | **Implementado** (carril 2A) |
-| CU-11, 12, 14 – 17, 50 | Resto de billetera y custodia | Pendiente — carril 2A |
+| CU-11 | Retirar saldo | **Implementado** (carril 2A) |
+| CU-12 | Transferir saldo entre billeteras | **Implementado** (carril 2A) |
+| CU-14 | Reversar una transacción | **Implementado** (carril 2A) |
+| CU-15 | Emitir extracto y certificado de saldo | **Implementado** (carril 2A) |
+| CU-16 | Cerrar billetera y devolver saldo | **Implementado** (carril 2A) |
+| CU-17 | Bloquear saldo por orden de autoridad | **Implementado** (carril 2A) |
+| CU-50 | Conciliar la custodia y verificar el encaje | **Implementado** (carril 2A) |
 | CU-57 | Operar un punto de atención | **Obsoleto**, número reservado (ADR-039) |
 
 **CU-40 vive acá y no en `cumplimiento`**, aunque planes/07 lo asigne al carril 1C:

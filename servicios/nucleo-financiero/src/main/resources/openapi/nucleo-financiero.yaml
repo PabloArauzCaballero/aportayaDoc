@@ -271,6 +271,105 @@ paths:
         '401':
           $ref: '#/components/responses/NoAutenticado'
 
+  /billetera/{cuentaId}/extracto:
+    get:
+      operationId: emitirExtracto              # CU-15
+      summary: Emitir el extracto de un periodo
+      description: >-
+        Si el extracto no cuadra con el cierre diario, NO se emite: uno con una
+        cifra que no coincide es peor que no tenerlo — la persona lo usa para un
+        tramite, se lo rechazan, y descubre el error cuando ya le costo algo. El
+        descuadre queda registrado igual, que es lo que pide el criterio.
+      parameters:
+        - name: cuentaId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: desde
+          in: query
+          required: true
+          schema: { type: string, format: date }
+        - name: hasta
+          in: query
+          required: true
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: Extracto emitido, o bloqueado con su motivo
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaExtracto' }
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU15-01 PERIODO_SIN_CIERRES · AP-CU15-02 EXTRACTO_NO_CUADRA
+          # AP-CU15-03 SIN_PERMISO_SOBRE_LA_CUENTA
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+
+  /billetera/cierres:
+    post:
+      operationId: solicitarCierreBilletera    # CU-16
+      summary: Solicitar el cierre de la billetera
+      description: >-
+        Cerrar NO borra: la cuenta queda CERRADA y sus movimientos siguen
+        disponibles todo el plazo de conservacion. Cuatro puertas la frenan, y las
+        cuatro protegen a terceros antes que a la empresa — un cierre que deje un
+        aporte sin pagar traslada la perdida a los otros del pasanaku.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaCierre' }
+      responses:
+        '201':
+          description: Solicitud registrada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaCierreBilletera' }
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU16-01 OBLIGACIONES_ABIERTAS · AP-CU16-02 GRUPO_ACTIVO
+          # AP-CU16-03 RETENCION_VIGENTE     · AP-CU16-04 BLOQUEO_DE_AUTORIDAD
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+
+  /billetera/bloqueos:
+    post:
+      operationId: bloquearPorAutoridad        # CU-17
+      summary: Registrar un bloqueo por orden de autoridad
+      description: >-
+        El unico caso en que una retencion no tiene fecha de fin: la levanta la
+        misma autoridad que la puso, y ponerle vencimiento propio seria decidir por
+        un juez cuando se acaba su orden. El documento de respaldo es obligatorio —
+        inmovilizar la plata de alguien sin poder mostrar el papel es indefendible.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaBloqueo' }
+      responses:
+        '201':
+          description: Bloqueo vigente y saldo inmovilizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaBloqueo' }
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+          # AP-CU17-01 OFICIO_DUPLICADO · AP-CU17-02 CUENTA_INEXISTENTE
+          # AP-CU17-03 SIN_DOCUMENTO_DE_RESPALDO
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+
+  # CU-50 Conciliar la custodia NO tiene endpoint: corre como cierre diario. Con el
+  # encaje roto no SALE dinero, pero SI entra — dejar entrar plata mejora el encaje y
+  # frenarla lo empeoraria justo cuando hace falta lo contrario.
+  #   AP-CU50-01 SIN_CIERRES_DIARIOS · AP-CU50-02 SIN_EXTRACTO_BANCARIO
+  #   AP-CU50-03 CONCILIACION_DUPLICADA
+
 components:
   parameters:
     ClaveIdempotencia:
@@ -282,6 +381,57 @@ components:
         seguro, y la clave se valida ANTES de escribir (invariante 7).
       schema: { type: string, format: uuid }
   schemas:
+    SalidaExtracto:
+      type: object
+      additionalProperties: false
+      required: [cuentaBilleteraId, desde, hasta, saldoFinal, emitido]
+      properties:
+        cuentaBilleteraId: { type: string, format: uuid }
+        desde: { type: string, format: date }
+        hasta: { type: string, format: date }
+        saldoFinal: { $ref: '#/components/schemas/Dinero' }
+        cantidadMovimientos: { type: integer }
+        hashArchivo: { type: string, minLength: 64, maxLength: 64, nullable: true }
+        emitido: { type: boolean }
+        motivoDelBloqueo: { type: string, nullable: true }
+    EntradaCierre:
+      type: object
+      additionalProperties: false
+      required: [cuentaBilleteraId, motivo, destinoSaldo]
+      properties:
+        cuentaBilleteraId: { type: string, format: uuid }
+        motivo: { type: string, maxLength: 200 }
+        destinoSaldo: { type: string, enum: [RETIRO, TRANSFERENCIA] }
+    SalidaCierreBilletera:
+      type: object
+      additionalProperties: false
+      required: [solicitudId, estado, saldoAlSolicitar]
+      properties:
+        solicitudId: { type: string, format: uuid }
+        estado: { type: string, enum: [SOLICITADA, EN_VALIDACION, APROBADA, EJECUTADA, RECHAZADA] }
+        saldoAlSolicitar: { $ref: '#/components/schemas/Dinero' }
+    EntradaBloqueo:
+      type: object
+      additionalProperties: false
+      required: [cuentaBilleteraId, autoridad, tipoOrden, numeroOficio, alcance, documentoUrl, hashDocumento]
+      properties:
+        cuentaBilleteraId: { type: string, format: uuid }
+        autoridad: { type: string, enum: [ASFI, BCB, FISCALIA, JUZGADO, UIF, INTERNO] }
+        tipoOrden: { type: string, enum: [CONGELAMIENTO, EMBARGO, INFORMATIVO, INMOVILIZACION, RETENCION] }
+        numeroOficio: { type: string, maxLength: 60 }
+        montoBloqueado: { $ref: '#/components/schemas/Dinero' }
+        alcance: { type: string, enum: [PARCIAL, TOTAL] }
+        documentoUrl: { type: string, format: uri }
+        hashDocumento: { type: string, minLength: 64, maxLength: 64 }
+    SalidaBloqueo:
+      type: object
+      additionalProperties: false
+      required: [bloqueoId, retencionId, montoBloqueado, saldoDisponible]
+      properties:
+        bloqueoId: { type: string, format: uuid }
+        retencionId: { type: string, format: uuid }
+        montoBloqueado: { $ref: '#/components/schemas/Dinero' }
+        saldoDisponible: { $ref: '#/components/schemas/Dinero' }
     EntradaReverso:
       type: object
       additionalProperties: false

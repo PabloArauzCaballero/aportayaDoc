@@ -102,4 +102,20 @@ final class FixturaDeCustodia {
                 """,
                 cuenta);
     }
+
+    /** Una cuenta de custodia a secas, sin conciliacion: la pone quien concilia. */
+    UUID cuentaDeCustodia() {
+        UUID id = UUID.randomUUID();
+        dsl.execute(
+                """
+                INSERT INTO nucleo_financiero.cuenta_custodia
+                    (id, tipo, entidad_financiera, numero_cuenta_cifrado, version_llave,
+                     numero_enmascarado, moneda, saldo_segun_banco, saldo_segun_libro, fecha_saldo,
+                     contrato_referencia, es_principal, estado, abierta_en)
+                VALUES (?, 'FIDEICOMISO', 'BNB', 'cifrado', 1, '****7777', 'BOB',
+                        0, 0, current_date, 'CTR-3', false, 'ACTIVA', now())
+                """,
+                id);
+        return id;
+    }
 }
