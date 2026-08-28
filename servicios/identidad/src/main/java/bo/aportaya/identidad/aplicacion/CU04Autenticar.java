@@ -166,7 +166,7 @@ public class CU04Autenticar {
         accesos.cerrarIntento(dsl, intentoId, true, null);
         outbox.emitir(dsl, evento("identidad.sesion_iniciada", usuario, entrada));
 
-        return ResultadoDeAutenticacion.sesionAbierta(sesion.id(), sesion.expiraEn(), dispositivo.confiable());
+        return ResultadoDeAutenticacion.sesionAbierta(usuario, sesion.id(), sesion.expiraEn(), dispositivo.confiable());
     }
 
     private boolean credencialCorrecta(DSLContext dsl, UUID usuario, EntradaAutenticacion entrada) {

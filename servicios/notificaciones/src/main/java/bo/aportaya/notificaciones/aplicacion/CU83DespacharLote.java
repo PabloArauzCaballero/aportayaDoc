@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,8 +50,8 @@ public class CU83DespacharLote {
             ProveedorRepositorio proveedores,
             Outbox outbox,
             Reloj reloj,
-            int umbralDeSalud,
-            java.time.Duration techoDeEspera,
+            @Value("${aportaya.proveedores.umbral-de-salud}") int umbralDeSalud,
+            @Value("${aportaya.envios.techo-de-espera}") java.time.Duration techoDeEspera,
             AdaptadorMensajeria adaptador) {
         this.datos = datos;
         this.envios = envios;

@@ -24,6 +24,16 @@ aportaya:
   jwt:
     jwks-uri: ${JWKS_URI}           # ADR-024: cada servicio valida la firma el mismo
   zona-horaria: America/La_Paz      # plazos habiles
+  incumplimiento:
+    # Lo que tiene el participante para presentar su descargo antes de que la
+    # declaracion quede firme. Es debido proceso, no un parametro tecnico.
+    plazo-de-descargo: P5D
+  aval:
+    plazo-de-respuesta: P10D
+  deuda:
+    # Desde cuando el fondo puede exigirle al deudor lo que cubrio por el.
+    dias-para-exigir: 30
+    anios-de-prescripcion: 5
 
 management:
   endpoint:

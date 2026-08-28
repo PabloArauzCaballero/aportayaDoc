@@ -15,6 +15,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,7 +41,11 @@ public class CU96EjecutarTarea {
     private final int intentosMaximos;
 
     public CU96EjecutarTarea(
-            Datos datos, AutomatizacionRepositorio automatizaciones, Outbox outbox, Reloj reloj, int intentosMaximos) {
+            Datos datos,
+            AutomatizacionRepositorio automatizaciones,
+            Outbox outbox,
+            Reloj reloj,
+            @Value("${aportaya.automatizacion.intentos-maximos}") int intentosMaximos) {
         this.datos = datos;
         this.automatizaciones = automatizaciones;
         this.outbox = outbox;

@@ -24,6 +24,20 @@ aportaya:
   jwt:
     jwks-uri: ${JWKS_URI}           # ADR-024: cada servicio valida la firma el mismo
   zona-horaria: America/La_Paz      # plazos habiles
+  webhook:
+    # Del almacen de secretos: es lo que separa un acuse del proveedor de cualquiera
+    # que alcance la ruta publica del webhook.
+    secreto: ${WEBHOOK_SECRETO}
+  proveedores:
+    umbral-de-salud: 70
+  envios:
+    # Tope del retroceso exponencial entre reintentos. Sin techo, un proveedor caido
+    # empuja el proximo intento a horas y el aviso llega cuando ya no sirve.
+    techo-de-espera: PT60M
+  ventana-de-envio:
+    # Nadie recibe un aviso a las tres de la manana salvo que sea obligatorio.
+    desde: "08:00"
+    hasta: "21:00"
 
 management:
   endpoint:

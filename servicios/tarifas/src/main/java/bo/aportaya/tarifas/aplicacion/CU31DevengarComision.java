@@ -19,6 +19,7 @@ import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,8 +56,8 @@ public class CU31DevengarComision {
             TarifarioRepositorio tarifarios,
             Outbox outbox,
             Reloj reloj,
-            int intentosAntesDeIncobrable,
-            int diasParaCobrar) {
+            @Value("${aportaya.devengo.intentos-antes-de-incobrable}") int intentosAntesDeIncobrable,
+            @Value("${aportaya.devengo.dias-para-cobrar}") int diasParaCobrar) {
         this.datos = datos;
         this.devengos = devengos;
         this.cotizaciones = cotizaciones;

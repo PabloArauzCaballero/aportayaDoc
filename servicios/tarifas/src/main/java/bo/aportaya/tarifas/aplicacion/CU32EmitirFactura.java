@@ -19,6 +19,7 @@ import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,10 +58,10 @@ public class CU32EmitirFactura {
             ServicioDeImpuestos impuestos,
             Outbox outbox,
             Reloj reloj,
-            String nitEmisor,
-            int sucursal,
-            int puntoVenta,
-            Duration plazoTrasElCierre) {
+            @Value("${aportaya.facturacion.nit-emisor}") String nitEmisor,
+            @Value("${aportaya.facturacion.sucursal}") int sucursal,
+            @Value("${aportaya.facturacion.punto-venta}") int puntoVenta,
+            @Value("${aportaya.facturacion.plazo-tras-el-cierre}") Duration plazoTrasElCierre) {
         this.datos = datos;
         this.facturas = facturas;
         this.devengos = devengos;

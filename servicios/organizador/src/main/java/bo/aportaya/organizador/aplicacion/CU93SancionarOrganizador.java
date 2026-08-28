@@ -16,6 +16,7 @@ import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,7 +47,7 @@ public class CU93SancionarOrganizador {
             OrganizadorRepositorio organizadores,
             Outbox outbox,
             Reloj reloj,
-            Duration plazoParaApelar) {
+            @Value("${aportaya.organizador.plazo-para-apelar}") Duration plazoParaApelar) {
         this.datos = datos;
         this.desempenos = desempenos;
         this.organizadores = organizadores;

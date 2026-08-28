@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,7 +47,7 @@ public class CU56EjecutarPruebaDeContinuidad {
             GobiernoRepositorio gobierno,
             Outbox outbox,
             Reloj reloj,
-            int diasParaRegularizar) {
+            @Value("${aportaya.continuidad.dias-para-regularizar}") int diasParaRegularizar) {
         this.datos = datos;
         this.continuidad = continuidad;
         this.gobierno = gobierno;

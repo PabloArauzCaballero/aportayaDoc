@@ -24,6 +24,22 @@ aportaya:
   jwt:
     jwks-uri: ${JWKS_URI}           # ADR-024: cada servicio valida la firma el mismo
   zona-horaria: America/La_Paz      # plazos habiles
+  devengo:
+    intentos-antes-de-incobrable: 3
+    dias-para-cobrar: 30
+  facturacion:
+    # Datos del emisor ante el SIN. Van en configuracion porque cambian con la
+    # habilitacion, no con el codigo.
+    nit-emisor: ${SIN_NIT_EMISOR:1234567890}
+    sucursal: 0
+    punto-venta: 1
+    # Lo que hay para emitir una factura despues del cierre del periodo antes de que
+    # el SIN la rechace por extemporanea.
+    plazo-tras-el-cierre: PT48H
+  comisiones:
+    # Lo que se cotiza es lo que se cobra (R-TAR-02), y una cotizacion vieja deja de
+    # serlo: pasado este plazo se vuelve a cotizar contra el tarifario de hoy.
+    vigencia-de-cotizacion: PT15M
 
 management:
   endpoint:

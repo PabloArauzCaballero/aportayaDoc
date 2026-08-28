@@ -106,6 +106,7 @@ tasks.named<Test>("test") {
         "**/CU*Test.class",
         "**/*RepositorioTest.class",
         "**/Aislamiento*Test.class",
+        "**/Arranque*Test.class",
         "**/*ContratoTest.class",
         "**/*SagaTest.class",
         "**/*E2ETest.class",
@@ -148,7 +149,11 @@ fun corredor(nombre: String, descripcion: String, patrones: List<String>, tiempo
 corredor(
     "integrationTest",
     "Casos de uso y repositorios contra PostgreSQL real (Testcontainers)",
-    listOf("**/CU*Test.class", "**/*RepositorioTest.class", "**/Aislamiento*Test.class"),
+    // `Arranque*Test` levanta el contexto de Spring entero: es lo unico que comprueba
+    // que el proceso ARRANCA —con su guardia, sus beans y su decodificador de token— y
+    // no solo que las piezas compilan. Sin el, un servicio puede estar verde y no
+    // levantar en el primer despliegue.
+    listOf("**/CU*Test.class", "**/*RepositorioTest.class", "**/Aislamiento*Test.class", "**/Arranque*Test.class"),
     "120s",
 )
 corredor("contractTest", "Contratos entre pares de servicios", listOf("**/*ContratoTest.class"), "60s")

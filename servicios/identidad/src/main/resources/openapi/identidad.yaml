@@ -139,6 +139,12 @@ components:
         expiraEn:                { type: string, format: date-time }
         requiereFactorAdicional: { type: boolean }
         dispositivoConfiable:    { type: boolean }
+        tokenAcceso:
+          type: string
+          description: >-
+            El JWT firmado con RS256 que los otros trece servicios validan contra el
+            JWKS de identidad (ADR-024). Ausente cuando la respuesta pide un segundo
+            factor: recien se emite con la sesion abierta.
     Documento:
       type: object
       additionalProperties: false

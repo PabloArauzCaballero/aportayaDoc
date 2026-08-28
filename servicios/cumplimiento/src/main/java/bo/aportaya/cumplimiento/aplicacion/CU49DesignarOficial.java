@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,8 +53,8 @@ public class CU49DesignarOficial {
             GobiernoRepositorio gobierno,
             Outbox outbox,
             Reloj reloj,
-            int diasParaComunicar,
-            int plazoDeCapacitacionDesdeElAlta,
+            @Value("${aportaya.oficial.dias-para-comunicar}") int diasParaComunicar,
+            @Value("${aportaya.oficial.plazo-de-capacitacion}") int plazoDeCapacitacionDesdeElAlta,
             Set<String> rolesIncompatibles) {
         this.datos = datos;
         this.gobierno = gobierno;

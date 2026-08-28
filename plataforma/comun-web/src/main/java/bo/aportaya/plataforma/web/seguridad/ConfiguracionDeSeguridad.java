@@ -29,6 +29,12 @@ public class ConfiguracionDeSeguridad {
                         // token seria pedirle credenciales a Kubernetes para saber si el
                         // proceso respira (ADR-037).
                         .permitAll()
+                        .requestMatchers("/.well-known/jwks.json")
+                        // La clave PUBLICA con la que los trece verifican la firma
+                        // (ADR-024). Pedirle sesion seria pedir sesion para poder
+                        // comprobar la sesion. Solo la publica: la privada no sale de
+                        // identidad.
+                        .permitAll()
                         .requestMatchers("/api/v1/publico/**", "/api/v1/verificar/**")
                         // Son las rutas de verificacion publica
                         // (CU-61, CU-72, CU-73, CU-75). Existen para que un tercero SIN cuenta

@@ -14,6 +14,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,7 +56,7 @@ public class CU76PublicarResena {
             ResenaRepositorio resenas,
             Outbox outbox,
             Reloj reloj,
-            BigDecimal pesoBaseDeResena,
+            @Value("${aportaya.resenas.peso-base}") BigDecimal pesoBaseDeResena,
             ModeracionDeResena.Atenuacion atenuacion) {
         this.datos = datos;
         this.resenas = resenas;

@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,7 +56,7 @@ public class CU30CotizarComision {
             CotizacionRepositorio cotizaciones,
             Outbox outbox,
             Reloj reloj,
-            Duration vigenciaDeLaCotizacion) {
+            @Value("${aportaya.comisiones.vigencia-de-cotizacion}") Duration vigenciaDeLaCotizacion) {
         this.datos = datos;
         this.tarifarios = tarifarios;
         this.cotizaciones = cotizaciones;

@@ -19,6 +19,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,7 +52,7 @@ public class CU19ReembolsarPago {
             Consumidos consumidos,
             Outbox outbox,
             Reloj reloj,
-            Duration plazoDeDisputa) {
+            @Value("${aportaya.reembolso.plazo-de-disputa}") Duration plazoDeDisputa) {
         this.datos = datos;
         this.pagos = pagos;
         this.obligaciones = obligaciones;

@@ -17,6 +17,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,8 +51,8 @@ public class CU23CubrirIncumplimiento {
             ExpedienteRepositorio expedientes,
             Outbox outbox,
             Reloj reloj,
-            int diasParaExigirLaDeuda,
-            int aniosDePrescripcion) {
+            @Value("${aportaya.deuda.dias-para-exigir}") int diasParaExigirLaDeuda,
+            @Value("${aportaya.deuda.anios-de-prescripcion}") int aniosDePrescripcion) {
         this.datos = datos;
         this.fondos = fondos;
         this.deudas = deudas;

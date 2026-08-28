@@ -18,6 +18,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,7 +59,7 @@ public class CU71RecalcularPuntaje {
             SnapshotRepositorio snapshots,
             Outbox outbox,
             Reloj reloj,
-            Duration periodoDeRecalculo,
+            @Value("${aportaya.reputacion.periodo-de-recalculo}") Duration periodoDeRecalculo,
             List<PuntajeDeReputacion.Corte> escalaDeConfianza) {
         this.datos = datos;
         this.reputaciones = reputaciones;

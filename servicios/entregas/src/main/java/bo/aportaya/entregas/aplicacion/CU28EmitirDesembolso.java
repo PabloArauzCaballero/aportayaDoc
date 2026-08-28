@@ -17,6 +17,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,8 +52,8 @@ public class CU28EmitirDesembolso {
             CuentaDestinoRepositorio cuentas,
             Outbox outbox,
             Reloj reloj,
-            int intentosMaximos,
-            Duration baseDeEspera) {
+            @Value("${aportaya.desembolso.intentos-maximos}") int intentosMaximos,
+            @Value("${aportaya.desembolso.espera-entre-intentos}") Duration baseDeEspera) {
         this.datos = datos;
         this.desembolsos = desembolsos;
         this.entregas = entregas;

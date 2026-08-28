@@ -24,6 +24,15 @@ aportaya:
   jwt:
     jwks-uri: ${JWKS_URI}           # ADR-024: cada servicio valida la firma el mismo
   zona-horaria: America/La_Paz      # plazos habiles
+  organizador:
+    # Con lo que arranca un aprendiz. Sube por evaluacion de desempeno, no por pedido.
+    limite-inicial-de-grupos: 2
+    limite-inicial-de-monto: 30000.00
+    umbral-de-ascenso: 85.00
+    umbral-de-descenso: 50.00
+    plazo-para-apelar: P10D
+  automatizacion:
+    intentos-maximos: 3
 
 management:
   endpoint:

@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,8 +59,8 @@ public class CU10RecargarSaldo {
             CU40EvaluarLimites limites,
             Outbox outbox,
             Reloj reloj,
-            Duration vigenciaDeLaOrden,
-            UUID cuentaPuenteDeCustodia) {
+            @Value("${aportaya.recarga.vigencia-de-la-orden}") Duration vigenciaDeLaOrden,
+            @Value("${aportaya.custodia.cuenta-puente}") UUID cuentaPuenteDeCustodia) {
         this.datos = datos;
         this.cuentas = cuentas;
         this.ordenes = ordenes;

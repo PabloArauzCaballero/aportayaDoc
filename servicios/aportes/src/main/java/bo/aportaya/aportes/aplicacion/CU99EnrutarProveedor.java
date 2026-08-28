@@ -13,6 +13,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,7 +44,11 @@ public class CU99EnrutarProveedor {
     private final int umbralDeSalud;
 
     public CU99EnrutarProveedor(
-            Datos datos, ProveedorPagoRepositorio proveedores, Outbox outbox, Reloj reloj, int umbralDeSalud) {
+            Datos datos,
+            ProveedorPagoRepositorio proveedores,
+            Outbox outbox,
+            Reloj reloj,
+            @Value("${aportaya.proveedores.umbral-de-salud}") int umbralDeSalud) {
         this.datos = datos;
         this.proveedores = proveedores;
         this.outbox = outbox;

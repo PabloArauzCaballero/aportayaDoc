@@ -24,6 +24,33 @@ aportaya:
   jwt:
     jwks-uri: ${JWKS_URI}           # ADR-024: cada servicio valida la firma el mismo
   zona-horaria: America/La_Paz      # plazos habiles
+  insignias:
+    desempeno-minimo-de-organizador: 80
+  resenas:
+    # Una opinion pesa menos que un pago: 0,05 contra 0,30 de puntualidad.
+    peso-base: 0.0500
+    # La mitad cuando hay conflicto declarado, y la mitad cuando el autor ya reseno
+    # mucho: quien opina de todos opina de nadie.
+    atenuacion-por-conflicto: 0.50
+    atenuacion-por-volumen: 0.50
+    corte-de-volumen: 5
+  certificados:
+    # Del almacen de secretos, nunca de una columna ni del repositorio.
+    clave-de-firma: ${CERTIFICADOS_CLAVE_FIRMA}
+    base-url-publica: ${BASE_URL_PUBLICA:https://aportaya.bo}
+  reputacion:
+    # Cada cuanto se vuelve a calcular el puntaje de alguien sin que pase nada nuevo.
+    periodo-de-recalculo: P30D
+    # Los cortes de confianza, de mayor a menor. El nombre es lo que ve un tercero en
+    # un certificado: moverlos cambia lo que significa «confiable» para todos a la vez.
+    cortes: "REFERENTE:90, MUY_CONFIABLE:75, CONFIABLE:60, BASICO:40, EN_OBSERVACION:25"
+  riesgo:
+    # De cuanto se paso una metrica sale la severidad, no de una tabla de humor.
+    hasta-alto: 60
+    hasta-medio: 80
+    exceso-critico: 0.50
+    exceso-alto: 0.25
+    exceso-medio: 0.10
 
 management:
   endpoint:

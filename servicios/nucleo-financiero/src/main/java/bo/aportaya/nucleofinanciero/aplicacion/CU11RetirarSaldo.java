@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,7 +65,7 @@ public class CU11RetirarSaldo {
             LibroDeBilletera libro,
             Outbox outbox,
             Reloj reloj,
-            UUID cuentaPuenteDeCustodia) {
+            @Value("${aportaya.custodia.cuenta-puente}") UUID cuentaPuenteDeCustodia) {
         this.datos = datos;
         this.cuentas = cuentas;
         this.ordenes = ordenes;

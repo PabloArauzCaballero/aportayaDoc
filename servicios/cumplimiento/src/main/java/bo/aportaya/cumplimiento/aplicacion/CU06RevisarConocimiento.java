@@ -23,6 +23,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -63,7 +64,7 @@ public class CU06RevisarConocimiento {
             Reloj reloj,
             PeriodicidadDeRevision periodicidad,
             Umbrales umbrales,
-            String codigoReglaDesvio) {
+            @Value("${aportaya.monitoreo.codigo-regla-desvio}") String codigoReglaDesvio) {
         this.datos = datos;
         this.calificaciones = calificaciones;
         this.perfiles = perfiles;

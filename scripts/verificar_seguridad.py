@@ -269,7 +269,16 @@ def bloque_3():
 # que las rutas que abre sean exactamente las declaradas — los prefijos publicos de
 # `modelo.PREFIJOS`/`RUTAS_PUBLICAS` y las sondas del actuator, que no son del dominio.
 GUARDIA = RAIZ / "plataforma/comun-web/src/main/java/bo/aportaya/plataforma/web/seguridad/ConfiguracionDeSeguridad.java"
-SONDAS_ABIERTAS = ("/actuator/health", "/actuator/info")
+# Rutas de INFRAESTRUCTURA que van sin sesion. No son rutas del producto —esas se
+# enumeran en modelo.RUTAS_PUBLICAS— y por eso no viven en PREFIJOS ni en ningun
+# contrato: su forma la fijan el orquestador y ADR-024, no nosotros.
+#
+#   /actuator/health · /actuator/info  — las sondas. Pedirles token seria pedirle
+#       credenciales a Kubernetes para saber si el proceso respira.
+#   /.well-known/jwks.json             — la clave PUBLICA con la que los trece
+#       servicios verifican la firma del token. Pedirle sesion seria pedir sesion
+#       para poder comprobar la sesion. Sale la publica; la privada no sale nunca.
+SONDAS_ABIERTAS = ("/actuator/health", "/actuator/info", "/.well-known/jwks.json")
 
 
 def bloque_3b():

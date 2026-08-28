@@ -17,6 +17,7 @@ import java.util.UUID;
  */
 public record ResultadoDeAutenticacion(
         boolean exitoso,
+        Optional<UUID> usuarioId,
         Optional<UUID> sesionId,
         Optional<OffsetDateTime> expiraEn,
         boolean requiereFactorAdicional,
@@ -24,15 +25,30 @@ public record ResultadoDeAutenticacion(
         Optional<CodigoError> codigo,
         String mensaje) {
 
+    /**
+     * De quien es la sesion, ademas de cual.
+     *
+     * <p>El titular viaja en el resultado porque el token de acceso se emite a su nombre
+     * (ADR-024) y quien lo emite no puede volver a preguntarle a la base quien acaba de
+     * entrar: preguntar dos veces abre la ventana para que las dos respuestas difieran.
+     */
     public static ResultadoDeAutenticacion sesionAbierta(
-            UUID sesionId, OffsetDateTime expiraEn, boolean dispositivoConfiable) {
+            UUID usuarioId, UUID sesionId, OffsetDateTime expiraEn, boolean dispositivoConfiable) {
         return new ResultadoDeAutenticacion(
-                true, Optional.of(sesionId), Optional.of(expiraEn), false, dispositivoConfiable, Optional.empty(), "");
+                true,
+                Optional.of(usuarioId),
+                Optional.of(sesionId),
+                Optional.of(expiraEn),
+                false,
+                dispositivoConfiable,
+                Optional.empty(),
+                "");
     }
 
     public static ResultadoDeAutenticacion faltaSegundoFactor(boolean dispositivoConfiable) {
         return new ResultadoDeAutenticacion(
                 false,
+                Optional.empty(),
                 Optional.empty(),
                 Optional.empty(),
                 true,
@@ -43,6 +59,13 @@ public record ResultadoDeAutenticacion(
 
     public static ResultadoDeAutenticacion rechazado(CodigoError codigo, String mensaje) {
         return new ResultadoDeAutenticacion(
-                false, Optional.empty(), Optional.empty(), false, false, Optional.of(codigo), mensaje);
+                false,
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                false,
+                false,
+                Optional.of(codigo),
+                mensaje);
     }
 }

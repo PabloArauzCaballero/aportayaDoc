@@ -16,6 +16,7 @@ dependencies {
     implementation(project(":plataforma:comun-dominio"))
     implementation(project(":plataforma:comun-datos"))
     implementation(project(":plataforma:comun-web"))
+    implementation(libs.spring.boot.oauth2)  // identidad FIRMA: necesita nimbus-jose, no solo verificar
     implementation(project(":plataforma:comun-mensajeria"))
 
     implementation(libs.spring.boot.web)

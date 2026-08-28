@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,7 +53,8 @@ public class CU74EvaluarInsignias {
             InsigniaRepositorio insignias,
             Outbox outbox,
             Reloj reloj,
-            java.math.BigDecimal desempenoMinimoDeOrganizador) {
+            @Value("${aportaya.insignias.desempeno-minimo-de-organizador}")
+                    java.math.BigDecimal desempenoMinimoDeOrganizador) {
         this.datos = datos;
         this.insignias = insignias;
         this.outbox = outbox;

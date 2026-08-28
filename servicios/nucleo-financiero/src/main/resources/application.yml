@@ -24,6 +24,14 @@ aportaya:
   jwt:
     jwks-uri: ${JWKS_URI}           # ADR-024: cada servicio valida la firma el mismo
   zona-horaria: America/La_Paz      # plazos habiles
+  recarga:
+    # Lo que vive una orden de recarga antes de expirar. Corta a proposito: una orden
+    # vieja acreditada tarde es plata que entra contra un precio que ya cambio.
+    vigencia-de-la-orden: PT30M
+  custodia:
+    # La cuenta espejo de la custodia. Es un identificador del entorno, no del codigo:
+    # en cada despliegue es otra fila, y equivocarla mueve dinero al lugar equivocado.
+    cuenta-puente: ${CUENTA_PUENTE_CUSTODIA}
 
 management:
   endpoint:

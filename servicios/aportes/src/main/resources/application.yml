@@ -24,6 +24,15 @@ aportaya:
   jwt:
     jwks-uri: ${JWKS_URI}           # ADR-024: cada servicio valida la firma el mismo
   zona-horaria: America/La_Paz      # plazos habiles
+  reembolso:
+    # Lo que el titular tiene para disputar un cargo. Es politica comercial, no un
+    # numero del codigo (invariante 10).
+    plazo-de-disputa: P7D
+  proveedores:
+    # Por debajo de esta salud observada, el enrutador deja de mandarle cobros a un
+    # proveedor. Mas alto castiga a un proveedor que tuvo un mal minuto; mas bajo
+    # sigue mandandole cobros a uno que ya no responde.
+    umbral-de-salud: 70
 
 management:
   endpoint:

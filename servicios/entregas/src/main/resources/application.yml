@@ -24,6 +24,20 @@ aportaya:
   jwt:
     jwks-uri: ${JWKS_URI}           # ADR-024: cada servicio valida la firma el mismo
   zona-horaria: America/La_Paz      # plazos habiles
+  # Fuera de la base a proposito: filtrar la tabla de cuentas no alcanza si la
+  # pimienta no esta ahi. Si falta la variable, el proceso NO levanta.
+  seguridad:
+    pimienta: ${SEGURIDAD_PIMIENTA}
+    version-llave: 1
+  cuentas:
+    # Diez destinos distintos para la misma persona son un patron, no una comodidad.
+    maximo-por-usuario: 3
+    # Una cuenta recien verificada espera antes de poder recibir: es la ventana en la
+    # que el titular real alcanza a darse cuenta si alguien registro una que no es suya.
+    enfriamiento: PT24H
+  desembolso:
+    intentos-maximos: 3
+    espera-entre-intentos: PT15M
 
 management:
   endpoint:

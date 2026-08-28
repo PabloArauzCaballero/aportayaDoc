@@ -24,6 +24,33 @@ aportaya:
   jwt:
     jwks-uri: ${JWKS_URI}           # ADR-024: cada servicio valida la firma el mismo
   zona-horaria: America/La_Paz      # plazos habiles
+  publicacion:
+    # Donde se publican archivos, expedientes y actas para que se puedan citar.
+    base-url: ${BASE_URL_PUBLICA:https://aportaya.bo}
+  monitoreo:
+    codigo-regla-desvio: RM-DESVIO-PERFIL
+  requerimientos:
+    # Un oficio sin alcance descrito es una pesca: obliga a escribir que se pide.
+    minimo-de-caracteres-de-alcance: 10
+  reglas:
+    # Tope de trafico que una regla nueva puede alcanzar antes de exigir calibracion.
+    techo-de-trafico: 0.0500
+  oficial:
+    dias-para-comunicar: 5
+    plazo-de-capacitacion: 90
+  reclamos:
+    # ASFI Libro 4 Titulo I: primera respuesta en cinco dias habiles.
+    dias-habiles-de-respuesta: 5
+    maximo-dias-de-prorroga: 10
+    dias-para-elevar: 30
+  continuidad:
+    dias-para-regularizar: 30
+  desvio:
+    # Cuanto se aparta un movimiento del perfil declarado, en porcentaje, antes de
+    # observarlo, investigarlo o tratarlo como caso.
+    observar: 100
+    investigar: 200
+    caso: 500
 
 management:
   endpoint:

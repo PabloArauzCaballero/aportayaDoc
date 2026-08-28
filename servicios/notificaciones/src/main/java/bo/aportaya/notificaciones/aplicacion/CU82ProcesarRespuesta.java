@@ -19,6 +19,7 @@ import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,7 +52,7 @@ public class CU82ProcesarRespuesta {
             Consumidos consumidos,
             Outbox outbox,
             Reloj reloj,
-            String secretoWebhook) {
+            @Value("${aportaya.webhook.secreto}") String secretoWebhook) {
         this.datos = datos;
         this.respuestas = respuestas;
         this.supresiones = supresiones;

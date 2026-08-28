@@ -15,6 +15,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,7 +48,11 @@ public class CU48CalibrarReglas {
     private final BigDecimal techoDeTrafico;
 
     public CU48CalibrarReglas(
-            Datos datos, MonitoreoLftRepositorio monitoreo, Outbox outbox, Reloj reloj, BigDecimal techoDeTrafico) {
+            Datos datos,
+            MonitoreoLftRepositorio monitoreo,
+            Outbox outbox,
+            Reloj reloj,
+            @Value("${aportaya.reglas.techo-de-trafico}") BigDecimal techoDeTrafico) {
         this.datos = datos;
         this.monitoreo = monitoreo;
         this.outbox = outbox;

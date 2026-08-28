@@ -16,6 +16,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,7 +42,11 @@ public class CU25DeclararIncumplimiento {
     private final Duration plazoDeDescargo;
 
     public CU25DeclararIncumplimiento(
-            Datos datos, ExpedienteRepositorio expedientes, Outbox outbox, Reloj reloj, Duration plazoDeDescargo) {
+            Datos datos,
+            ExpedienteRepositorio expedientes,
+            Outbox outbox,
+            Reloj reloj,
+            @Value("${aportaya.incumplimiento.plazo-de-descargo}") Duration plazoDeDescargo) {
         this.datos = datos;
         this.expedientes = expedientes;
         this.outbox = outbox;

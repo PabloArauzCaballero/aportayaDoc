@@ -13,6 +13,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,7 +52,7 @@ public class CU45AtenderRequerimiento {
             GobiernoRepositorio gobierno,
             Outbox outbox,
             Reloj reloj,
-            int minimoDeCaracteresDeAlcance) {
+            @Value("${aportaya.requerimientos.minimo-de-caracteres-de-alcance}") int minimoDeCaracteresDeAlcance) {
         this.datos = datos;
         this.requerimientos = requerimientos;
         this.gobierno = gobierno;

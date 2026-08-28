@@ -16,6 +16,7 @@ import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,8 +57,8 @@ public class CU75EmitirCertificado {
             Outbox outbox,
             Reloj reloj,
             SecureRandom azar,
-            String claveDeFirma,
-            String baseUrlPublica) {
+            @Value("${aportaya.certificados.clave-de-firma}") String claveDeFirma,
+            @Value("${aportaya.certificados.base-url-publica}") String baseUrlPublica) {
         this.datos = datos;
         this.certificados = certificados;
         this.cadenas = cadenas;

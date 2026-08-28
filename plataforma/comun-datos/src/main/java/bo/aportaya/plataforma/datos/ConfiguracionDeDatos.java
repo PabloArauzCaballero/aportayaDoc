@@ -36,4 +36,29 @@ public class ConfiguracionDeDatos {
     public Datos datos(DSLContext dsl) {
         return new Datos(dsl);
     }
+
+    /**
+     * El calendario habil, uno para los catorce.
+     *
+     * <p>Los feriados son un dato sembrado con alcance, no una constante: por eso se
+     * inyecta y no se calcula. Quien necesite otro —una prueba que quiera todos los dias
+     * habiles— declara el suyo y gana.
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public bo.aportaya.plataforma.dominio.CalendarioHabil calendarioHabil(DSLContext dsl) {
+        return new CalendarioDelCatalogo(dsl);
+    }
+
+    /**
+     * La transaccion aparte, para escribir cuando la de afuera ya no sirve.
+     *
+     * <p>La usa quien tiene que dejar constancia de un fallo: una consulta cortada por
+     * tiempo deja la transaccion invalida, y escribir el rastro ahi adentro no funciona.
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public TransaccionAparte transaccionAparte(org.springframework.transaction.PlatformTransactionManager gestor) {
+        return new TransaccionAparte(gestor);
+    }
 }

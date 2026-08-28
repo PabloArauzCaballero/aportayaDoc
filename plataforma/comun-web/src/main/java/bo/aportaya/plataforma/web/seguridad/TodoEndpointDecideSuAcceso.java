@@ -4,6 +4,7 @@ import jakarta.annotation.PostConstruct;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
@@ -22,7 +23,15 @@ public class TodoEndpointDecideSuAcceso {
 
     private final RequestMappingHandlerMapping rutas;
 
-    public TodoEndpointDecideSuAcceso(RequestMappingHandlerMapping rutas) {
+    /**
+     * El mapeo de MVC, nombrado.
+     *
+     * <p>Actuator registra el suyo, asi que hay dos de este tipo y sin el nombre Spring
+     * no sabe cual inyectar — y el proceso no levanta con un mensaje que no habla de
+     * seguridad. El que interesa es el de las rutas del producto: las de actuator ya
+     * estan permitidas por nombre en la guardia.
+     */
+    public TodoEndpointDecideSuAcceso(@Qualifier("requestMappingHandlerMapping") RequestMappingHandlerMapping rutas) {
         this.rutas = rutas;
     }
 

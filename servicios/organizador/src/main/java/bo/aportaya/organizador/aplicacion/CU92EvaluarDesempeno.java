@@ -17,6 +17,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,8 +49,8 @@ public class CU92EvaluarDesempeno {
             OrganizadorRepositorio organizadores,
             Outbox outbox,
             Reloj reloj,
-            BigDecimal umbralDeAscenso,
-            BigDecimal umbralDeDescenso) {
+            @Value("${aportaya.organizador.umbral-de-ascenso}") BigDecimal umbralDeAscenso,
+            @Value("${aportaya.organizador.umbral-de-descenso}") BigDecimal umbralDeDescenso) {
         this.datos = datos;
         this.desempenos = desempenos;
         this.organizadores = organizadores;

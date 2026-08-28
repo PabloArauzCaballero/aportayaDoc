@@ -16,6 +16,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,10 +50,10 @@ public class CU18RegistrarCuentaDestino {
             CuentaDestinoRepositorio cuentas,
             Outbox outbox,
             Reloj reloj,
-            String pimienta,
-            int versionLlave,
-            int maximoDeCuentas,
-            Duration ventanaDeEnfriamiento) {
+            @Value("${aportaya.seguridad.pimienta}") String pimienta,
+            @Value("${aportaya.seguridad.version-llave}") int versionLlave,
+            @Value("${aportaya.cuentas.maximo-por-usuario}") int maximoDeCuentas,
+            @Value("${aportaya.cuentas.enfriamiento}") Duration ventanaDeEnfriamiento) {
         this.datos = datos;
         this.cuentas = cuentas;
         this.outbox = outbox;

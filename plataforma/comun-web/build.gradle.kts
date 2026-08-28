@@ -5,6 +5,7 @@ plugins { id("aportaya.libreria") }
 dependencies {
     api(project(":plataforma:comun-dominio"))
     api(project(":plataforma:comun-datos"))
+    api(project(":plataforma:comun-mensajeria"))  // el outbox se cablea aca: es donde vive el cableado
     implementation(libs.spring.boot.web)
     implementation(libs.spring.boot.actuator)
     implementation(libs.spring.boot.jdbc)   // DataAccessException: la traduccion de restricciones

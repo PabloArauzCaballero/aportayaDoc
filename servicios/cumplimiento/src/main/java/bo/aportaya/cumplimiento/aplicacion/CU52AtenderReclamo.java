@@ -16,6 +16,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,8 +57,8 @@ public class CU52AtenderReclamo {
             Outbox outbox,
             Reloj reloj,
             CalendarioHabil calendario,
-            int diasHabilesDeRespuesta,
-            int maximoDiasDeProrroga) {
+            @Value("${aportaya.reclamos.dias-habiles-de-respuesta}") int diasHabilesDeRespuesta,
+            @Value("${aportaya.reclamos.maximo-dias-de-prorroga}") int maximoDiasDeProrroga) {
         this.datos = datos;
         this.reclamos = reclamos;
         this.gobierno = gobierno;

@@ -17,6 +17,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,7 +53,7 @@ public class CU26EjecutarAval {
             ExpedienteRepositorio expedientes,
             Outbox outbox,
             Reloj reloj,
-            Duration plazoDeRespuesta) {
+            @Value("${aportaya.aval.plazo-de-respuesta}") Duration plazoDeRespuesta) {
         this.datos = datos;
         this.gestion = gestion;
         this.fondos = fondos;
