@@ -17,25 +17,32 @@ Modulo 07 de la boveda — Organizador y Automatización.
 
 | CU | Nombre | Estado |
 | --- | --- | --- |
-| | *(los llena `nuevo_cu.py`)* | |
+| CU-90 | Postular a organizador y habilitarse | Implementado |
+| CU-91 | Firmar y rescindir el contrato de organizador | Implementado |
+| CU-92 | Evaluar el desempeno del organizador | Implementado |
+| CU-93 | Sancionar al organizador y resolver su apelacion | Implementado |
+| CU-95 | Definir una regla de automatizacion | Implementado |
+| CU-96 | Programar y ejecutar una tarea automatizada | Implementado |
 
-## Eventos que emite
+CU-94 pertenece a `cumplimiento`, no a este servicio.
 
-| Tema | Cuando |
-| --- | --- |
-| | |
+## Lo que hay que saber antes de tocar esto
 
-## Eventos que consume
+**Una apelacion abierta no se puede guardar.** `ck_apelacion_org_resuelta` exige que el
+estado sea `PENDIENTE` —que `ck_apelacion_sancion_org_estado` **no admite**— o que los
+tres campos de resolucion esten presentes. Las dos restricciones juntas hacen imposible
+registrar una apelacion sin resolver. Mientras esta abierta, lo que la registra es el
+estado `APELADA` de la sancion y el evento con el argumento; la fila se escribe entera
+al resolverla. Es el hueco H-7 del informe.
 
-| Tema | De quien | Efecto |
-| --- | --- | --- |
-| | | |
+**Las acciones sensibles se rechazan, no se corrigen en silencio.** Una regla que
+ejecuta una entrega sin `requiere_confirmacion_humana` **no se guarda**. Forzar la
+bandera calladamente deja a quien la escribio creyendo que definio otra cosa.
 
-## Trabajos programados
-
-| Bloqueo | Cron | Que hace |
-| --- | --- | --- |
-| | | |
+**El ascenso de nivel salta un escalon por vez; el descenso no tiene limite.** El nivel
+define cuanta plata ajena puede tener en curso: subir dos de golpe entrega un limite que
+esa persona nunca sostuvo. Bajar de golpe si, porque cuando algo sale mal esperar no
+mejora nada.
 
 ## Lo que este servicio NO puede hacer
 

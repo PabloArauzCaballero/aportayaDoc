@@ -5,6 +5,61 @@
 # Prefijos reservados de este servicio: /organizadores, /automatizacion
 #   Una ruta fuera de ellos es un rechazo automatico, no una discusion de diseno.
 #   Toda ruta exige sesion: 401 sin token, 403 con rol insuficiente.
+#
+# Codigos de error de los seis casos de uso. Viven aca aunque el caso de uso no tenga
+# ruta HTTP propia: scripts/verificar_criterios.py los busca en este archivo.
+#
+# CU-90 · Postular a organizador y habilitarse
+#   AP-CU90-01  KYC_INSUFICIENTE       · aca: postulacion pendiente duplicada (R-ORG-01)
+#   AP-CU90-02  REQUISITO_OBLIGATORIO_FALTANTE · ya es organizador
+#   AP-CU90-03  RESTRICCION_VIGENTE    · la solicitud no existe o ya fue resuelta
+#   AP-CU90-04  SOLICITUD_DUPLICADA    · quien aprueba no puede ser quien postulo (R-SEG-04)
+#   AP-CU90-05  CAPACITACION_PENDIENTE · no cumple requisitos, o falta capacitacion vigente
+#   AP-CU90-06  CONTRATO_SIN_FIRMAR    · aca: falta la diligencia reforzada (R-UIF-09)
+#
+# CU-91 · Firmar y rescindir el contrato de organizador
+#   AP-CU91-01  TOKEN_INVALIDO         · el contrato o el organizador no existen
+#   AP-CU91-02  CONTRATO_YA_FIRMADO    · ya hay contrato vigente (R-ORG-02)
+#   AP-CU91-03  VERSION_SUPERADA       · un contrato firmado no se modifica (R-ORG-03)
+#   AP-CU91-04  GRUPOS_SIN_REASIGNAR   · aca: lo firma el organizador, no un tercero
+#   AP-CU91-05  COMISIONES_PENDIENTES  · aca: el contrato nunca se firmo
+#   AP-CU91-06  ORGANIZADOR_NO_HABILITADO · tiene grupos en curso: no se rescinde
+#
+# CU-92 · Evaluar el desempeno del organizador
+#   AP-CU92-01  PERIODO_NO_CERRADO     · el organizador no existe
+#   AP-CU92-02  EVALUACION_DUPLICADA   · una por organizador y periodo (R-ORG-04)
+#   AP-CU92-03  SIN_ACTIVIDAD          · sin metricas no hay evaluacion
+#   AP-CU92-04  SIN_METAS_VIGENTES     · nivel de organizador no admitido
+#   AP-CU92-05  PLAZO_OBSERVACION_VENCIDO · reservado; la correccion es una evaluacion nueva
+#
+# CU-93 · Sancionar al organizador y resolver su apelacion
+#   AP-CU93-01  SIN_CAUSAL             · la sancion o su apelacion no existen
+#   AP-CU93-02  PLAZO_DESCARGO_ABIERTO · aca: el plazo para apelar ya vencio
+#   AP-CU93-03  APELACION_DUPLICADA    · aca: quien resuelve aplico la sancion (R-ORG-05)
+#   AP-CU93-04  MISMO_RESOLUTOR        · apela quien recibio la sancion, no un tercero
+#   AP-CU93-05  GRUPOS_SIN_DESTINO     · aca: sancion sin motivo escrito
+#   AP-CU93-06  SANCION_PRESCRITA      · nadie se sanciona a si mismo
+#
+# CU-95 · Definir una regla de automatizacion
+#   AP-CU95-01  ACCION_NO_AUTOMATIZABLE · codigo de regla duplicado
+#   AP-CU95-02  AMBITO_AJENO           · la regla no existe. La DDL no tiene ambito: hueco H-6
+#   AP-CU95-03  CONDICION_INVALIDA     · accion sensible sin confirmacion humana (R-ORG-06)
+#   AP-CU95-04  PRIORIDAD_DUPLICADA    · aca: disparador no admitido
+#   AP-CU95-05  SIMULACION_REQUERIDA   · aca: regla sin condicion escrita
+#   AP-CU95-06  ORGANIZADOR_SUSPENDIDO · aca: prioridad ya ocupada entre las activas
+#
+# CU-96 · Programar y ejecutar una tarea automatizada
+#   AP-CU96-01  TAREA_DUPLICADA        · la tarea no existe
+#   AP-CU96-02  REGLA_INACTIVA         · una regla apagada no programa nada
+#   AP-CU96-03  CONFIRMACION_VENCIDA   · esa tarea no estaba esperando aprobacion
+#   AP-CU96-04  CONDICION_YA_NO_VALIDA · aca: la tarea espera confirmacion y no se ejecuta
+#   AP-CU96-05  AGOTADOS_LOS_INTENTOS  · reservado; la tarea completada no se reejecuta
+#   AP-CU96-06  FUERA_DE_VENTANA       · reservado
+#
+# NOTA: varios nombres del CU no describen el caso que el codigo terminó ocupando. Se
+# conservan los NUMEROS, que son los que la boveda ata a cada rechazo, y se documenta
+# aca que significa cada uno en la implementacion. Renombrarlos es tocar docs/, que es
+# troncal.
 openapi: 3.1.0
 info:
   title: organizador
@@ -16,20 +71,365 @@ info:
 servers:
   - url: /api/v1
 
-paths: {}
-  # Una operacion por caso de uso. Plantilla:
-  #
-  #   /organizadores/…:
-  #     post:
-  #       operationId: <verboObjeto>          # CU-NN
-  #       parameters:
-  #         - name: Idempotency-Key
-  #           in: header
-  #           required: true                   # toda operacion con efecto
-  #           schema: { type: string, format: uuid }
-  #       responses:
-  #         '200': …
-  #         '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+paths:
+  /organizadores/postulaciones:
+    post:
+      operationId: postularOrganizador          # CU-90
+      summary: Postular para administrar grupos
+      description: >-
+        Un organizador administra la plata de otros: la habilitacion es la ultima
+        puerta antes de que alguien tenga acceso al fondo de un grupo entero. Los
+        requisitos son catalogo, y un obligatorio SIN DATO no se da por cumplido.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaPostulacion' }
+      responses:
+        '201':
+          description: Postulacion recibida, con lo que le falta si algo falta
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaPostulacion' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /organizadores/postulaciones/{solicitudId}/aprobacion:
+    post:
+      operationId: aprobarPostulacion           # CU-90
+      summary: Aprobar la postulacion y crear al organizador
+      description: >-
+        Quien aprueba no puede ser quien postulo (R-SEG-04). El organizador nace en
+        CAPACITACION_PENDIENTE: aprobar y entregar el acceso al fondo en el mismo acto
+        saltaria el paso donde se le explica que responsabilidad esta tomando.
+      parameters:
+        - name: solicitudId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaAprobacion' }
+      responses:
+        '200':
+          description: Organizador creado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaHabilitacion' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /organizadores/{organizadorId}/habilitacion:
+    post:
+      operationId: habilitarOrganizador         # CU-90
+      summary: Habilitar tras completar la capacitacion
+      parameters:
+        - name: organizadorId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Organizador habilitado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaHabilitacion' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /organizadores/{organizadorId}/contratos:
+    post:
+      operationId: emitirContrato               # CU-91
+      summary: Emitir el contrato de organizador
+      description: >-
+        Un solo contrato vigente por organizador (R-ORG-02). Dos permiten invocar el
+        texto que mas convenga ante un incumplimiento.
+      parameters:
+        - name: organizadorId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaContrato' }
+      responses:
+        '201':
+          description: Contrato emitido, sin firmar
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaContrato' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /organizadores/contratos/{contratoId}/firma:
+    post:
+      operationId: firmarContrato               # CU-91
+      summary: Firmar el contrato
+      description: >-
+        Lo firma el propio organizador: una firma puesta por otro no obliga a nadie.
+        Firmar dos veces no sobrescribe la evidencia de cuando y con que token se firmo.
+      parameters:
+        - name: contratoId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [tokenFirmaId]
+              properties:
+                tokenFirmaId: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Contrato firmado, o el que ya estaba
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaFirma' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /organizadores/contratos/{contratoId}/rescision:
+    post:
+      operationId: rescindirContrato            # CU-91
+      summary: Rescindir el contrato
+      description: >-
+        No se rescinde con grupos en curso: irse dejando participantes a mitad del
+        ciclo es lo que el contrato existe para que no pase sin consecuencias.
+      parameters:
+        - name: contratoId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [motivo]
+              properties:
+                motivo: { type: string, maxLength: 300 }
+      responses:
+        '200':
+          description: Contrato rescindido y organizador retirado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaRescision' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /organizadores/{organizadorId}/evaluaciones:
+    post:
+      operationId: evaluarDesempeno             # CU-92
+      summary: Evaluar el desempeno de un periodo
+      description: >-
+        Una evaluacion por organizador y periodo (R-ORG-04). El puntaje sale de
+        metricas con su peso, y las metricas se guardan: si alguien va a perder su
+        habilitacion por un numero, ese numero tiene que poder abrirse. El descenso se
+        aplica; el ascenso queda SUGERIDO.
+      parameters:
+        - name: organizadorId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaEvaluacion' }
+      responses:
+        '200':
+          description: Evaluacion registrada, o la que ya existia
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaEvaluacion' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /organizadores/{organizadorId}/sanciones:
+    post:
+      operationId: sancionarOrganizador         # CU-93
+      summary: Aplicar una sancion
+      description: >-
+        Sin motivo escrito no hay sancion: «bajo desempeno» a secas no se puede apelar
+        porque no dice contra que defenderse. El plazo para apelar se calcula al
+        sancionar y no se recalcula despues.
+      parameters:
+        - name: organizadorId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaSancion' }
+      responses:
+        '201':
+          description: Sancion aplicada, con su plazo de apelacion
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaSancion' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /organizadores/sanciones/{sancionId}/apelacion:
+    post:
+      operationId: apelarSancion                # CU-93
+      summary: Presentar la apelacion
+      description: >-
+        La sancion pasa a APELADA y no se puede dar por cumplida. La FILA de la
+        apelacion se escribe al resolverla: la base no admite una apelacion abierta
+        (hueco H-7 del informe del carril).
+      parameters:
+        - name: sancionId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaApelacion' }
+      responses:
+        '200':
+          description: Apelacion presentada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaApelacion' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /organizadores/sanciones/{sancionId}/resolucion:
+    post:
+      operationId: resolverApelacion            # CU-93
+      summary: Resolver la apelacion
+      description: >-
+        La resuelve quien NO aplico la sancion (R-ORG-05). Sin eso, apelar es pedirle
+        a la misma persona que se desdiga.
+      parameters:
+        - name: sancionId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaResolucion' }
+      responses:
+        '200':
+          description: Apelacion resuelta
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaResolucion' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /automatizacion/reglas:
+    post:
+      operationId: definirRegla                 # CU-95
+      summary: Definir una regla de automatizacion
+      description: >-
+        Las acciones que mueven plata ajena exigen confirmacion humana (R-ORG-06). La
+        regla nace INACTIVA: publicarla y encenderla en el mismo acto no deja momento
+        para revisar que la condicion diga lo que se cree que dice.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaRegla' }
+      responses:
+        '201':
+          description: Regla definida, inactiva
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaRegla' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /automatizacion/reglas/{reglaId}/activacion:
+    post:
+      operationId: activarRegla                 # CU-95
+      summary: Encender la regla
+      description: >-
+        Se revuelve a comprobar la coherencia y la prioridad: dos reglas activas con el
+        mismo disparador y prioridad hacen que el orden de ejecucion dependa de como la
+        base devuelva las filas.
+      parameters:
+        - name: reglaId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Regla activa
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaRegla' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /automatizacion/tareas:
+    post:
+      operationId: programarTarea               # CU-96
+      summary: Programar una tarea automatizada
+      description: >-
+        Una tarea por clave de idempotencia (R-ORG-07). La clave es determinista
+        —regla, grupo y minuto—: si dependiera del reloj de la corrida, cada reintento
+        del planificador generaria una tarea nueva.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaProgramacion' }
+      responses:
+        '201':
+          description: Tarea programada, o la que ya existia
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaProgramacion' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /automatizacion/tareas/{tareaId}/aprobacion:
+    post:
+      operationId: aprobarTarea                 # CU-96
+      summary: La confirmacion humana que exige una accion sensible
+      parameters:
+        - name: tareaId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Tarea elegible para ejecutarse
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaProgramacion' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /automatizacion/tareas/{tareaId}/ejecuciones:
+    post:
+      operationId: anotarEjecucion              # CU-96
+      summary: Registrar el resultado de una ejecucion
+      description: >-
+        La accion real la ejecuta el servicio dueno del efecto; aca se registra que
+        paso. Ejecutarla desde este servicio seria escribir esquemas ajenos
+        (invariante 11).
+      parameters:
+        - name: tareaId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaEjecucion' }
+      responses:
+        '200':
+          description: Ejecucion registrada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaEjecucion' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
 
 components:
   parameters:
@@ -42,6 +442,290 @@ components:
         seguro, y la clave se valida ANTES de escribir (invariante 7).
       schema: { type: string, format: uuid }
   schemas:
+    Faltante:
+      type: object
+      additionalProperties: false
+      required: [codigo, motivo]
+      properties:
+        codigo: { type: string }
+        motivo:
+          type: string
+          description: en texto; el postulante lo lee y tiene derecho a saber que le falta
+    EntradaPostulacion:
+      type: object
+      additionalProperties: false
+      required: [motivacion, experienciaDeclarada, kycReforzadoId, reputacion]
+      properties:
+        motivacion:           { type: string, maxLength: 2000 }
+        experienciaDeclarada: { type: string, maxLength: 2000 }
+        kycReforzadoId:
+          type: string
+          format: uuid
+          description: sin diligencia reforzada no se administra plata ajena (R-UIF-09)
+        reputacion: { type: string, pattern: '^\d+\.\d{2}$' }
+        medidos:
+          type: object
+          additionalProperties: { type: string, pattern: '^\d+(\.\d{1,2})?$' }
+          description: >-
+            lo que se sabe del postulante por codigo de requisito. Un requisito
+            obligatorio SIN dato no se da por cumplido (invariante 9)
+    SalidaPostulacion:
+      type: object
+      additionalProperties: false
+      required: [solicitudId, estado, esNueva, faltantes]
+      properties:
+        solicitudId: { type: string, format: uuid }
+        estado:      { type: string, enum: [PENDIENTE, EN_REVISION, APROBADA, RECHAZADA] }
+        esNueva:     { type: boolean }
+        faltantes:
+          type: array
+          items: { $ref: '#/components/schemas/Faltante' }
+    EntradaAprobacion:
+      type: object
+      additionalProperties: false
+      properties:
+        medidos:
+          type: object
+          additionalProperties: { type: string, pattern: '^\d+(\.\d{1,2})?$' }
+    SalidaHabilitacion:
+      type: object
+      additionalProperties: false
+      required: [organizadorId, estado, faltantes]
+      properties:
+        organizadorId: { type: string, format: uuid }
+        estado:
+          type: string
+          enum: [POSTULADO, CAPACITACION_PENDIENTE, HABILITADO, LIMITADO, SUSPENDIDO,
+                 EN_EVALUACION, DESHABILITADO, RETIRADO]
+        faltantes:
+          type: array
+          items: { $ref: '#/components/schemas/Faltante' }
+    EntradaContrato:
+      type: object
+      additionalProperties: false
+      required: [version, contenidoHash, obligaciones, causalesRescision]
+      properties:
+        version:       { type: string, maxLength: 20 }
+        contenidoHash: { type: string, minLength: 64, maxLength: 64 }
+        obligaciones:  { type: string }
+        causalesRescision:
+          type: string
+          description: >-
+            obligatorias. Un contrato que no dice por que se puede terminar deja al
+            organizador sin saber que lo expone a perder el vinculo
+    SalidaContrato:
+      type: object
+      additionalProperties: false
+      required: [contratoId, version, yaExistia]
+      properties:
+        contratoId: { type: string, format: uuid }
+        version:    { type: string }
+        yaExistia:  { type: boolean }
+    SalidaFirma:
+      type: object
+      additionalProperties: false
+      required: [contratoId, esNueva]
+      properties:
+        contratoId: { type: string, format: uuid }
+        firmadoEn:  { type: [string, 'null'], format: date-time }
+        esNueva:    { type: boolean }
+    SalidaRescision:
+      type: object
+      additionalProperties: false
+      required: [contratoId, rescindidoEn, estadoDelOrganizador]
+      properties:
+        contratoId:   { type: string, format: uuid }
+        rescindidoEn: { type: string, format: date-time }
+        estadoDelOrganizador: { type: string }
+    Metrica:
+      type: object
+      additionalProperties: false
+      required: [codigo, valor, meta, peso, mayorEsMejor]
+      properties:
+        codigo: { type: string, maxLength: 40 }
+        valor:  { type: string, pattern: '^-?\d+(\.\d{1,4})?$' }
+        meta:   { type: string, pattern: '^-?\d+(\.\d{1,4})?$' }
+        peso:   { type: string, pattern: '^\d\.\d{1,3}$' }
+        mayorEsMejor:
+          type: boolean
+          description: >-
+            false para morosidad y tiempo de respuesta. Sin esto, la cartera sana
+            puntuaria igual que la rota
+    EntradaEvaluacion:
+      type: object
+      additionalProperties: false
+      required: [periodo, metricas, morosidad, tasaFinalizacion, satisfaccion,
+                 tiempoRespuestaHoras, incidenciasAbiertas, coberturasConsumidas,
+                 limiteDeGruposDelNivel, limiteDeMontoDelNivel]
+      properties:
+        periodo: { type: string, maxLength: 10 }
+        metricas:
+          type: array
+          minItems: 1
+          items: { $ref: '#/components/schemas/Metrica' }
+        morosidad:            { type: string, pattern: '^\d+\.\d{2}$' }
+        tasaFinalizacion:     { type: string, pattern: '^\d+\.\d{2}$' }
+        satisfaccion:         { type: string, pattern: '^\d\.\d{2}$' }
+        tiempoRespuestaHoras: { type: string, pattern: '^\d+\.\d{2}$' }
+        incidenciasAbiertas:   { type: integer, minimum: 0 }
+        coberturasConsumidas:  { type: integer, minimum: 0 }
+        limiteDeGruposDelNivel: { type: integer, minimum: 1 }
+        limiteDeMontoDelNivel:  { type: string, pattern: '^\d+\.\d{2}$' }
+    SalidaEvaluacion:
+      type: object
+      additionalProperties: false
+      required: [evaluacionId, nivelActual, nivelSugerido, esNueva]
+      properties:
+        evaluacionId:  { type: string, format: uuid }
+        nivelActual:   { type: string, enum: [APRENDIZ, ESTANDAR, SENIOR, MAESTRO] }
+        nivelSugerido: { type: string, enum: [APRENDIZ, ESTANDAR, SENIOR, MAESTRO] }
+        puntaje:       { type: [string, 'null'], pattern: '^\d+\.\d{2}$' }
+        esNueva:       { type: boolean }
+    EntradaSancion:
+      type: object
+      additionalProperties: false
+      required: [tipo, motivo]
+      properties:
+        evaluacionId: { type: [string, 'null'], format: uuid }
+        tipo:
+          type: string
+          enum: [ADVERTENCIA, REDUCCION_LIMITE, SUSPENSION, INHABILITACION]
+        motivo:
+          type: string
+          minLength: 1
+          maxLength: 300
+          description: >-
+            obligatorio y escrito. «Bajo desempeno» a secas no se puede apelar porque
+            no dice contra que defenderse
+        duracionDias: { type: [integer, 'null'], minimum: 1 }
+    SalidaSancion:
+      type: object
+      additionalProperties: false
+      required: [sancionId, tipo, puedeApelarHasta]
+      properties:
+        sancionId: { type: string, format: uuid }
+        tipo:      { type: string }
+        estadoDelOrganizador: { type: [string, 'null'] }
+        puedeApelarHasta:
+          type: string
+          format: date-time
+          description: sale del momento en que se aplico la sancion; no se recalcula
+    EntradaApelacion:
+      type: object
+      additionalProperties: false
+      required: [argumento, evidenciasJson]
+      properties:
+        argumento:      { type: string }
+        evidenciasJson: { type: string }
+    SalidaApelacion:
+      type: object
+      additionalProperties: false
+      required: [estado, esNueva]
+      properties:
+        apelacionId:
+          type: [string, 'null']
+          format: uuid
+          description: >-
+            null mientras la apelacion esta abierta: la base no admite guardar una sin
+            resolver. Ver el hueco H-7 del informe del carril
+        estado:  { type: string }
+        esNueva: { type: boolean }
+    EntradaResolucion:
+      type: object
+      additionalProperties: false
+      required: [aceptada, argumento, evidenciasJson, resolucion]
+      properties:
+        aceptada:       { type: boolean }
+        argumento:      { type: string }
+        evidenciasJson: { type: string }
+        resolucion:     { type: string, maxLength: 400 }
+    SalidaResolucion:
+      type: object
+      additionalProperties: false
+      required: [apelacionId, estadoDeLaApelacion, estadoDeLaSancion]
+      properties:
+        apelacionId:         { type: string, format: uuid }
+        estadoDeLaApelacion: { type: string, enum: [ACEPTADA, RECHAZADA] }
+        estadoDeLaSancion:   { type: string, enum: [REVOCADA, VIGENTE] }
+    EntradaRegla:
+      type: object
+      additionalProperties: false
+      required: [codigo, descripcion, disparador, expresionDisparo, condicion, accion, prioridad]
+      properties:
+        codigo:      { type: string, maxLength: 40 }
+        descripcion: { type: string, maxLength: 200 }
+        disparador:  { type: string, enum: [CRON, EVENTO] }
+        expresionDisparo: { type: string, maxLength: 80 }
+        condicion:
+          type: string
+          minLength: 1
+          maxLength: 300
+          description: obligatoria. Una regla sin condicion se dispara siempre
+        accion:
+          type: string
+          enum: [APLICAR_MORA, EJECUTAR_ENTREGA, ENVIAR_RECORDATORIO, ESCALAR_COBRANZA,
+                 GENERAR_COBROS, LIQUIDAR_PERIODO]
+        requiereConfirmacionHumana:
+          type: boolean
+          default: false
+          description: >-
+            obligatorio en true para APLICAR_MORA, EJECUTAR_ENTREGA, ESCALAR_COBRANZA y
+            LIQUIDAR_PERIODO. La regla se rechaza si viene sin el, en vez de forzarlo
+            callado: forzarlo deja a quien la escribio creyendo que definio otra cosa
+        prioridad:
+          type: integer
+          minimum: 1
+          maximum: 999
+          description: unica entre las activas del mismo disparador
+    SalidaRegla:
+      type: object
+      additionalProperties: false
+      required: [reglaId, codigo, activa, requiereConfirmacionHumana]
+      properties:
+        reglaId: { type: string, format: uuid }
+        codigo:  { type: string }
+        activa:  { type: boolean }
+        requiereConfirmacionHumana: { type: boolean }
+    EntradaProgramacion:
+      type: object
+      additionalProperties: false
+      required: [reglaId, grupoId, programadaPara]
+      properties:
+        reglaId:        { type: string, format: uuid }
+        grupoId:        { type: string, format: uuid }
+        programadaPara: { type: string, format: date-time }
+    SalidaProgramacion:
+      type: object
+      additionalProperties: false
+      required: [tareaId, estado, claveIdempotencia, esNueva]
+      properties:
+        tareaId: { type: string, format: uuid }
+        estado:
+          type: string
+          enum: [PROGRAMADA, REQUIERE_APROBACION, EN_EJECUCION, COMPLETADA, FALLIDA, CANCELADA]
+        claveIdempotencia:
+          type: string
+          description: determinista — regla, grupo y minuto programado
+        esNueva: { type: boolean }
+    EntradaEjecucion:
+      type: object
+      additionalProperties: false
+      required: [iniciada, resultado, registrosAfectados, detalleJson]
+      properties:
+        iniciada:  { type: string, format: date-time }
+        resultado: { type: string, enum: [EXITO, PARCIAL, ERROR] }
+        registrosAfectados: { type: integer, minimum: 0 }
+        detalleJson:  { type: string }
+        mensajeError: { type: [string, 'null'] }
+    SalidaEjecucion:
+      type: object
+      additionalProperties: false
+      required: [estadoDeLaTarea, intentos, esNueva]
+      properties:
+        ejecucionId:     { type: [string, 'null'], format: uuid }
+        estadoDeLaTarea: { type: string }
+        intentos:        { type: integer, minimum: 0 }
+        esNueva:         { type: boolean }
     Dinero:
       type: object
       additionalProperties: false
