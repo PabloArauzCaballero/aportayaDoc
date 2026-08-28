@@ -91,8 +91,13 @@ class CU29Test extends BaseDeGarantia {
                         d -> assertThat(d.aDevolver().esMayorQue(d.aportado())).isFalse());
         assertThat(salida.devoluciones())
                 .allSatisfy(d -> assertThat(d.aDevolver().monto().signum()).isNotNegative());
-        // El que puso 300 de 400 recibe 75 de los 100 que quedaron.
-        assertThat(salida.devoluciones().get(0).aDevolver()).isEqualByComparingTo(bob("75.00"));
+        // El que puso 300 de 400 recibe 75 de los 100 que quedaron. Se lo busca por lo
+        // aportado y no por su posicion: la lista viene ordenada por identificador, que
+        // es aleatorio, y un indice fijo hace que la prueba pase o falle por suerte.
+        assertThat(salida.devoluciones())
+                .filteredOn(d -> d.aportado().monto().compareTo(new java.math.BigDecimal("300.00")) == 0)
+                .singleElement()
+                .satisfies(d -> assertThat(d.aDevolver()).isEqualByComparingTo(bob("75.00")));
         assertThat(contar(
                         "SELECT count(*)::int FROM garantia.devolucion_fondo WHERE fondo_id = ? AND monto_consumido > 0",
                         c.fondoId()))

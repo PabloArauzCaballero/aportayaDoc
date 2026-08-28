@@ -1,6 +1,7 @@
 package bo.aportaya.garantia.aplicacion;
 
 import bo.aportaya.garantia.dominio.RestriccionInterna;
+import bo.aportaya.garantia.infraestructura.DeudaRepositorio;
 import bo.aportaya.garantia.infraestructura.ExpedienteRepositorio;
 import bo.aportaya.garantia.infraestructura.FondoRepositorio;
 import bo.aportaya.garantia.infraestructura.GestionRepositorio;
@@ -38,6 +39,7 @@ public class CU27RestringirDeudor {
     private final Datos datos;
     private final GestionRepositorio gestion;
     private final FondoRepositorio fondos;
+    private final DeudaRepositorio deudas;
     private final ExpedienteRepositorio expedientes;
     private final Outbox outbox;
     private final Reloj reloj;
@@ -46,12 +48,14 @@ public class CU27RestringirDeudor {
             Datos datos,
             GestionRepositorio gestion,
             FondoRepositorio fondos,
+            DeudaRepositorio deudas,
             ExpedienteRepositorio expedientes,
             Outbox outbox,
             Reloj reloj) {
         this.datos = datos;
         this.gestion = gestion;
         this.fondos = fondos;
+        this.deudas = deudas;
         this.expedientes = expedientes;
         this.outbox = outbox;
         this.reloj = reloj;
@@ -86,8 +90,8 @@ public class CU27RestringirDeudor {
                         vigente.get().id(), vigente.get().nivel(), vigente.get().hasta(), false);
             }
 
-            Dinero adeudado = fondos.deudaDe(dsl, expediente.id())
-                    .map(FondoRepositorio.Deuda::saldoActual)
+            Dinero adeudado = deudas.deudaDe(dsl, expediente.id())
+                    .map(DeudaRepositorio.Deuda::saldoActual)
                     .orElse(expediente.montoInvolucrado());
             OffsetDateTime hasta =
                     RestriccionInterna.venceEn(ahora, entrada.duracion().orElse(null));

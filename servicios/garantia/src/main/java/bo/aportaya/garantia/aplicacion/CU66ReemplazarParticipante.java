@@ -1,5 +1,6 @@
 package bo.aportaya.garantia.aplicacion;
 
+import bo.aportaya.garantia.infraestructura.DeudaRepositorio;
 import bo.aportaya.garantia.infraestructura.ExpedienteRepositorio;
 import bo.aportaya.garantia.infraestructura.FondoRepositorio;
 import bo.aportaya.garantia.infraestructura.GestionRepositorio;
@@ -35,6 +36,7 @@ public class CU66ReemplazarParticipante {
     private final Datos datos;
     private final GestionRepositorio gestion;
     private final FondoRepositorio fondos;
+    private final DeudaRepositorio deudas;
     private final ExpedienteRepositorio expedientes;
     private final Outbox outbox;
     private final Reloj reloj;
@@ -43,12 +45,14 @@ public class CU66ReemplazarParticipante {
             Datos datos,
             GestionRepositorio gestion,
             FondoRepositorio fondos,
+            DeudaRepositorio deudas,
             ExpedienteRepositorio expedientes,
             Outbox outbox,
             Reloj reloj) {
         this.datos = datos;
         this.gestion = gestion;
         this.fondos = fondos;
+        this.deudas = deudas;
         this.expedientes = expedientes;
         this.outbox = outbox;
         this.reloj = reloj;
@@ -63,8 +67,8 @@ public class CU66ReemplazarParticipante {
                     .ver(dsl, entrada.expedienteId())
                     .orElseThrow(() -> new ErrorDeNegocio(CodigoError.de(66, 1), "Ese expediente no existe."));
 
-            Dinero deudaTotal = fondos.deudaDe(dsl, expediente.id())
-                    .map(FondoRepositorio.Deuda::saldoActual)
+            Dinero deudaTotal = deudas.deudaDe(dsl, expediente.id())
+                    .map(DeudaRepositorio.Deuda::saldoActual)
                     .orElse(expediente.montoInvolucrado());
 
             // AP-CU66-02: el entrante no puede asumir mas de lo que hay. Asumir de mas

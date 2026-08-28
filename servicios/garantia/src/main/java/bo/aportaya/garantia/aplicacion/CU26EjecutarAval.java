@@ -1,5 +1,6 @@
 package bo.aportaya.garantia.aplicacion;
 
+import bo.aportaya.garantia.infraestructura.DeudaRepositorio;
 import bo.aportaya.garantia.infraestructura.ExpedienteRepositorio;
 import bo.aportaya.garantia.infraestructura.FondoRepositorio;
 import bo.aportaya.garantia.infraestructura.GestionRepositorio;
@@ -37,6 +38,7 @@ public class CU26EjecutarAval {
     private final Datos datos;
     private final GestionRepositorio gestion;
     private final FondoRepositorio fondos;
+    private final DeudaRepositorio deudas;
     private final ExpedienteRepositorio expedientes;
     private final Outbox outbox;
     private final Reloj reloj;
@@ -46,6 +48,7 @@ public class CU26EjecutarAval {
             Datos datos,
             GestionRepositorio gestion,
             FondoRepositorio fondos,
+            DeudaRepositorio deudas,
             ExpedienteRepositorio expedientes,
             Outbox outbox,
             Reloj reloj,
@@ -53,6 +56,7 @@ public class CU26EjecutarAval {
         this.datos = datos;
         this.gestion = gestion;
         this.fondos = fondos;
+        this.deudas = deudas;
         this.expedientes = expedientes;
         this.outbox = outbox;
         this.reloj = reloj;
@@ -67,7 +71,7 @@ public class CU26EjecutarAval {
             var expediente = expedientes
                     .bloquear(dsl, expedienteId)
                     .orElseThrow(() -> new ErrorDeNegocio(CodigoError.de(26, 1), "Ese expediente no existe."));
-            var deuda = fondos.deudaDe(dsl, expedienteId)
+            var deuda = deudas.deudaDe(dsl, expedienteId)
                     .orElseThrow(() ->
                             new ErrorDeNegocio(CodigoError.de(26, 2), "Ese expediente no tiene deuda que ejecutar."));
 

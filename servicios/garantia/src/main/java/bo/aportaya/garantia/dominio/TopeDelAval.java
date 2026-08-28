@@ -36,7 +36,10 @@ public record TopeDelAval(Dinero montoMaximoAvalado, BigDecimal porcentajeRespon
                     CodigoError.de(26, 4), "Ese aval ya se ejecuto hasta su tope de " + montoMaximoAvalado + ".");
         }
         Dinero porResponsabilidad = Dinero.de(
-                deuda.monto().multiply(porcentajeResponsabilidad).divide(new BigDecimal("100"), 2, RoundingMode.DOWN),
+                deuda.monto()
+                        .multiply(porcentajeResponsabilidad)
+                        .movePointLeft(2)
+                        .setScale(2, RoundingMode.DOWN),
                 deuda.moneda());
         return porResponsabilidad.esMayorQue(disponible) ? disponible : porResponsabilidad;
     }

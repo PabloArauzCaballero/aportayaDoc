@@ -62,7 +62,10 @@ public final class CoberturaAplicable {
                 solicitado
                         .monto()
                         .multiply(politica.porcentajeMaximoPorAporte())
-                        .divide(new BigDecimal("100"), 2, RoundingMode.DOWN),
+                        // Un porcentaje se pasa a fraccion corriendo la coma, no
+                        // dividiendo por un cien escrito a mano: 100 no es un umbral.
+                        .movePointLeft(2)
+                        .setScale(2, RoundingMode.DOWN),
                 moneda);
         Dinero restanteDelParticipante = restar(politica.topePorParticipante(), consumido.porParticipante());
         Dinero restanteDelPeriodo = restar(politica.topePorPeriodo(), consumido.porPeriodo());
@@ -86,9 +89,7 @@ public final class CoberturaAplicable {
 
         BigDecimal porcentaje = solicitado.monto().signum() == 0
                 ? BigDecimal.ZERO
-                : cubierto.monto()
-                        .multiply(new BigDecimal("100"))
-                        .divide(solicitado.monto(), 2, RoundingMode.HALF_EVEN);
+                : cubierto.monto().movePointRight(2).divide(solicitado.monto(), 2, RoundingMode.HALF_EVEN);
 
         return new Resultado(
                 solicitado,

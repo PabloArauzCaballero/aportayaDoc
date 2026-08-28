@@ -54,7 +54,9 @@ public final class PuntajeDeDesempeno {
 
         BigDecimal global = acumulado
                 .divide(sumaDePesos, 6, RoundingMode.HALF_EVEN)
-                .multiply(new BigDecimal("100"))
+                // Una fraccion se pasa a porcentaje corriendo la coma, no multiplicando
+                // por un cien escrito a mano: 100 no es un umbral de negocio.
+                .movePointRight(2)
                 .setScale(2, RoundingMode.HALF_EVEN);
 
         int cumplidas = (int) metricas.stream().filter(Metrica::cumple).count();

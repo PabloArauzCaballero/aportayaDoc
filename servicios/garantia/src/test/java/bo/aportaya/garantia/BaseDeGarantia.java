@@ -7,6 +7,7 @@ import bo.aportaya.garantia.aplicacion.CU27RestringirDeudor;
 import bo.aportaya.garantia.aplicacion.CU29DevolverFondo;
 import bo.aportaya.garantia.aplicacion.CU66ReemplazarParticipante;
 import bo.aportaya.garantia.aplicacion.CU67DisolverGrupo;
+import bo.aportaya.garantia.infraestructura.DeudaRepositorio;
 import bo.aportaya.garantia.infraestructura.ExpedienteRepositorio;
 import bo.aportaya.garantia.infraestructura.FondoRepositorio;
 import bo.aportaya.garantia.infraestructura.GestionRepositorio;
@@ -68,6 +69,7 @@ abstract class BaseDeGarantia {
         Outbox outbox = new Outbox("garantia");
         var expedientes = new ExpedienteRepositorio();
         var fondos = new FondoRepositorio();
+        var deudas = new DeudaRepositorio();
         var gestion = new GestionRepositorio();
 
         expedienteCU =
@@ -75,16 +77,19 @@ abstract class BaseDeGarantia {
         coberturaCU = new CU23CubrirIncumplimiento(
                 datos,
                 fondos,
+                deudas,
                 expedientes,
                 outbox,
                 Reloj.delSistema(),
                 DIAS_PARA_EXIGIR_LA_DEUDA,
                 ANIOS_DE_PRESCRIPCION);
         avalCU = new CU26EjecutarAval(
-                datos, gestion, fondos, expedientes, outbox, Reloj.delSistema(), PLAZO_DE_RESPUESTA_DEL_AVAL);
-        restriccionCU = new CU27RestringirDeudor(datos, gestion, fondos, expedientes, outbox, Reloj.delSistema());
+                datos, gestion, fondos, deudas, expedientes, outbox, Reloj.delSistema(), PLAZO_DE_RESPUESTA_DEL_AVAL);
+        restriccionCU =
+                new CU27RestringirDeudor(datos, gestion, fondos, deudas, expedientes, outbox, Reloj.delSistema());
         devolucionCU = new CU29DevolverFondo(datos, fondos, outbox, Reloj.delSistema());
-        reemplazoCU = new CU66ReemplazarParticipante(datos, gestion, fondos, expedientes, outbox, Reloj.delSistema());
+        reemplazoCU =
+                new CU66ReemplazarParticipante(datos, gestion, fondos, deudas, expedientes, outbox, Reloj.delSistema());
         disolucionCU = new CU67DisolverGrupo(datos, gestion, outbox, Reloj.delSistema());
     }
 

@@ -2,6 +2,7 @@ package bo.aportaya.garantia.aplicacion;
 
 import bo.aportaya.garantia.dominio.CoberturaAplicable;
 import bo.aportaya.garantia.dominio.EstadoDelExpediente;
+import bo.aportaya.garantia.infraestructura.DeudaRepositorio;
 import bo.aportaya.garantia.infraestructura.ExpedienteRepositorio;
 import bo.aportaya.garantia.infraestructura.FondoRepositorio;
 import bo.aportaya.plataforma.datos.Datos;
@@ -35,6 +36,7 @@ public class CU23CubrirIncumplimiento {
 
     private final Datos datos;
     private final FondoRepositorio fondos;
+    private final DeudaRepositorio deudas;
     private final ExpedienteRepositorio expedientes;
     private final Outbox outbox;
     private final Reloj reloj;
@@ -44,6 +46,7 @@ public class CU23CubrirIncumplimiento {
     public CU23CubrirIncumplimiento(
             Datos datos,
             FondoRepositorio fondos,
+            DeudaRepositorio deudas,
             ExpedienteRepositorio expedientes,
             Outbox outbox,
             Reloj reloj,
@@ -51,6 +54,7 @@ public class CU23CubrirIncumplimiento {
             int aniosDePrescripcion) {
         this.datos = datos;
         this.fondos = fondos;
+        this.deudas = deudas;
         this.expedientes = expedientes;
         this.outbox = outbox;
         this.reloj = reloj;
@@ -169,7 +173,7 @@ public class CU23CubrirIncumplimiento {
                     ahora);
 
             // Cubrir NO perdona: queda la deuda contra quien incumplio.
-            UUID deudaId = fondos.registrarDeuda(
+            UUID deudaId = deudas.registrarDeuda(
                     dsl,
                     expediente.usuarioId(),
                     expediente.participanteId(),
