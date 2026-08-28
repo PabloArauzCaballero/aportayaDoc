@@ -5,6 +5,34 @@
 # Prefijos reservados de este servicio: /aportes, /pagos, /qr, /conciliacion
 #   Una ruta fuera de ellos es un rechazo automatico, no una discusion de diseno.
 #   Toda ruta exige sesion: 401 sin token, 403 con rol insuficiente.
+#
+# Codigos de error de los casos de uso implementados. Viven aca aunque el caso de uso
+# no tenga ruta HTTP propia: scripts/verificar_criterios.py los busca en este archivo.
+#
+# CU-21 · Cobrar el aporte del periodo
+#   AP-CU21-01  OBLIGACION_NO_VIGENTE · la obligacion no admite pago en su estado
+#   AP-CU21-02  MONTO_NO_COINCIDE     · el monto no cuadra con lo que se debe
+#   AP-CU21-03  SALDO_INSUFICIENTE    · lo evalua nucleo-financiero al debitar; aportes
+#                                       lo declara para que el cliente lo conozca
+#   AP-CU21-04  PERIODO_CERRADO       · el periodo del grupo ya no admite cobros
+#
+# CU-19 · Reembolsar un pago y atender una disputa
+#   AP-CU19-01  PAGO_NO_CONCILIADO    · no se devuelve lo que todavia no entro
+#   AP-CU19-02  MONTO_EXCEDE_PAGO     · contra lo YA reembolsado, no contra el original
+#   AP-CU19-03  APROBACION_REQUERIDA  · sin firma el reembolso no sale
+#   AP-CU19-04  MISMO_SOLICITANTE     · quien aprueba no es quien solicito (R-SEG-04)
+#   AP-CU19-05  PROVEEDOR_SIN_SOPORTE · aca: motivo de reembolso que la DDL no admite.
+#                                       Ver el hueco declarado en planes/informes/carril-3A.md
+#   AP-CU19-06  DISPUTA_DUPLICADA     · el proveedor reenvia; una disputa por pago
+#
+# CU-99 · Dar de alta un proveedor de pago y enrutar el cobro
+#   AP-CU99-01  CODIGO_DUPLICADO      · dos proveedores con el mismo codigo parten el
+#                                       historial de cobros y ninguna conciliacion cierra
+#   AP-CU99-02  SIN_CONTRATO_TERCERO  · no se le manda trafico a un tercero sin contrato
+#   AP-CU99-03  PRUEBAS_INCOMPLETAS   · sin pruebas de integracion no recibe trafico real
+#   AP-CU99-04  SIN_COBERTURA         · ningun proveedor sano al que conmutar
+#   AP-CU99-05  CREDENCIAL_EN_TABLA   · ninguna clave entra a la fila, ni disfrazada
+#   AP-CU99-06  PROVEEDOR_DEGRADADO   · salud bajo el umbral: sale de la cola
 openapi: 3.1.0
 info:
   title: aportes
@@ -16,20 +44,151 @@ info:
 servers:
   - url: /api/v1
 
-paths: {}
-  # Una operacion por caso de uso. Plantilla:
-  #
-  #   /aportes/…:
-  #     post:
-  #       operationId: <verboObjeto>          # CU-NN
-  #       parameters:
-  #         - name: Idempotency-Key
-  #           in: header
-  #           required: true                   # toda operacion con efecto
-  #           schema: { type: string, format: uuid }
-  #       responses:
-  #         '200': …
-  #         '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+paths:
+  /aportes/obligaciones/{obligacionId}/pagos:
+    post:
+      operationId: cobrarAporte                # CU-21
+      summary: Acreditar el pago de una obligacion de aporte
+      description: >-
+        El dinero lo mueve nucleo-financiero (invariante 12): esta operacion aplica el
+        pago a la obligacion y pide el movimiento por evento. La clave de idempotencia
+        se valida ANTES de escribir.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+        - name: obligacionId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaCobro' }
+      responses:
+        '200':
+          description: Pago acreditado, o el mismo de un reintento
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaCobro' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /pagos/{pagoId}/reembolsos:
+    post:
+      operationId: solicitarReembolso          # CU-19
+      summary: Solicitar el reembolso de un pago
+      description: >-
+        Solo SOLICITA. Ejecutar exige una segunda persona (R-SEG-04): un reembolso es
+        la via mas corta para sacar dinero con una excusa verosimil.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+        - name: pagoId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaReembolso' }
+      responses:
+        '200':
+          description: Reembolso en estado SOLICITADO
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaReembolso' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /pagos/reembolsos/{reembolsoId}/aprobacion:
+    post:
+      operationId: aprobarReembolso            # CU-19
+      summary: Aprobar y ejecutar un reembolso solicitado
+      description: >-
+        Quien aprueba no puede ser quien solicito. Al ejecutar, la obligacion vuelve a
+        estar pendiente por ese importe: si quedara dada por pagada, el faltante lo
+        absorben los demas del grupo sin enterarse.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+        - name: reembolsoId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Reembolso ejecutado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaEjecucionReembolso' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /pagos/{pagoId}/disputas:
+    post:
+      operationId: registrarDisputa            # CU-19
+      summary: Registrar una disputa recibida del proveedor
+      description: >-
+        El plazo de respuesta se calcula al ingresar y queda GUARDADO (R-CON-01,
+        invariante 8): recalcularlo al consultar es un argumento que el proveedor no
+        acepta.
+      parameters:
+        - name: pagoId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaDisputa' }
+      responses:
+        '200':
+          description: Disputa abierta, o la que ya estaba si el proveedor reenvia
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaDisputa' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /pagos/proveedores:
+    post:
+      operationId: darDeAltaProveedor          # CU-99
+      summary: Dar de alta un proveedor de pago
+      description: >-
+        La columna referencia_credenciales guarda una REFERENCIA al almacen de
+        secretos, nunca el secreto. Se comprueba antes de tocar la base: una clave que
+        llega a la fila ya se filtro aunque la transaccion se revierta.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaProveedor' }
+      responses:
+        '201':
+          description: Proveedor activo
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaProveedor' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /pagos/enrutamiento:
+    post:
+      operationId: enrutarCobro                # CU-99
+      summary: Elegir por que proveedor cobrar una orden
+      description: >-
+        No escribe. Al conmutar de proveedor se conserva la MISMA clave de
+        idempotencia: si el primero cobro y no alcanzo a responder, cambiarla es
+        exactamente como se cobra dos veces.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaEnrutamiento' }
+      responses:
+        '200':
+          description: Proveedor elegido
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaEnrutamiento' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
 
 components:
   parameters:
@@ -42,6 +201,145 @@ components:
         seguro, y la clave se valida ANTES de escribir (invariante 7).
       schema: { type: string, format: uuid }
   schemas:
+    EntradaCobro:
+      type: object
+      additionalProperties: false
+      required: [monto, canal, referenciaProveedor]
+      properties:
+        monto:      { $ref: '#/components/schemas/Dinero' }
+        recargo:    { $ref: '#/components/schemas/Dinero' }
+        canal:
+          type: string
+          enum: [BILLETERA_MOVIL, COMPENSACION_INTERNA, EFECTIVO_AL_ORGANIZADOR,
+                 FONDO_GARANTIA, QR_INTEROPERABLE, TARJETA, TRANSFERENCIA_BANCARIA]
+        referenciaProveedor: { type: string, maxLength: 100 }
+        proveedorId: { type: string, format: uuid }
+        esManual:    { type: boolean, default: false }
+    SalidaCobro:
+      type: object
+      additionalProperties: false
+      required: [pagoId, obligacionId, estadoObligacion, pendiente, esNuevo]
+      properties:
+        pagoId:           { type: string, format: uuid }
+        obligacionId:     { type: string, format: uuid }
+        estadoObligacion:
+          type: string
+          enum: [PENDIENTE, PAGADO_PARCIAL, PAGADO, EN_MORA, VENCIDO]
+        pendiente:        { $ref: '#/components/schemas/Dinero' }
+        esNuevo:
+          type: boolean
+          description: false cuando la respuesta viene de un reintento con la misma clave
+    EntradaReembolso:
+      type: object
+      additionalProperties: false
+      required: [monto, motivo]
+      properties:
+        monto:  { $ref: '#/components/schemas/Dinero' }
+        motivo:
+          type: string
+          # Los cuatro que admite ck_reembolso_motivo. El CU-19 nombra otros tres que
+          # la DDL no acepta: el desvio esta en planes/informes/carril-3A.md.
+          enum: [DISPUTA, DUPLICADO, ERROR_MONTO, GRUPO_CANCELADO]
+    SalidaReembolso:
+      type: object
+      additionalProperties: false
+      required: [reembolsoId, estado, disponibleRestante]
+      properties:
+        reembolsoId:        { type: string, format: uuid }
+        estado:             { type: string, enum: [SOLICITADO] }
+        disponibleRestante: { $ref: '#/components/schemas/Dinero' }
+    SalidaEjecucionReembolso:
+      type: object
+      additionalProperties: false
+      required: [reembolsoId, estado, obligacionId, estadoObligacion]
+      properties:
+        reembolsoId:      { type: string, format: uuid }
+        estado:           { type: string, enum: [EJECUTADO] }
+        obligacionId:     { type: string, format: uuid }
+        estadoObligacion: { type: string }
+    EntradaDisputa:
+      type: object
+      additionalProperties: false
+      required: [tipo, descripcion, montoDisputado, referenciaDelProveedor]
+      properties:
+        tipo:
+          type: string
+          enum: [CONTRACARGO, DESCONOCIMIENTO, MONTO_INCORRECTO]
+        descripcion:            { type: string, maxLength: 500 }
+        montoDisputado:         { $ref: '#/components/schemas/Dinero' }
+        referenciaDelProveedor: { type: string, maxLength: 100 }
+    SalidaDisputa:
+      type: object
+      additionalProperties: false
+      required: [fechaLimiteRespuesta, esNueva]
+      properties:
+        disputaId:
+          type: [string, 'null']
+          format: uuid
+          description: null cuando el proveedor reenvio una disputa ya abierta
+        fechaLimiteRespuesta: { type: string, format: date-time }
+        esNueva:              { type: boolean }
+    EntradaProveedor:
+      type: object
+      additionalProperties: false
+      required: [codigo, nombre, tipo, urlBase, referenciaCredenciales, comisionFija,
+                 comisionPorcentual, prioridad, tieneContratoVigente, pruebasCompletas]
+      properties:
+        codigo:  { type: string, maxLength: 30 }
+        nombre:  { type: string, maxLength: 120 }
+        tipo:    { type: string, enum: [BANCO, BILLETERA, PASARELA] }
+        urlBase: { type: string, format: uri }
+        referenciaCredenciales:
+          type: string
+          description: >-
+            REFERENCIA al almacen de secretos (vault://...). Enviar la credencial en
+            claro se rechaza con AP-CU99-05 antes de tocar la base.
+        comisionFija:       { type: string, pattern: '^\d+\.\d{2}$' }
+        comisionPorcentual: { type: string, pattern: '^\d+\.\d{4}$' }
+        soportaWebhook:      { type: boolean, default: false }
+        soportaConsultaEstado: { type: boolean, default: false }
+        prioridad:           { type: integer, minimum: 1, maximum: 999 }
+        tieneContratoVigente: { type: boolean }
+        pruebasCompletas:     { type: boolean }
+    SalidaProveedor:
+      type: object
+      additionalProperties: false
+      required: [proveedorId, codigo, activo]
+      properties:
+        proveedorId: { type: string, format: uuid }
+        codigo:      { type: string }
+        activo:      { type: boolean }
+    EntradaEnrutamiento:
+      type: object
+      additionalProperties: false
+      required: [claveIdempotencia]
+      properties:
+        claveIdempotencia: { type: string }
+        yaIntentados:
+          type: array
+          items: { type: string }
+          default: []
+        saludObservada:
+          type: object
+          additionalProperties: { type: integer, minimum: 0, maximum: 100 }
+          description: >-
+            Salud por codigo de proveedor, de quien la mide. No hay tabla de salud en
+            aportes; un proveedor sin medicion se trata como sano porque acaba de
+            pasar contrato y pruebas. Hueco declarado en planes/informes/carril-3A.md.
+    SalidaEnrutamiento:
+      type: object
+      additionalProperties: false
+      required: [proveedorId, proveedorCodigo, claveIdempotencia, estadoAnteTimeout, puedeConsultarEstado]
+      properties:
+        proveedorId:     { type: string, format: uuid }
+        proveedorCodigo: { type: string }
+        claveIdempotencia:
+          type: string
+          description: la MISMA que llego; conmutar de proveedor no la cambia
+        estadoAnteTimeout:
+          type: string
+          enum: [REINTENTABLE, EN_VERIFICACION]
+        puedeConsultarEstado: { type: boolean }
     Dinero:
       type: object
       additionalProperties: false

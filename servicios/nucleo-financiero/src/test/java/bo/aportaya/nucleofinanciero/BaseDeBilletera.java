@@ -10,7 +10,9 @@ import bo.aportaya.nucleofinanciero.aplicacion.CU16CerrarBilletera;
 import bo.aportaya.nucleofinanciero.aplicacion.CU17BloquearPorAutoridad;
 import bo.aportaya.nucleofinanciero.aplicacion.CU40EvaluarLimites;
 import bo.aportaya.nucleofinanciero.aplicacion.CU50ConciliarCustodia;
+import bo.aportaya.nucleofinanciero.aplicacion.CU51EjecutarCierreDiario;
 import bo.aportaya.nucleofinanciero.infraestructura.BloqueoRepositorio;
+import bo.aportaya.nucleofinanciero.infraestructura.CierreDiarioRepositorio;
 import bo.aportaya.nucleofinanciero.infraestructura.CierreRepositorio;
 import bo.aportaya.nucleofinanciero.infraestructura.ConciliacionRepositorio;
 import bo.aportaya.nucleofinanciero.infraestructura.CuentaBilleteraRepositorio;
@@ -68,6 +70,7 @@ abstract class BaseDeBilletera {
     protected static CU16CerrarBilletera cierreCU;
     protected static CU17BloquearPorAutoridad bloqueoCU;
     protected static CU50ConciliarCustodia conciliacionCU;
+    protected static CU51EjecutarCierreDiario cierreDiarioCU;
     protected static ConciliacionRepositorio conciliaciones;
 
     /** La cuenta puente: el otro lado de todo ingreso. Una sola para toda la corrida. */
@@ -158,6 +161,13 @@ abstract class BaseDeBilletera {
                 Reloj.delSistema());
         conciliacionCU = new CU50ConciliarCustodia(
                 new Datos(dsl), conciliaciones, new Outbox("nucleo_financiero"), Reloj.delSistema());
+        cierreDiarioCU = new CU51EjecutarCierreDiario(
+                new Datos(dsl),
+                new CierreDiarioRepositorio(),
+                conciliaciones,
+                new CuentaBilleteraRepositorio(),
+                new Outbox("nucleo_financiero"),
+                Reloj.delSistema());
     }
 
     protected ContextoSesion contextoDe(UUID usuarioId) {
