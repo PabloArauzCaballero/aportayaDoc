@@ -278,10 +278,19 @@ components:
     EntradaRegistroCuenta:
       type: object
       additionalProperties: false
-      required: [tipoCuenta, entidadFinanciera, numeroCifrado, titularNombre, titularDocumento, moneda]
+      required: [tipoCuenta, entidadFinanciera, numeroCuenta, numeroCifrado, titularNombre, titularDocumento, moneda]
       properties:
         tipoCuenta:        { type: string, enum: [AHORRO, CORRIENTE, BILLETERA] }
         entidadFinanciera: { type: string, maxLength: 60 }
+        numeroCuenta:
+          type: string
+          minLength: 6
+          maxLength: 34
+          description: >-
+            El numero en claro, y **nunca se persiste asi** (CU-18, R-SEG-01). Entra
+            solo para derivar el enmascarado que se muestra y el hash con el que se
+            detecta la cuenta repetida; las dos derivaciones ocurren ANTES de tocar la
+            base, asi que el numero no llega a ninguna consulta.
         numeroCifrado:
           type: string
           description: >-

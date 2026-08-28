@@ -24,6 +24,10 @@ aportaya:
   jwt:
     jwks-uri: ${JWKS_URI}           # ADR-024: cada servicio valida la firma el mismo
   zona-horaria: America/La_Paz      # plazos habiles
+  servicios:
+    # A quien se le pregunta. Un servicio no lee la base de otro (invariante 11):
+    # pregunta por su contrato, y fuera de la transaccion (invariante 6).
+    identidad: ${URL_IDENTIDAD:http://identidad:8080}
   # Fuera de la base a proposito: filtrar la tabla de cuentas no alcanza si la
   # pimienta no esta ahi. Si falta la variable, el proceso NO levanta.
   seguridad:

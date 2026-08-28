@@ -1,12 +1,22 @@
 package bo.aportaya.identidad.web;
 
+import bo.aportaya.identidad.aplicacion.BuscarPorTelefono;
 import bo.aportaya.identidad.aplicacion.CU01RegistrarUsuario;
+import bo.aportaya.identidad.aplicacion.EmitirTokenDeInvitacion;
+import bo.aportaya.identidad.aplicacion.VerificarTitularidad;
 import bo.aportaya.identidad.dominio.DocumentoDeIdentidad;
 import bo.aportaya.identidad.web.generado.UsuariosApi;
 import bo.aportaya.identidad.web.generado.modelo.EntradaRegistro;
+import bo.aportaya.identidad.web.generado.modelo.EntradaTitularidad;
+import bo.aportaya.identidad.web.generado.modelo.EntradaTokenDeInvitacion;
 import bo.aportaya.identidad.web.generado.modelo.SalidaRegistro;
+import bo.aportaya.identidad.web.generado.modelo.SalidaTitularidad;
+import bo.aportaya.identidad.web.generado.modelo.SalidaTokenDeInvitacion;
+import bo.aportaya.identidad.web.generado.modelo.UsuarioEncontrado;
 import bo.aportaya.plataforma.dominio.ContextoSesion;
+import bo.aportaya.plataforma.web.seguridad.Permiso;
 import bo.aportaya.plataforma.web.seguridad.Publico;
+import bo.aportaya.plataforma.web.seguridad.SesionDeLaPeticion;
 import bo.aportaya.plataforma.web.traza.Traza;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;
@@ -30,16 +40,73 @@ public class UsuariosController implements UsuariosApi {
     private static final UUID PROCESO_DE_ALTA = UUID.fromString("00000000-0000-4000-8000-000000000001");
 
     private final CU01RegistrarUsuario cu01;
+    private final VerificarTitularidad titularidad;
+    private final EmitirTokenDeInvitacion tokens;
+    private final BuscarPorTelefono busqueda;
+    private final SesionDeLaPeticion sesion;
     private final HttpServletRequest peticion;
     private final String pimienta;
 
     public UsuariosController(
             CU01RegistrarUsuario cu01,
+            VerificarTitularidad titularidad,
+            EmitirTokenDeInvitacion tokens,
+            BuscarPorTelefono busqueda,
+            SesionDeLaPeticion sesion,
             HttpServletRequest peticion,
             @Value("${aportaya.seguridad.pimienta}") String pimienta) {
         this.cu01 = cu01;
+        this.titularidad = titularidad;
+        this.tokens = tokens;
+        this.busqueda = busqueda;
+        this.sesion = sesion;
         this.peticion = peticion;
         this.pimienta = pimienta;
+    }
+
+    /**
+     * Si el nombre y el documento declarados son los del titular.
+     *
+     * <p>Contesta si coinciden y nada mas. Devolver los guardados haria de esta ruta un
+     * directorio de clientes para cualquier servicio comprometido.
+     */
+    @Override
+    @Permiso("GRUPO_ADMINISTRAR")
+    public ResponseEntity<UsuarioEncontrado> buscarPorTelefono(String telefono) {
+        Traza.marcarCasoDeUso("CU-69", "busqueda");
+
+        var encontrado = busqueda.ejecutar(telefono, sesion.actual());
+
+        var respuesta = new UsuarioEncontrado();
+        respuesta.setExiste(encontrado.isPresent());
+        encontrado.ifPresent(respuesta::setUsuarioId);
+        return ResponseEntity.ok(respuesta);
+    }
+
+    @Override
+    @Permiso("GRUPO_ADMINISTRAR")
+    public ResponseEntity<SalidaTokenDeInvitacion> emitirTokenDeInvitacion(
+            UUID idempotencyKey, EntradaTokenDeInvitacion cuerpo) {
+        Traza.marcarCasoDeUso("CU-69", cuerpo.getCanal().getValue());
+
+        var emitido = tokens.ejecutar(cuerpo.getCanal().getValue(), cuerpo.getDestinoEnmascarado(), sesion.actual());
+
+        var respuesta = new SalidaTokenDeInvitacion();
+        respuesta.setTokenId(emitido.tokenId());
+        respuesta.setToken(emitido.token());
+        respuesta.setExpiraEn(emitido.expiraEn());
+        return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
+    }
+
+    @Override
+    @Permiso("DATOS_SENSIBLES_LEER")
+    public ResponseEntity<SalidaTitularidad> verificarTitularidad(UUID usuarioId, EntradaTitularidad cuerpo) {
+        Traza.marcarCasoDeUso("CU-01", usuarioId.toString());
+
+        var respuesta = new SalidaTitularidad();
+        respuesta.setCoincide(
+                titularidad.coincide(usuarioId, cuerpo.getNombreCompleto(), cuerpo.getDocumento(), sesion.actual()));
+        return ResponseEntity.ok(respuesta);
     }
 
     @Override

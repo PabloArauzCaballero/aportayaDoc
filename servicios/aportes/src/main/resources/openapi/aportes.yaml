@@ -190,6 +190,49 @@ paths:
               schema: { $ref: '#/components/schemas/SalidaEnrutamiento' }
         '422': { $ref: '#/components/responses/ReglaDeNegocio' }
 
+  /aportes/participantes/{participanteId}/estado:
+    get:
+      operationId: consultarEstadoDelParticipante
+      summary: Si esta al dia, cuanto aporto y cuanto debe
+      description: >-
+        La consulta que hace posible que otros servicios decidan sin leer este esquema
+        (invariante 11). `grupos` la usa antes de permitir una permuta o un traspaso;
+        `nucleo-financiero`, antes de cerrar una billetera. Sin ella, el dato lo
+        tendria que afirmar quien pide — y el que pide seria juez de si esta al dia.
+
+        Quien no tiene ninguna obligacion esta al dia: no deber nada porque todavia no
+        se le pidio nada no es estar en mora.
+      parameters:
+        - name: participanteId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: El estado de pagos del participante
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EstadoDelParticipante' }
+
+  /aportes/grupos/{grupoId}/morosos:
+    get:
+      operationId: contarMorosos
+      summary: Cuantos participantes del grupo estan en mora
+      description: >-
+        La usa CU-68 para medir la concentracion de riesgo antes de aceptar a alguien
+        nuevo: un grupo con la mitad en mora no admite mas gente, la ayuda.
+      parameters:
+        - name: grupoId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: La cuenta de morosos
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Morosos' }
+
 components:
   parameters:
     ClaveIdempotencia:
@@ -201,6 +244,24 @@ components:
         seguro, y la clave se valida ANTES de escribir (invariante 7).
       schema: { type: string, format: uuid }
   schemas:
+    EstadoDelParticipante:
+      type: object
+      additionalProperties: false
+      required: [alDia, totalAportado, deudaVigente, porAportar, obligacionesAbiertas, moneda]
+      properties:
+        alDia: { type: boolean }
+        totalAportado: { type: string, pattern: '^-?\d+\.\d{2}$' }
+        deudaVigente: { type: string, pattern: '^-?\d+\.\d{2}$' }
+        porAportar: { type: string, pattern: '^-?\d+\.\d{2}$' }
+        obligacionesAbiertas: { type: integer }
+        moneda: { type: string, enum: [BOB, USD] }
+    Morosos:
+      type: object
+      additionalProperties: false
+      required: [grupoId, morosos]
+      properties:
+        grupoId: { type: string, format: uuid }
+        morosos: { type: integer }
     EntradaCobro:
       type: object
       additionalProperties: false

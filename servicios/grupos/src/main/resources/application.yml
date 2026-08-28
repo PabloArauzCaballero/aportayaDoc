@@ -24,6 +24,30 @@ aportaya:
   jwt:
     jwks-uri: ${JWKS_URI}           # ADR-024: cada servicio valida la firma el mismo
   zona-horaria: America/La_Paz      # plazos habiles
+  servicios:
+    # A quien se le pregunta. Un pasanaku se decide con datos de media plataforma y
+    # ninguno vive aca: se preguntan por contrato (invariante 11) y fuera de la
+    # transaccion (invariante 6).
+    organizador:    ${URL_ORGANIZADOR:http://organizador:8080}
+    tarifas:        ${URL_TARIFAS:http://tarifas:8080}
+    cumplimiento:   ${URL_CUMPLIMIENTO:http://cumplimiento:8080}
+    aportes:        ${URL_APORTES:http://aportes:8080}
+    transparencia:  ${URL_TRANSPARENCIA:http://transparencia:8080}
+    garantia:       ${URL_GARANTIA:http://garantia:8080}
+    notificaciones: ${URL_NOTIFICACIONES:http://notificaciones:8080}
+    identidad:      ${URL_IDENTIDAD:http://identidad:8080}
+  tarifas:
+    codigo-tarifario: GENERAL
+  grupo:
+    # El servicio de la licencia bajo el que se abre un pasanaku.
+    servicio-de-licencia: GRUPO_PASANAKU
+    # Lo que exige el grupo a quien quiere entrar. Politica, no constante.
+    kyc-minimo: BASICO
+    reputacion-minima: 40
+    tope-de-reenvios-de-invitacion: 3
+    # Cuanto vale una afinidad cuando no hay historial con que compararla: el punto
+    # medio. Mueve a quien entra en que grupo, asi que es decision de producto.
+    afinidad-neutra: 0.50
   grupos:
     # Fraccion, no porcentaje: quorum_decisiones es numeric(4,3). Del catalogo
     # cuando exista; por ahora configuracion, nunca una constante en el codigo.

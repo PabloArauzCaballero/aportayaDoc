@@ -82,6 +82,88 @@ paths:
           # AP-CU04-05 DEMASIADOS_INTENTOS · AP-CU04-06 FACTOR_NO_ENROLADO
           # AP-CU04-07 FACTOR_NO_ADMISIBLE (R-SEG-10)
 
+  /usuarios/{usuarioId}/titularidad/verificacion:
+    post:
+      operationId: verificarTitularidad
+      summary: Si el nombre y el documento declarados son los del titular
+      description: >-
+        Contesta si coinciden; NO dice cuales son. Devolver el nombre y el documento
+        guardados convertiria esta ruta en un directorio de clientes para cualquier
+        servicio comprometido. El documento ademas se guarda como hash con pimienta:
+        lo que se comparan son dos hashes, nunca dos numeros.
+
+        La usa `entregas` antes de registrar una cuenta bancaria — R-SEG-02 exige que
+        la cuenta sea de quien la registra, y ese dato vive aca.
+      parameters:
+        - name: usuarioId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaTitularidad' }
+      responses:
+        '200':
+          description: Si coincide o no
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaTitularidad' }
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+
+  /usuarios/tokens/invitacion:
+    post:
+      operationId: emitirTokenDeInvitacion
+      summary: El enlace de un solo uso con el que se invita a alguien a un grupo
+      description: >-
+        `token_verificacion` es de identidad y su politica —vigencia, canales, cuantos
+        reenvios— esta sembrada bajo el proposito INVITACION_GRUPO. `grupos` no puede
+        escribir esa tabla (invariante 11): pide el token y guarda su identificador.
+
+        Se guarda el hash, nunca el token: quien tenga la base no puede reconstruir los
+        enlaces vivos. El valor en claro se devuelve una sola vez, a quien lo va a
+        enviar.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaTokenDeInvitacion' }
+      responses:
+        '201':
+          description: El token emitido, con su valor en claro por unica vez
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaTokenDeInvitacion' }
+        '422':
+          $ref: '#/components/responses/ReglaDeNegocio'
+
+  /usuarios/por-telefono:
+    get:
+      operationId: buscarPorTelefono
+      summary: Si ese telefono ya tiene cuenta
+      description: >-
+        La pregunta `grupos` antes de invitar (CU-69): invitar a quien ya es
+        participante es ruido, y para saberlo hay que poder ir del telefono al usuario.
+
+        Devuelve el identificador y nada mas —ni nombre, ni estado, ni cuando entro—.
+        Exige permiso: una ruta que dice si un telefono tiene cuenta es, sin permiso,
+        una forma de enumerar clientes.
+      parameters:
+        - name: telefono
+          in: query
+          required: true
+          schema: { type: string, pattern: '^\+591\d{8}$' }
+      responses:
+        '200':
+          description: Si existe, con su identificador
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UsuarioEncontrado' }
+
 components:
   parameters:
     ClaveIdempotencia:
@@ -93,6 +175,46 @@ components:
         seguro, y la clave se valida ANTES de escribir (invariante 7).
       schema: { type: string, format: uuid }
   schemas:
+    UsuarioEncontrado:
+      type: object
+      additionalProperties: false
+      required: [existe]
+      properties:
+        existe:    { type: boolean }
+        usuarioId: { type: [string, 'null'], format: uuid }
+    EntradaTokenDeInvitacion:
+      type: object
+      additionalProperties: false
+      required: [canal, destinoEnmascarado]
+      properties:
+        canal: { type: string, enum: [ENLACE, SMS, WHATSAPP, CORREO] }
+        destinoEnmascarado:
+          type: string
+          maxLength: 60
+          description: >-
+            El destino YA enmascarado. Sin enmascarar seria un telefono en claro
+            viajando entre servicios y quedando en cada log del camino.
+    SalidaTokenDeInvitacion:
+      type: object
+      additionalProperties: false
+      required: [tokenId, token, expiraEn]
+      properties:
+        tokenId:  { type: string, format: uuid }
+        token:    { type: string }
+        expiraEn: { type: string, format: date-time }
+    EntradaTitularidad:
+      type: object
+      additionalProperties: false
+      required: [nombreCompleto, documento]
+      properties:
+        nombreCompleto: { type: string, minLength: 3, maxLength: 120 }
+        documento:      { type: string, minLength: 5, maxLength: 30 }
+    SalidaTitularidad:
+      type: object
+      additionalProperties: false
+      required: [coincide]
+      properties:
+        coincide: { type: boolean }
     Dinero:
       type: object
       additionalProperties: false

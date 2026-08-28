@@ -28,6 +28,18 @@ aportaya:
     # Lo que vive una orden de recarga antes de expirar. Corta a proposito: una orden
     # vieja acreditada tarde es plata que entra contra un precio que ya cambio.
     vigencia-de-la-orden: PT30M
+  servicios:
+    # A quien se le pregunta. Un servicio no lee la base de otro (invariante 11):
+    # pregunta por su contrato, y fuera de la transaccion (invariante 6).
+    tarifas: ${URL_TARIFAS:http://tarifas:8080}
+    aportes: ${URL_APORTES:http://aportes:8080}
+    grupos: ${URL_GRUPOS:http://grupos:8080}
+  tarifas:
+    codigo-tarifario: GENERAL
+  retiro:
+    # Por encima de este monto, un retiro necesita dos firmas. Es politica de riesgo:
+    # el numero se mueve sin desplegar.
+    doble-aprobacion-desde: 5000.00
   custodia:
     # La cuenta espejo de la custodia. Es un identificador del entorno, no del codigo:
     # en cada despliegue es otra fila, y equivocarla mueve dinero al lugar equivocado.

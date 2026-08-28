@@ -85,6 +85,11 @@ paths:
           required: true
           schema: { type: string, format: uuid }
         - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaCompromiso' }
       responses:
         '201':
           description: Compromiso publicado
@@ -111,6 +116,11 @@ paths:
           required: true
           schema: { type: string, format: uuid }
         - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaRevelacion' }
       responses:
         '200':
           description: Turnos creados, con el orden y la semilla publicada
@@ -132,9 +142,17 @@ paths:
         que no ocurrio.
       parameters:
         - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaAcuerdo' }
       responses:
         '201':
           description: Acuerdo abierto a votación
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaAcuerdo' }
         '422':
           $ref: '#/components/responses/ReglaDeNegocio'
           # AP-CU63-01 PROPONENTE_NO_HABILITADO · AP-CU63-02 ACUERDO_DUPLICADO
@@ -154,9 +172,17 @@ paths:
           required: true
           schema: { type: string, format: uuid }
         - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaVoto' }
       responses:
         '201':
           description: Voto emitido
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaAcuerdo' }
         '422':
           $ref: '#/components/responses/ReglaDeNegocio'
           # AP-CU63-03 VOTO_YA_EMITIDO · AP-CU63-04 VOTACION_CERRADA
@@ -172,9 +198,17 @@ paths:
         lo paga el grupo entero.
       parameters:
         - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaPermuta' }
       responses:
         '201':
           description: Solicitud creada, a la espera de la contraparte
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaPermuta' }
         '422':
           $ref: '#/components/responses/ReglaDeNegocio'
           # AP-CU62-01 TURNO_NO_PERMUTABLE  · AP-CU62-02 SOLICITANTE_EN_MORA
@@ -198,9 +232,17 @@ paths:
           required: true
           schema: { type: string, format: uuid }
         - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaRetiro' }
       responses:
         '201':
           description: Solicitud creada, con la posición y el momento de liquidación
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaRetiro' }
         '422':
           $ref: '#/components/responses/ReglaDeNegocio'
           # AP-CU65-01 PARTICIPANTE_NO_ACTIVO · AP-CU65-02 POSICION_DEUDORA_SIN_PLAN
@@ -228,9 +270,17 @@ paths:
           required: true
           schema: { type: string, format: uuid }
         - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaTraspaso' }
       responses:
         '201':
           description: Cupo traspasado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaTraspaso' }
         '422':
           $ref: '#/components/responses/ReglaDeNegocio'
           # AP-CU64-01 CUPO_NO_TRASPASABLE     · AP-CU64-02 SALIENTE_CON_DEUDA
@@ -257,9 +307,17 @@ paths:
           required: true
           schema: { type: string, format: uuid }
         - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaInvitacion' }
       responses:
         '201':
           description: Invitación enviada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaInvitacion' }
         '422':
           $ref: '#/components/responses/ReglaDeNegocio'
           # AP-CU69-01 SIN_CUPOS_LIBLES  · AP-CU69-02 DESTINATARIO_SUPRIMIDO
@@ -285,9 +343,17 @@ paths:
           required: true
           schema: { type: string, format: uuid }
         - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaPostulacion' }
       responses:
         '201':
           description: Postulación registrada, con puntaje y motivos
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaPostulacion' }
         '422':
           $ref: '#/components/responses/ReglaDeNegocio'
           # AP-CU68-01 RESTRICCION_VIGENTE     · AP-CU68-02 KYC_INSUFICIENTE
@@ -314,13 +380,89 @@ paths:
         una persona.
       parameters:
         - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaGrupo' }
       responses:
         '202':
           description: Grupo creado en borrador, a la espera del precio congelado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaGrupo' }
         '422':
           $ref: '#/components/responses/ReglaDeNegocio'
           # AP-CU20-01 SIN_TARIFARIO_VIGENTE     · AP-CU20-02 ORGANIZADOR_NO_HABILITADO
           # AP-CU20-03 TARIFA_YA_CONGELADA       · AP-CU20-04 SERVICIO_NO_AUTORIZADO
+
+  /grupos/participantes/alias/{alias}:
+    get:
+      operationId: resolverAlias
+      summary: A que persona apunta un alias
+      description: >-
+        La pregunta `nucleo-financiero` para transferir a un alias (CU-12). El alias
+        vive en `grupos.participante` y ese esquema no se lee desde afuera
+        (invariante 11).
+
+        Devuelve el identificador de la persona y nada mas — ni el nombre, ni el
+        telefono, ni la cuenta. La cuenta la resuelve quien la posee: `grupos` no
+        conoce `nucleo_financiero.cuenta_billetera`, y esta ruta no es un directorio.
+      parameters:
+        - name: alias
+          in: path
+          required: true
+          schema: { type: string, maxLength: 40 }
+      responses:
+        '200':
+          description: La cuenta del alias, si existe
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AliasResuelto' }
+
+  /grupos/participantes/{usuarioId}/actividad:
+    get:
+      operationId: consultarActividad
+      summary: Si la persona participa hoy de algun grupo activo
+      description: >-
+        La pregunta `nucleo-financiero` antes de cerrar una billetera (CU-16): cerrar
+        la cuenta de alguien que todavia debe aportar a un pasanaku deja al grupo sin
+        de donde cobrarle.
+      parameters:
+        - name: usuarioId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Cuantos grupos activos tiene
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ActividadEnGrupos' }
+
+  /grupos/sorteos/{sorteoId}/paquete:
+    get:
+      operationId: consultarPaqueteDelSorteo
+      summary: El paquete publicado de un sorteo, para poder recomputarlo
+      description: >-
+        La pregunta `transparencia` para CU-61. Trae lo que hace falta para rehacer el
+        sorteo desde afuera: el hash comprometido, la semilla revelada, las entropias,
+        el metodo y el orden publicado.
+
+        Antes del revelado la semilla viaja nula, y ese es el punto: comprometer y
+        revelar existen para que nadie —nosotros incluidos— pueda elegir el resultado
+        despues de conocerlo.
+      parameters:
+        - name: sorteoId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: El paquete del sorteo
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaqueteDelSorteo' }
 
 components:
   parameters:
@@ -333,6 +475,193 @@ components:
         seguro, y la clave se valida ANTES de escribir (invariante 7).
       schema: { type: string, format: uuid }
   schemas:
+    EntradaGrupo:
+      type: object
+      additionalProperties: false
+      required: [nombre, montoAporte, periodicidad, cupos, diaCobro, modalidadTurnos, fechaDeInicio]
+      properties:
+        nombre:       { type: string, minLength: 3, maxLength: 80 }
+        montoAporte:  { $ref: '#/components/schemas/Dinero' }
+        periodicidad: { type: string, enum: [SEMANAL, QUINCENAL, MENSUAL, BIMENSUAL] }
+        cupos:        { type: integer, minimum: 3, maximum: 40 }
+        diaCobro:     { type: integer, minimum: 1, maximum: 28 }
+        modalidadTurnos:
+          type: string
+          enum: [SORTEO_ALEATORIO, ORDEN_DE_INGRESO, ACUERDO_MANUAL]
+        fechaDeInicio: { type: string, format: date }
+        organizadorId:
+          type: [string, 'null']
+          format: uuid
+          description: >-
+            Quien lo administra, cuando lo administra alguien. Un grupo sin
+            organizador lo lleva la plataforma, y entonces nadie cobra por administrarlo
+            (RN-18).
+        permitePermutaDeTurnos: { type: boolean, default: false }
+    SalidaGrupo:
+      type: object
+      additionalProperties: false
+      required: [grupoId, fondoPorPeriodo]
+      properties:
+        grupoId:         { type: string, format: uuid }
+        fondoPorPeriodo: { type: string, pattern: '^-?\d+\.\d{2}$' }
+    EntradaCompromiso:
+      type: object
+      additionalProperties: false
+      properties:
+        entropias:
+          type: array
+          items: { type: string, maxLength: 120 }
+          description: >-
+            Lo que aportan los participantes al azar del sorteo. Cuantas mas manos
+            distintas, menos posible es que una sola elija el resultado.
+    EntradaRevelacion:
+      type: object
+      additionalProperties: false
+      required: [sorteoId, semilla]
+      properties:
+        sorteoId: { type: string, format: uuid }
+        semilla:
+          type: string
+          description: >-
+            La que se comprometio. Se devuelve aca porque el compromiso la entrego una
+            sola vez: guardarla del lado del servidor entre las dos fases haria posible
+            cambiarla, que es justo lo que el protocolo evita.
+        entropias:
+          type: array
+          items: { type: string, maxLength: 120 }
+    EntradaAcuerdo:
+      type: object
+      additionalProperties: false
+      required: [grupoId, tipo, descripcion]
+      properties:
+        grupoId: { type: string, format: uuid }
+        tipo:
+          type: string
+          enum: [CONDONACION, EXPULSION, PERMUTA, TRASPASO_CUPO, CAMBIO_REGLAMENTO, DISOLUCION, REPETIR_SORTEO]
+        descripcion:          { type: string, minLength: 20, maxLength: 1000 }
+        referenciaAfectadaId: { type: [string, 'null'], format: uuid }
+        diasVotacion:         { type: integer, minimum: 1, maximum: 15, default: 5 }
+    EntradaVoto:
+      type: object
+      additionalProperties: false
+      required: [voto]
+      properties:
+        voto: { type: string, enum: [A_FAVOR, EN_CONTRA, ABSTENCION] }
+    SalidaAcuerdo:
+      type: object
+      additionalProperties: false
+      required: [acuerdoId, estado]
+      properties:
+        acuerdoId: { type: string, format: uuid }
+        estado:    { type: string }
+    EntradaPermuta:
+      type: object
+      additionalProperties: false
+      required: [turnoOrigenId, turnoDestinoId, contraparteId, motivo]
+      properties:
+        turnoOrigenId:  { type: string, format: uuid }
+        turnoDestinoId: { type: string, format: uuid }
+        contraparteId:  { type: string, format: uuid }
+        motivo:         { type: string, minLength: 10, maxLength: 300 }
+    SalidaPermuta:
+      type: object
+      additionalProperties: false
+      required: [solicitudId, estado]
+      properties:
+        solicitudId: { type: string, format: uuid }
+        estado:      { type: string, enum: [PENDIENTE, ACEPTADA, RECHAZADA, EJECUTADA] }
+    EntradaRetiro:
+      type: object
+      additionalProperties: false
+      required: [participanteId, motivo]
+      properties:
+        participanteId:   { type: string, format: uuid }
+        motivo:           { type: string, minLength: 10, maxLength: 400 }
+        aceptaPlanDePago: { type: boolean, default: false }
+    SalidaRetiro:
+      type: object
+      additionalProperties: false
+      required: [solicitudId, posicion]
+      properties:
+        solicitudId: { type: string, format: uuid }
+        posicion:    { type: string, enum: [ACREEDORA, DEUDORA, NEUTRA] }
+    EntradaTraspaso:
+      type: object
+      additionalProperties: false
+      required: [usuarioEntranteId, motivo]
+      properties:
+        usuarioEntranteId: { type: string, format: uuid }
+        motivo:            { type: string, minLength: 10, maxLength: 300 }
+        acuerdoId:         { type: [string, 'null'], format: uuid }
+    SalidaTraspaso:
+      type: object
+      additionalProperties: false
+      required: [traspasoId]
+      properties:
+        traspasoId: { type: string, format: uuid }
+    EntradaInvitacion:
+      type: object
+      additionalProperties: false
+      required: [telefonoInvitado, canal]
+      properties:
+        telefonoInvitado: { type: string, pattern: '^\+591\d{8}$' }
+        nombreSugerido:   { type: [string, 'null'], maxLength: 80 }
+        canal:            { type: string, enum: [ENLACE, SMS, WHATSAPP] }
+    SalidaInvitacion:
+      type: object
+      additionalProperties: false
+      required: [mensaje]
+      properties:
+        invitacionId: { type: [string, 'null'], format: uuid }
+        mensaje:      { type: string }
+    EntradaPostulacion:
+      type: object
+      additionalProperties: false
+      required: [cuposSolicitados]
+      properties:
+        cuposSolicitados: { type: integer, minimum: 1, maximum: 3 }
+        mensaje:          { type: [string, 'null'], maxLength: 300 }
+    SalidaPostulacion:
+      type: object
+      additionalProperties: false
+      required: [solicitudId, puntaje, motivos]
+      properties:
+        solicitudId: { type: string, format: uuid }
+        puntaje:     { type: string }
+        motivos:
+          type: array
+          items: { type: string }
+    AliasResuelto:
+      type: object
+      additionalProperties: false
+      required: [existe]
+      properties:
+        existe:      { type: boolean }
+        usuarioId:   { type: [string, 'null'], format: uuid }
+    ActividadEnGrupos:
+      type: object
+      additionalProperties: false
+      required: [gruposActivos]
+      properties:
+        gruposActivos: { type: integer }
+    PaqueteDelSorteo:
+      type: object
+      additionalProperties: false
+      required: [sorteoId, hashComprometido, metodo, cuposEnOrdenOriginal, ordenPublicado]
+      properties:
+        sorteoId:         { type: string, format: uuid }
+        hashComprometido: { type: string }
+        semillaRevelada:  { type: [string, 'null'] }
+        entropias:
+          type: array
+          items: { type: string }
+        metodo: { type: string }
+        cuposEnOrdenOriginal:
+          type: array
+          items: { type: integer }
+        ordenPublicado:
+          type: array
+          items: { type: integer }
     CompromisoDeSorteo:
       type: object
       additionalProperties: false

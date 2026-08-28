@@ -1,46 +1,85 @@
 package bo.aportaya.entregas.web;
 
 import bo.aportaya.entregas.aplicacion.CU18RegistrarCuentaDestino;
+import bo.aportaya.entregas.dominio.puertos.TitularDeLaBilletera;
 import bo.aportaya.entregas.web.generado.CuentasBancariasApi;
 import bo.aportaya.entregas.web.generado.modelo.DesignarCuentaPrincipal200Response;
 import bo.aportaya.entregas.web.generado.modelo.Disponibilidad;
+import bo.aportaya.entregas.web.generado.modelo.EntradaRegistroCuenta;
+import bo.aportaya.entregas.web.generado.modelo.SalidaRegistroCuenta;
 import bo.aportaya.entregas.web.generado.modelo.SalidaVerificacionCuenta;
 import bo.aportaya.entregas.web.generado.modelo.VerificarCuentaDestinoRequest;
+import bo.aportaya.plataforma.dominio.CodigoError;
+import bo.aportaya.plataforma.dominio.ErrorDeNegocio;
 import bo.aportaya.plataforma.web.seguridad.Permiso;
 import bo.aportaya.plataforma.web.seguridad.SesionDeLaPeticion;
 import bo.aportaya.plataforma.web.traza.Traza;
 import java.util.UUID;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Las paginas de {@code /cuentas-bancarias}.
  *
- * <p><b>{@code registrarCuentaDestino} no esta implementada, y no es un olvido.</b>
- * CU-18 comprueba que el titular de la cuenta sea el titular de la billetera
- * (AP-CU18-01, R-SEG-02) comparando nombre y documento del usuario contra los de la
- * cuenta. Esos dos datos viven en {@code identidad.usuario}, que este servicio no
- * puede leer (invariante 11), y el token no los lleva. Resolverlo tomando el nombre y
- * el documento del propio cuerpo de la peticion haria que la comprobacion se compare
- * consigo misma: pasaria siempre, y la regla quedaria escrita pero muerta.
- *
- * <p>Queda declarado en {@code planes/informes/carril-2E.md}. La ruta responde
- * {@code 501} —el metodo por omision de la interfaz generada— hasta que exista la
- * forma de traer esa identidad sin romper el invariante.
- *
- * <p>El {@code @Permiso} de clase cubre esa ruta: sin decision de acceso declarada, el
- * proceso no levanta, y una ruta sin implementar no es una excusa para dejarla abierta.
+ * <p>El alta comprueba que la cuenta sea de quien la registra (AP-CU18-01, R-SEG-02).
+ * El nombre y el documento del titular viven en {@code identidad}, asi que **se
+ * preguntan**: este servicio no lee ese esquema (invariante 11) y no le sirve que se
+ * los declare el mismo que registra la cuenta —seria compararlo consigo mismo y la
+ * regla pasaria siempre—. La pregunta sale antes de abrir la transaccion (invariante 6),
+ * y si {@code identidad} no contesta, la respuesta es no.
  */
 @RestController
 @Permiso("BILLETERA_OPERAR")
 public class CuentasBancariasController implements CuentasBancariasApi {
 
     private final CU18RegistrarCuentaDestino cu18;
+    private final TitularDeLaBilletera titular;
     private final SesionDeLaPeticion sesion;
 
-    public CuentasBancariasController(CU18RegistrarCuentaDestino cu18, SesionDeLaPeticion sesion) {
+    public CuentasBancariasController(
+            CU18RegistrarCuentaDestino cu18, TitularDeLaBilletera titular, SesionDeLaPeticion sesion) {
         this.cu18 = cu18;
+        this.titular = titular;
         this.sesion = sesion;
+    }
+
+    @Override
+    @Permiso("BILLETERA_OPERAR")
+    public ResponseEntity<SalidaRegistroCuenta> registrarCuentaDestino(EntradaRegistroCuenta cuerpo) {
+        var ctx = sesion.actual();
+        Traza.marcarCasoDeUso("CU-18", cuerpo.getEntidadFinanciera());
+
+        // AP-CU18-01 · R-SEG-02. Se resuelve ANTES de la transaccion: es una llamada de
+        // red, y una llamada de red adentro es el invariante 6.
+        if (!titular.esElMismo(ctx.usuarioId(), cuerpo.getTitularNombre(), cuerpo.getTitularDocumento())) {
+            throw new ErrorDeNegocio(
+                    CodigoError.de(18, 1), "El titular de la cuenta no coincide con quien la registra.");
+        }
+
+        var salida = cu18.registrar(
+                new CU18RegistrarCuentaDestino.EntradaRegistro(
+                        cuerpo.getTipoCuenta().getValue(),
+                        cuerpo.getEntidadFinanciera(),
+                        cuerpo.getNumeroCuenta(),
+                        cuerpo.getNumeroCifrado(),
+                        cuerpo.getTitularNombre(),
+                        cuerpo.getTitularDocumento(),
+                        // Ya comprobados contra identidad: se pasan iguales para que el
+                        // atomo del dominio siga siendo el unico que decide.
+                        cuerpo.getTitularNombre(),
+                        cuerpo.getTitularDocumento(),
+                        cuerpo.getMoneda().getValue()),
+                ctx);
+
+        var respuesta = new SalidaRegistroCuenta();
+        respuesta.setCuentaId(salida.cuentaId());
+        respuesta.setNumeroEnmascarado(salida.numeroEnmascarado());
+        respuesta.setEstado(SalidaRegistroCuenta.EstadoEnum.fromValue(salida.estado()));
+        respuesta.setEsNueva(salida.esNueva());
+
+        var estado = salida.esNueva() ? HttpStatus.CREATED : HttpStatus.OK;
+        return ResponseEntity.status(estado).body(respuesta);
     }
 
     @Override

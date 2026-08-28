@@ -392,6 +392,29 @@ paths:
               schema: { $ref: '#/components/schemas/SalidaCierreDisolucion' }
         '422': { $ref: '#/components/responses/ReglaDeNegocio' }
 
+  /cobranza/restricciones/vigentes/{usuarioId}:
+    get:
+      operationId: consultarRestriccion
+      summary: Si alguien esta en la lista de restriccion interna
+      description: >-
+        La pregunta CU-68 de `grupos` antes de aceptar a alguien. La lista es de este
+        servicio y nadie mas la puede leer (invariante 11).
+
+        Devuelve tambien cuanto tendria que pagar para salir: una restriccion sin
+        salida es una condena, y quien consulta necesita poder decirle a la persona que
+        hacer, no solo que no puede entrar.
+      parameters:
+        - name: usuarioId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: La restriccion vigente, si la hay
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RestriccionVigente' }
+
 components:
   parameters:
     ClaveIdempotencia:
@@ -403,6 +426,14 @@ components:
         seguro, y la clave se valida ANTES de escribir (invariante 7).
       schema: { type: string, format: uuid }
   schemas:
+    RestriccionVigente:
+      type: object
+      additionalProperties: false
+      required: [vigente, montoQueLaLevanta]
+      properties:
+        vigente:           { type: boolean }
+        nivel:             { type: [string, 'null'] }
+        montoQueLaLevanta: { type: string, pattern: '^-?\d+\.\d{2}$' }
     EntradaDeclaracion:
       type: object
       additionalProperties: false

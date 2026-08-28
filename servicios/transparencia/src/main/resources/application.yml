@@ -24,6 +24,10 @@ aportaya:
   jwt:
     jwks-uri: ${JWKS_URI}           # ADR-024: cada servicio valida la firma el mismo
   zona-horaria: America/La_Paz      # plazos habiles
+  servicios:
+    # A quien se le pregunta. El paquete del sorteo vive en `grupos` y ese esquema no
+    # se lee desde aca (invariante 11): se pide por su contrato.
+    grupos: ${URL_GRUPOS:http://grupos:8080}
   insignias:
     desempeno-minimo-de-organizador: 80
   resenas:

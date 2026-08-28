@@ -332,6 +332,27 @@ paths:
               schema: { $ref: '#/components/schemas/SalidaSegmentoAplicado' }
         '422': { $ref: '#/components/responses/ReglaDeNegocio' }
 
+  /tarifas/vigentes/{codigo}:
+    get:
+      operationId: consultarTarifarioVigente
+      summary: Cual es el tarifario vigente de un codigo, ahora
+      description: >-
+        La pregunta CU-20 al crear un grupo: sin tarifario vigente no se abre nada
+        (R-CON-07), porque el precio es lo que cada participante acepta al firmar el
+        reglamento. Que no haya ninguno es una respuesta valida —significa que no se
+        puede operar— y por eso `vigente` puede venir en falso en vez de fallar.
+      parameters:
+        - name: codigo
+          in: path
+          required: true
+          schema: { type: string, maxLength: 30 }
+      responses:
+        '200':
+          description: El tarifario vigente, si lo hay
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TarifarioVigente' }
+
 components:
   parameters:
     ClaveIdempotencia:
@@ -343,6 +364,13 @@ components:
         seguro, y la clave se valida ANTES de escribir (invariante 7).
       schema: { type: string, format: uuid }
   schemas:
+    TarifarioVigente:
+      type: object
+      additionalProperties: false
+      required: [vigente]
+      properties:
+        vigente:     { type: boolean }
+        tarifarioId: { type: [string, 'null'], format: uuid }
     LineaDesglose:
       type: object
       additionalProperties: false

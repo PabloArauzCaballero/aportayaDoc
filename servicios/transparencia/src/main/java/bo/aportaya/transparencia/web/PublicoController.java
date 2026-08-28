@@ -3,11 +3,15 @@ package bo.aportaya.transparencia.web;
 import bo.aportaya.plataforma.dominio.ContextoSesion;
 import bo.aportaya.plataforma.dominio.Traza;
 import bo.aportaya.plataforma.web.seguridad.Publico;
+import bo.aportaya.transparencia.aplicacion.CU61VerificarSorteo;
 import bo.aportaya.transparencia.aplicacion.CU73VerificarCadena;
 import bo.aportaya.transparencia.aplicacion.ListarBloques;
+import bo.aportaya.transparencia.dominio.puertos.PaquetesDeSorteo;
 import bo.aportaya.transparencia.web.generado.PublicoApi;
 import bo.aportaya.transparencia.web.generado.modelo.BloquePublicado;
 import bo.aportaya.transparencia.web.generado.modelo.SalidaVerificacionCadena;
+import bo.aportaya.transparencia.web.generado.modelo.SalidaVerificacionSorteo;
+import bo.aportaya.transparencia.web.generado.modelo.SalidaVerificacionSorteoPaquete;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
@@ -24,15 +28,18 @@ import org.springframework.web.bind.annotation.RestController;
  * <p>No exponen ningun dato de nadie: devuelven en que bloque se rompio la cadena, si
  * se rompio.
  *
- * <p><b>{@code verificarSorteo} no esta implementada</b>, y esta declarado: CU-61
- * recomputa el compromiso a partir del paquete publicado —semilla, entropias y orden—,
- * y ese paquete vive en {@code grupos.sorteo_turno}. Este servicio no puede leerlo
- * (invariante 11) y todavia no se sella como hecho de la cadena, que seria la forma
- * natural de tenerlo aca. Se cierra sellando el sorteo en CU-72 o publicandolo
- * {@code grupos} en su contrato.
+ * <p><b>Una limitacion queda declarada.</b> {@code verificarSorteo} recomputa el
+ * compromiso a partir del paquete publicado, y ese paquete vive en
+ * {@code grupos.sorteo_turnos}: se pide por contrato, no se lee (invariante 11). Pero
+ * la ruta de {@code grupos} que lo publica exige sesion, y esta no la tiene. Un tercero
+ * SIN cuenta —el destinatario de esta ruta— recibe hoy «no verificable» en vez del
+ * veredicto.
  *
- * <p>El {@code @Publico} de clase cubre esa ruta: es publica igual que la otra, y sin
- * decision de acceso declarada el proceso no levanta.
+ * <p>No se cierra adivinando. Las dos salidas son troncales: sellar el sorteo en
+ * {@code transparencia.registro_sellado} —cuyo {@code CHECK} de {@code tipo_entidad}
+ * hoy admite ACUERDO, COBERTURA, ENTREGA, PAGO y SANCION, y no SORTEO— o que ADR-024
+ * admita una quinta ruta sin sesion. Cambiar el modelo de datos o un ADR no es una
+ * decision de implementacion.
  */
 @Publico("CU-61 y CU-73: la verificacion desde afuera es el sentido de estas dos rutas")
 @RestController
@@ -42,11 +49,71 @@ public class PublicoController implements PublicoApi {
     private static final UUID PROCESO_PUBLICO = UUID.fromString("00000000-0000-0000-0000-0000000000f0");
 
     private final CU73VerificarCadena cu73;
+    private final CU61VerificarSorteo cu61;
+    private final PaquetesDeSorteo paquetes;
     private final ListarBloques bloques;
 
-    public PublicoController(CU73VerificarCadena cu73, ListarBloques bloques) {
+    public PublicoController(
+            CU73VerificarCadena cu73, CU61VerificarSorteo cu61, PaquetesDeSorteo paquetes, ListarBloques bloques) {
         this.cu73 = cu73;
+        this.cu61 = cu61;
+        this.paquetes = paquetes;
         this.bloques = bloques;
+    }
+
+    /**
+     * El veredicto sobre un sorteo.
+     *
+     * <p>El paquete se pide **antes** de abrir la transaccion: es una llamada de red, y
+     * una llamada de red adentro es el invariante 6.
+     *
+     * <p>Si no se pudo obtener, se responde que no verifica, con los dos hashes vacios.
+     * Decir que un sorteo es limpio sin haberlo recomputado seria exactamente la
+     * afirmacion que este caso de uso existe para reemplazar.
+     */
+    @Override
+    @Publico("CU-61: verificar el sorteo desde afuera es el sentido de esta ruta")
+    public ResponseEntity<SalidaVerificacionSorteo> verificarSorteo(UUID sorteoId) {
+        bo.aportaya.plataforma.web.traza.Traza.marcarCasoDeUso("CU-61", sorteoId.toString());
+
+        var paquete = paquetes.de(sorteoId);
+        if (paquete.isEmpty()) {
+            return ResponseEntity.ok(sinPaquete());
+        }
+
+        var salida = cu61.verificar(paquete.get(), contexto());
+
+        var respuesta = new SalidaVerificacionSorteo();
+        respuesta.setVerifica(salida.verifica());
+        respuesta.setHashEsperado(salida.hashEsperado());
+        respuesta.setHashRecomputado(salida.hashRecomputado());
+        respuesta.setOrdenCoincide(salida.ordenCoincide());
+        respuesta.setPrimerCupoDiscrepante(salida.primerCupoDiscrepante());
+
+        var publicado = new SalidaVerificacionSorteoPaquete();
+        publicado.setSemilla(salida.semilla());
+        publicado.setEntropias(salida.entropias());
+        publicado.setMetodo(salida.metodo());
+        publicado.setCupos(salida.cupos());
+        respuesta.setPaquete(publicado);
+        return ResponseEntity.ok(respuesta);
+    }
+
+    /** Sin paquete no hay veredicto, y se dice asi en vez de suponerlo. */
+    private static SalidaVerificacionSorteo sinPaquete() {
+        var respuesta = new SalidaVerificacionSorteo();
+        respuesta.setVerifica(false);
+        respuesta.setHashEsperado("");
+        respuesta.setHashRecomputado("");
+        respuesta.setOrdenCoincide(false);
+
+        var vacio = new SalidaVerificacionSorteoPaquete();
+        vacio.setSemilla("");
+        vacio.setEntropias(List.of());
+        vacio.setMetodo("NO_DISPONIBLE");
+        vacio.setCupos(List.of());
+        respuesta.setPaquete(vacio);
+        return respuesta;
     }
 
     @Override

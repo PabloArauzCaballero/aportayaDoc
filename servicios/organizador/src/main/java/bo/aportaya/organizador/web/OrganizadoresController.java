@@ -4,6 +4,7 @@ import bo.aportaya.organizador.aplicacion.CU90PostularOrganizador;
 import bo.aportaya.organizador.aplicacion.CU91FirmarContrato;
 import bo.aportaya.organizador.aplicacion.CU92EvaluarDesempeno;
 import bo.aportaya.organizador.aplicacion.CU93SancionarOrganizador;
+import bo.aportaya.organizador.aplicacion.ConsultarHabilitacion;
 import bo.aportaya.organizador.web.generado.OrganizadoresApi;
 import bo.aportaya.organizador.web.generado.modelo.EntradaApelacion;
 import bo.aportaya.organizador.web.generado.modelo.EntradaAprobacion;
@@ -13,6 +14,7 @@ import bo.aportaya.organizador.web.generado.modelo.EntradaPostulacion;
 import bo.aportaya.organizador.web.generado.modelo.EntradaResolucion;
 import bo.aportaya.organizador.web.generado.modelo.EntradaSancion;
 import bo.aportaya.organizador.web.generado.modelo.FirmarContratoRequest;
+import bo.aportaya.organizador.web.generado.modelo.Habilitacion;
 import bo.aportaya.organizador.web.generado.modelo.RescindirContratoRequest;
 import bo.aportaya.organizador.web.generado.modelo.SalidaApelacion;
 import bo.aportaya.organizador.web.generado.modelo.SalidaContrato;
@@ -43,6 +45,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class OrganizadoresController implements OrganizadoresApi {
 
+    private final ConsultarHabilitacion habilitaciones;
     private final CU90PostularOrganizador cu90;
     private final CU91FirmarContrato cu91;
     private final CU92EvaluarDesempeno cu92;
@@ -50,11 +53,13 @@ public class OrganizadoresController implements OrganizadoresApi {
     private final SesionDeLaPeticion sesion;
 
     public OrganizadoresController(
+            ConsultarHabilitacion habilitaciones,
             CU90PostularOrganizador cu90,
             CU91FirmarContrato cu91,
             CU92EvaluarDesempeno cu92,
             CU93SancionarOrganizador cu93,
             SesionDeLaPeticion sesion) {
+        this.habilitaciones = habilitaciones;
         this.cu90 = cu90;
         this.cu91 = cu91;
         this.cu92 = cu92;
@@ -96,6 +101,30 @@ public class OrganizadoresController implements OrganizadoresApi {
                         solicitudId, MapeoDeOrganizador.medidos(cuerpo.getMedidos())),
                 sesion.actual());
         return ResponseEntity.ok(habilitacion(salida));
+    }
+
+    /**
+     * Si el organizador esta habilitado, y hasta donde.
+     *
+     * <p>La pregunta {@code grupos} antes de dejar crear un grupo. Existe para que no
+     * tenga que leer este esquema (invariante 11) ni creerle al que pide.
+     */
+    @Override
+    @Permiso("GRUPO_CREAR")
+    public ResponseEntity<Habilitacion> consultarHabilitacion(UUID organizadorId) {
+        Traza.marcarCasoDeUso("CU-90", organizadorId.toString());
+
+        var estado = habilitaciones.ejecutar(organizadorId, sesion.actual());
+
+        var respuesta = new Habilitacion();
+        respuesta.setHabilitado(estado.habilitado());
+        respuesta.setNivel(estado.nivel());
+        respuesta.setLimiteDeGrupos(estado.limiteDeGrupos());
+        respuesta.setLimiteDeMonto(estado.limiteDeMonto()
+                .setScale(2, java.math.RoundingMode.HALF_EVEN)
+                .toPlainString());
+        respuesta.setGruposActivos(estado.gruposActivos());
+        return ResponseEntity.ok(respuesta);
     }
 
     @Override

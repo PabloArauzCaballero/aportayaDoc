@@ -120,6 +120,28 @@ paths:
         '422': { $ref: '#/components/responses/ReglaDeNegocio' }
 
   /organizadores/{organizadorId}/habilitacion:
+    get:
+      operationId: consultarHabilitacion
+      summary: Si el organizador esta habilitado, y hasta donde
+      description: >-
+        La pregunta CU-20 antes de dejar crear un grupo: un organizador suspendido no
+        abre pasanakus nuevos. `grupos` no puede leer este esquema (invariante 11).
+
+        Devuelve tambien los limites del nivel porque quien crea el grupo los necesita
+        en el mismo momento, y dos viajes para dos datos del mismo renglon es un viaje
+        de mas.
+      parameters:
+        - name: organizadorId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: El estado de habilitacion y los limites de su nivel
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Habilitacion' }
+
     post:
       operationId: habilitarOrganizador         # CU-90
       summary: Habilitar tras completar la capacitacion
@@ -442,6 +464,16 @@ components:
         seguro, y la clave se valida ANTES de escribir (invariante 7).
       schema: { type: string, format: uuid }
   schemas:
+    Habilitacion:
+      type: object
+      additionalProperties: false
+      required: [habilitado, nivel, limiteDeGrupos, limiteDeMonto, gruposActivos]
+      properties:
+        habilitado:     { type: boolean }
+        nivel:          { type: string }
+        limiteDeGrupos: { type: integer }
+        limiteDeMonto:  { type: string, pattern: '^-?\d+\.\d{2}$' }
+        gruposActivos:  { type: integer }
     Faltante:
       type: object
       additionalProperties: false

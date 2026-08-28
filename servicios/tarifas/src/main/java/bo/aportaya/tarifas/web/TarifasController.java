@@ -6,6 +6,7 @@ import bo.aportaya.plataforma.web.traza.Traza;
 import bo.aportaya.tarifas.aplicacion.CU34PublicarTarifario;
 import bo.aportaya.tarifas.aplicacion.CU35CerrarLiquidacion;
 import bo.aportaya.tarifas.aplicacion.CU36ResolverPrecio;
+import bo.aportaya.tarifas.aplicacion.ConsultarTarifarioVigente;
 import bo.aportaya.tarifas.web.generado.TarifasApi;
 import bo.aportaya.tarifas.web.generado.modelo.EntradaLiquidacion;
 import bo.aportaya.tarifas.web.generado.modelo.EntradaPublicacion;
@@ -16,6 +17,7 @@ import bo.aportaya.tarifas.web.generado.modelo.SalidaLiquidacion;
 import bo.aportaya.tarifas.web.generado.modelo.SalidaPublicacion;
 import bo.aportaya.tarifas.web.generado.modelo.SalidaSegmento;
 import bo.aportaya.tarifas.web.generado.modelo.SalidaSegmentoAplicado;
+import bo.aportaya.tarifas.web.generado.modelo.TarifarioVigente;
 import java.math.BigDecimal;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -33,20 +35,43 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class TarifasController implements TarifasApi {
 
+    private final ConsultarTarifarioVigente vigentes;
     private final CU34PublicarTarifario cu34;
     private final CU35CerrarLiquidacion cu35;
     private final CU36ResolverPrecio cu36;
     private final SesionDeLaPeticion sesion;
 
     public TarifasController(
+            ConsultarTarifarioVigente vigentes,
             CU34PublicarTarifario cu34,
             CU35CerrarLiquidacion cu35,
             CU36ResolverPrecio cu36,
             SesionDeLaPeticion sesion) {
+        this.vigentes = vigentes;
         this.cu34 = cu34;
         this.cu35 = cu35;
         this.cu36 = cu36;
         this.sesion = sesion;
+    }
+
+    /**
+     * Cual es el tarifario vigente de un codigo.
+     *
+     * <p>Sin tarifario vigente no se abre un grupo (R-CON-07). Que no haya ninguno es
+     * una respuesta valida, no un error: por eso viaja como {@code vigente: false} y no
+     * como un 404 que cada cliente tendria que interpretar.
+     */
+    @Override
+    @Permiso("BILLETERA_VER")
+    public ResponseEntity<TarifarioVigente> consultarTarifarioVigente(String codigo) {
+        Traza.marcarCasoDeUso("CU-34", codigo);
+
+        var encontrado = vigentes.ejecutar(codigo, sesion.actual());
+
+        var respuesta = new TarifarioVigente();
+        respuesta.setVigente(encontrado.isPresent());
+        encontrado.ifPresent(respuesta::setTarifarioId);
+        return ResponseEntity.ok(respuesta);
     }
 
     @Override

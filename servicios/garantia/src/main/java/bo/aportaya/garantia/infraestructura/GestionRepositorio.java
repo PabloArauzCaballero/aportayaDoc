@@ -134,6 +134,23 @@ public class GestionRepositorio {
     // --------------------------------------------------------- restriccion
 
     /** La restriccion vigente de un usuario, si tiene (R-GAR-05). */
+    /**
+     * Lo que el deudor tendria que pagar para salir de la lista.
+     *
+     * <p>Una restriccion sin salida es una condena. Quien consulta necesita poder
+     * decirle a la persona cuanto es, no solo que no puede entrar a un grupo.
+     */
+    public java.math.BigDecimal deudaViva(DSLContext dsl, UUID usuarioId) {
+        var fila = dsl.fetchOne(
+                """
+                SELECT COALESCE(SUM(d.saldo_actual), 0) AS viva
+                  FROM garantia.deuda_participante d
+                 WHERE d.usuario_id = ? AND d.estado = 'VIGENTE'
+                """,
+                usuarioId);
+        return fila == null ? java.math.BigDecimal.ZERO : fila.get("viva", java.math.BigDecimal.class);
+    }
+
     public Optional<Restriccion> restriccionVigente(DSLContext dsl, UUID usuarioId, OffsetDateTime momento) {
         return dsl.select(
                         DSL.field("id", UUID.class),

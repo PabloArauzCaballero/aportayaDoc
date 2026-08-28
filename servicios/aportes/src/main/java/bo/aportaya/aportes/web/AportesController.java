@@ -1,8 +1,11 @@
 package bo.aportaya.aportes.web;
 
 import bo.aportaya.aportes.aplicacion.CU21CobrarAporte;
+import bo.aportaya.aportes.aplicacion.ConsultarEstadoDelParticipante;
 import bo.aportaya.aportes.web.generado.AportesApi;
 import bo.aportaya.aportes.web.generado.modelo.EntradaCobro;
+import bo.aportaya.aportes.web.generado.modelo.EstadoDelParticipante;
+import bo.aportaya.aportes.web.generado.modelo.Morosos;
 import bo.aportaya.aportes.web.generado.modelo.SalidaCobro;
 import bo.aportaya.plataforma.web.seguridad.Permiso;
 import bo.aportaya.plataforma.web.seguridad.SesionDeLaPeticion;
@@ -25,11 +28,47 @@ import org.springframework.web.bind.annotation.RestController;
 public class AportesController implements AportesApi {
 
     private final CU21CobrarAporte cu21;
+    private final ConsultarEstadoDelParticipante estados;
     private final SesionDeLaPeticion sesion;
 
-    public AportesController(CU21CobrarAporte cu21, SesionDeLaPeticion sesion) {
+    public AportesController(CU21CobrarAporte cu21, ConsultarEstadoDelParticipante estados, SesionDeLaPeticion sesion) {
         this.cu21 = cu21;
+        this.estados = estados;
         this.sesion = sesion;
+    }
+
+    /**
+     * Lo que este servicio le contesta a los otros sobre un participante.
+     *
+     * <p>Existe para que {@code grupos} y {@code nucleo-financiero} decidan sin leer
+     * este esquema (invariante 11), y para que el dato no lo afirme quien pide.
+     */
+    @Override
+    @Permiso("BILLETERA_VER")
+    public ResponseEntity<EstadoDelParticipante> consultarEstadoDelParticipante(UUID participanteId) {
+        Traza.marcarCasoDeUso("CU-21", participanteId.toString());
+
+        var estado = estados.ejecutar(participanteId, sesion.actual());
+
+        var respuesta = new EstadoDelParticipante();
+        respuesta.setAlDia(estado.alDia());
+        respuesta.setTotalAportado(MapeoDeAportes.importe(estado.totalAportado()));
+        respuesta.setDeudaVigente(MapeoDeAportes.importe(estado.deudaVigente()));
+        respuesta.setPorAportar(MapeoDeAportes.importe(estado.porAportar()));
+        respuesta.setObligacionesAbiertas(estado.obligacionesAbiertas());
+        respuesta.setMoneda(EstadoDelParticipante.MonedaEnum.fromValue(estado.moneda()));
+        return ResponseEntity.ok(respuesta);
+    }
+
+    @Override
+    @Permiso("BILLETERA_VER")
+    public ResponseEntity<Morosos> contarMorosos(UUID grupoId) {
+        Traza.marcarCasoDeUso("CU-21", grupoId.toString());
+
+        var respuesta = new Morosos();
+        respuesta.setGrupoId(grupoId);
+        respuesta.setMorosos(estados.morososDelGrupo(grupoId, sesion.actual()));
+        return ResponseEntity.ok(respuesta);
     }
 
     @Override

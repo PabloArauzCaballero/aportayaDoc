@@ -464,6 +464,30 @@ paths:
         '204': { description: Alerta cerrada con su desenlace }
         '422': { $ref: '#/components/responses/ReglaDeNegocio' }
 
+  /reputacion/{usuarioId}/puntaje:
+    get:
+      operationId: consultarPuntaje
+      summary: El puntaje de reputacion de alguien
+      description: >-
+        Lo preguntan CU-64 y CU-68 de `grupos`: aceptar a alguien o dejarle tomar un
+        cupo depende de su historial, y el historial es de este servicio.
+
+        Quien todavia no tiene puntaje NO tiene cero. Cero seria el peor puntaje
+        posible y quien recien llega no hizo nada malo: se responde SIN_HISTORIAL y
+        quien pregunta decide. Confundir «no se sabe» con «malo» le cierra la puerta a
+        todo el que empieza.
+      parameters:
+        - name: usuarioId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: El puntaje, o la constancia de que no hay historial
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PuntajeDelUsuario' }
+
 components:
   parameters:
     ClaveIdempotencia:
@@ -483,6 +507,14 @@ components:
           schema: { $ref: '#/components/schemas/Problema' }
 
   schemas:
+    PuntajeDelUsuario:
+      type: object
+      additionalProperties: false
+      required: [tieneHistorial, puntaje, nivelDeConfianza]
+      properties:
+        tieneHistorial:   { type: boolean }
+        puntaje:          { type: string }
+        nivelDeConfianza: { type: string }
     Problema:
       type: object
       additionalProperties: false

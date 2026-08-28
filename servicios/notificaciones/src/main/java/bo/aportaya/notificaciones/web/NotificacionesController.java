@@ -1,12 +1,14 @@
 package bo.aportaya.notificaciones.web;
 
 import bo.aportaya.notificaciones.aplicacion.CU82ProcesarRespuesta;
+import bo.aportaya.notificaciones.aplicacion.ConsultarSupresion;
 import bo.aportaya.notificaciones.aplicacion.SolicitarAviso;
 import bo.aportaya.notificaciones.web.generado.NotificacionesApi;
 import bo.aportaya.notificaciones.web.generado.modelo.EntradaNotificacion;
 import bo.aportaya.notificaciones.web.generado.modelo.EntradaRespuesta;
 import bo.aportaya.notificaciones.web.generado.modelo.SalidaNotificacion;
 import bo.aportaya.notificaciones.web.generado.modelo.SalidaRespuesta;
+import bo.aportaya.notificaciones.web.generado.modelo.Supresion;
 import bo.aportaya.plataforma.dominio.ContextoSesion;
 import bo.aportaya.plataforma.web.seguridad.Permiso;
 import bo.aportaya.plataforma.web.seguridad.Publico;
@@ -37,13 +39,35 @@ public class NotificacionesController implements NotificacionesApi {
     private static final UUID PROCESO_DEL_WEBHOOK = UUID.fromString("00000000-0000-0000-0000-0000000082cb");
 
     private final SolicitarAviso avisos;
+    private final ConsultarSupresion supresiones;
     private final CU82ProcesarRespuesta cu82;
     private final SesionDeLaPeticion sesion;
 
-    public NotificacionesController(SolicitarAviso avisos, CU82ProcesarRespuesta cu82, SesionDeLaPeticion sesion) {
+    public NotificacionesController(
+            SolicitarAviso avisos,
+            ConsultarSupresion supresiones,
+            CU82ProcesarRespuesta cu82,
+            SesionDeLaPeticion sesion) {
         this.avisos = avisos;
+        this.supresiones = supresiones;
         this.cu82 = cu82;
         this.sesion = sesion;
+    }
+
+    /**
+     * Si un destino pidio no recibir mas.
+     *
+     * <p>La pregunta {@code grupos} antes de invitar: a quien se dio de baja no se le
+     * escribe, aunque quien invita no lo sepa.
+     */
+    @Override
+    @Permiso("SOPORTE")
+    public ResponseEntity<Supresion> consultarSupresion(String identificador, String categoria) {
+        Traza.marcarCasoDeUso("CU-80", categoria);
+
+        var respuesta = new Supresion();
+        respuesta.setSuprimido(supresiones.estaSuprimido(identificador, categoria, sesion.actual()));
+        return ResponseEntity.ok(respuesta);
     }
 
     @Override

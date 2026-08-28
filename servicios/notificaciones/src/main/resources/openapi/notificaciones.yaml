@@ -97,6 +97,33 @@ paths:
   # Sus codigos quedan declarados igual: el catalogo de errores es del contrato, no
   # del transporte.
 
+  /notificaciones/supresion:
+    get:
+      operationId: consultarSupresion
+      summary: Si un destino pidio no recibir mas
+      description: >-
+        La pregunta CU-69 de `grupos` antes de invitar: a quien se dio de baja no se le
+        escribe, aunque quien invita no lo sepa. La lista de supresion es de este
+        servicio y nadie mas la puede leer (invariante 11).
+
+        Se mira en los tres canales encendidos y alcanza con que uno este suprimido:
+        quien pidio no recibir por el canal que usariamos, pidio no recibir.
+      parameters:
+        - name: identificador
+          in: query
+          required: true
+          schema: { type: string, maxLength: 120 }
+        - name: categoria
+          in: query
+          required: true
+          schema: { type: string, maxLength: 40 }
+      responses:
+        '200':
+          description: Si esta suprimido
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Supresion' }
+
 components:
   parameters:
     ClaveIdempotencia:
@@ -108,6 +135,12 @@ components:
         seguro, y la clave se valida ANTES de escribir (invariante 7).
       schema: { type: string, format: uuid }
   schemas:
+    Supresion:
+      type: object
+      additionalProperties: false
+      required: [suprimido]
+      properties:
+        suprimido: { type: boolean }
     EntradaRespuesta:
       type: object
       additionalProperties: false

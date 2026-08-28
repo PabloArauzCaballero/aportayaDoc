@@ -10,6 +10,7 @@ import bo.aportaya.transparencia.aplicacion.CU74EvaluarInsignias;
 import bo.aportaya.transparencia.aplicacion.CU75EmitirCertificado;
 import bo.aportaya.transparencia.aplicacion.CU76PublicarResena;
 import bo.aportaya.transparencia.aplicacion.CU97EvaluarRiesgo;
+import bo.aportaya.transparencia.aplicacion.ConsultarPuntaje;
 import bo.aportaya.transparencia.web.generado.ReputacionApi;
 import bo.aportaya.transparencia.web.generado.modelo.EntradaCertificado;
 import bo.aportaya.transparencia.web.generado.modelo.EntradaCierreAlerta;
@@ -23,6 +24,7 @@ import bo.aportaya.transparencia.web.generado.modelo.EntradaRevocacionCertificad
 import bo.aportaya.transparencia.web.generado.modelo.EntradaRevocacionInsignia;
 import bo.aportaya.transparencia.web.generado.modelo.EntradaSellado;
 import bo.aportaya.transparencia.web.generado.modelo.EntradaSnapshot;
+import bo.aportaya.transparencia.web.generado.modelo.PuntajeDelUsuario;
 import bo.aportaya.transparencia.web.generado.modelo.SalidaCertificado;
 import bo.aportaya.transparencia.web.generado.modelo.SalidaEvaluacionRiesgo;
 import bo.aportaya.transparencia.web.generado.modelo.SalidaEventoReputacion;
@@ -46,6 +48,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class ReputacionController implements ReputacionApi {
 
+    private final ConsultarPuntaje puntajes;
     private final CU70RegistrarEventoReputacion cu70;
     private final CU71RecalcularPuntaje cu71;
     private final CU72SellarBloque cu72;
@@ -56,6 +59,7 @@ public class ReputacionController implements ReputacionApi {
     private final SesionDeLaPeticion sesion;
 
     public ReputacionController(
+            ConsultarPuntaje puntajes,
             CU70RegistrarEventoReputacion cu70,
             CU71RecalcularPuntaje cu71,
             CU72SellarBloque cu72,
@@ -64,6 +68,7 @@ public class ReputacionController implements ReputacionApi {
             CU76PublicarResena cu76,
             CU97EvaluarRiesgo cu97,
             SesionDeLaPeticion sesion) {
+        this.puntajes = puntajes;
         this.cu70 = cu70;
         this.cu71 = cu71;
         this.cu72 = cu72;
@@ -72,6 +77,26 @@ public class ReputacionController implements ReputacionApi {
         this.cu76 = cu76;
         this.cu97 = cu97;
         this.sesion = sesion;
+    }
+
+    /**
+     * El puntaje de alguien, para quien tenga que decidir con el.
+     *
+     * <p>Quien no tiene historial no tiene cero: se responde SIN_HISTORIAL. Confundir
+     * «no se sabe» con «malo» le cerraria la puerta a todo el que empieza.
+     */
+    @Override
+    @Permiso("PARTICIPANTE")
+    public ResponseEntity<PuntajeDelUsuario> consultarPuntaje(UUID usuarioId) {
+        Traza.marcarCasoDeUso("CU-71", usuarioId.toString());
+
+        var puntaje = puntajes.ejecutar(usuarioId, sesion.actual());
+
+        var respuesta = new PuntajeDelUsuario();
+        respuesta.setTieneHistorial(puntaje.tieneHistorial());
+        respuesta.setPuntaje(puntaje.puntaje().toPlainString());
+        respuesta.setNivelDeConfianza(puntaje.nivelDeConfianza());
+        return ResponseEntity.ok(respuesta);
     }
 
     @Override

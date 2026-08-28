@@ -23,6 +23,11 @@ final class MapeoDeAportes {
                 Moneda.valueOf(valor.getMoneda().getValue()));
     }
 
+    /** Un importe suelto —sin moneda al lado— tambien va como cadena, al centavo. */
+    static String importe(java.math.BigDecimal valor) {
+        return valor.setScale(2, RoundingMode.HALF_EVEN).toPlainString();
+    }
+
     static Dinero dinero(bo.aportaya.plataforma.dominio.Dinero valor) {
         var salida = new Dinero();
         salida.setMonto(valor.monto().setScale(2, RoundingMode.UNNECESSARY).toPlainString());
