@@ -28,6 +28,7 @@ Modulo 10 de la boveda — Billetera, Custodia y Dinero Electrónico.
 | CU-16 | Cerrar billetera y devolver saldo | **Implementado** (carril 2A) |
 | CU-17 | Bloquear saldo por orden de autoridad | **Implementado** (carril 2A) |
 | CU-50 | Conciliar la custodia y verificar el encaje | **Implementado** (carril 2A) |
+| CU-51 | Ejecutar el cierre diario | **Implementado** (carril 3A, mudado desde `aportes`) |
 | CU-57 | Operar un punto de atención | **Obsoleto**, número reservado (ADR-039) |
 
 **CU-40 vive acá y no en `cumplimiento`**, aunque planes/07 lo asigne al carril 1C:

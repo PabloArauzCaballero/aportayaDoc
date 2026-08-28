@@ -370,6 +370,17 @@ paths:
   #   AP-CU50-01 SIN_CIERRES_DIARIOS · AP-CU50-02 SIN_EXTRACTO_BANCARIO
   #   AP-CU50-03 CONCILIACION_DUPLICADA
 
+  # CU-51 Ejecutar el cierre diario tampoco tiene endpoint: lo dispara el trabajo de
+  # medianoche. Sus codigos viven aca —y no en openapi/aportes.yaml, como dice la
+  # cabecera del caso de uso— porque `cierre_diario`, `asiento_contable` y
+  # `saldo_diario_billetera` son tablas de este esquema, y ponerlo en aportes obligaria
+  # a escribir un esquema ajeno (invariante 11). La divergencia esta declarada en
+  # planes/informes/carril-3A.md.
+  #   AP-CU51-01 EXCEPCIONES_ABIERTAS   · el dia no cierra con excepciones vivas
+  #   AP-CU51-02 CUSTODIA_DESCUADRADA   · el encaje no da; cerrar seria firmarlo igual
+  #   AP-CU51-03 ASIENTOS_SIN_CONFIRMAR · queda un asiento en BORRADOR con esa fecha
+  #   AP-CU51-04 DIA_YA_CERRADO         · reintento sobre un dia ya cerrado
+
 components:
   parameters:
     ClaveIdempotencia:

@@ -24,6 +24,19 @@ Modulo 12 de la boveda — Cumplimiento Regulatorio y Consumidor Financiero.
 | CU-06 | Revisión periódica de conocimiento del cliente | **Implementado** |
 | CU-54 | Registrar un evento de riesgo operativo | **Implementado** |
 | CU-55 | Gestionar un incidente de seguridad | **Implementado** |
+| CU-40 | Evaluar límites antes de una operación | **Implementado** (ola 3) |
+| CU-41 | Detectar umbral y registrar formulario PCC-01 | **Implementado** (ola 3) |
+| CU-42 | Detectar umbral y registrar ROG | **Implementado** (ola 3) |
+| CU-43 | Remitir los reportes mensuales a la UIF | **Implementado** (ola 3) |
+| CU-44 | De alerta de monitoreo a reporte de operación sospechosa | **Implementado** (ola 3) |
+| CU-45 | Atender un requerimiento de autoridad | **Implementado** (ola 3) |
+| CU-47 | Evaluar el riesgo del producto antes de lanzarlo | **Implementado** (ola 3) |
+| CU-48 | Calibrar reglas de cumplimiento y triar sus alertas | **Implementado** (ola 3) |
+| CU-49 | Designar al oficial de cumplimiento y capacitar | **Implementado** (ola 3) |
+| CU-52 | Atender un reclamo en plazo | **Implementado** (ola 3) |
+| CU-53 | Elevar un reclamo a segunda instancia | **Implementado** (ola 3) |
+| CU-56 | Ejecutar una prueba de continuidad | **Implementado** (ola 3) |
+| CU-94 | Elevar una decisión al comité de gobierno | **Implementado** (ola 3) |
 
 **CU-05 vive acá y no en `identidad`**, aunque su ficha apunte a
 `openapi/identidad.yaml`: sus dos tablas —`contrato_adhesion` y

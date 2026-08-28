@@ -70,6 +70,10 @@ class PrefijoSinDosDuenosContratoTest {
             return arbol.filter(Files::isRegularFile)
                     .filter(p -> p.getParent().getFileName().toString().equals("openapi"))
                     .filter(p -> p.toString().endsWith(".yaml"))
+                    // El contrato es el de `src`, no la copia que quedo en `build`.
+                    // Sin este filtro, una compilacion vieja hace fallar el gate con
+                    // rutas que ya no existen — o peor, lo hace pasar con las viejas.
+                    .filter(p -> !p.toString().contains("/build/"))
                     .sorted()
                     .toList();
         } catch (IOException e) {
