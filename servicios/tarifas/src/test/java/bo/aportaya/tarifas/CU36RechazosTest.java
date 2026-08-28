@@ -43,7 +43,16 @@ class CU36RechazosTest extends BaseDeTarifas {
         UUID hecho = fixtura.hechoGenerador(hechoCodigo);
         UUID redondeo = fixtura.politicaDeRedondeo("CENT-" + corto(), "0.01", "BANCARIO");
         UUID concepto = fixtura.conceptoPorcentual(
-                tarifario, hecho, redondeo, fixtura.cuentaDeIngreso(), "COM-SERV", "0.0030", null, null, false, false);
+                tarifario,
+                hecho,
+                redondeo,
+                facturacion.cuentaDeIngreso(),
+                "COM-SERV",
+                "0.0030",
+                null,
+                null,
+                false,
+                false);
         fixtura.activar(tarifario);
         return new Base(codigo, hechoCodigo, tarifario, concepto, contextoDe(fixtura.usuario()));
     }
@@ -141,8 +150,8 @@ class CU36RechazosTest extends BaseDeTarifas {
         // perder el precio pactado a mitad del pasanaku es cambiarle las reglas a
         // alguien que ya no se puede ir sin perder lo que puso.
         Base b = base();
-        UUID grupo = fixtura.grupo();
-        fixtura.congelarTarifa(grupo, b.tarifarioId());
+        UUID grupo = escenario.grupo();
+        escenario.congelarTarifa(grupo, b.tarifarioId());
 
         assertThat(rechazaLaBase(
                         """

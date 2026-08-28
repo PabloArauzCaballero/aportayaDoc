@@ -47,7 +47,7 @@ class CU31Test extends BaseDeTarifas {
         UUID tarifario = fixtura.tarifarioVigente(codigoTarifario);
         UUID hecho = fixtura.hechoGenerador(hechoCodigo);
         UUID redondeo = fixtura.politicaDeRedondeo("CENT-" + corto(), "0.01", "BANCARIO");
-        UUID cuenta = conCuentaDeIngreso ? fixtura.cuentaDeIngreso() : null;
+        UUID cuenta = conCuentaDeIngreso ? facturacion.cuentaDeIngreso() : null;
         UUID concepto = fixtura.conceptoPorcentual(
                 tarifario, hecho, redondeo, cuenta, "COM-SERV", "0.0030", "10.00", "50.00", false, false);
         fixtura.activar(tarifario);

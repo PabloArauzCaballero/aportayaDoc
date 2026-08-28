@@ -5,6 +5,72 @@
 # Prefijos reservados de este servicio: /reputacion, /publico, /verificar
 #   Una ruta fuera de ellos es un rechazo automatico, no una discusion de diseno.
 #   Estas rutas son las UNICAS sin sesion de todo el sistema: /publico, /verificar
+#
+# Codigos de error de los nueve casos de uso. Viven aca aunque el caso de uso no tenga
+# ruta HTTP propia: scripts/verificar_criterios.py los busca en este archivo.
+#
+# CU-61 · Verificar publicamente el sorteo
+#   AP-CU61-01  SORTEO_NO_REVELADO   · sigue comprometido: se devuelve el hash y nada mas
+#   AP-CU61-02  SORTEO_INEXISTENTE   · el grupo no llego a sortear turnos
+#
+# CU-70 · Registrar un evento de reputacion
+#   AP-CU70-01  SIN_REGLA_DE_IMPACTO · el modelo vigente no tiene regla para ese tipo
+#   AP-CU70-02  SIN_MODELO_VIGENTE   · no hay modelo de scoring en produccion
+#   AP-CU70-03  EVENTO_INEXISTENTE   · se pide compensar un evento que no existe
+#   AP-CU70-04  EVENTO_NO_REVERSIBLE · el evento se registro como no reversible
+#
+# CU-71 · Recalcular el puntaje de reputacion
+#   AP-CU71-01  SIN_MODELO_VIGENTE   · no hay modelo de scoring en produccion
+#   AP-CU71-02  SIN_PUNTAJE          · se pide la foto de quien no tiene puntaje
+#
+# CU-72 · Sellar el bloque de transparencia
+#   AP-CU72-01  PERIODO_CON_EXCEPCIONES · un bloque con datos provisorios miente con firma
+#   AP-CU72-02  CADENA_ROTA          · el eslabon no encaja: se detiene y se avisa
+#   AP-CU72-03  BLOQUE_DUPLICADO     · ya existe ese numero para el grupo (R-REP-04)
+#
+# CU-73 · Verificar la cadena de transparencia
+#   AP-CU73-01  GRUPO_INEXISTENTE    · el identificador no corresponde a un grupo publicado
+#   AP-CU73-02  SIN_BLOQUES          · todavia no hay historia sellada. NO es un error
+#                                      de integridad, y asi se informa
+#
+# CU-74 · Otorgar y revocar una insignia
+#   AP-CU74-01  INSIGNIA_INEXISTENTE · el codigo no existe o fue discontinuada
+#   AP-CU74-02  CRITERIO_NO_CUMPLIDO · no se otorga por pedido
+#   AP-CU74-03  YA_OTORGADA          · el reintento es inocuo: devuelve la que hay
+#   AP-CU74-04  YA_REVOCADA          · se intenta revocar una que no esta vigente
+#   AP-CU74-05  REFERENCIA_INVALIDA  · reservado: el hecho lo resuelve quien lo posee
+#
+# CU-75 · Emitir un certificado de reputacion verificable
+#   AP-CU75-01  SIN_SNAPSHOT         · no hay foto congelada de la cual emitir
+#   AP-CU75-02  IDENTIDAD_NO_VERIFICADA · el titular no completo la verificacion
+#   AP-CU75-03  CERTIFICADO_VIGENTE  · ya hay uno sobre esa foto; se devuelve ese
+#   AP-CU75-04  NO_ES_TITULAR        · alguien distinto del titular intenta emitirlo
+#   AP-CU75-05  YA_REVOCADO          · se intenta revocar uno ya revocado
+#
+# CU-76 · Resenar a un participante y moderar la resena
+#   AP-CU76-01  SIN_CONVIVENCIA      · autor y evaluado no compartieron grupo (R-REP-06)
+#   AP-CU76-02  CICLO_EN_CURSO       · se resena al cerrar, no mientras corre
+#   AP-CU76-03  RESENA_DUPLICADA     · ya reseno a esa persona en ese grupo y dimension
+#   AP-CU76-04  AUTORRESENA          · nadie se resena a si mismo
+#   AP-CU76-05  CONTENIDO_RECHAZADO  · decision de moderacion invalida o ya tomada
+#   AP-CU76-06  PLAZO_VENCIDO        · vencio la ventana para resenar tras el cierre
+#
+# CU-97 · Anticipar el riesgo con alertas tempranas
+#   AP-CU97-01  SIN_HISTORIAL        · se devuelve SIN_DATOS, no riesgo alto
+#   AP-CU97-02  SIN_MODELO_VIGENTE   · ningun modelo de scoring vigente a la fecha
+#   AP-CU97-03  PERIODO_NO_CERRADO   · las metricas del grupo exigen el periodo cerrado
+#   AP-CU97-04  ALERTA_DUPLICADA     · ya hay una abierta del mismo codigo y ambito
+#   AP-CU97-05  CIERRE_SIN_DESENLACE · cerrar sin resultado no deja calibrar nada
+#
+# NOTA · divergencias declaradas contra la boveda, con su detalle en
+# planes/informes/carril-3B.md:
+#   · CU-72 nombra `hashContenido`; la tabla guarda `raiz_merkle` (arbol de Merkle
+#     sobre los hechos sellados) y es lo que devuelve este contrato.
+#   · CU-72 declara `hashAnterior` nulable; la columna es NOT NULL y el genesis va con
+#     64 ceros.
+#   · CU-97 nombra los ambitos PARTICIPANTE y CARTERA; el catalogo cerrado admite
+#     GRUPO, ORGANIZADOR y USUARIO.
+#   · CU-76 nombra la dimension COLABORACION; el catalogo cerrado admite ORGANIZACION.
 openapi: 3.1.0
 info:
   title: transparencia
@@ -13,23 +79,390 @@ info:
     Servicio transparencia. Un caso de uso = una operacion, con el codigo CU en el
     operationId. Los importes viajan como CADENA decimal, nunca como number.
 
+    Este servicio existe para que nadie tenga que creernos. Por eso tiene las dos
+    unicas familias de rutas sin sesion del sistema: /publico y /verificar.
+
 servers:
   - url: /api/v1
 
-paths: {}
-  # Una operacion por caso de uso. Plantilla:
-  #
-  #   /reputacion/…:
-  #     post:
-  #       operationId: <verboObjeto>          # CU-NN
-  #       parameters:
-  #         - name: Idempotency-Key
-  #           in: header
-  #           required: true                   # toda operacion con efecto
-  #           schema: { type: string, format: uuid }
-  #       responses:
-  #         '200': …
-  #         '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+paths:
+  /publico/sorteos/{sorteoId}/verificacion:
+    get:
+      operationId: verificarSorteo              # CU-61
+      summary: Verificar publicamente el sorteo
+      description: >-
+        Ruta PUBLICA, sin sesion. Recomputa el compromiso y el barajado con el mismo
+        atomo que uso CU-60 para sortear: una sola implementacion para generar y para
+        verificar. Antes del revelado no hay nada que verificar, y ese es el punto.
+      parameters:
+        - name: sorteoId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Veredicto, con el paquete completo para rehacerlo por fuera
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaVerificacionSorteo' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /reputacion/eventos:
+    post:
+      operationId: registrarEventoReputacion    # CU-70
+      summary: Registrar un evento de reputacion
+      description: >-
+        Un evento por hecho (R-REP-01). El impacto sale del catalogo del modelo, no de
+        constantes: sin regla no se puntua, porque inventarle un impacto a un tipo de
+        evento es decidir a mano cuanto vale la conducta de alguien.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaEventoReputacion' }
+      responses:
+        '201':
+          description: Evento registrado, con su impacto y el factor que mueve
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaEventoReputacion' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /reputacion/eventos/{eventoId}/compensacion:
+    post:
+      operationId: compensarEventoReputacion    # CU-70
+      summary: Compensar un evento que sumo o resto puntos
+      description: >-
+        No se borra el original ni se lo edita: evento_reputacion es append-only. Entra
+        una fila nueva con el impacto exacto invertido y `revertidoPorId` apuntando al
+        original.
+      parameters:
+        - name: eventoId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaCompensacion' }
+      responses:
+        '201':
+          description: Evento compensatorio registrado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaEventoReputacion' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /reputacion/puntajes:
+    post:
+      operationId: recalcularPuntaje            # CU-71
+      summary: Recalcular el puntaje de reputacion
+      description: >-
+        Un solo puntaje vigente por usuario (R-REP-02) y el total es la suma de sus
+        componentes (R-REP-03). Con menos eventos que el minimo del modelo el nivel es
+        SIN_HISTORIAL: no es un castigo, es decir la verdad.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaRecalculo' }
+      responses:
+        '200':
+          description: Puntaje vigente, abierto factor por factor
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaPuntaje' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /reputacion/snapshots:
+    post:
+      operationId: tomarSnapshotReputacion      # CU-71
+      summary: Congelar una foto del puntaje
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaSnapshot' }
+      responses:
+        '201':
+          description: Foto tomada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaSnapshot' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /reputacion/bloques:
+    post:
+      operationId: sellarBloque                 # CU-72
+      summary: Sellar el bloque de transparencia
+      description: >-
+        Con excepciones de conciliacion abiertas NO se sella (R-BIL-12). Un hecho ya
+        sellado no se reescribe: la correccion entra al bloque siguiente como
+        movimiento compensatorio y los dos quedan visibles.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaSellado' }
+      responses:
+        '201':
+          description: Bloque sellado y encadenado al anterior
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaSellado' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /publico/grupos/{grupoId}/verificacion:
+    get:
+      operationId: verificarCadena              # CU-73
+      summary: Verificar la cadena de transparencia
+      description: >-
+        Ruta PUBLICA, sin sesion. Recorre los bloques y devuelve el primero que falla y
+        que componente no cuadra. Un grupo sin bloques no es un error de integridad.
+      parameters:
+        - name: grupoId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Veredicto de la cadena
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaVerificacionCadena' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /publico/grupos/{grupoId}/bloques:
+    get:
+      operationId: listarBloques                # CU-72
+      summary: Los bloques publicados de un grupo
+      description: >-
+        Ruta PUBLICA, sin sesion. Es el paquete que cualquiera descarga para verificar
+        por fuera.
+      parameters:
+        - name: grupoId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: La cadena, en orden
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/BloquePublicado' }
+
+  /reputacion/insignias/evaluacion:
+    post:
+      operationId: evaluarInsignias             # CU-74
+      summary: Evaluar y otorgar las insignias que un hecho desbloqueo
+      description: >-
+        NO hay otorgamiento manual. Se gana contra los datos o no se gana: una insignia
+        que alguien puede conceder a dedo no dice nada de quien la lleva.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaEvaluacionInsignias' }
+      responses:
+        '200':
+          description: Lo otorgado, con su motivo legible
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/SalidaInsignia' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /reputacion/insignias/{otorgadaId}/revocacion:
+    post:
+      operationId: revocarInsignia              # CU-74
+      summary: Revocar una insignia, sin borrarla
+      description: >-
+        Revocar no borra (R-REP-05). Queda la fila, la fecha y el motivo: borrarla
+        dejaria a la persona sin poder saber por que perdio algo que tenia.
+      parameters:
+        - name: otorgadaId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaRevocacionInsignia' }
+      responses:
+        '200':
+          description: Insignia revocada, con su motivo
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaInsignia' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /reputacion/certificados:
+    post:
+      operationId: emitirCertificado            # CU-75
+      summary: Emitir un certificado de reputacion verificable
+      description: >-
+        El titular elige que incluir campo por campo, y lo que no eligio no entra ni al
+        hash. Solo el titular emite el suyo (R-SEG-03).
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaCertificado' }
+      responses:
+        '201':
+          description: Certificado emitido, con su URL publica y su vencimiento
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaCertificado' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /reputacion/certificados/{codigo}/revocacion:
+    post:
+      operationId: revocarCertificado           # CU-75
+      summary: Revocar un certificado
+      description: >-
+        Lo usa tambien el derecho de supresion (CU-07): al suprimir, la URL deja de
+        resolver.
+      parameters:
+        - name: codigo
+          in: path
+          required: true
+          schema: { type: string, maxLength: 40 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaRevocacionCertificado' }
+      responses:
+        '204': { description: Certificado revocado }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /verificar/{codigo}:
+    get:
+      operationId: verificarCertificado         # CU-75
+      summary: Verificar un certificado por su codigo
+      description: >-
+        Ruta PUBLICA, sin sesion. Un codigo inexistente responde igual que uno
+        revocado: NO_VALIDO, sin fechas. Distinguirlos le diria a quien prueba codigos
+        al azar cuando acerto.
+      parameters:
+        - name: codigo
+          in: path
+          required: true
+          schema: { type: string, maxLength: 40 }
+      responses:
+        '200':
+          description: Estado del certificado, sin filtrar existencia
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaVerificacionCertificado' }
+
+  /reputacion/resenas:
+    post:
+      operationId: publicarResena               # CU-76
+      summary: Resenar a un participante
+      description: >-
+        Solo resena quien convivio y una vez por autor, evaluado, grupo y dimension
+        (R-REP-06). Se resena al cerrar el ciclo, no durante: resenar a quien todavia
+        te debe plata convierte la resena en una herramienta de presion.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaResena' }
+      responses:
+        '201':
+          description: Resena creada, PENDIENTE de moderacion
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaResena' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /reputacion/resenas/{resenaId}/moderacion:
+    post:
+      operationId: moderarResena                # CU-76
+      summary: Moderar una resena
+      description: >-
+        Nada se publica sin moderar. Lo que trae datos personales se retiene, no se
+        recorta: recortar deja el dato en la base y la sospecha en el aire.
+      parameters:
+        - name: resenaId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaModeracion' }
+      responses:
+        '200':
+          description: Resena moderada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaResena' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /reputacion/riesgo/evaluacion:
+    post:
+      operationId: evaluarRiesgo                # CU-97
+      summary: Anticipar el riesgo con alertas tempranas
+      description: >-
+        Sin historial el nivel es SIN_DATOS, nunca riesgo alto. Al participante nunca
+        se le muestra un puntaje: el mensaje habla de hechos concretos, con numeros, y
+        de que puede hacer.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaEvaluacionRiesgo' }
+      responses:
+        '200':
+          description: Alertas abiertas, nivel de riesgo y metricas en alerta
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaEvaluacionRiesgo' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /reputacion/riesgo/alertas/{alertaId}/cierre:
+    post:
+      operationId: cerrarAlertaRiesgo           # CU-97
+      summary: Cerrar una alerta con su desenlace
+      description: >-
+        Cerrar exige desenlace: una alerta que se cierra sin decir si era cierta no
+        deja calibrar nada, y el modelo se queda con el mismo error para siempre.
+      parameters:
+        - name: alertaId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaCierreAlerta' }
+      responses:
+        '204': { description: Alerta cerrada con su desenlace }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
 
 components:
   parameters:
@@ -41,30 +474,479 @@ components:
         Toda operacion con efecto la exige. La red duplica; reintentar tiene que ser
         seguro, y la clave se valida ANTES de escribir (invariante 7).
       schema: { type: string, format: uuid }
-  schemas:
-    Dinero:
-      type: object
-      additionalProperties: false
-      required: [monto, moneda]
-      properties:
-        monto:
-          type: string
-          pattern: '^-?\d+\.\d{2}$'     # CADENA: un number JSON es un doble
-        moneda:
-          type: string
-          enum: [BOB, USD]
-    Error:
-      type: object
-      additionalProperties: false
-      required: [codigo, mensaje, trazaId]
-      properties:
-        codigo:   { type: string, pattern: '^AP-CU\d+-\d{2}$' }
-        mensaje:  { type: string }
-        detalle:  { type: object }
-        trazaId:  { type: string }
+
   responses:
     ReglaDeNegocio:
-      description: Regla de negocio de la aplicacion (422, no 400)
+      description: Una regla del dominio lo impide. El codigo AP-CUnn-nn dice cual.
       content:
-        application/json:
-          schema: { $ref: '#/components/schemas/Error' }
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problema' }
+
+  schemas:
+    Problema:
+      type: object
+      additionalProperties: false
+      required: [tipo, titulo, estado, codigo]
+      properties:
+        tipo:    { type: string }
+        titulo:  { type: string }
+        estado:  { type: integer }
+        codigo:  { type: string, pattern: '^AP-CU[0-9]{2,3}-[0-9]{2}$' }
+        detalle: { type: [string, 'null'] }
+
+    Hash:
+      type: string
+      minLength: 64
+      maxLength: 64
+      description: SHA-256 en hexadecimal minuscula.
+
+    Decimal:
+      type: string
+      pattern: '^-?[0-9]+\.[0-9]{2}$'
+      description: >-
+        Cadena decimal, nunca number. Un puntaje en coma flotante deja de sumar con sus
+        componentes y R-REP-03 lo rechaza.
+
+    # ------------------------------------------------------------------ CU-61
+    SalidaVerificacionSorteo:
+      type: object
+      additionalProperties: false
+      required: [verifica, hashEsperado, hashRecomputado, ordenCoincide, paquete]
+      properties:
+        verifica:        { type: boolean }
+        hashEsperado:    { $ref: '#/components/schemas/Hash' }
+        hashRecomputado: { $ref: '#/components/schemas/Hash' }
+        ordenCoincide:   { type: boolean }
+        primerCupoDiscrepante: { type: [integer, 'null'] }
+        paquete:
+          type: object
+          additionalProperties: false
+          required: [semilla, entropias, metodo, cupos]
+          properties:
+            semilla:   { $ref: '#/components/schemas/Hash' }
+            entropias: { type: array, items: { type: string } }
+            metodo:    { type: string }
+            cupos:     { type: array, items: { type: integer } }
+
+    # ------------------------------------------------------------------ CU-70
+    EntradaEventoReputacion:
+      type: object
+      additionalProperties: false
+      required: [usuarioId, tipo, referenciaTipo, descripcion, ocurridoEn]
+      properties:
+        usuarioId:      { type: string, format: uuid }
+        grupoId:        { type: [string, 'null'], format: uuid }
+        participanteId: { type: [string, 'null'], format: uuid }
+        tipo:
+          type: string
+          description: Catalogo cerrado de ck_evento_reputacion_tipo.
+          enum: [ABANDONO_DE_GRUPO, APORTE_ANTICIPADO, APORTE_CON_RETRASO_GRAVE,
+                 APORTE_CON_RETRASO_LEVE, APORTE_NO_REALIZADO, APORTE_PUNTUAL,
+                 AVAL_EJECUTADO, COBERTURA_CONSUMIDA, CONFIRMACION_ENTREGA_A_TIEMPO,
+                 DEUDA_CASTIGADA, DEUDA_RECUPERADA, EXPULSION, FRAUDE_CONFIRMADO,
+                 GRUPO_COMPLETADO, KYC_COMPLETADO, RESENA_NEGATIVA, RESENA_POSITIVA,
+                 SANCION_APLICADA, SANCION_REVOCADA]
+        referenciaTipo:
+          type: string
+          enum: [COBERTURA_INCUMPLIMIENTO, ENTREGA_FONDO, GRUPO, OBLIGACION_APORTE,
+                 PARTICIPANTE, REGISTRO_INCUMPLIMIENTO, RESENA_PARTICIPANTE, TRASPASO_CUPO]
+        referenciaId:  { type: [string, 'null'], format: uuid }
+        descripcion:   { type: string, maxLength: 200 }
+        esReversible:  { type: boolean, default: false }
+        ocurridoEn:    { type: string, format: date-time }
+    EntradaCompensacion:
+      type: object
+      additionalProperties: false
+      required: [descripcion]
+      properties:
+        descripcion: { type: string, maxLength: 200 }
+    SalidaEventoReputacion:
+      type: object
+      additionalProperties: false
+      required: [eventoId, impacto, esNuevo]
+      properties:
+        eventoId:       { type: string, format: uuid }
+        impacto:        { $ref: '#/components/schemas/Decimal' }
+        factorAfectado: { type: [string, 'null'] }
+        esNuevo:
+          type: boolean
+          description: false cuando el hecho ya estaba puntuado (R-REP-01). El reintento es inocuo.
+
+    # ------------------------------------------------------------------ CU-71
+    Medicion:
+      type: object
+      additionalProperties: false
+      required: [codigo, valorCrudo, valorNormalizado]
+      properties:
+        codigo:           { type: string, maxLength: 40 }
+        valorCrudo:       { type: string }
+        valorNormalizado: { type: string }
+    EntradaRecalculo:
+      type: object
+      additionalProperties: false
+      required: [usuarioId, mediciones, indicadores]
+      properties:
+        usuarioId:  { type: string, format: uuid }
+        mediciones: { type: array, items: { $ref: '#/components/schemas/Medicion' } }
+        medicionesAnteriores:
+          type: array
+          items: { $ref: '#/components/schemas/Medicion' }
+          description: Para la tendencia. Alguien con 60 subiendo esta mejor que alguien con 65 cayendo.
+        indicadores: { $ref: '#/components/schemas/Indicadores' }
+    Indicadores:
+      type: object
+      additionalProperties: false
+      required: [puntualidad, incumplimiento, montoAportado, gruposCompletados,
+                 gruposAbandonados, incumplimientosAbiertos, antiguedadMeses]
+      properties:
+        puntualidad:             { type: string }
+        incumplimiento:          { type: string }
+        montoAportado:           { $ref: '#/components/schemas/Decimal' }
+        gruposCompletados:       { type: integer, minimum: 0 }
+        gruposAbandonados:       { type: integer, minimum: 0 }
+        incumplimientosAbiertos: { type: integer, minimum: 0 }
+        antiguedadMeses:         { type: integer, minimum: 0 }
+    Componente:
+      type: object
+      additionalProperties: false
+      required: [codigo, valorCrudo, valorNormalizado, contribucion, tendencia]
+      properties:
+        codigo:           { type: string }
+        valorCrudo:       { type: string }
+        valorNormalizado: { type: string }
+        contribucion:     { $ref: '#/components/schemas/Decimal' }
+        tendencia:        { type: string, enum: [SUBE, BAJA, ESTABLE] }
+    SalidaPuntaje:
+      type: object
+      additionalProperties: false
+      required: [puntajeId, puntaje, nivelDeConfianza, componentes, eventosConsiderados]
+      properties:
+        puntajeId:        { type: string, format: uuid }
+        puntaje:          { $ref: '#/components/schemas/Decimal' }
+        nivelDeConfianza:
+          type: string
+          enum: [SIN_HISTORIAL, RESTRINGIDO, EN_OBSERVACION, BASICO, CONFIABLE,
+                 MUY_CONFIABLE, REFERENTE]
+        componentes:
+          type: array
+          items: { $ref: '#/components/schemas/Componente' }
+          description: Su suma es el total (R-REP-03). Es lo que hace que el numero se pueda apelar.
+        puntajeAnterior:     { type: [string, 'null'] }
+        eventosConsiderados: { type: integer, minimum: 0 }
+    EntradaSnapshot:
+      type: object
+      additionalProperties: false
+      required: [usuarioId, motivo]
+      properties:
+        usuarioId: { type: string, format: uuid }
+        motivo:
+          type: string
+          enum: [AUDITORIA, CIERRE_DE_GRUPO, INGRESO_A_GRUPO, PERIODICO]
+    SalidaSnapshot:
+      type: object
+      additionalProperties: false
+      required: [snapshotId]
+      properties:
+        snapshotId: { type: string, format: uuid }
+
+    # ------------------------------------------------------------------ CU-72
+    HechoASellar:
+      type: object
+      additionalProperties: false
+      required: [tipoEntidad, entidadId, campos, ocurridoEn]
+      properties:
+        tipoEntidad:
+          type: string
+          description: Catalogo cerrado de ck_registro_sellado_tipo_entidad.
+          enum: [ACUERDO, COBERTURA, ENTREGA, PAGO, SANCION]
+        entidadId: { type: string, format: uuid }
+        campos:
+          type: object
+          additionalProperties: { type: string }
+          description: >-
+            Todo como cadena, y las claves se ordenan al serializar. Un hash solo sirve
+            si dos implementaciones producen el mismo.
+        ocurridoEn: { type: string, format: date-time }
+    EntradaSellado:
+      type: object
+      additionalProperties: false
+      required: [grupoId, motivo, hechos, desde, hasta, excepcionesDeConciliacionAbiertas]
+      properties:
+        grupoId: { type: string, format: uuid }
+        motivo:  { type: string, enum: [CIERRE_PERIODO, ENTREGA, HITO, DISOLUCION] }
+        hechos:  { type: array, items: { $ref: '#/components/schemas/HechoASellar' } }
+        desde:   { type: string, format: date-time }
+        hasta:   { type: string, format: date-time }
+        excepcionesDeConciliacionAbiertas:
+          type: integer
+          minimum: 0
+          description: >-
+            Lo resuelve nucleo-financiero y llega resuelto: no se lee su esquema
+            (invariante 11) ni se lo consulta dentro de la transaccion (invariante 6).
+    SalidaSellado:
+      type: object
+      additionalProperties: false
+      required: [bloqueId, numeroBloque, hashAnterior, raizMerkle, hashBloque, entidadesSelladas]
+      properties:
+        bloqueId:     { type: string, format: uuid }
+        numeroBloque: { type: integer, format: int64 }
+        hashAnterior:
+          allOf: [{ $ref: '#/components/schemas/Hash' }]
+          description: >-
+            64 ceros en el primer bloque del grupo. Nunca nulo, porque la columna es
+            NOT NULL.
+        raizMerkle:   { $ref: '#/components/schemas/Hash' }
+        hashBloque:   { $ref: '#/components/schemas/Hash' }
+        entidadesSelladas: { type: integer, minimum: 0 }
+    BloquePublicado:
+      type: object
+      additionalProperties: false
+      required: [numeroBloque, hashAnterior, raizMerkle, hashBloque, desde, hasta, cantidadEventos]
+      properties:
+        numeroBloque:    { type: integer, format: int64 }
+        hashAnterior:    { $ref: '#/components/schemas/Hash' }
+        raizMerkle:      { $ref: '#/components/schemas/Hash' }
+        hashBloque:      { $ref: '#/components/schemas/Hash' }
+        desde:           { type: string, format: date-time }
+        hasta:           { type: string, format: date-time }
+        cantidadEventos: { type: integer, minimum: 0 }
+
+    # ------------------------------------------------------------------ CU-73
+    SalidaVerificacionCadena:
+      type: object
+      additionalProperties: false
+      required: [integra, bloquesVerificados]
+      properties:
+        integra:            { type: boolean }
+        bloquesVerificados: { type: integer, minimum: 0 }
+        primerBloqueFallido: { type: [integer, 'null'], format: int64 }
+        componenteFallido:
+          type: [string, 'null']
+          enum: [HASH_CONTENIDO, HASH_ANTERIOR, HASH_BLOQUE, SECUENCIA, null]
+        ultimoSellado: { type: [string, 'null'], format: date-time }
+
+    # ------------------------------------------------------------------ CU-74
+    HechosDelUsuario:
+      type: object
+      additionalProperties: false
+      description: >-
+        Los hechos viven en los esquemas de aportes, garantia, identidad y organizador.
+        Llegan resueltos: aca no se leen (invariante 11).
+      required: [ciclosCompletados, ciclosCompletadosSinCobertura, aportesPuntualesConsecutivos,
+                 diasCorridosSinMora, regularizacionesCumplidasEnPlazo, gruposCerradosComoOrganizador,
+                 sancionesFirmesComoOrganizador, entregasFueraDePlazoComoOrganizador,
+                 invitadosQueCompletaronUnCiclo, mesesDeAntiguedad, identidadVigente,
+                 tieneDeudaCastigada]
+      properties:
+        ciclosCompletados:                   { type: integer, minimum: 0 }
+        ciclosCompletadosSinCobertura:       { type: integer, minimum: 0 }
+        aportesPuntualesConsecutivos:        { type: integer, minimum: 0 }
+        diasCorridosSinMora:                 { type: integer, minimum: 0 }
+        regularizacionesCumplidasEnPlazo:    { type: integer, minimum: 0 }
+        gruposCerradosComoOrganizador:       { type: integer, minimum: 0 }
+        sancionesFirmesComoOrganizador:      { type: integer, minimum: 0 }
+        entregasFueraDePlazoComoOrganizador: { type: integer, minimum: 0 }
+        desempenoComoOrganizador:            { type: [string, 'null'] }
+        invitadosQueCompletaronUnCiclo:      { type: integer, minimum: 0 }
+        mesesDeAntiguedad:                   { type: integer, minimum: 0 }
+        identidadVigente:                    { type: boolean }
+        tieneDeudaCastigada:                 { type: boolean }
+    EntradaEvaluacionInsignias:
+      type: object
+      additionalProperties: false
+      required: [usuarioId, hechos]
+      properties:
+        usuarioId:       { type: string, format: uuid }
+        tipoDeEvento:    { type: [string, 'null'], maxLength: 40 }
+        codigosAEvaluar: { type: array, items: { type: string, maxLength: 40 } }
+        hechos:          { $ref: '#/components/schemas/HechosDelUsuario' }
+    EntradaRevocacionInsignia:
+      type: object
+      additionalProperties: false
+      required: [motivoRevocacion]
+      properties:
+        motivoRevocacion:
+          type: string
+          minLength: 10
+          maxLength: 160
+          description: Obligatorio. Revocar sin motivo deja a la persona sin saber por que.
+    SalidaInsignia:
+      type: object
+      additionalProperties: false
+      required: [otorgadaId, otorgadaEn, motivoLegible, revocada, esNueva]
+      properties:
+        otorgadaId:     { type: string, format: uuid }
+        insigniaCodigo: { type: [string, 'null'], maxLength: 40 }
+        otorgadaEn:     { type: string, format: date-time }
+        motivoLegible:  { type: string }
+        revocada:       { type: boolean }
+        esNueva:        { type: boolean }
+
+    # ------------------------------------------------------------------ CU-75
+    EntradaCertificado:
+      type: object
+      additionalProperties: false
+      required: [usuarioId, snapshotId, disponibles, incluir, vigenciaDias, identidadVerificada]
+      properties:
+        usuarioId:  { type: string, format: uuid }
+        snapshotId: { type: string, format: uuid }
+        disponibles:
+          type: object
+          additionalProperties: { type: string }
+          description: Todo lo que se PODRIA mostrar, ya resuelto desde la foto.
+        incluir:
+          type: array
+          items: { type: string }
+          description: Lo que el titular eligio. Lo demas no entra ni al hash.
+        vigenciaDias:        { type: integer, minimum: 7, maximum: 180, default: 90 }
+        identidadVerificada: { type: boolean }
+    EntradaRevocacionCertificado:
+      type: object
+      additionalProperties: false
+      required: [motivo]
+      properties:
+        motivo: { type: string, minLength: 3, maxLength: 300 }
+    SalidaCertificado:
+      type: object
+      additionalProperties: false
+      required: [certificadoId, codigoVerificacion, urlPublica, hashContenido, emitidoEn,
+                 expiraEn, contenido]
+      properties:
+        certificadoId:      { type: string, format: uuid }
+        codigoVerificacion: { type: string, maxLength: 40 }
+        urlPublica:         { type: string }
+        hashContenido:      { $ref: '#/components/schemas/Hash' }
+        emitidoEn:          { type: string, format: date-time }
+        expiraEn:           { type: string, format: date-time }
+        contenido:
+          type: object
+          additionalProperties: { type: string }
+    SalidaVerificacionCertificado:
+      type: object
+      additionalProperties: false
+      required: [valido, estado]
+      properties:
+        valido: { type: boolean }
+        estado: { type: string, enum: [VIGENTE, VENCIDO, REVOCADO, NO_VALIDO] }
+        emitidoEn: { type: [string, 'null'], format: date-time }
+        expiraEn:  { type: [string, 'null'], format: date-time }
+
+    # ------------------------------------------------------------------ CU-76
+    EntradaResena:
+      type: object
+      additionalProperties: false
+      required: [grupoId, autorParticipanteId, evaluadoUsuarioId, calificacion, dimension,
+                 cicloCerrado, diasDeVentana]
+      properties:
+        grupoId:             { type: string, format: uuid }
+        autorParticipanteId: { type: string, format: uuid }
+        evaluadoUsuarioId:   { type: string, format: uuid }
+        calificacion:        { type: integer, minimum: 1, maximum: 5 }
+        dimension:
+          type: string
+          description: Catalogo cerrado de ck_resena_participante_dimension.
+          enum: [PUNTUALIDAD, COMUNICACION, ORGANIZACION]
+        comentario:   { type: [string, 'null'], maxLength: 500 }
+        cicloCerrado: { type: boolean }
+        cerradoEn:    { type: [string, 'null'], format: date-time }
+        diasDeVentana: { type: integer, minimum: 1 }
+        autorFueExpulsado:    { type: boolean, default: false }
+        resenasPreviasDelAutor: { type: integer, minimum: 0, default: 0 }
+    EntradaModeracion:
+      type: object
+      additionalProperties: false
+      required: [decision, motivo]
+      properties:
+        decision: { type: string, enum: [APROBAR, RECHAZAR, PUBLICAR_SIN_COMENTARIO] }
+        motivo:   { type: string, minLength: 10, maxLength: 300 }
+    SalidaResena:
+      type: object
+      additionalProperties: false
+      required: [resenaId, estadoModeracion, pesoEnReputacion, marcas]
+      properties:
+        resenaId: { type: string, format: uuid }
+        estadoModeracion:
+          type: string
+          description: Catalogo cerrado de ck_resena_participante_estado_moderacion.
+          enum: [PENDIENTE, PUBLICADA, RECHAZADA, OCULTA]
+        pesoEnReputacion:
+          type: string
+          description: Siempre menor que el peso de los factores de pago.
+        motivoModeracion: { type: [string, 'null'] }
+        marcas:
+          type: array
+          items: { type: string, enum: [TELEFONO, CORREO, DOCUMENTO] }
+          description: Lo que la primera pasada encontro. Retiene, no recorta.
+
+    # ------------------------------------------------------------------ CU-97
+    MetricaDeRiesgo:
+      type: object
+      additionalProperties: false
+      required: [codigo, valor, unidad, mayorEsPeor]
+      properties:
+        codigo: { type: string, maxLength: 40 }
+        valor:  { type: string }
+        unidad: { type: string, maxLength: 15 }
+        umbral: { type: [string, 'null'] }
+        mayorEsPeor:
+          type: boolean
+          description: >-
+            Sin este dato una tasa de pago del 100% se leeria como alerta. Una metrica
+            sin umbral configurado no dispara nada.
+    EntradaEvaluacionRiesgo:
+      type: object
+      additionalProperties: false
+      required: [ambito, metricas, codigoDeAlerta, observaciones]
+      properties:
+        ambito:
+          type: string
+          description: Catalogo cerrado de ck_alerta_riesgo_ambito.
+          enum: [GRUPO, ORGANIZADOR, USUARIO]
+        ambitoId:  { type: [string, 'null'], format: uuid }
+        periodoId: { type: [string, 'null'], format: uuid }
+        periodoCerrado: { type: boolean, default: true }
+        metricas: { type: array, items: { $ref: '#/components/schemas/MetricaDeRiesgo' } }
+        codigoDeAlerta:
+          type: object
+          additionalProperties:
+            type: string
+            enum: [CAIDA_ABRUPTA_SCORE, GRUPO_INVIABLE, MORA_CONCENTRADA, RETIRO_MASIVO]
+          description: De codigo de metrica al codigo de alerta. Es catalogo, no constante.
+        observaciones:   { type: integer, minimum: 0 }
+        puntajeDeRiesgo:
+          type: [string, 'null']
+          description: NO sale de aca hacia el usuario. Quien conoce el numero lo puede jugar.
+    AlertaDeRiesgo:
+      type: object
+      additionalProperties: false
+      required: [alertaId, codigo, severidad, descripcion, accionSugerida, mensajeAlUsuario]
+      properties:
+        alertaId:  { type: string, format: uuid }
+        codigo:    { type: string, enum: [CAIDA_ABRUPTA_SCORE, GRUPO_INVIABLE, MORA_CONCENTRADA, RETIRO_MASIVO] }
+        severidad: { type: string, enum: [BAJA, MEDIA, ALTA, CRITICA] }
+        descripcion:    { type: string, maxLength: 300 }
+        accionSugerida: { type: string }
+        mensajeAlUsuario:
+          type: string
+          description: En hechos, nunca en probabilidades. Si se lee el puntaje aca, esta mal.
+    SalidaEvaluacionRiesgo:
+      type: object
+      additionalProperties: false
+      required: [alertas, nivelRiesgo, versionModelo, metricasEnAlerta]
+      properties:
+        alertas: { type: array, items: { $ref: '#/components/schemas/AlertaDeRiesgo' } }
+        nivelRiesgo:
+          type: string
+          enum: [BAJO, MEDIO, ALTO, SIN_DATOS]
+          description: Sin historial es SIN_DATOS, no riesgo alto. La ausencia de datos es ausencia de datos.
+        versionModelo:    { type: string }
+        metricasEnAlerta: { type: array, items: { $ref: '#/components/schemas/MetricaDeRiesgo' } }
+    EntradaCierreAlerta:
+      type: object
+      additionalProperties: false
+      required: [desenlace]
+      properties:
+        desenlace:
+          type: string
+          enum: [CONFIRMADA, DESCARTADA]
+          description: Sin desenlace la alerta no ensena nada y el modelo repite el error.

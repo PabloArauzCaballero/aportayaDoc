@@ -39,12 +39,21 @@ class CU33Test extends BaseDeTarifas {
         UUID hecho = fixtura.hechoGenerador("ENTREGA-" + corto());
         UUID redondeo = fixtura.politicaDeRedondeo("CENT-" + corto(), "0.01", "BANCARIO");
         UUID concepto = fixtura.conceptoPorcentual(
-                tarifario, hecho, redondeo, fixtura.cuentaDeIngreso(), "COM-SERV", "0.0030", null, null, false, false);
+                tarifario,
+                hecho,
+                redondeo,
+                facturacion.cuentaDeIngreso(),
+                "COM-SERV",
+                "0.0030",
+                null,
+                null,
+                false,
+                false);
         fixtura.activar(tarifario);
         UUID usuario = fixtura.usuario();
-        UUID devengo = fixtura.devengoCobrado(concepto, tarifario, usuario, "18.00", "2026-08");
+        UUID devengo = facturacion.devengoCobrado(concepto, tarifario, usuario, "18.00", "2026-08");
         if (conFactura) {
-            fixtura.factura(devengo, usuario, fixtura.datosDeFacturacion(usuario), "18.00", "VALIDADA", null);
+            facturacion.factura(devengo, usuario, facturacion.datosDeFacturacion(usuario), "18.00", "VALIDADA", null);
         }
         return new Caso(devengo, usuario, concepto, contextoDe(usuario));
     }
@@ -114,7 +123,7 @@ class CU33Test extends BaseDeTarifas {
         // reclamo_id, y sin esa fila el cierre del reclamo no tiene con que cumplir.
         Caso c = caso(true);
         ContextoSesion soporte = contextoDe(fixtura.usuario());
-        UUID reclamo = fixtura.reclamo(c.usuario());
+        UUID reclamo = facturacion.reclamo(c.usuario());
 
         SalidaDevolucion salida = transaccion.execute(t -> devolucionCU.devolver(
                 new EntradaDevolucion(
@@ -253,9 +262,9 @@ class CU33Test extends BaseDeTarifas {
         // la nota corregiria algo que para el servicio de impuestos no existe. No
         // queda devolucion a medias.
         Caso c = caso(false);
-        UUID datos = fixtura.datosDeFacturacion(c.usuario());
-        UUID contingencia = fixtura.contingencia(SUCURSAL, PUNTO_VENTA);
-        fixtura.factura(c.devengoId(), c.usuario(), datos, "18.00", "EMITIDA_OFFLINE", contingencia);
+        UUID datos = facturacion.datosDeFacturacion(c.usuario());
+        UUID contingencia = facturacion.contingencia(SUCURSAL, PUNTO_VENTA);
+        facturacion.factura(c.devengoId(), c.usuario(), datos, "18.00", "EMITIDA_OFFLINE", contingencia);
         ContextoSesion soporte = contextoDe(fixtura.usuario());
 
         assertThatThrownBy(() -> transaccion.execute(t -> devolucionCU.devolver(

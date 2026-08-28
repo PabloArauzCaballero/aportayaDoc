@@ -49,6 +49,8 @@ abstract class BaseDeTarifas {
     protected static DSLContext dslFixtura;
     protected static TransactionTemplate transaccion;
     protected static FixturaDeTarifas fixtura;
+    protected static FixturaDeFacturacion facturacion;
+    protected static FixturaDeGrupo escenario;
     protected static Consumidos consumidos;
     protected static ServicioDeImpuestosSimulado servicioFiscal;
 
@@ -69,6 +71,8 @@ abstract class BaseDeTarifas {
         dslFixtura = DSL.using(fuente, SQLDialect.POSTGRES);
         transaccion = new TransactionTemplate(new DataSourceTransactionManager(fuente));
         fixtura = new FixturaDeTarifas(dslFixtura);
+        facturacion = new FixturaDeFacturacion(dslFixtura);
+        escenario = new FixturaDeGrupo(dslFixtura, fixtura);
         consumidos = new Consumidos("tarifas");
         servicioFiscal = new ServicioDeImpuestosSimulado();
 

@@ -41,13 +41,22 @@ class CU32Test extends BaseDeTarifas {
         UUID hecho = fixtura.hechoGenerador("ENTREGA-" + corto());
         UUID redondeo = fixtura.politicaDeRedondeo("CENT-" + corto(), "0.01", "BANCARIO");
         UUID concepto = fixtura.conceptoPorcentual(
-                tarifario, hecho, redondeo, fixtura.cuentaDeIngreso(), "COM-SERV", "0.0030", null, null, true, true);
+                tarifario,
+                hecho,
+                redondeo,
+                facturacion.cuentaDeIngreso(),
+                "COM-SERV",
+                "0.0030",
+                null,
+                null,
+                true,
+                true);
         fixtura.activar(tarifario);
         UUID usuario = fixtura.usuario();
         if (conDatosDeFacturacion) {
-            fixtura.datosDeFacturacion(usuario);
+            facturacion.datosDeFacturacion(usuario);
         }
-        UUID devengo = fixtura.devengoCobrado(concepto, tarifario, usuario, "30.00", "2026-08");
+        UUID devengo = facturacion.devengoCobrado(concepto, tarifario, usuario, "30.00", "2026-08");
         return new Caso(devengo, usuario, contextoDe(usuario));
     }
 

@@ -42,7 +42,16 @@ class CU36Test extends BaseDeTarifas {
         UUID hecho = fixtura.hechoGenerador(hechoCodigo);
         UUID redondeo = fixtura.politicaDeRedondeo("CENT-" + corto(), "0.01", "BANCARIO");
         fixtura.conceptoPorcentual(
-                tarifario, hecho, redondeo, fixtura.cuentaDeIngreso(), "COM-SERV", "0.0030", null, null, false, false);
+                tarifario,
+                hecho,
+                redondeo,
+                facturacion.cuentaDeIngreso(),
+                "COM-SERV",
+                "0.0030",
+                null,
+                null,
+                false,
+                false);
         fixtura.activar(tarifario);
         return new Escenario(codigoTarifario, hechoCodigo, tarifario, contextoDe(fixtura.usuario()));
     }
@@ -109,8 +118,8 @@ class CU36Test extends BaseDeTarifas {
             "Dado un grupo creado con un segmento vigente · Cuando el usuario deja de calificar a mitad del ciclo · Entonces el grupo conserva la tarifa congelada")
     void criterio3() {
         var e = escenario();
-        UUID grupo = fixtura.grupo();
-        fixtura.congelarTarifa(grupo, e.tarifarioId());
+        UUID grupo = escenario.grupo();
+        escenario.congelarTarifa(grupo, e.tarifarioId());
 
         // El usuario ya no califica: sus hechos no alcanzan.
         var yaNoCalifica = transaccion.execute(t -> precioCU.resolver(Map.of("gruposCompletados", 0), e.ctx()));

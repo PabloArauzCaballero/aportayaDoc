@@ -42,10 +42,19 @@ class CU35Test extends BaseDeTarifas {
         UUID hecho = fixtura.hechoGenerador("ENTREGA-" + corto());
         UUID redondeo = fixtura.politicaDeRedondeo("CENT-" + corto(), "0.01", "BANCARIO");
         UUID concepto = fixtura.conceptoPorcentual(
-                tarifario, hecho, redondeo, fixtura.cuentaDeIngreso(), "COM-SERV", "0.0030", null, null, false, false);
+                tarifario,
+                hecho,
+                redondeo,
+                facturacion.cuentaDeIngreso(),
+                "COM-SERV",
+                "0.0030",
+                null,
+                null,
+                false,
+                false);
         fixtura.activar(tarifario);
         for (int i = 0; i < cuantos; i++) {
-            fixtura.devengoCobrado(concepto, tarifario, fixtura.usuario(), "18.00", periodo);
+            facturacion.devengoCobrado(concepto, tarifario, fixtura.usuario(), "18.00", periodo);
         }
         return new BigDecimal("18.00").multiply(BigDecimal.valueOf(cuantos));
     }

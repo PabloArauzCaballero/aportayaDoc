@@ -50,7 +50,7 @@ class CU31RechazosTest extends BaseDeTarifas {
                 tarifario,
                 hecho,
                 redondeo,
-                fixtura.cuentaDeIngreso(),
+                facturacion.cuentaDeIngreso(),
                 "COM-SERV",
                 "0.0030",
                 "10.00",
@@ -204,7 +204,7 @@ class CU31RechazosTest extends BaseDeTarifas {
         // deduccion cobran dos veces del mismo descuento.
         Caso c = caso();
         UUID devengoId = devengar(c, "cot-ded", "dev-ded");
-        UUID deduccion = fixtura.deduccionDeEntrega(fixtura.grupo());
+        UUID deduccion = escenario.deduccionDeEntrega(escenario.grupo());
         String insertar =
                 """
                 INSERT INTO tarifas.cargo_comision

@@ -46,7 +46,7 @@ class CU30Test extends BaseDeTarifas {
         UUID tarifario = fixtura.tarifarioVigente(codigoTarifario);
         UUID hecho = fixtura.hechoGenerador(hechoCodigo);
         UUID redondeo = fixtura.politicaDeRedondeo("CENT-" + corto(), "0.01", "BANCARIO");
-        UUID cuenta = fixtura.cuentaDeIngreso();
+        UUID cuenta = facturacion.cuentaDeIngreso();
         UUID concepto = fixtura.conceptoPorcentual(
                 tarifario,
                 hecho,
@@ -197,7 +197,7 @@ class CU30Test extends BaseDeTarifas {
         // sumarle 13% despues (R-TAR-12). Con PLATAFORMA_ASUME el impuesto se suma
         // porque no hay nadie a quien engañar con el precio mostrado.
         var e = escenario(null, null, true, false, "PLATAFORMA_ASUME");
-        fixtura.impuesto("IVA", "0.13");
+        facturacion.impuesto("IVA", "0.13");
 
         SalidaCotizacion salida = cotizar(e, "10000.00", "cot-cuadre");
 

@@ -126,7 +126,7 @@ class CU30RechazosTest extends BaseDeTarifas {
         String codigo = "CONG-" + codigoCorto();
         UUID tarifario = fixtura.tarifarioVigente(codigo);
         fixtura.activar(tarifario);
-        UUID grupo = fixtura.grupo();
+        UUID grupo = escenario.grupo();
         String insertar =
                 """
                 INSERT INTO tarifas.tarifa_congelada_grupo
@@ -148,8 +148,8 @@ class CU30RechazosTest extends BaseDeTarifas {
         String hechoCodigo = "ENTREGA-" + codigoCorto();
         UUID hecho = fixtura.hechoGenerador(hechoCodigo);
         UUID redondeo = fixtura.politicaDeRedondeo("CENT-" + codigoCorto(), "0.01", "BANCARIO");
-        UUID cuenta = fixtura.cuentaDeIngreso();
-        fixtura.impuesto("IVA", "0.13");
+        UUID cuenta = facturacion.cuentaDeIngreso();
+        facturacion.impuesto("IVA", "0.13");
         // sujeto_obligado BENEFICIARIO_DEL_TURNO + gravado_iva exige que el precio
         // incluya el impuesto: es ck_concepto_precio_final, y es la regla de fondo.
         fixtura.conceptoPorcentual(tarifario, hecho, redondeo, cuenta, "COM-IVA", "0.0030", null, null, true, true);

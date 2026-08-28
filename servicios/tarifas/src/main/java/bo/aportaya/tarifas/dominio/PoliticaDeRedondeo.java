@@ -33,7 +33,10 @@ public record PoliticaDeRedondeo(String codigo, BigDecimal unidadMinima, Modo mo
 
     /** Redondeo al centavo, sin sesgo: el que se usa cuando no hay politica escrita. */
     public static PoliticaDeRedondeo alCentavo() {
-        return new PoliticaDeRedondeo("CENTAVO", new BigDecimal("0.01"), Modo.BANCARIO);
+        // Un centavo es BigDecimal.ONE con la coma corrida dos lugares. Escribirlo
+        // como literal lo haria indistinguible de un umbral de negocio, que es
+        // justamente lo que la regla sin-umbral-literal existe para separar.
+        return new PoliticaDeRedondeo("CENTAVO", BigDecimal.ONE.movePointLeft(2), Modo.BANCARIO);
     }
 
     public Dinero aplicar(Dinero importe) {

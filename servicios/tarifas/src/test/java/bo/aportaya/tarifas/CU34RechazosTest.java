@@ -35,7 +35,16 @@ class CU34RechazosTest extends BaseDeTarifas {
         UUID hecho = fixtura.hechoGenerador("ENTREGA-" + corto());
         UUID redondeo = fixtura.politicaDeRedondeo("CENT-" + corto(), "0.01", "BANCARIO");
         UUID concepto = fixtura.conceptoPorcentual(
-                tarifario, hecho, redondeo, fixtura.cuentaDeIngreso(), "COM-SERV", "0.0030", null, null, false, false);
+                tarifario,
+                hecho,
+                redondeo,
+                facturacion.cuentaDeIngreso(),
+                "COM-SERV",
+                "0.0030",
+                null,
+                null,
+                false,
+                false);
         fixtura.activar(tarifario);
         return new Base(codigo, tarifario, concepto, contextoDe(fixtura.usuario()));
     }
@@ -164,8 +173,8 @@ class CU34RechazosTest extends BaseDeTarifas {
         // Un grupo, una tarifa congelada. Dos snapshots del mismo grupo harian que dos
         // liquidaciones del mismo pasanaku cobren distinto.
         Base b = base();
-        UUID grupo = fixtura.grupo();
-        fixtura.congelarTarifa(grupo, b.tarifarioId());
+        UUID grupo = escenario.grupo();
+        escenario.congelarTarifa(grupo, b.tarifarioId());
 
         assertThat(rechazaLaBase(
                         """

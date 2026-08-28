@@ -32,11 +32,20 @@ class CU32RechazosTest extends BaseDeTarifas {
         UUID hecho = fixtura.hechoGenerador("ENTREGA-" + corto());
         UUID redondeo = fixtura.politicaDeRedondeo("CENT-" + corto(), "0.01", "BANCARIO");
         UUID concepto = fixtura.conceptoPorcentual(
-                tarifario, hecho, redondeo, fixtura.cuentaDeIngreso(), "COM-SERV", "0.0030", null, null, false, false);
+                tarifario,
+                hecho,
+                redondeo,
+                facturacion.cuentaDeIngreso(),
+                "COM-SERV",
+                "0.0030",
+                null,
+                null,
+                false,
+                false);
         fixtura.activar(tarifario);
         UUID usuario = fixtura.usuario();
-        UUID datos = fixtura.datosDeFacturacion(usuario);
-        UUID devengo = fixtura.devengoCobrado(concepto, tarifario, usuario, "30.00", "2026-08");
+        UUID datos = facturacion.datosDeFacturacion(usuario);
+        UUID devengo = facturacion.devengoCobrado(concepto, tarifario, usuario, "30.00", "2026-08");
         return new Caso(devengo, usuario, datos, contextoDe(usuario));
     }
 
@@ -47,7 +56,7 @@ class CU32RechazosTest extends BaseDeTarifas {
         // fila y su hash: borrarla para «limpiar» dejaria una comision cobrada sin
         // documento que la respalde.
         Caso c = caso();
-        UUID facturaId = fixtura.factura(c.devengoId(), c.usuario(), c.datos(), "30.00", "VALIDADA", null);
+        UUID facturaId = facturacion.factura(c.devengoId(), c.usuario(), c.datos(), "30.00", "VALIDADA", null);
 
         // La factura sigue ahi con su sello, y el sello es lo que permite detectar
         // despues que alguien la altero.
@@ -80,7 +89,7 @@ class CU32RechazosTest extends BaseDeTarifas {
         // CUF y numeracion unicos. Dos facturas con el mismo CUF es un problema que
         // solo se arregla anulando una ante el servicio de impuestos.
         Caso c = caso();
-        UUID facturaId = fixtura.factura(c.devengoId(), c.usuario(), c.datos(), "30.00", "VALIDADA", null);
+        UUID facturaId = facturacion.factura(c.devengoId(), c.usuario(), c.datos(), "30.00", "VALIDADA", null);
         String cuf = dsl.fetchOne("SELECT cuf FROM tarifas.factura_electronica WHERE id = ?", facturaId)
                 .get("cuf", String.class);
 
@@ -102,7 +111,7 @@ class CU32RechazosTest extends BaseDeTarifas {
     void rechazaRTAR10() {
         // Una factura validada no se modifica: se anula y se emite nota de credito.
         Caso c = caso();
-        UUID facturaId = fixtura.factura(c.devengoId(), c.usuario(), c.datos(), "30.00", "VALIDADA", null);
+        UUID facturaId = facturacion.factura(c.devengoId(), c.usuario(), c.datos(), "30.00", "VALIDADA", null);
 
         assertThat(rechazaLaBase("UPDATE tarifas.factura_electronica SET monto_total = 1.00 WHERE id = '%s'"
                         .formatted(facturaId)))

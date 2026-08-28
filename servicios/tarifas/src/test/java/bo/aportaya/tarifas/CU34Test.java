@@ -42,7 +42,16 @@ class CU34Test extends BaseDeTarifas {
         UUID hecho = fixtura.hechoGenerador(hechoCodigo);
         UUID redondeo = fixtura.politicaDeRedondeo("CENT-" + corto(), "0.01", "BANCARIO");
         UUID concepto = fixtura.conceptoPorcentual(
-                tarifario, hecho, redondeo, fixtura.cuentaDeIngreso(), "COM-SERV", "0.0030", null, null, false, false);
+                tarifario,
+                hecho,
+                redondeo,
+                facturacion.cuentaDeIngreso(),
+                "COM-SERV",
+                "0.0030",
+                null,
+                null,
+                false,
+                false);
         fixtura.activar(tarifario);
         return new Base(codigo, hechoCodigo, tarifario, concepto, contextoDe(fixtura.usuario()));
     }
@@ -113,8 +122,8 @@ class CU34Test extends BaseDeTarifas {
             "Dado un grupo con tarifa congelada de la versión anterior · Cuando se liquida una entrega tras el cambio · Entonces la comisión se calcula con el snapshot congelado")
     void criterio3() {
         Base b = base();
-        UUID grupo = fixtura.grupo();
-        fixtura.congelarTarifa(grupo, b.tarifarioId());
+        UUID grupo = escenario.grupo();
+        escenario.congelarTarifa(grupo, b.tarifarioId());
         SalidaPublicacion salida =
                 transaccion.execute(t -> tarifarioCU.publicar(publicacion(b, "REDUCCION", 0), b.ctx()));
         transaccion.execute(t -> tarifarioCU.ponerVigente(salida.tarifarioNuevoId(), b.ctx()));
