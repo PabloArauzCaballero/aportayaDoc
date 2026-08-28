@@ -5,6 +5,56 @@
 # Prefijos reservados de este servicio: /tarifas, /comisiones, /facturas
 #   Una ruta fuera de ellos es un rechazo automatico, no una discusion de diseno.
 #   Toda ruta exige sesion: 401 sin token, 403 con rol insuficiente.
+#
+# Codigos de error de los siete casos de uso. Viven aca aunque el caso de uso no
+# tenga ruta HTTP propia: scripts/verificar_criterios.py los busca en este archivo.
+#
+# CU-30 · Cotizar la comision antes de operar
+#   AP-CU30-01  SIN_CONCEPTO_APLICABLE · no hay concepto para ese hecho. El CU pide
+#                                        registrar una cotizacion en cero; la DDL no
+#                                        deja (concepto_tarifa_id es NOT NULL). Ver el
+#                                        hueco en planes/informes/carril-2B.md
+#   AP-CU30-02  TARIFARIO_NO_RESUELTO  · sin tarifario publicado no se cobra (R-CON-07)
+#   AP-CU30-03  COTIZACION_VENCIDA     · el precio que se acepta tiene que ser el visto
+#   AP-CU30-04  METODO_INCOHERENTE     · metodo de calculo sin sus valores (R-TAR-03).
+#                                        No esta en el CU: lo exige ck_concepto_metodo
+#
+# CU-31 · Devengar y cobrar la comision
+#   AP-CU31-01  DEVENGO_DUPLICADO      · ese hecho ya devengo esa comision (R-TAR-04)
+#   AP-CU31-02  COTIZACION_VENCIDA     · hay que recalcular antes de devengar
+#   AP-CU31-03  COBRO_FALLIDO          · tras los reintentos pasa a cuenta por cobrar
+#   AP-CU31-04  SIN_CUENTA_DE_INGRESO  · el concepto no tiene cuenta contable mapeada
+#
+# CU-32 · Emitir factura electronica
+#   AP-CU32-01  SIN_CUFD_VIGENTE       · no hay codigo diario para el punto de venta
+#   AP-CU32-02  SERVICIO_FISCAL_CAIDO  · se emite offline bajo evento significativo
+#   AP-CU32-03  DOCUMENTO_RECHAZADO    · el servicio de impuestos rechazo el envio
+#   AP-CU32-04  FACTURA_YA_EMITIDA     · un devengo, una factura (R-TAR-09)
+#
+# CU-33 · Devolver comision y emitir nota de credito
+#   AP-CU33-01  EXCEDE_LO_COBRADO      · contra lo YA devuelto, no contra lo cobrado
+#   AP-CU33-02  DEVENGO_NO_COBRADO     · no hay nada que devolver
+#   AP-CU33-03  FACTURA_SIN_ENVIAR     · primero se envia la offline, despues la nota
+#
+# CU-34 · Publicar un tarifario nuevo con preaviso
+#   AP-CU34-01  PREAVISO_NO_CUMPLIDO   · falta el plazo de aviso (R-TAR-08)
+#   AP-CU34-02  TARIFARIO_VIGENTE_INMUTABLE · se publica la version siguiente (R-TAR-02)
+#   AP-CU34-03  SIN_ACTA_DE_APROBACION · falta el acta del comite (R-LIC-03)
+#   AP-CU34-04  VIGENCIAS_SOLAPADAS    · lo rechaza el EXCLUDE de la base (R-TAR-01)
+#
+# CU-35 · Cerrar la liquidacion mensual de ingresos
+#   AP-CU35-01  DIAS_SIN_CERRAR        · el mes se apoya en dias cuadrados
+#   AP-CU35-02  EXCEPCIONES_ABIERTAS   · quedan conciliaciones sin resolver
+#   AP-CU35-03  NO_CUADRA_CONTRA_MAYOR · difiere del saldo de la cuenta de ingresos
+#   AP-CU35-04  PERIODO_YA_CERRADO     · devuelve el existente; no es un error
+#   AP-CU35-05  PERIODO_MAL_FORMADO    · no esta en el CU: lo exige el formato AAAA-MM
+#
+# CU-36 · Segmentar comercialmente y aplicar precio diferenciado
+#   AP-CU36-01  CRITERIO_INVALIDO      · el JSON no compila a expresion evaluable
+#   AP-CU36-02  PRIORIDAD_DUPLICADA    · la ambiguedad se resuelve al definir, no al cobrar
+#   AP-CU36-03  SIN_TARIFARIO_VIGENTE  · no hay a que colgar la regla (R-CON-07)
+#   AP-CU36-04  CRITERIO_NO_EVALUABLE  · faltan datos: se cotiza al precio base
+#   AP-CU36-05  SEGMENTO_DISCRIMINATORIO · el criterio usa datos sensibles
 openapi: 3.1.0
 info:
   title: tarifas
@@ -16,20 +66,271 @@ info:
 servers:
   - url: /api/v1
 
-paths: {}
-  # Una operacion por caso de uso. Plantilla:
-  #
-  #   /tarifas/…:
-  #     post:
-  #       operationId: <verboObjeto>          # CU-NN
-  #       parameters:
-  #         - name: Idempotency-Key
-  #           in: header
-  #           required: true                   # toda operacion con efecto
-  #           schema: { type: string, format: uuid }
-  #       responses:
-  #         '200': …
-  #         '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+paths:
+  /comisiones/cotizaciones:
+    post:
+      operationId: cotizarComision             # CU-30
+      summary: Calcular y guardar la comision de una operacion
+      description: >-
+        Que el usuario vea el numero final ANTES de aceptar, y que ese numero quede
+        guardado con su desglose. El reclamo tipico no es «me cobraron de mas»: es
+        «nadie me aviso». Si la operacion pertenece a un grupo con tarifa congelada,
+        manda el snapshot (R-TAR-07).
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaCotizacion' }
+      responses:
+        '200':
+          description: Cotizacion con su desglose y su vigencia
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaCotizacion' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /comisiones/cotizaciones/{cotizacionId}/aceptacion:
+    post:
+      operationId: aceptarCotizacion           # CU-30
+      summary: Registrar que el usuario acepto el precio que vio
+      description: >-
+        Sin esto no hay evidencia de consentimiento. Una cotizacion vencida no se
+        acepta: el precio que se acepta tiene que ser el que se mostro.
+      parameters:
+        - name: cotizacionId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Aceptada, o ya estaba aceptada
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [aceptada]
+                properties:
+                  aceptada: { type: boolean }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /comisiones/devengos:
+    post:
+      operationId: devengarComision            # CU-31
+      summary: Reconocer el ingreso cuando ocurre el hecho generador
+      description: >-
+        Separa ganar de cobrar. El devengo es append-only: su estado corriente se
+        DERIVA de los cargos y las devoluciones, no de un UPDATE sobre la fila.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaDevengo' }
+      responses:
+        '200':
+          description: Devengo registrado, o el mismo de un reintento
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaDevengo' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /comisiones/devengos/{devengoId}/cobros:
+    post:
+      operationId: anotarCobroDeComision       # CU-31
+      summary: Registrar el resultado de un intento de cobro
+      description: >-
+        El cobro lo ejecuta quien mueve el dinero (invariante 12). Aca se anota que
+        paso: tres fallos y el devengo va a cuenta por cobrar, sin borrarse. La deuda
+        no desaparece porque el debito falle.
+      parameters:
+        - name: devengoId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaCobro' }
+      responses:
+        '200':
+          description: Resultado del intento
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaCobro' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /facturas:
+    post:
+      operationId: emitirFactura               # CU-32
+      summary: Emitir el documento fiscal de una comision cobrada
+      description: >-
+        La caida del servicio de impuestos NO detiene la operacion: se emite bajo
+        contingencia con su plazo guardado. La consulta al tercero ocurre fuera de la
+        transaccion (invariante 6).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaFactura' }
+      responses:
+        '201':
+          description: Documento emitido, en linea o bajo contingencia
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaFactura' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /comisiones/{devengoId}/devoluciones:
+    post:
+      operationId: devolverComision            # CU-33
+      summary: Devolver una comision y emitir la nota de credito
+      description: >-
+        La plata y el papel van atados. La factura NUNCA se edita (R-TAR-10): se emite
+        una nota de credito con su propio CUF. El limite se mide contra lo ya devuelto.
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+        - name: devengoId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaDevolucion' }
+      responses:
+        '200':
+          description: Devolucion ejecutada, con su nota de credito si habia factura
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaDevolucion' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /tarifas/tarifarios:
+    post:
+      operationId: publicarTarifario           # CU-34
+      summary: Publicar la version siguiente de un tarifario
+      description: >-
+        Un incremento no entra sin preaviso cumplido (R-TAR-08). El anterior no se
+        borra: queda SUSTITUIDO con su vigencia cerrada, porque poder decir que se
+        cobraba en una fecha pasada es lo unico que responde un reclamo viejo.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaPublicacion' }
+      responses:
+        '201':
+          description: Version nueva en preaviso
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaPublicacion' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /tarifas/tarifarios/{tarifarioId}/vigencia:
+    post:
+      operationId: ponerTarifarioVigente       # CU-34
+      summary: Poner en vigencia un tarifario cuyo preaviso ya se cumplio
+      parameters:
+        - name: tarifarioId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Tarifario vigente y anterior sustituido
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [tarifarioId, estado, desde]
+                properties:
+                  tarifarioId: { type: string, format: uuid }
+                  estado:      { type: string, enum: [VIGENTE] }
+                  desde:       { type: string, format: date-time }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /tarifas/liquidaciones/{periodo}/cierre:
+    post:
+      operationId: cerrarLiquidacion           # CU-35
+      summary: Cerrar el mes de ingresos
+      description: >-
+        Un resultado mensual reproducible desde los devengos, no desde una planilla
+        aparte. Los dias sin cerrar, las excepciones abiertas y el saldo del mayor
+        llegan como entrada: viven en otros esquemas y este servicio no los lee
+        (invariante 11).
+      parameters:
+        - name: periodo
+          in: path
+          required: true
+          schema: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaLiquidacion' }
+      responses:
+        '200':
+          description: Liquidacion cerrada, o la que ya existia
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaLiquidacion' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /tarifas/segmentos:
+    post:
+      operationId: crearSegmento               # CU-36
+      summary: Definir un segmento comercial
+      description: >-
+        El criterio es JSON evaluable, no texto libre: «se le aplico porque es buen
+        cliente» no es una explicacion que sirva ante un reclamo. Un criterio que se
+        apoya en datos sensibles o categorias protegidas se rechaza.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaSegmento' }
+      responses:
+        '201':
+          description: Segmento publicado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaSegmento' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /tarifas/precios/resolver:
+    post:
+      operationId: resolverPrecio              # CU-36
+      summary: Que segmento rige para un usuario, y por que
+      description: >-
+        No escribe: es una consulta. Si falta un hecho para evaluar el criterio, NO se
+        adivina — se cotiza al precio base y se dice cual falto. Adivinar a favor
+        regala plata y adivinar en contra cobra de mas.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [hechos]
+              properties:
+                hechos:
+                  type: object
+                  additionalProperties: { type: integer }
+      responses:
+        '200':
+          description: El segmento elegido, o el precio base con su motivo
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaSegmentoAplicado' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
 
 components:
   parameters:
@@ -42,6 +343,256 @@ components:
         seguro, y la clave se valida ANTES de escribir (invariante 7).
       schema: { type: string, format: uuid }
   schemas:
+    LineaDesglose:
+      type: object
+      additionalProperties: false
+      required: [concepto, detalle, monto]
+      properties:
+        concepto: { type: string }
+        detalle:
+          type: string
+          description: en lenguaje llano; es lo que el usuario lee antes de aceptar
+        monto: { $ref: '#/components/schemas/Dinero' }
+    EntradaCotizacion:
+      type: object
+      additionalProperties: false
+      required: [codigoTarifario, hechoGenerador, referenciaTipo, referenciaId, montoBase]
+      properties:
+        codigoTarifario: { type: string, maxLength: 30 }
+        hechoGenerador:  { type: string, maxLength: 40 }
+        referenciaTipo:
+          type: string
+          enum: [ENTREGA_FONDO, ORDEN_RECARGA, ORDEN_RETIRO, PAGO, PERIODO, TRANSACCION_BILLETERA]
+        referenciaId: { type: string, format: uuid }
+        montoBase:    { $ref: '#/components/schemas/Dinero' }
+        grupoId:
+          type: [string, 'null']
+          format: uuid
+          description: si viene y el grupo tiene tarifa congelada, manda el snapshot (R-TAR-07)
+        descuento: { $ref: '#/components/schemas/Dinero' }
+        segmentoCodigo:
+          type: [string, 'null']
+          description: >-
+            el segmento ya resuelto por CU-36. Queda en el desglose:
+            cotizacion_comision no tiene columna para el y no se invento una
+    SalidaCotizacion:
+      type: object
+      additionalProperties: false
+      required: [cotizacionId, montoComision, montoImpuesto, montoTotal, desglose, validaHasta, esNueva]
+      properties:
+        cotizacionId:  { type: string, format: uuid }
+        montoComision: { $ref: '#/components/schemas/Dinero' }
+        montoImpuesto: { $ref: '#/components/schemas/Dinero' }
+        montoTotal:    { $ref: '#/components/schemas/Dinero' }
+        desglose:
+          type: array
+          items: { $ref: '#/components/schemas/LineaDesglose' }
+        validaHasta: { type: string, format: date-time }
+        esNueva:
+          type: boolean
+          description: false cuando la respuesta viene de un reintento con la misma clave
+    EntradaDevengo:
+      type: object
+      additionalProperties: false
+      required: [cotizacionId, tarifarioId, referenciaTipo, referenciaId, usuarioObligadoId]
+      properties:
+        cotizacionId: { type: string, format: uuid }
+        tarifarioId:  { type: string, format: uuid }
+        referenciaTipo:
+          type: string
+          enum: [CICLO, ENTREGA_FONDO, ORDEN_RETIRO, PAGO]
+        referenciaId:      { type: string, format: uuid }
+        usuarioObligadoId: { type: string, format: uuid }
+        grupoId:   { type: [string, 'null'], format: uuid }
+        descuento: { $ref: '#/components/schemas/Dinero' }
+        exentoTotal:
+          type: boolean
+          default: false
+          description: exencion del 100%; se devenga en cero y queda quien lo autorizo
+    SalidaDevengo:
+      type: object
+      additionalProperties: false
+      required: [devengoId, estado, montoTotal, esNuevo]
+      properties:
+        devengoId: { type: string, format: uuid }
+        cargoId:   { type: [string, 'null'], format: uuid }
+        estado:
+          type: string
+          enum: [DEVENGADO, COBRADO, COBRADO_PARCIAL, EXONERADO, DEVUELTO, INCOBRABLE]
+        montoTotal: { $ref: '#/components/schemas/Dinero' }
+        esNuevo:    { type: boolean }
+    EntradaCobro:
+      type: object
+      additionalProperties: false
+      required: [formaCobro, exitoso]
+      properties:
+        formaCobro:
+          type: string
+          enum: [COBRO_EXTERNO, COMPENSACION, DEBITO_DE_BILLETERA, DEDUCCION_DE_ENTREGA, OBLIGACION_DE_APORTE]
+        exitoso: { type: boolean }
+        error:   { type: [string, 'null'], maxLength: 200 }
+    SalidaCobro:
+      type: object
+      additionalProperties: false
+      required: [cargoId, estadoDelCargo, estadoDelDevengo]
+      properties:
+        cargoId:        { type: string, format: uuid }
+        estadoDelCargo: { type: string, enum: [COBRADO, FALLIDO] }
+        estadoDelDevengo:
+          type: string
+          description: DERIVADO de los cargos y devoluciones; el devengo es append-only
+        cuentaPorCobrarId: { type: [string, 'null'], format: uuid }
+    EntradaFactura:
+      type: object
+      additionalProperties: false
+      required: [devengoId, montoIva]
+      properties:
+        devengoId: { type: string, format: uuid }
+        montoIva:  { $ref: '#/components/schemas/Dinero' }
+        urlPdf:    { type: [string, 'null'] }
+    SalidaFactura:
+      type: object
+      additionalProperties: false
+      required: [facturaId, cuf, numeroFactura, estadoFiscal]
+      properties:
+        facturaId:     { type: string, format: uuid }
+        cuf:           { type: string }
+        numeroFactura: { type: integer, format: int64 }
+        estadoFiscal:
+          type: string
+          enum: [VALIDADA, EMITIDA_OFFLINE, RECHAZADA]
+        eventoSignificativoId:
+          type: [string, 'null']
+          format: uuid
+          description: presente si se emitio bajo contingencia; lleva su plazo guardado
+    EntradaDevolucion:
+      type: object
+      additionalProperties: false
+      required: [motivo, detalle, monto, forma, autorizadaPor]
+      properties:
+        motivo:
+          type: string
+          enum: [ENTREGA_ANULADA, ERROR_DE_TARIFA, RECLAMO_PROCEDENTE, FALLA_DE_SERVICIO]
+        detalle: { type: string, maxLength: 300 }
+        monto:   { $ref: '#/components/schemas/Dinero' }
+        forma:
+          type: string
+          enum: [ABONO_BILLETERA, NOTA_CREDITO, COMPENSACION]
+        reclamoId:
+          type: [string, 'null']
+          format: uuid
+          description: obligatorio cuando nace de un reclamo favorable con monto (R-CON-04)
+        autorizadaPor:
+          type: string
+          format: uuid
+          description: quien autoriza no es quien ejecuta (R-SEG-04)
+    SalidaDevolucion:
+      type: object
+      additionalProperties: false
+      required: [devolucionId, devolucionTotal, disponibleRestante]
+      properties:
+        devolucionId:   { type: string, format: uuid }
+        notaCreditoId:  { type: [string, 'null'], format: uuid }
+        cuf:            { type: [string, 'null'] }
+        devolucionTotal: { type: boolean }
+        disponibleRestante: { $ref: '#/components/schemas/Dinero' }
+    EntradaPublicacion:
+      type: object
+      additionalProperties: false
+      required: [tarifarioBaseId, nombre, tipoCambio, diasPreaviso, aprobadoPor, actaComite,
+                 urlPublicacion, hashDocumento, canalAviso]
+      properties:
+        tarifarioBaseId: { type: string, format: uuid }
+        nombre:          { type: string, maxLength: 120 }
+        tipoCambio:
+          type: string
+          enum: [INCREMENTO, REDUCCION, NUEVO_CONCEPTO, ELIMINACION]
+        diasPreaviso: { type: integer, minimum: 0, maximum: 90 }
+        aprobadoPor:  { type: string, format: uuid }
+        actaComite:   { type: string, minLength: 1, maxLength: 60 }
+        urlPublicacion: { type: string, format: uri }
+        hashDocumento:  { type: string, minLength: 64, maxLength: 64 }
+        canalAviso:     { type: string, maxLength: 30 }
+        permiteRescisionSinCosto: { type: boolean, default: false }
+        deltaIngresoEstimado: { type: string, pattern: '^-?\d+\.\d{2}$' }
+        usuariosImpactados:   { type: integer, minimum: 0 }
+    SalidaPublicacion:
+      type: object
+      additionalProperties: false
+      required: [tarifarioNuevoId, cambioId, version, estado, entraEnVigencia, requierePreaviso]
+      properties:
+        tarifarioNuevoId: { type: string, format: uuid }
+        cambioId:         { type: string, format: uuid }
+        version:          { type: integer }
+        estado:           { type: string, enum: [BORRADOR, EN_PREAVISO, VIGENTE] }
+        entraEnVigencia:  { type: string, format: date-time }
+        requierePreaviso: { type: boolean }
+    EntradaLiquidacion:
+      type: object
+      additionalProperties: false
+      required: [diasSinCerrar, excepcionesAbiertas, saldoDeLaCuentaDeIngresos]
+      properties:
+        diasSinCerrar:
+          type: integer
+          minimum: 0
+          description: de nucleo-financiero; este servicio no lee ese esquema
+        excepcionesAbiertas:
+          type: integer
+          minimum: 0
+          description: de aportes; idem
+        saldoDeLaCuentaDeIngresos: { type: string, pattern: '^-?\d+\.\d{2}$' }
+    SalidaLiquidacion:
+      type: object
+      additionalProperties: false
+      required: [liquidacionId, periodo, totalCobrado, ingresoNeto, cuadraContraMayor, yaExistia]
+      properties:
+        liquidacionId: { type: string, format: uuid }
+        periodo:       { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$' }
+        totalCobrado:  { type: string, pattern: '^-?\d+\.\d{2}$' }
+        ingresoNeto:   { type: string, pattern: '^-?\d+\.\d{2}$' }
+        cuadraContraMayor: { type: boolean }
+        yaExistia:         { type: boolean }
+    EntradaSegmento:
+      type: object
+      additionalProperties: false
+      required: [codigo, descripcion, criterio, prioridad]
+      properties:
+        codigo:      { type: string, maxLength: 30 }
+        descripcion: { type: string, maxLength: 200 }
+        criterio:
+          type: object
+          additionalProperties: { type: integer }
+          minProperties: 1
+          description: >-
+            hechos exigidos y su minimo. Evaluable, no texto libre. No puede
+            referenciar datos sensibles ni categorias protegidas
+        prioridad:
+          type: integer
+          minimum: 1
+          maximum: 99
+          description: unica entre los activos; resuelve el empate al definir, no al cobrar
+    SalidaSegmento:
+      type: object
+      additionalProperties: false
+      required: [segmentoId, codigo, prioridad]
+      properties:
+        segmentoId: { type: string, format: uuid }
+        codigo:     { type: string }
+        prioridad:  { type: integer }
+    SalidaSegmentoAplicado:
+      type: object
+      additionalProperties: false
+      required: [motivo, evaluable]
+      properties:
+        codigo:
+          type: [string, 'null']
+          description: null cuando no califica o cuando falta el dato para evaluar
+        motivo:
+          type: string
+          description: por que califica o que dato falto; en texto para el usuario
+        evaluable:
+          type: boolean
+          description: false cuando falto un hecho. No se adivina en ninguna direccion
     Dinero:
       type: object
       additionalProperties: false
