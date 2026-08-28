@@ -4,11 +4,23 @@ import bo.aportaya.cumplimiento.aplicacion.CU02ElevarDiligencia;
 import bo.aportaya.cumplimiento.aplicacion.CU03DeclararPep;
 import bo.aportaya.cumplimiento.aplicacion.CU05AceptarContrato;
 import bo.aportaya.cumplimiento.aplicacion.CU06RevisarConocimiento;
+import bo.aportaya.cumplimiento.aplicacion.CU41RegistrarPcc01;
+import bo.aportaya.cumplimiento.aplicacion.CU42RegistrarRog;
+import bo.aportaya.cumplimiento.aplicacion.CU43RemitirReportes;
+import bo.aportaya.cumplimiento.aplicacion.CU44InvestigarYReportar;
+import bo.aportaya.cumplimiento.aplicacion.CU45AtenderRequerimiento;
 import bo.aportaya.cumplimiento.aplicacion.CU46VerificarAlcance;
+import bo.aportaya.cumplimiento.aplicacion.CU47EvaluarRiesgoDeProducto;
+import bo.aportaya.cumplimiento.aplicacion.CU48CalibrarReglas;
+import bo.aportaya.cumplimiento.aplicacion.CU49DesignarOficial;
+import bo.aportaya.cumplimiento.aplicacion.CU52AtenderReclamo;
+import bo.aportaya.cumplimiento.aplicacion.CU53ElevarReclamo;
 import bo.aportaya.cumplimiento.aplicacion.CU54EscalarPlanesVencidos;
 import bo.aportaya.cumplimiento.aplicacion.CU54RegistrarRiesgoOperativo;
 import bo.aportaya.cumplimiento.aplicacion.CU55EscalarIncidentesVencidos;
 import bo.aportaya.cumplimiento.aplicacion.CU55GestionarIncidente;
+import bo.aportaya.cumplimiento.aplicacion.CU56EjecutarPruebaDeContinuidad;
+import bo.aportaya.cumplimiento.aplicacion.CU94ElevarAlComite;
 import bo.aportaya.cumplimiento.dominio.DesvioDePerfil;
 import bo.aportaya.cumplimiento.dominio.NivelDeDiligencia;
 import bo.aportaya.cumplimiento.dominio.PeriodicidadDeRevision;
@@ -65,6 +77,20 @@ abstract class BaseDeCumplimiento {
     protected static CU54EscalarPlanesVencidos escalarCU;
     protected static CU55GestionarIncidente incidenteCU;
     protected static CU55EscalarIncidentesVencidos escalarIncidentesCU;
+    static CU41RegistrarPcc01 pccCU;
+    static CU42RegistrarRog rogCU;
+    static CU43RemitirReportes reporteCU;
+    static CU44InvestigarYReportar casoCU;
+    static CU45AtenderRequerimiento oficioCU;
+    static CU47EvaluarRiesgoDeProducto productoCU;
+    static CU48CalibrarReglas reglaCU;
+    static CU49DesignarOficial oficialCU;
+    static CU52AtenderReclamo reclamoCU;
+    static CU53ElevarReclamo instanciaCU;
+    static CU56EjecutarPruebaDeContinuidad continuidadCU;
+    static CU94ElevarAlComite comiteCU;
+    protected static FixturaDeUif uif;
+    protected static FixturaDeGobierno gobiernoFixtura;
 
     /**
      * Los plazos con que se arma el caso de uso en las pruebas. Son los mismos que la
@@ -108,6 +134,11 @@ abstract class BaseDeCumplimiento {
         fixtura = new FixturaDeCumplimiento(dslFixtura);
         riesgos = new FixturaDeRiesgos(dslFixtura);
         incidentes = new FixturaDeIncidentes(dslFixtura);
+        uif = new FixturaDeUif(dslFixtura);
+        gobiernoFixtura = new FixturaDeGobierno(dslFixtura);
+        // Los doce de la ola 3 se cablean aparte: no caben en este metodo sin que deje
+        // de verse cual es cual.
+        ArmadoDeOla3.armar(new Datos(dsl), new Outbox("cumplimiento"));
         consumidos = new Consumidos("cumplimiento");
         alcanceCU = new CU46VerificarAlcance(
                 new Datos(dsl),
@@ -188,10 +219,10 @@ abstract class BaseDeCumplimiento {
     }
 
     /** Devuelve el mensaje con que la BASE rechaza, o vacio si no rechazo. */
-    protected String rechazaLaBase(String sql) {
+    protected String rechazaLaBase(String sql, Object... parametros) {
         try {
             transaccion.execute(estado -> {
-                dsl.execute(sql);
+                dsl.execute(sql, parametros);
                 estado.setRollbackOnly();
                 return null;
             });
