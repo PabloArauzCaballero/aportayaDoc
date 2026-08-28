@@ -17,25 +17,36 @@ Modulo 08 de la boveda — Garantía, Incumplimiento, Cobranza y Sanciones.
 
 | CU | Nombre | Estado |
 | --- | --- | --- |
-| | *(los llena `nuevo_cu.py`)* | |
+| CU-23 | Cubrir un incumplimiento con el fondo | Implementado |
+| CU-25 | Declarar el incumplimiento con descargo y evidencia | Implementado |
+| CU-26 | Ejecutar el aval y subrogar la deuda | Implementado |
+| CU-27 | Restringir al deudor e incluirlo en la lista interna | Implementado |
+| CU-29 | Devolver los aportes del fondo de garantia | Implementado |
+| CU-66 | Reemplazar a un participante moroso | Implementado |
+| CU-67 | Disolver el grupo anticipadamente | Implementado |
 
-## Eventos que emite
+## Lo que hay que saber antes de tocar esto
 
-| Tema | Cuando |
-| --- | --- |
-| | |
+**El expediente es append-only.** `registro_incumplimiento` bloquea UPDATE y DELETE: su
+columna `estado` guarda el estado **al detectar**, no el de hoy. El estado corriente
+vive en `historial_estado_incumplimiento` — cada transicion es una fila con su motivo,
+quien la hizo y cuando. Es mas trabajo que un UPDATE y es lo unico que sostiene el
+debido proceso: un expediente cuyo estado se puede reescribir no prueba nada.
 
-## Eventos que consume
+**El plazo de descargo entra al abrir.** `notificado_en` y `fecha_limite_subsanacion`
+estan en esa misma tabla append-only, asi que no se pueden escribir despues. Declarar el
+incumplimiento y comunicarselo a la persona es **un solo acto**: enterarse despues de
+que el plazo empezo a correr es no tener plazo.
 
-| Tema | De quien | Efecto |
-| --- | --- | --- |
-| | | |
+**Cubrir no perdona.** La cobertura deja una deuda contra quien incumplio. Si borrara la
+obligacion, el fondo seria un seguro gratuito pagado por los que si pagan.
 
-## Trabajos programados
+**Los topes no son mezquindad.** Cubrir todo, siempre, vacia el fondo. Gana el mas chico
+de cuatro limites, y el que mando viaja en la respuesta: el grupo tiene derecho a saber
+por que se cubrio lo que se cubrio.
 
-| Bloqueo | Cron | Que hace |
-| --- | --- | --- |
-| | | |
+**La restriccion no le cierra la puerta a pagar.** Bloquear al deudor de todo, incluido
+el camino para regularizarse, garantiza que no se regularice.
 
 ## Lo que este servicio NO puede hacer
 

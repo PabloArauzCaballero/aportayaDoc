@@ -5,6 +5,62 @@
 # Prefijos reservados de este servicio: /garantia, /incumplimientos, /cobranza
 #   Una ruta fuera de ellos es un rechazo automatico, no una discusion de diseno.
 #   Toda ruta exige sesion: 401 sin token, 403 con rol insuficiente.
+#
+# Codigos de error de los siete casos de uso. Viven aca aunque el caso de uso no tenga
+# ruta HTTP propia: scripts/verificar_criterios.py los busca en este archivo.
+#
+# CU-23 · Cubrir un incumplimiento con el fondo
+#   AP-CU23-01  FONDO_INSUFICIENTE    · el expediente no existe
+#   AP-CU23-02  TOPE_POR_PARTICIPANTE · fondo agotado, sin politica, o carrera perdida
+#   AP-CU23-03  REQUIERE_ACUERDO      · reservado
+#   AP-CU23-04  OBLIGACION_NO_VENCIDA · reservado; el plazo de mora lo decide la politica
+#
+# CU-25 · Declarar el incumplimiento con descargo y evidencia
+#   AP-CU25-01  OBLIGACION_NO_VENCIDA · aca: se declara sin evidencia
+#   AP-CU25-02  SIN_AVISO_PROBADO     · aca: el expediente no existe, o el plazo vencio
+#   AP-CU25-03  PLAZO_DESCARGO_VENCIDO · aca: el descargo lo presenta un tercero
+#   AP-CU25-04  DESCARGO_DUPLICADO    · reservado (el duplicado devuelve el que hay)
+#   AP-CU25-05  SIN_POLITICA_SANCION  · aca: quien resuelve es el imputado
+#   AP-CU25-06  REGISTRO_YA_CERRADO   · reservado
+#
+# CU-26 · Ejecutar el aval y subrogar la deuda
+#   AP-CU26-01  AVAL_NO_VIGENTE       · sin aval vigente no hay a quien ejecutarle
+#   AP-CU26-02  INCUMPLIMIENTO_NO_FIRME · no hay deuda que ejecutar todavia
+#   AP-CU26-03  TOPE_EXCEDIDO         · reservado (lo frena el atomo y el trigger)
+#   AP-CU26-04  EJECUCION_DUPLICADA   · aca: el aval ya se ejecuto hasta su tope
+#   AP-CU26-05  FUERA_DE_ALCANCE      · reservado
+#   AP-CU26-06  DEUDA_YA_SALDADA      · reservado
+#
+# CU-27 · Restringir al deudor
+#   AP-CU27-01  SIN_CAUSA_VIGENTE     · el expediente no existe
+#   AP-CU27-02  RESTRICCION_DUPLICADA · aca: restriccion sin motivo escrito
+#   AP-CU27-03  DEUDA_NO_SALDADA      · aca: levantamiento sin motivo escrito
+#   AP-CU27-04  MISMO_OPERADOR        · reservado
+#   AP-CU27-05  NIVEL_DESPROPORCIONADO · reservado
+#   AP-CU27-06  —                     · quien aplica es el restringido (R-SEG-04)
+#
+# CU-29 · Devolver los aportes del fondo
+#   AP-CU29-01  COBERTURA_EN_CURSO    · el grupo no termino, o carrera perdida
+#   AP-CU29-02  OBLIGACIONES_VIVAS    · quedan deudas sin resolver
+#   AP-CU29-03  FONDO_NO_CUADRA       · sin aportantes o total aportado en cero
+#   AP-CU29-04  FONDO_YA_CERRADO      · reservado (el reparto repetido devuelve cero)
+#   AP-CU29-05  SUBROGACION_ABIERTA   · reservado
+#
+# CU-66 · Reemplazar a un participante moroso
+#   AP-CU66-01  INCUMPLIMIENTO_NO_FIRME · el expediente no existe
+#   AP-CU66-02  SIN_ACUERDO_DE_EXPULSION · aca: el entrante asume mas de lo que hay
+#   AP-CU66-03  CANDIDATO_NO_ELEGIBLE · el entrante es el mismo que sale
+#   AP-CU66-04  MOROSO_REGULARIZADO   · aca: el reemplazo no estaba aprobado
+#
+# CU-67 · Disolver el grupo anticipadamente
+#   AP-CU67-01  SIN_ACUERDO_NI_CAUSAL · sin motivo escrito no se disuelve
+#   AP-CU67-02  ENTREGA_EN_CURSO      · aca: no hay participantes que liquidar
+#   AP-CU67-03  LIQUIDACION_NO_CUADRA · la masa no alcanza para lo que hay que devolver
+#   AP-CU67-04  GRUPO_YA_DISUELTO     · la disolucion no estaba lista para cerrarse
+#
+# NOTA: varios nombres del CU no describen el caso que el codigo termino ocupando. Se
+# conservan los NUMEROS, que son los que la boveda ata a cada rechazo, y aca queda
+# documentado que significa cada uno. Renombrarlos es tocar docs/, que es troncal.
 openapi: 3.1.0
 info:
   title: garantia
@@ -16,20 +72,325 @@ info:
 servers:
   - url: /api/v1
 
-paths: {}
-  # Una operacion por caso de uso. Plantilla:
-  #
-  #   /garantia/…:
-  #     post:
-  #       operationId: <verboObjeto>          # CU-NN
-  #       parameters:
-  #         - name: Idempotency-Key
-  #           in: header
-  #           required: true                   # toda operacion con efecto
-  #           schema: { type: string, format: uuid }
-  #       responses:
-  #         '200': …
-  #         '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+paths:
+  /incumplimientos:
+    post:
+      operationId: declararIncumplimiento       # CU-25
+      summary: Declarar un incumplimiento con su evidencia
+      description: >-
+        Declarar que alguien incumplio tiene consecuencias reales: le bloquea grupos, lo
+        pone en una lista, le genera una deuda. El expediente nace NOTIFICADO y con su
+        plazo de descargo GUARDADO (R-GAR-01) — enterarse despues de que el plazo
+        empezo a correr es no tener plazo. La evidencia es inmutable (R-GAR-02).
+      parameters:
+        - $ref: '#/components/parameters/ClaveIdempotencia'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaDeclaracion' }
+      responses:
+        '201':
+          description: Expediente abierto, con su plazo de descargo
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaDeclaracion' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /incumplimientos/{expedienteId}/descargo:
+    post:
+      operationId: presentarDescargo            # CU-25
+      summary: Presentar el descargo, dentro del plazo
+      parameters:
+        - name: expedienteId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaDescargo' }
+      responses:
+        '200':
+          description: Descargo presentado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaDescargo' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /incumplimientos/{expedienteId}/descargo/resolucion:
+    post:
+      operationId: resolverDescargo             # CU-25
+      summary: Resolver el descargo
+      description: >-
+        Quien resuelve no puede ser el imputado. Aceptarlo cierra el expediente como
+        SUBSANADO y NO habilita la cobertura del fondo.
+      parameters:
+        - name: expedienteId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaResolucionDescargo' }
+      responses:
+        '200':
+          description: Descargo resuelto
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaResolucionDescargo' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /incumplimientos/{expedienteId}/cobertura:
+    post:
+      operationId: cubrirIncumplimiento         # CU-23
+      summary: Cubrir el incumplimiento con el fondo
+      description: >-
+        El fondo existe para que el incumplimiento de uno no se lleve puesto al grupo
+        entero. Pero cubrir todo siempre lo VACIA: gana el mas chico de cuatro limites
+        —porcentaje, tope por participante, tope del periodo y saldo—. Y cubrir NO
+        perdona: deja una deuda contra quien incumplio.
+      parameters:
+        - name: expedienteId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaCobertura' }
+      responses:
+        '200':
+          description: Cobertura aplicada, o rechazada con el limite que mando
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaCobertura' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /incumplimientos/{expedienteId}/aval/ejecucion:
+    post:
+      operationId: ejecutarAval                 # CU-26
+      summary: Ejecutar el aval y subrogar la deuda
+      description: >-
+        Un avalista acepto responder por una cantidad CONCRETA. Cobrarle mas es
+        cobrarle algo que nunca acepto (R-GAR-04), y el tope se mide contra lo YA
+        ejecutado. Quien paga se subroga: la deuda no desaparece, cambia de acreedor.
+      parameters:
+        - name: expedienteId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Aval ejecutado, con su subrogacion
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaEjecucionAval' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /incumplimientos/{expedienteId}/restriccion:
+    post:
+      operationId: restringirDeudor             # CU-27
+      summary: Restringir al deudor
+      description: >-
+        Una restriccion vigente por usuario (R-GAR-05). **No le cierra la puerta a
+        pagar ni a ver su estado**: bloquear al deudor de todo, incluido el camino para
+        regularizarse, garantiza que no se regularice.
+      parameters:
+        - name: expedienteId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaRestriccion' }
+      responses:
+        '201':
+          description: Restriccion aplicada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaRestriccion' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /restricciones/{restriccionId}/levantamiento:
+    post:
+      operationId: levantarRestriccion          # CU-27
+      summary: Levantar la restriccion, con motivo escrito
+      description: >-
+        El levantamiento SE MOTIVA (R-GAR-05): sin motivo escrito se convierte en un
+        favor que nadie puede auditar.
+      parameters:
+        - name: restriccionId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [motivo]
+              properties:
+                motivo: { type: string, minLength: 1, maxLength: 300 }
+      responses:
+        '200':
+          description: Restriccion levantada
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [levantada]
+                properties:
+                  levantada: { type: boolean }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /fondos/{grupoId}/devolucion:
+    post:
+      operationId: devolverFondo                # CU-29
+      summary: Devolver los aportes del fondo al cerrar el grupo
+      description: >-
+        No se devuelve mas de lo aportado ni un importe negativo (R-GAR-06), y lo que el
+        fondo gasto en cubrir lo pierden TODOS en proporcion: esa es la idea de un fondo
+        mutual. El remanente se ajusta en la ultima devolucion para que la suma cierre
+        exacta contra el saldo.
+      parameters:
+        - name: grupoId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaDevolucionFondo' }
+      responses:
+        '200':
+          description: Fondo repartido
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaDevolucionFondo' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /incumplimientos/{expedienteId}/reemplazo:
+    post:
+      operationId: proponerReemplazo            # CU-66
+      summary: Proponer el reemplazo de un participante moroso
+      description: >-
+        La deuda del saliente NO se le traslada al entrante salvo que este la asuma
+        expresamente: nadie entra a un grupo a pagar lo que otro dejo sin decirselo. Lo
+        que no asume queda como deuda del saliente — perdonarla se la cobraria a los
+        demas.
+      parameters:
+        - name: expedienteId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaReemplazo' }
+      responses:
+        '201':
+          description: Reemplazo propuesto, o en busqueda de candidato
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaReemplazo' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /reemplazos/{reemplazoId}/aprobacion:
+    post:
+      operationId: aprobarReemplazo             # CU-66
+      summary: Aprobar el reemplazo — lo decide el grupo
+      parameters:
+        - name: reemplazoId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Reemplazo aprobado
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [aprobado]
+                properties:
+                  aprobado: { type: boolean }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /reemplazos/{reemplazoId}/ejecucion:
+    post:
+      operationId: ejecutarReemplazo            # CU-66
+      summary: Ejecutar el reemplazo aprobado
+      parameters:
+        - name: reemplazoId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Cupo cambiado de titular
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaReemplazo' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /grupos/{grupoId}/disolucion:
+    post:
+      operationId: iniciarDisolucion            # CU-67
+      summary: Calcular la disolucion anticipada del grupo
+      description: >-
+        Es el peor momento posible: unos ya cobraron y otros no, y todos pusieron. La
+        posicion de cada uno es lo aportado menos lo recibido. Repartir sin mirar eso le
+        devolveria a quien ya cobro lo mismo que a quien nunca cobro.
+      parameters:
+        - name: grupoId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EntradaDisolucion' }
+      responses:
+        '201':
+          description: Disolucion calculada, con la liquidacion de cada uno
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaDisolucion' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
+
+  /disoluciones/{disolucionId}/cierre:
+    post:
+      operationId: cerrarDisolucion             # CU-67
+      summary: Cerrar la disolucion
+      description: >-
+        La cuenta del grupo cierra EN CERO (R-GRP-13). Un grupo disuelto con saldo es
+        plata de alguien que quedo sin dueno.
+      parameters:
+        - name: disolucionId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Disolucion cerrada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalidaCierreDisolucion' }
+        '422': { $ref: '#/components/responses/ReglaDeNegocio' }
 
 components:
   parameters:
@@ -42,6 +403,281 @@ components:
         seguro, y la clave se valida ANTES de escribir (invariante 7).
       schema: { type: string, format: uuid }
   schemas:
+    EntradaDeclaracion:
+      type: object
+      additionalProperties: false
+      required: [codigoExpediente, usuarioId, participanteId, grupoId, obligacionId, tipo,
+                 severidad, origenDeteccion, montoInvolucrado, diasMora, tipoDeEvidencia,
+                 descripcionDeLaEvidencia]
+      properties:
+        codigoExpediente: { type: string, maxLength: 20 }
+        usuarioId:        { type: string, format: uuid }
+        participanteId:   { type: string, format: uuid }
+        grupoId:          { type: string, format: uuid }
+        periodoId:        { type: [string, 'null'], format: uuid }
+        cupoId:           { type: [string, 'null'], format: uuid }
+        obligacionId:     { type: string, format: uuid }
+        tipo:
+          type: string
+          enum: [ABANDONO_DE_GRUPO, APORTE_ATRASADO, APORTE_IMPAGO, APORTE_PARCIAL,
+                 BENEFICIARIO_NO_CONTINUA_APORTANDO, COMPROBANTE_FALSO, FRAUDE_CONFIRMADO,
+                 INCUMPLIMIENTO_AVAL, INCUMPLIMIENTO_ORGANIZADOR,
+                 INCUMPLIMIENTO_PLAN_REGULARIZACION, PAGO_RECHAZADO_O_REVERSADO,
+                 USO_INDEBIDO_DE_LA_PLATAFORMA]
+        severidad:      { type: string, enum: [LEVE, MODERADA, GRAVE, CRITICA] }
+        origenDeteccion:
+          type: string
+          enum: [ALERTA_DE_RIESGO, AUDITORIA_INTERNA, AUTOMATICO_CONCILIACION,
+                 AUTOMATICO_VENCIMIENTO, REPORTE_DE_ORGANIZADOR, REPORTE_DE_PARTICIPANTE]
+        montoInvolucrado: { $ref: '#/components/schemas/Dinero' }
+        diasMora:         { type: integer, minimum: 0 }
+        afectoALaEntrega: { type: boolean, default: false }
+        tipoDeEvidencia:
+          type: string
+          enum: [ACTA_ACUERDO, CAPTURA_ESTADO, COMUNICACION, DOCUMENTO, EXTRACTO, LOG_SISTEMA]
+        descripcionDeLaEvidencia:
+          type: string
+          minLength: 1
+          maxLength: 300
+          description: >-
+            obligatoria. Declarar sin con que probarlo deja al participante sin nada
+            contra que defenderse
+        urlDeLaEvidencia:  { type: [string, 'null'] }
+        hashDeLaEvidencia: { type: [string, 'null'], minLength: 64, maxLength: 64 }
+    SalidaDeclaracion:
+      type: object
+      additionalProperties: false
+      required: [expedienteId, codigoExpediente, estado, puedeDescargarHasta, esNuevo]
+      properties:
+        expedienteId:     { type: string, format: uuid }
+        codigoExpediente: { type: string }
+        estado:           { type: string }
+        puedeDescargarHasta:
+          type: string
+          format: date-time
+          description: se calcula al NOTIFICAR y se guarda; no se recalcula (R-GAR-01)
+        esNuevo: { type: boolean }
+    EntradaDescargo:
+      type: object
+      additionalProperties: false
+      required: [argumento, evidenciasJson]
+      properties:
+        argumento:      { type: string }
+        evidenciasJson: { type: string }
+    SalidaDescargo:
+      type: object
+      additionalProperties: false
+      required: [descargoId, estado, esNuevo]
+      properties:
+        descargoId: { type: string, format: uuid }
+        estado:     { type: string }
+        esNuevo:    { type: boolean }
+    EntradaResolucionDescargo:
+      type: object
+      additionalProperties: false
+      required: [aceptado, resolucion]
+      properties:
+        aceptado:   { type: boolean }
+        resolucion: { type: string, maxLength: 400 }
+    SalidaResolucionDescargo:
+      type: object
+      additionalProperties: false
+      required: [descargoId, estadoDelDescargo, estadoDelExpediente]
+      properties:
+        descargoId:          { type: string, format: uuid }
+        estadoDelDescargo:   { type: string, enum: [ACEPTADO, RECHAZADO] }
+        estadoDelExpediente: { type: string }
+    EntradaCobertura:
+      type: object
+      additionalProperties: false
+      required: [montoSolicitado, diasMora]
+      properties:
+        montoSolicitado: { $ref: '#/components/schemas/Dinero' }
+        diasMora:        { type: integer, minimum: 0 }
+        aprobadaPor:
+          type: [string, 'null']
+          format: uuid
+          description: >-
+            obligatorio por encima del umbral de la politica. Automatizar la cobertura
+            de montos grandes es como se vacia un fondo sin que nadie mire
+    SalidaCobertura:
+      type: object
+      additionalProperties: false
+      required: [montoCubierto, limiteQueMando, requiereAprobacion, esNueva]
+      properties:
+        coberturaId: { type: [string, 'null'], format: uuid }
+        deudaId:
+          type: [string, 'null']
+          format: uuid
+          description: cubrir NO perdona — queda la deuda contra quien incumplio
+        montoCubierto: { $ref: '#/components/schemas/Dinero' }
+        limiteQueMando:
+          type: string
+          enum: [PORCENTAJE_DEL_APORTE, TOPE_POR_PARTICIPANTE, TOPE_POR_PERIODO,
+                 SALDO_DEL_FONDO, DIAS_DE_MORA_INSUFICIENTES, MAXIMO_DE_COBERTURAS]
+        requiereAprobacion: { type: boolean }
+        esNueva:            { type: boolean }
+    SalidaEjecucionAval:
+      type: object
+      additionalProperties: false
+      required: [montoEjecutado, esNueva]
+      properties:
+        ejecucionId:    { type: [string, 'null'], format: uuid }
+        subrogacionId:  { type: [string, 'null'], format: uuid }
+        montoEjecutado: { $ref: '#/components/schemas/Dinero' }
+        avalistaUsuarioId: { type: [string, 'null'], format: uuid }
+        esNueva:        { type: boolean }
+    EntradaRestriccion:
+      type: object
+      additionalProperties: false
+      required: [nivel, motivo]
+      properties:
+        nivel: { type: string, enum: [OBSERVACION, LIMITADO, VETADO] }
+        motivo:
+          type: string
+          minLength: 1
+          maxLength: 300
+          description: >-
+            obligatorio. «Deudor» a secas no le dice a la persona contra que puede apelar
+        duracionDias:
+          type: [integer, 'null']
+          minimum: 1
+          description: null la hace indefinida; solo se levanta con motivo escrito
+    SalidaRestriccion:
+      type: object
+      additionalProperties: false
+      required: [restriccionId, nivel, esNueva]
+      properties:
+        restriccionId: { type: string, format: uuid }
+        nivel:         { type: string }
+        vigenteHasta:  { type: [string, 'null'], format: date-time }
+        esNueva:       { type: boolean }
+    EntradaDevolucionFondo:
+      type: object
+      additionalProperties: false
+      required: [grupoCerrado, deudasVivas]
+      properties:
+        grupoCerrado:
+          type: boolean
+          description: >-
+            el fondo esta ahi para cubrir lo que falta; devolverlo antes lo deja sin
+            respaldo justo cuando hace falta
+        deudasVivas:
+          type: integer
+          minimum: 0
+          description: devolver mientras alguien debe es repartir plata que todavia tiene dueno
+    DevolucionDeParticipante:
+      type: object
+      additionalProperties: false
+      required: [participanteId, aportado, aDevolver]
+      properties:
+        participanteId: { type: string, format: uuid }
+        aportado:       { $ref: '#/components/schemas/Dinero' }
+        aDevolver:      { $ref: '#/components/schemas/Dinero' }
+    SalidaDevolucionFondo:
+      type: object
+      additionalProperties: false
+      required: [fondoId, totalAportado, totalDevuelto, consumidoPorCoberturas, devoluciones]
+      properties:
+        fondoId:       { type: string, format: uuid }
+        totalAportado: { $ref: '#/components/schemas/Dinero' }
+        totalDevuelto: { $ref: '#/components/schemas/Dinero' }
+        consumidoPorCoberturas:
+          type: object
+          allOf: [{ $ref: '#/components/schemas/Dinero' }]
+          description: lo que el fondo gasto — lo pierden todos en proporcion
+        devoluciones:
+          type: array
+          items: { $ref: '#/components/schemas/DevolucionDeParticipante' }
+    EntradaReemplazo:
+      type: object
+      additionalProperties: false
+      required: [cupoId, deudaQueAsumeElEntrante, conservaOrdenDeTurno]
+      properties:
+        cupoId: { type: string, format: uuid }
+        entranteId:
+          type: [string, 'null']
+          format: uuid
+          description: null mientras se busca candidato
+        deudaQueAsumeElEntrante:
+          allOf: [{ $ref: '#/components/schemas/Dinero' }]
+          description: >-
+            lo que el entrante NO asume queda como deuda del saliente. Perdonarla se la
+            cobraria a los demas participantes
+        conservaOrdenDeTurno: { type: boolean }
+    SalidaReemplazo:
+      type: object
+      additionalProperties: false
+      required: [reemplazoId, estado, esNuevo]
+      properties:
+        reemplazoId: { type: string, format: uuid }
+        estado:      { type: string, enum: [BUSCANDO, PROPUESTO, APROBADO, EJECUTADO, FALLIDO] }
+        deudaAsumidaPorElEntrante:  { $ref: '#/components/schemas/Dinero' }
+        deudaRetenidaPorElSaliente: { $ref: '#/components/schemas/Dinero' }
+        esNuevo: { type: boolean }
+    PosicionDeParticipante:
+      type: object
+      additionalProperties: false
+      required: [participanteId, aportado, recibido]
+      properties:
+        participanteId: { type: string, format: uuid }
+        aportado:       { $ref: '#/components/schemas/Dinero' }
+        recibido:
+          allOf: [{ $ref: '#/components/schemas/Dinero' }]
+          description: lo que ya cobro de su turno. Sin esto, disolver premia al que llego primero
+    LiquidacionDeParticipante:
+      type: object
+      additionalProperties: false
+      required: [participanteId, aportado, recibido, aDevolver, aCobrarle]
+      properties:
+        participanteId: { type: string, format: uuid }
+        aportado:  { $ref: '#/components/schemas/Dinero' }
+        recibido:  { $ref: '#/components/schemas/Dinero' }
+        aDevolver: { $ref: '#/components/schemas/Dinero' }
+        aCobrarle: { $ref: '#/components/schemas/Dinero' }
+    EntradaDisolucion:
+      type: object
+      additionalProperties: false
+      required: [causal, motivo, totalAportado, totalEntregado, masaDisponible, posiciones]
+      properties:
+        causal: { type: string, enum: [ACUERDO, CAUSA_GRAVE, MORA_GENERALIZADA, SIN_REEMPLAZO] }
+        motivo:
+          type: string
+          minLength: 1
+          maxLength: 400
+          description: >-
+            obligatorio. Un grupo se disuelve por algo, y ese algo tiene que quedar dicho
+            para los que pierden con la decision
+        totalAportado:  { $ref: '#/components/schemas/Dinero' }
+        totalEntregado: { $ref: '#/components/schemas/Dinero' }
+        masaDisponible: { $ref: '#/components/schemas/Dinero' }
+        posiciones:
+          type: array
+          minItems: 1
+          items: { $ref: '#/components/schemas/PosicionDeParticipante' }
+    SalidaDisolucion:
+      type: object
+      additionalProperties: false
+      required: [disolucionId, estado, masaARepartir, totalADevolver, totalACobrar,
+                 liquidaciones, esNueva]
+      properties:
+        disolucionId:   { type: string, format: uuid }
+        estado:         { type: string }
+        masaARepartir:  { $ref: '#/components/schemas/Dinero' }
+        totalADevolver: { $ref: '#/components/schemas/Dinero' }
+        totalACobrar:   { $ref: '#/components/schemas/Dinero' }
+        liquidaciones:
+          type: array
+          items: { $ref: '#/components/schemas/LiquidacionDeParticipante' }
+        esNueva: { type: boolean }
+    SalidaCierreDisolucion:
+      type: object
+      additionalProperties: false
+      required: [disolucionId, estado, cerradaEn]
+      properties:
+        disolucionId: { type: string, format: uuid }
+        estado:       { type: string, enum: [CERRADA] }
+        cerradaEn:    { type: string, format: date-time }
     Dinero:
       type: object
       additionalProperties: false
