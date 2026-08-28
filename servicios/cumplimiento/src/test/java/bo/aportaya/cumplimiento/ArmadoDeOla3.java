@@ -1,5 +1,6 @@
 package bo.aportaya.cumplimiento;
 
+import bo.aportaya.cumplimiento.aplicacion.CU40EvaluarLimites;
 import bo.aportaya.cumplimiento.aplicacion.CU41RegistrarPcc01;
 import bo.aportaya.cumplimiento.aplicacion.CU42RegistrarRog;
 import bo.aportaya.cumplimiento.aplicacion.CU43RemitirReportes;
@@ -17,6 +18,7 @@ import bo.aportaya.cumplimiento.infraestructura.ContinuidadRepositorio;
 import bo.aportaya.cumplimiento.infraestructura.EvaluacionProductoRepositorio;
 import bo.aportaya.cumplimiento.infraestructura.GobiernoRepositorio;
 import bo.aportaya.cumplimiento.infraestructura.LicenciaRepositorio;
+import bo.aportaya.cumplimiento.infraestructura.LimiteRepositorio;
 import bo.aportaya.cumplimiento.infraestructura.MonitoreoLftRepositorio;
 import bo.aportaya.cumplimiento.infraestructura.OperacionRelevanteRepositorio;
 import bo.aportaya.cumplimiento.infraestructura.ReclamoRepositorio;
@@ -64,6 +66,8 @@ final class ArmadoDeOla3 {
         var continuidad = new ContinuidadRepositorio();
         var requerimientos = new RequerimientoRepositorio();
 
+        BaseDeCumplimiento.limiteCU =
+                new CU40EvaluarLimites(datos, new LimiteRepositorio(), outbox, Reloj.delSistema());
         BaseDeCumplimiento.pccCU = new CU41RegistrarPcc01(datos, operaciones, outbox, Reloj.delSistema());
         BaseDeCumplimiento.rogCU = new CU42RegistrarRog(datos, operaciones, outbox, Reloj.delSistema());
         BaseDeCumplimiento.reporteCU = new CU43RemitirReportes(

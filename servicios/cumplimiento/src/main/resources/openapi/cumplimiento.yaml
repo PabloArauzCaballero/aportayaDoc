@@ -5,6 +5,99 @@
 # Prefijos reservados de este servicio: /cumplimiento, /uif, /reclamos, /licencia
 #   Una ruta fuera de ellos es un rechazo automatico, no una discusion de diseno.
 #   Toda ruta exige sesion: 401 sin token, 403 con rol insuficiente.
+#
+# Codigos de error de la ola 3. Viven aca aunque el caso de uso no tenga ruta HTTP
+# propia: scripts/verificar_criterios.py los busca en este archivo.
+#
+# CU-40 · Evaluar limites antes de una operacion
+#   AP-CU40-01  SIN_LIMITE_CONFIGURADO · sin limite para ese concepto y nivel se deniega (R-LIM-01)
+#   AP-CU40-02  LIMITE_EXCEDIDO        · el acumulado mas la operacion supera el tope
+#   AP-CU40-03  CANTIDAD_EXCEDIDA      · supero la cantidad maxima de operaciones de la ventana
+#
+# CU-41 · Detectar umbral y registrar el formulario PCC-01
+#   AP-CU41-01  SIN_TIPO_DE_CAMBIO      · sin cotizacion el umbral no seria reproducible
+#   AP-CU41-02  TITULAR_NO_IDENTIFICADO · operativa propia: queda exenta
+#   AP-CU41-03  REGISTRO_DUPLICADO      · esa transaccion ya registro ese umbral (R-UIF-13)
+#
+# CU-42 · Detectar umbral y registrar ROG
+#   AP-CU42-01  SIN_TIPO_DE_CAMBIO · falta cotizacion para convertir a dolares
+#   AP-CU42-02  REGISTRO_DUPLICADO · ya existe el registro para esa transaccion y umbral
+#
+# CU-43 · Remitir los reportes mensuales a la UIF
+#   AP-CU43-01  PERIODO_SIN_CERRAR     · aca: no hay catalogo activo, o el periodo no se genero
+#   AP-CU43-02  SEGREGACION_INCUMPLIDA · quien aprueba no puede ser quien genero (R-SEG-04)
+#   AP-CU43-03  ENVIO_FALLIDO          · el reporte ya no esta en estado GENERADO
+#   AP-CU43-04  FUERA_DE_PLAZO         · se envia igual y se abre hallazgo
+#
+# CU-44 · De alerta de monitoreo a reporte de operacion sospechosa
+#   AP-CU44-01  CONCLUSION_REQUERIDA  · no se cierra una alerta sin justificacion (R-UIF-07)
+#   AP-CU44-02  REVISOR_ES_ANALISTA   · la revision tiene que ser independiente
+#   AP-CU44-03  REPORTE_SIN_NARRATIVA · decidir reportar exige el ROS ya radicado
+#   AP-CU44-04  CASO_VENCIDO          · se paso el plazo de investigacion
+#
+# CU-45 · Atender un requerimiento de autoridad
+#   AP-CU45-01  OFICIO_DUPLICADO · ese numero ya fue registrado
+#   AP-CU45-02  SIN_DOCUMENTO    · no se actua sin el oficio y su hash
+#   AP-CU45-03  ALCANCE_AMBIGUO  · se pide aclaracion antes de entregar informacion
+#   AP-CU45-04  PLAZO_VENCIDO    · se responde igual y se abre hallazgo
+#
+# CU-47 · Evaluar el riesgo del producto antes de lanzarlo
+#   AP-CU47-01  FUERA_DE_ALCANCE        · el producto excede la licencia vigente (R-LIC-01)
+#   AP-CU47-02  RIESGO_SIN_CONTROL      · hay riesgo alto sin control asociado
+#   AP-CU47-03  FACTOR_FALTANTE         · falta alguno de los cuatro factores obligatorios
+#   AP-CU47-04  SIN_NO_OBJECION         · el producto la exige y no la tiene (R-LIC-04)
+#   AP-CU47-05  VERSION_DUPLICADA       · ya existe esa version del producto
+#   AP-CU47-06  APROBADOR_NO_HABILITADO · quien aprueba no integra un comite con quorum
+#
+# CU-48 · Calibrar reglas de cumplimiento y triar sus alertas
+#   AP-CU48-01  EXPRESION_INVALIDA      · no compila o referencia campos inexistentes
+#   AP-CU48-02  UMBRAL_CABLEADO         · trae un numero en vez de apuntar al catalogo (R-UIF-01)
+#   AP-CU48-03  SIMULACION_REQUERIDA    · sin simulacion previa, o supera el techo
+#   AP-CU48-04  ACCION_DESPROPORCIONADA · la accion excede lo que la severidad habilita
+#   AP-CU48-05  ALERTA_SIN_CONCLUSION   · cerrar sin fundamento (R-UIF-07)
+#   AP-CU48-06  CODIGO_DUPLICADO        · ya existe una regla con ese codigo
+#
+# CU-49 · Designar al oficial de cumplimiento y capacitar
+#   AP-CU49-01  TITULAR_YA_ACTIVO             · primero la baja (R-UIF-12)
+#   AP-CU49-02  INCOMPATIBILIDAD_DE_FUNCIONES · roles operativos incompatibles (R-SEG-04)
+#   AP-CU49-03  SIN_ACTA                      · falta el respaldo del directorio (R-LIC-03)
+#   AP-CU49-04  SIN_SUPLENTE                  · baja del titular sin quien asuma
+#   AP-CU49-05  COMUNICACION_VENCIDA          · reservado; el plazo viaja en el evento
+#   AP-CU49-06  CAPACITACION_DUPLICADA        · reservado
+#
+# CU-52 · Atender un reclamo en plazo
+#   AP-CU52-01  PUNTO_RECLAMO_INACTIVO · el canal elegido no esta habilitado
+#   AP-CU52-02  PRORROGA_EXCEDIDA      · supera el maximo sin comunicacion al organismo (R-CON-03)
+#   AP-CU52-03  FALTA_REPARACION       · favorable con monto exige devolucion (R-CON-04)
+#   AP-CU52-04  PLAZO_VENCIDO          · se responde igual y escala a hallazgo
+#
+# CU-53 · Elevar un reclamo a segunda instancia
+#   AP-CU53-01  RECLAMO_NO_RESPONDIDO  · todavia en plazo de primera instancia
+#   AP-CU53-02  INSTANCIA_DUPLICADA    · ya hay una elevacion abierta en esa instancia
+#   AP-CU53-03  SIN_EVIDENCIA_TECNICA  · sin rastro suficiente; es un hallazgo en si mismo
+#
+# CU-56 · Ejecutar una prueba de continuidad
+#   AP-CU56-01  SIN_ACTA_DE_COMITE      · una prueba exitosa exige acta que la reporte
+#   AP-CU56-02  OBJETIVOS_NO_ALCANZADOS · el RTO obtenido supera el comprometido
+#   AP-CU56-03  PLAN_INEXISTENTE        · el proceso critico no tiene plan
+#
+# CU-94 · Elevar una decision al comite de gobierno
+#   AP-CU94-01  SIN_QUORUM             · sesionaron menos que el minimo
+#   AP-CU94-02  COMPOSICION_INCOMPLETA · falta en la mesa un rol que la composicion exige
+#   AP-CU94-03  PARTE_INTERESADA       · quien tiene interes directo no vota
+#   AP-CU94-04  FUERA_DE_FACULTAD      · reservado
+#   AP-CU94-05  ACTA_YA_CERRADA        · reservado; lo frena la unicidad del numero
+#   AP-CU94-06  COMITE_INACTIVO        · el comite no existe o no esta activo
+#
+# NOTA · divergencias declaradas contra la boveda, con su detalle en
+# planes/informes/carril-3C.md:
+#   · CU-41 crea el registro ANTES de pedir la declaracion (pasos 4 y 5). La base solo
+#     admite el orden inverso: `ck_operelev_declaracion` no deja escribir un PCC-01 sin
+#     origen y destino, y la tabla es append-only, asi que tampoco se completa despues.
+#   · CU-47 nombra los estados EN_ELABORACION / EN_APROBACION / VIGENTE / OBSERVADA /
+#     CERRADA; el catalogo admite APROBADA, BORRADOR, EN_EVALUACION y RECHAZADA.
+#   · CU-48 nombra las acciones RETENER / BLOQUEAR / RECHAZAR; el catalogo admite
+#     SOLO_ALERTAR, RETENER_OPERACION y BLOQUEAR_CUENTA.
 openapi: 3.1.0
 info:
   title: cumplimiento

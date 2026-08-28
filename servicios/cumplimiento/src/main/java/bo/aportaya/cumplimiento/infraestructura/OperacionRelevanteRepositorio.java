@@ -103,7 +103,15 @@ public class OperacionRelevanteRepositorio {
         return id;
     }
 
-    /** Los registros de un periodo que todavia no entraron a un reporte. */
+    /**
+     * Los registros de un periodo y un formulario.
+     *
+     * <p>**No se filtra por `reporte_regulatorio_id IS NULL`, y no por descuido:** la
+     * tabla es append-only (R-AUD-01), asi que esa columna no se puede escribir nunca
+     * despues del alta y queda siempre en nulo. Lo que impide reportar dos veces el
+     * mismo periodo es {@code uq_reporte_catalogo_periodo}, no una marca en el registro.
+     * Queda declarado como hueco del carril.
+     */
     public List<Pendiente> pendientesDelPeriodo(DSLContext dsl, String periodo, String formulario) {
         return dsl.select(
                         DSL.field("id", UUID.class),
@@ -112,24 +120,12 @@ public class OperacionRelevanteRepositorio {
                 .from(DSL.table(DSL.name("cumplimiento", "registro_operacion_relevante")))
                 .where(DSL.field("periodo_remision", String.class)
                         .eq(periodo)
-                        .and(DSL.field("formulario", String.class).like(formulario))
-                        .and(DSL.field("reporte_regulatorio_id", UUID.class).isNull()))
+                        .and(DSL.field("formulario", String.class).like(formulario)))
                 .orderBy(DSL.field("fecha_operacion").asc())
                 .fetch(f -> new Pendiente(
                         f.get("id", UUID.class),
                         f.get("formulario", String.class),
                         f.get("monto_equivalente_usd", BigDecimal.class)));
-    }
-
-    /** Ata los registros al reporte que los lleva. Es lo que hace que no viajen dos veces. */
-    public int enlazarAlReporte(DSLContext dsl, List<UUID> registros, UUID reporteId) {
-        if (registros.isEmpty()) {
-            return 0;
-        }
-        return dsl.update(DSL.table(DSL.name("cumplimiento", "registro_operacion_relevante")))
-                .set(DSL.field("reporte_regulatorio_id", UUID.class), reporteId)
-                .where(DSL.field("id", UUID.class).in(registros))
-                .execute();
     }
 
     public UUID declararOrigen(

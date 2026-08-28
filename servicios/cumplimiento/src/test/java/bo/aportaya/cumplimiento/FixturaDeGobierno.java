@@ -23,6 +23,68 @@ class FixturaDeGobierno {
         this.dsl = dsl;
     }
 
+    /**
+     * Un reporte de operacion sospechosa ya radicado.
+     *
+     * <p>Vive en el esquema de {@code auditoria}: cumplimiento lo referencia pero no lo
+     * escribe (invariante 11). La fixtura lo arma porque la clave foranea lo exige.
+     */
+    UUID reporteSospechoso(UUID usuarioId) {
+        UUID id = UUID.randomUUID();
+        dsl.execute(
+                """
+                INSERT INTO auditoria.reporte_operacion_sospechosa
+                    (id, usuario_id, tipologia, monto_total, periodo_analizado, narrativa, estado)
+                VALUES (?, ?, 'FRACCIONAMIENTO', 5000.00, ?, 'Narrativa de prueba del carril', 'BORRADOR')
+                """,
+                id,
+                usuarioId,
+                "2026-08");
+        return id;
+    }
+
+    /** Un limite operativo del catalogo, con su base normativa. */
+    UUID limite(String concepto, String nivel, String ventana, String montoMaximo, Integer cantidadMaxima) {
+        UUID id = UUID.randomUUID();
+        dsl.execute(
+                """
+                INSERT INTO catalogo.limite_operativo_billetera
+                    (id, concepto, nivel_debida_diligencia, ventana, monto_maximo, cantidad_maxima,
+                     moneda, base_normativa, vigente_desde, activo)
+                VALUES (?, ?, ?, ?, ?::numeric, ?, 'BOB', 'Limites BCB — prueba del carril',
+                        current_date - 30, true)
+                """,
+                id,
+                concepto,
+                nivel,
+                ventana,
+                montoMaximo,
+                cantidadMaxima);
+        return id;
+    }
+
+    /**
+     * El consumo acumulado de una ventana vigente.
+     *
+     * <p>Lo escribe el nucleo financiero al aplicar cada operacion; la fixtura lo arma
+     * porque CU-40 solo lo LEE para decidir (invariante 11).
+     */
+    void consumo(UUID cuentaId, UUID limiteId, String monto, int cantidad) {
+        dsl.execute(
+                """
+                INSERT INTO nucleo_financiero.consumo_limite
+                    (id, cuenta_billetera_id, limite_id, ventana_inicio, ventana_fin,
+                     monto_acumulado, cantidad_acumulada, actualizado_en)
+                VALUES (gen_random_uuid(), ?, ?, date_trunc('month', now()),
+                        date_trunc('month', now()) + interval '1 month' - interval '1 second',
+                        ?::numeric, ?, now())
+                """,
+                cuentaId,
+                limiteId,
+                monto,
+                cantidad);
+    }
+
     UUID puntoDeReclamo(String codigo, String tipo, boolean activo) {
         UUID id = UUID.randomUUID();
         dsl.execute(
@@ -38,6 +100,24 @@ class FixturaDeGobierno {
     }
 
     UUID comite(String tipo, int quorum, String composicionJson, String periodicidad) {
+        // `uq_comite_gobierno_tipo`: hay UN comite de riesgos, no varios. Si ya esta, se
+        // reusa con la composicion que la prueba pide.
+        var existente = dsl.fetchOne("SELECT id FROM cumplimiento.comite_gobierno WHERE tipo = ?", tipo);
+        if (existente != null) {
+            UUID previo = existente.get(0, UUID.class);
+            dsl.execute(
+                    """
+                    UPDATE cumplimiento.comite_gobierno
+                       SET quorum_minimo = ?, composicion_requerida = ?::jsonb,
+                           periodicidad_minima = ?, activo = true
+                     WHERE id = ?
+                    """,
+                    (short) quorum,
+                    composicionJson,
+                    periodicidad,
+                    previo);
+            return previo;
+        }
         UUID id = UUID.randomUUID();
         dsl.execute(
                 """
@@ -50,6 +130,30 @@ class FixturaDeGobierno {
                 periodicidad,
                 composicionJson,
                 (short) quorum);
+        return id;
+    }
+
+    /**
+     * Un acta de comite minima.
+     *
+     * <p>La exige {@code ck_prueba_resultado}: una prueba EXITOSA sin acta que la
+     * reporte no se puede guardar, y esta bien que asi sea.
+     */
+    UUID actaMinima() {
+        UUID comiteId = comite("RIESGOS", 3, "[\"RIESGOS\", \"TECNOLOGIA\", \"CUMPLIMIENTO\"]", "TRIMESTRAL");
+        UUID id = UUID.randomUUID();
+        dsl.execute(
+                """
+                INSERT INTO cumplimiento.acta_comite
+                    (id, comite_gobierno_id, numero, fecha, asistentes, cumple_quorum,
+                     temas_tratados, decisiones, url_documento, hash_documento)
+                VALUES (?, ?, ?, current_date, '[]'::jsonb, true, '[]'::jsonb, '[]'::jsonb,
+                        'https://actas.bo/x', ?)
+                """,
+                id,
+                comiteId,
+                "ACTA-" + SECUENCIA.incrementAndGet(),
+                "a".repeat(64));
         return id;
     }
 

@@ -83,7 +83,11 @@ public class CU47EvaluarRiesgoDeProducto {
         return datos.conContexto(ctx, dsl -> {
             // AP-CU47-01 · R-LIC-01. La licencia se consulta antes de escribir nada.
             var licencia = licencias.vigente(dsl, ahora.toLocalDate());
+            // Las tres condiciones, y las tres hacen falta: **solo OTORGADA habilita**
+            // (una licencia en tramite o revocada no autoriza nada), la vigencia no
+            // puede estar vencida, y el servicio tiene que estar dentro del alcance.
             boolean cubierto = licencia.isPresent()
+                    && licencia.get().estado().habilitaServicioFinanciero()
                     && licencia.get().vigente()
                     && licencia.get().alcance().contains(entrada.servicioDeLicencia());
             if (!cubierto) {

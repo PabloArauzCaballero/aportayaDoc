@@ -1,5 +1,6 @@
 package bo.aportaya.cumplimiento.aplicacion;
 
+import bo.aportaya.cumplimiento.dominio.ArchivoRegulatorio;
 import bo.aportaya.cumplimiento.infraestructura.GobiernoRepositorio;
 import bo.aportaya.cumplimiento.infraestructura.OperacionRelevanteRepositorio;
 import bo.aportaya.cumplimiento.infraestructura.ReporteRegulatorioRepositorio;
@@ -11,13 +12,10 @@ import bo.aportaya.plataforma.dominio.Reloj;
 import bo.aportaya.plataforma.mensajeria.EventoDominio;
 import bo.aportaya.plataforma.mensajeria.Outbox;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.YearMonth;
 import java.time.ZoneOffset;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -95,8 +93,12 @@ public class CU43RemitirReportes {
             LocalDate corte = mes.atEndOfMonth();
             LocalDate limite = corte.plusDays(catalogo.plazoDias());
 
-            String contenido = armarArchivo(catalogo.codigo(), entrada.periodo(), pendientes);
-            String hash = sha256(contenido);
+            String hash = ArchivoRegulatorio.hashDe(ArchivoRegulatorio.armar(
+                    catalogo.codigo(),
+                    entrada.periodo(),
+                    pendientes.stream()
+                            .map(r -> new ArchivoRegulatorio.Linea(r.id().toString(), r.formulario(), r.montoUsd()))
+                            .toList()));
 
             UUID reporteId = reportes.generar(
                     dsl,
@@ -111,12 +113,10 @@ public class CU43RemitirReportes {
                     hash,
                     ahora);
 
-            operaciones.enlazarAlReporte(
-                    dsl,
-                    pendientes.stream()
-                            .map(OperacionRelevanteRepositorio.Pendiente::id)
-                            .toList(),
-                    reporteId);
+            // HUECO: `registro_operacion_relevante.reporte_regulatorio_id` no se puede
+            // escribir nunca —la tabla es append-only (R-AUD-01)—, asi que el enlace
+            // entre reporte y registros se deriva del periodo. Lo que impide reportar
+            // dos veces el mismo mes es uq_reporte_catalogo_periodo.
 
             outbox.emitir(
                     dsl,
@@ -182,7 +182,10 @@ public class CU43RemitirReportes {
                 // agrega un encubrimiento al retraso.
                 gobierno.abrirHallazgo(
                         dsl,
-                        "REP-" + catalogo.codigo() + "-" + entrada.periodo(),
+                        // `hallazgo_auditoria.codigo` es VARCHAR(20): el codigo lleva el
+                        // periodo, que es lo que distingue un vencimiento de otro, y del
+                        // catalogo solo lo que entra.
+                        codigoDeHallazgo(catalogo.codigo(), entrada.periodo()),
                         "AUTOEVALUACION",
                         "El reporte " + catalogo.codigo() + " del periodo " + entrada.periodo()
                                 + " se envio despues de su fecha limite (" + reporte.fechaLimite() + ").",
@@ -228,38 +231,11 @@ public class CU43RemitirReportes {
         });
     }
 
-    /**
-     * El archivo, en forma canonica.
-     *
-     * <p>Determinista a proposito: el hash tiene que poder recomputarse desde los mismos
-     * registros. Un archivo con el orden del {@code SELECT} de turno produciria un hash
-     * distinto cada vez y la constancia no probaria nada.
-     */
-    private String armarArchivo(
-            String codigo, String periodo, List<OperacionRelevanteRepositorio.Pendiente> registros) {
-        var sb = new StringBuilder(codigo).append('|').append(periodo).append('\n');
-        registros.stream()
-                .sorted(java.util.Comparator.comparing(r -> r.id().toString()))
-                .forEach(r -> sb.append(r.id())
-                        .append('|')
-                        .append(r.formulario())
-                        .append('|')
-                        .append(r.montoUsd().toPlainString())
-                        .append('\n'));
-        return sb.toString();
-    }
-
-    private String sha256(String contenido) {
-        try {
-            byte[] resumen = MessageDigest.getInstance("SHA-256").digest(contenido.getBytes(StandardCharsets.UTF_8));
-            var texto = new StringBuilder(resumen.length * 2);
-            for (byte b : resumen) {
-                texto.append(Character.forDigit((b >> 4) & 0xF, 16)).append(Character.forDigit(b & 0xF, 16));
-            }
-            return texto.toString();
-        } catch (java.security.NoSuchAlgorithmException imposible) {
-            throw new IllegalStateException("Toda JVM trae SHA-256", imposible);
-        }
+    /** «REP-» + periodo (7) + lo que quede del codigo, dentro de los 20 que la base da. */
+    private String codigoDeHallazgo(String codigoCatalogo, String periodo) {
+        String prefijo = "REP-" + periodo + "-";
+        int disponible = 20 - prefijo.length();
+        return prefijo + codigoCatalogo.substring(0, Math.min(disponible, codigoCatalogo.length()));
     }
 
     private String urlDe(UUID reporteId) {

@@ -61,10 +61,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 /** El armado del carril de cumplimiento, con las piezas construidas a mano. */
 abstract class BaseDeCumplimiento {
 
-    protected static DSLContext dsl;
+    static DSLContext dsl;
     protected static DSLContext dslFixtura;
-    protected static TransactionTemplate transaccion;
-    protected static FixturaDeCumplimiento fixtura;
+    static TransactionTemplate transaccion;
+    static FixturaDeCumplimiento fixtura;
     protected static FixturaDeRiesgos riesgos;
     protected static FixturaDeIncidentes incidentes;
     protected static Consumidos consumidos;
@@ -77,6 +77,7 @@ abstract class BaseDeCumplimiento {
     protected static CU54EscalarPlanesVencidos escalarCU;
     protected static CU55GestionarIncidente incidenteCU;
     protected static CU55EscalarIncidentesVencidos escalarIncidentesCU;
+    static bo.aportaya.cumplimiento.aplicacion.CU40EvaluarLimites limiteCU;
     static CU41RegistrarPcc01 pccCU;
     static CU42RegistrarRog rogCU;
     static CU43RemitirReportes reporteCU;

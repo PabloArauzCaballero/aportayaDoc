@@ -70,7 +70,9 @@ class FixturaDeUif {
                 acumulado);
         if (existente != null) {
             UUID previo = existente.get(0, UUID.class);
-            dsl.execute("UPDATE catalogo.umbral_reporte_uif SET activo = false WHERE id = ?", previo);
+            dsl.execute(
+                    "UPDATE catalogo.umbral_reporte_uif SET activo = false, vigente_desde = current_date - 400 WHERE id = ?",
+                    previo);
             return previo;
         }
         UUID id = UUID.randomUUID();
@@ -80,7 +82,7 @@ class FixturaDeUif {
                     (id, formulario, inciso, concepto_operacion, es_acumulado, umbral_usd,
                      ventana_dias_calendario, exige_declaracion_origen_destino, reinicia_tras_superar,
                      base_normativa, vigente_desde, activo)
-                VALUES (?, ?, ?, ?, ?, ?::numeric, ?, ?, true, ?, current_date - 1, false)
+                VALUES (?, ?, ?, ?, ?, ?::numeric, ?, ?, true, ?, current_date - 400, false)
                 """,
                 id,
                 formulario,

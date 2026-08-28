@@ -57,7 +57,10 @@ public final class ExpresionDeRegla {
                             + " escrito. El umbral va al catalogo: usar umbral('CODIGO').");
         }
         var campos = new java.util.ArrayList<String>();
-        var identificadores = IDENTIFICADOR.matcher(expresion);
+        // Los literales entre comillas —los codigos del catalogo de umbrales— no son
+        // campos: sacarlos antes evita rechazar la regla bien escrita por nombrar el
+        // umbral al que apunta, que es justo lo que queremos que haga.
+        var identificadores = IDENTIFICADOR.matcher(expresion.replaceAll("'[^']*'", "''"));
         while (identificadores.find()) {
             String id = identificadores.group();
             if (esPalabraDeLaGramatica(id)) {

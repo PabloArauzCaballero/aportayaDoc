@@ -147,7 +147,14 @@ public class CU45AtenderRequerimiento {
             if (fueraDePlazo) {
                 gobierno.abrirHallazgo(
                         dsl,
-                        "OFI-" + entrada.numeroOficio(),
+                        // `hallazgo_auditoria.codigo` es VARCHAR(20).
+                        "OFI-"
+                                + entrada.numeroOficio()
+                                        .substring(
+                                                0,
+                                                Math.min(
+                                                        16,
+                                                        entrada.numeroOficio().length())),
                         "AUTOEVALUACION",
                         "El oficio " + entrada.numeroOficio() + " se respondio despues de su plazo ("
                                 + entrada.plazoRespuesta() + ").",

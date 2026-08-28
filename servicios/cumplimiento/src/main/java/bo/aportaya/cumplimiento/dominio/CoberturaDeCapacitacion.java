@@ -29,8 +29,13 @@ public final class CoberturaDeCapacitacion {
 
         var pendientes = new java.util.ArrayList<Empleado>();
         int enPlazo = 0;
+        int aprobados = 0;
         for (Empleado e : personalActivo) {
             if (aprobaronEnElPeriodo.contains(e.usuarioId())) {
+                // Se cuentan los aprobados DE ESTA lista, no todos los del periodo: el
+                // tablero informa sobre el personal activo, y sumar gente que ya no esta
+                // inflaria la cobertura justo donde importa que sea exacta.
+                aprobados++;
                 continue;
             }
             if (e.fechaDeAlta().plusDays(plazoDesdeElAltaDias).isAfter(corte)) {
@@ -39,8 +44,7 @@ public final class CoberturaDeCapacitacion {
             }
             pendientes.add(e);
         }
-        return new Cobertura(
-                periodo, personalActivo.size(), aprobaronEnElPeriodo.size(), enPlazo, List.copyOf(pendientes));
+        return new Cobertura(periodo, personalActivo.size(), aprobados, enPlazo, List.copyOf(pendientes));
     }
 
     public record Empleado(UUID usuarioId, String nombre, LocalDate fechaDeAlta) {}
