@@ -23,7 +23,10 @@ describe('PantallaDeBilletera · los cuatro estados', () => {
   it('éxito: muestra el saldo que respondió el contrato, sin recalcular nada', async () => {
     dibujar(<PantallaDeBilletera cuentaId={CUENTA} />)
     const disponible = await screen.findByLabelText(/^Saldo disponible: /)
-    expect(disponible.getAttribute('aria-label')).toMatch(/^Saldo disponible: (BOB|USD) -?\d+\.\d{2}$/)
+    // Desde F1 el importe se presenta como lo muestra la maqueta —`Bs 1.240,00`—, no
+    // como viaja en el contrato. Sigue sin recalcularse: `Monto` reagrupa la cadena
+    // que respondio el servidor y no la convierte a numero en ningun punto.
+    expect(disponible.getAttribute('aria-label')).toMatch(/^Saldo disponible: (Bs|USD) -?[\d.]+,\d{2}$/)
   })
 
   it('vacío: una cuenta en cero lo dice, y aclara que no es una falla de consulta', async () => {

@@ -1,5 +1,5 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native'
-import { andamiaje } from '../tokens/andamiaje'
+import { tokens } from '../tokens'
 
 /**
  * Cargando, vacio y error, escritos una vez.
@@ -10,7 +10,7 @@ import { andamiaje } from '../tokens/andamiaje'
 export function Cargando({ que }: { que: string }) {
   return (
     <View accessibilityRole="progressbar" accessibilityLabel={`Cargando ${que}`} style={estilos.centro}>
-      <ActivityIndicator color={andamiaje.color.acento} />
+      <ActivityIndicator color={tokens.color.acento} />
       <Text style={estilos.suave}>Cargando {que}…</Text>
     </View>
   )
@@ -59,18 +59,18 @@ export function Fallo({
 }
 
 const estilos = StyleSheet.create({
-  centro: { alignItems: 'center', gap: andamiaje.espacio.sm, padding: andamiaje.espacio.lg },
-  titulo: { color: andamiaje.color.texto, fontSize: andamiaje.tipografia.titulo, fontWeight: '600' },
-  suave: { color: andamiaje.color.textoSuave, fontSize: andamiaje.tipografia.cuerpo, textAlign: 'center' },
-  error: { color: andamiaje.color.error, fontSize: andamiaje.tipografia.cuerpo, textAlign: 'center' },
-  pie: { color: andamiaje.color.textoSuave, fontSize: andamiaje.tipografia.pie },
+  centro: { alignItems: 'center', gap: tokens.espacio.sm, padding: tokens.espacio.lg },
+  titulo: { color: tokens.color.texto, fontSize: tokens.tipografia.titulo, fontWeight: '600' },
+  suave: { color: tokens.color.textoSuave, fontSize: tokens.tipografia.cuerpo, textAlign: 'center' },
+  error: { color: tokens.color.error, fontSize: tokens.tipografia.cuerpo, textAlign: 'center' },
+  pie: { color: tokens.color.textoSuave, fontSize: tokens.tipografia.pie },
   boton: {
     alignItems: 'center',
-    backgroundColor: andamiaje.color.acento,
-    borderRadius: andamiaje.radio.md,
+    backgroundColor: tokens.color.acento,
+    borderRadius: tokens.radio.md,
     justifyContent: 'center',
-    minHeight: andamiaje.areaTactil,
-    paddingHorizontal: andamiaje.espacio.lg,
+    minHeight: tokens.areaTactil,
+    paddingHorizontal: tokens.espacio.lg,
   },
-  textoBoton: { color: andamiaje.color.fondo, fontSize: andamiaje.tipografia.cuerpo, fontWeight: '600' },
+  textoBoton: { color: tokens.color.fondo, fontSize: tokens.tipografia.cuerpo, fontWeight: '600' },
 })

@@ -1,8 +1,8 @@
 import { Link, Stack } from 'expo-router'
 import { StyleSheet, Text, View } from 'react-native'
-import { andamiaje } from '../src/tokens/andamiaje'
+import { tokens } from '../src/tokens'
 
-/** Punto de entrada del andamiaje. Las pantallas de negocio llegan en F3. */
+/** Punto de entrada de la app. Las pantallas de negocio llegan en F3. */
 export default function Inicio() {
   return (
     <View style={estilos.pantalla}>
@@ -20,14 +20,14 @@ export default function Inicio() {
 const estilos = StyleSheet.create({
   pantalla: {
     flex: 1,
-    gap: andamiaje.espacio.md,
+    gap: tokens.espacio.md,
     justifyContent: 'center',
-    padding: andamiaje.espacio.lg,
+    padding: tokens.espacio.lg,
   },
-  titulo: { color: andamiaje.color.texto, fontSize: andamiaje.tipografia.titulo, fontWeight: '700' },
+  titulo: { color: tokens.color.texto, fontSize: tokens.tipografia.titulo, fontWeight: '700' },
   enlace: {
-    color: andamiaje.color.acento,
-    fontSize: andamiaje.tipografia.cuerpo,
-    lineHeight: andamiaje.areaTactil,
+    color: tokens.color.acento,
+    fontSize: tokens.tipografia.cuerpo,
+    lineHeight: tokens.areaTactil,
   },
 })

@@ -1,0 +1,12 @@
+{
+  "//": "`src/nativo/**` importa `react-native`, que solo esta instalado en apps/movil: su typecheck lo hace esa app, que es quien lo consume y quien tiene los tipos.",
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM"],
+    "jsx": "react-jsx",
+    "types": ["vitest/globals", "node", "@testing-library/jest-dom"],
+    "rootDir": "."
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "pruebas/**/*.ts", "pruebas/**/*.tsx"],
+  "exclude": ["src/nativo/**", "node_modules", "generado"]
+}

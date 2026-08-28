@@ -2,16 +2,50 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "jsx": "react-jsx",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "types": ["vite/client", "vitest/globals", "@testing-library/jest-dom"],
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "types": [
+      "vite/client",
+      "vitest/globals",
+      "@testing-library/jest-dom"
+    ],
     "baseUrl": "../..",
     "paths": {
-      "@aportaya/simulado": ["packages/simulado/src/index.ts"],
-      "@aportaya/simulado/*": ["packages/simulado/src/*"],
-      "clientes/typescript/*": ["clientes/typescript/*"],
-      "@/*": ["apps/backoffice/src/*"]
+      "@/*": [
+        "apps/backoffice/src/*"
+      ],
+      "@aportaya/simulado": [
+        "packages/simulado/src/index.ts"
+      ],
+      "@aportaya/simulado/*": [
+        "packages/simulado/src/*"
+      ],
+      "@aportaya/ui": [
+        "packages/ui/src/index.ts"
+      ],
+      "@aportaya/ui/nativo": [
+        "packages/ui/src/nativo/index.ts"
+      ],
+      "@aportaya/ui/web": [
+        "packages/ui/src/web/index.ts"
+      ],
+      "clientes/typescript/*": [
+        "clientes/typescript/*"
+      ]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "pruebas/**/*.ts", "pruebas/**/*.tsx", "*.ts"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "pruebas/**/*.ts",
+    "pruebas/**/*.tsx",
+    "*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

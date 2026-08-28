@@ -26,7 +26,10 @@ describe('PantallaDeSaldo · los cuatro estados', () => {
     const disponible = await screen.findByLabelText(/^Saldo disponible: /)
     expect(disponible).toBeTruthy()
     // El importe se muestra tal cual llego: cadena decimal con dos decimales.
-    expect(disponible.props.accessibilityLabel).toMatch(/^Saldo disponible: (BOB|USD) -?\d+\.\d{2}$/)
+    // Desde F1 el importe se presenta como lo muestra la maqueta —`Bs 1.240,00`—, no
+    // como viaja en el contrato. Sigue sin recalcularse: `Monto` reagrupa la cadena
+    // que respondio el servidor y no la convierte a numero en ningun punto.
+    expect(disponible.props.accessibilityLabel).toMatch(/^Saldo disponible: (Bs|USD) -?[\d.]+,\d{2}$/)
   })
 
   it('vacio: una cuenta sin movimientos dice por que no hay nada', async () => {

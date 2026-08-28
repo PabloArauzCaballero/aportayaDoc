@@ -7,7 +7,10 @@
     "packages/*"
   ],
   "scripts": {
+    "//": "Los tres `dev:*` construyen antes el sistema de diseño: `generado/tokens.css` es un artefacto, y sin él el sitio y el backoffice arrancan sin tokens.",
     "dev:movil": "yarn workspace @aportaya/movil start",
+    "dev:backoffice": "yarn workspace @aportaya/ui build && yarn workspace @aportaya/backoffice dev",
+    "dev:web": "yarn workspace @aportaya/ui build && yarn workspace @aportaya/web dev",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test:front": "turbo run test:front",

@@ -51,6 +51,11 @@ const comun = {
   moduleNameMapper: {
     '^@aportaya/simulado$': `${raiz}/packages/simulado/src/index.ts`,
     '^@aportaya/simulado/(.*)$': `${raiz}/packages/simulado/src/$1`,
+    // El sistema de diseno se consume como fuente, igual que el simulado: asi Metro
+    // y Jest ven el mismo arbol y una prueba verde no depende de un `build` previo.
+    '^@aportaya/ui$': `${raiz}/packages/ui/src/index.ts`,
+    '^@aportaya/ui/nativo$': `${raiz}/packages/ui/src/nativo/index.ts`,
+    '^@aportaya/ui/(.*)$': `${raiz}/packages/ui/src/$1`,
     '^clientes/typescript/(.*)$': `${raiz}/clientes/typescript/$1`,
     '^@/(.*)$': '<rootDir>/src/$1',
   },

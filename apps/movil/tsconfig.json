@@ -14,17 +14,26 @@
     "allowJs": true,
     "baseUrl": "../..",
     "paths": {
+      "@/*": [
+        "apps/movil/src/*"
+      ],
       "@aportaya/simulado": [
         "packages/simulado/src/index.ts"
       ],
       "@aportaya/simulado/*": [
         "packages/simulado/src/*"
       ],
+      "@aportaya/ui": [
+        "packages/ui/src/index.ts"
+      ],
+      "@aportaya/ui/nativo": [
+        "packages/ui/src/nativo/index.ts"
+      ],
+      "@aportaya/ui/web": [
+        "packages/ui/src/web/index.ts"
+      ],
       "clientes/typescript/*": [
         "clientes/typescript/*"
-      ],
-      "@/*": [
-        "apps/movil/src/*"
       ]
     }
   },

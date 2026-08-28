@@ -7,6 +7,7 @@
   "types": "src/index.ts",
   "scripts": {
     "contratos": "node scripts/contratos-a-json.mjs",
+    "build": "node scripts/contratos-a-json.mjs",
     "typecheck": "tsc -p tsconfig.json",
     "lint": "eslint src scripts",
     "//": "Sin corredor propio: lo que este paquete produce se verifica donde se consume, en apps/movil/pruebas/{unidad,contrato}."

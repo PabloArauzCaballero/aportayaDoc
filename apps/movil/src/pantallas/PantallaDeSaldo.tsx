@@ -3,7 +3,7 @@ import { useSaldo } from '../dominio/saldoDeBilletera'
 import { ErrorDeApi } from '../dominio/errores'
 import { Cargando, Fallo, Vacio } from '../moleculas/EstadoDePantalla'
 import { ResumenDeBilletera } from '../organismos/ResumenDeBilletera'
-import { andamiaje } from '../tokens/andamiaje'
+import { tokens } from '../tokens'
 
 /**
  * La pantalla real de la fase F0, contra el servidor simulado y con **los cuatro
@@ -47,5 +47,5 @@ export function PantallaDeSaldo({ cuentaId }: { cuentaId: string }) {
 }
 
 const estilos = StyleSheet.create({
-  contenido: { gap: andamiaje.espacio.md, padding: andamiaje.espacio.md },
+  contenido: { gap: tokens.espacio.md, padding: tokens.espacio.md },
 })

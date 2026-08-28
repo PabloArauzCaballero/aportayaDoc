@@ -1,0 +1,60 @@
+/*
+  El sistema de diseño de verdad, entrando al backoffice.
+
+  Reemplaza al `andamiaje.css` de la fase F0, que existía para que la primera pantalla
+  se viera sin esparcir literales. **Acá ya no hay ni un literal**: todo sale de
+  `@aportaya/ui`, que a su vez sale de `docs/Views/Sistema-Diseno/estilos.css`, con una
+  prueba que falla si alguno diverge.
+
+  Los nombres `--color-*`, `--espacio-*` y `--tipo-*` son los que ya usan las pantallas
+  de F0. Se mantienen como **alias sobre los roles reales** para no reescribir las
+  pantallas de otro carril en el mismo commit que trae los tokens. Cada carril de
+  pantalla los va cambiando por el rol al migrar, y cuando no quede ninguno, este
+  bloque de alias se borra.
+*/
+@import '@aportaya/ui/tokens.css';
+@import '@aportaya/ui/web/atomos.css';
+
+:root {
+  --color-fondo: var(--bg);
+  --color-superficie: var(--surface-2);
+  --color-texto: var(--text);
+  --color-texto-suave: var(--text-3);
+  --color-borde: var(--border);
+  --color-acento: var(--accent);
+  --color-error: var(--err-texto);
+
+  --espacio-xs: var(--s1);
+  --espacio-sm: var(--s2);
+  --espacio-md: var(--s4);
+  --espacio-lg: var(--s5);
+
+  --radio-md: var(--r-md);
+  --tipo-cuerpo: 15px;
+  --tipo-titulo: 20px;
+  --tipo-monto: 28px;
+  --tipo-pie: 13px;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-b);
+  font-size: var(--tipo-cuerpo);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-d);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+/* El foco visible NO se quita. Un backoffice se opera con teclado durante ocho
+   horas, y sin foco visible se opera a ciegas. */
+:focus-visible {
+  outline: 3px solid var(--g300);
+  outline-offset: 2px;
+}

@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Link, Outlet, createRootRoute } from '@tanstack/react-router'
-import '../tokens/andamiaje.css'
+import '../tokens/sistema.css'
 
 /**
  * Raiz del backoffice. TanStack Router arma el arbol **desde los archivos de esta

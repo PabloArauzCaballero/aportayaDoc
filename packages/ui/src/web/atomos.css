@@ -1,0 +1,100 @@
+/*
+  Los átomos, en CSS. **Ningún literal de diseño acá**: todo sale de las variables que
+  emite `generado/tokens.css` (invariante 3). Las reglas están portadas de
+  `docs/Views/Sistema-Diseno/estilos.css` — acá no se diseña, se implementa.
+*/
+
+/* ===== Monto — el átomo más importante ===== */
+.ay-monto {
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-d);
+  text-align: right;
+  display: inline-block;
+  color: var(--text);
+}
+.ay-monto--cuerpo { font-weight: 500; }
+.ay-monto--destacado { font-weight: 700; font-size: 28px; letter-spacing: -0.02em; }
+.ay-monto--titular { font-weight: 700; font-size: 34px; letter-spacing: -0.02em; }
+/* El color acompaña al signo, no lo reemplaza: el `-` sigue en el texto. */
+.ay-monto--entra { color: var(--ok-texto); }
+.ay-monto--sale { color: var(--err-texto); }
+
+/* ===== Botón ===== */
+.ay-boton {
+  font-family: var(--font-d);
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: var(--r-md);
+  padding: 11px 18px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s2);
+  line-height: 1;
+  /* El área táctil mínima no es negociable, tampoco en escritorio: hay operadores
+     con pantalla táctil, y un objetivo chico cansa igual con mouse. */
+  min-height: var(--area-tactil);
+  transition: filter 0.15s, background 0.15s;
+  text-decoration: none;
+}
+/* El foco visible NO se quita. Se opera con teclado durante ocho horas. */
+.ay-boton:focus-visible { outline: 3px solid var(--g300); outline-offset: 2px; }
+.ay-boton--primario { background: var(--accent); color: var(--accent-ink); }
+.ay-boton--primario:hover:not(:disabled) { filter: brightness(0.95); }
+.ay-boton--secundario { background: var(--verde-solido); color: var(--sobre-verde-solido); }
+.ay-boton--secundario:hover:not(:disabled) { filter: brightness(1.08); }
+.ay-boton--fantasma { background: transparent; color: var(--brand-texto); border-color: var(--field-border); }
+.ay-boton--fantasma:hover:not(:disabled) { background: var(--surface-2); }
+/* `--err` oscurecido: blanco sobre `--err` da 4.38:1 y no pasa AA; así da 4.61:1. */
+.ay-boton--peligro { background: #d43e3e; color: var(--white); }
+.ay-boton--enlace {
+  background: none;
+  border: none;
+  color: var(--brand-texto);
+  padding: 6px 4px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  min-height: auto;
+}
+.ay-boton:disabled { opacity: 0.5; cursor: not-allowed; filter: none; }
+.ay-boton--sm { padding: 8px 13px; font-size: 12.5px; border-radius: var(--r-sm); }
+.ay-boton--lg { padding: 14px 24px; font-size: 15px; }
+.ay-boton--bloque { width: 100%; }
+
+.ay-boton__spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: ay-girar 1s linear infinite;
+  flex: none;
+}
+@keyframes ay-girar { to { transform: rotate(360deg); } }
+
+/* ===== Chip de estado ===== */
+.ay-chip {
+  font-family: var(--font-d);
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: var(--r-pill);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.ay-chip__punto { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.ay-chip--ok { background: var(--ok-bg); color: var(--ok-texto); }
+.ay-chip--aviso { background: var(--warn-bg); color: var(--aviso-texto); }
+.ay-chip--error { background: var(--err-bg); color: var(--err-texto); }
+.ay-chip--info { background: var(--info-bg); color: var(--info-texto); }
+.ay-chip--neutro { background: var(--surface-2); color: var(--text-2); }
+
+/* Quien pidió menos movimiento recibe menos movimiento. No es una preferencia
+   estética: para algunas personas una animación es un mareo. */
+@media (prefers-reduced-motion: reduce) {
+  .ay-boton__spinner { animation: none; }
+  .ay-boton { transition: none; }
+}

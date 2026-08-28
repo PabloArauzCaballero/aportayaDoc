@@ -1,0 +1,51 @@
+/*
+  El sistema de diseño de verdad, entrando al sitio público.
+
+  Reemplaza al `andamiaje.css` de la fase F0. **Ni un literal acá**: todo sale de
+  `@aportaya/ui`, verificado contra `docs/Views/Sistema-Diseno/estilos.css`.
+
+  Los alias `--color-*` y `--espacio-*` sostienen las páginas que F0 ya escribió; se
+  borran cuando `F9` migre cada página al rol correspondiente.
+*/
+@import '@aportaya/ui/tokens.css';
+@import '@aportaya/ui/web/atomos.css';
+
+:root {
+  --color-fondo: var(--bg);
+  --color-texto: var(--text);
+  --color-texto-suave: var(--text-3);
+  --color-borde: var(--border);
+  --color-acento: var(--accent);
+  --color-error: var(--err-texto);
+
+  --espacio-sm: var(--s2);
+  --espacio-md: var(--s4);
+  --espacio-lg: var(--s5);
+  --radio-md: var(--r-md);
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-b);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-d);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+main {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: var(--s5);
+}
+
+:focus-visible {
+  outline: 3px solid var(--g300);
+  outline-offset: 2px;
+}

@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native'
 import type { SaldoBilletera } from 'clientes/typescript/nucleo-financiero/models'
 import { Monto } from '../atomos/Monto'
-import { andamiaje } from '../tokens/andamiaje'
+import { tokens } from '../tokens'
 
 /**
  * Lo que se ve cuando la consulta salio bien. No hace red ni decide estados: los
@@ -13,7 +13,7 @@ export function ResumenDeBilletera({ saldo }: { saldo: SaldoBilletera }) {
       <Text accessibilityRole="header" style={estilos.rotulo}>
         Disponible
       </Text>
-      <Monto valor={saldo.disponible} tamano="monto" etiqueta="Saldo disponible" />
+      <Monto valor={saldo.disponible} tamano="titular" etiqueta="Saldo disponible" />
 
       <View style={estilos.fila}>
         <Text style={estilos.rotulo}>Retenido</Text>
@@ -29,13 +29,13 @@ export function ResumenDeBilletera({ saldo }: { saldo: SaldoBilletera }) {
 
 const estilos = StyleSheet.create({
   tarjeta: {
-    borderColor: andamiaje.color.borde,
-    borderRadius: andamiaje.radio.md,
+    borderColor: tokens.color.borde,
+    borderRadius: tokens.radio.md,
     borderWidth: 1,
-    gap: andamiaje.espacio.sm,
-    padding: andamiaje.espacio.lg,
+    gap: tokens.espacio.sm,
+    padding: tokens.espacio.lg,
   },
   fila: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
-  rotulo: { color: andamiaje.color.textoSuave, fontSize: andamiaje.tipografia.cuerpo },
-  pie: { color: andamiaje.color.textoSuave, fontSize: andamiaje.tipografia.pie },
+  rotulo: { color: tokens.color.textoSuave, fontSize: tokens.tipografia.cuerpo },
+  pie: { color: tokens.color.textoSuave, fontSize: tokens.tipografia.pie },
 })

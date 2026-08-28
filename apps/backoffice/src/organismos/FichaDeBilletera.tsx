@@ -18,7 +18,7 @@ export function FichaDeBilletera({ saldo }: { saldo: SaldoBilletera }) {
       }}
     >
       <h2 style={{ margin: 0, fontSize: 'var(--tipo-titulo)' }}>Disponible</h2>
-      <Monto valor={saldo.disponible} etiqueta="Saldo disponible" grande />
+      <Monto valor={saldo.disponible} etiqueta="Saldo disponible" tamano="destacado" />
 
       <dl style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: 'var(--espacio-sm)', margin: 0 }}>
         <dt style={{ color: 'var(--color-texto-suave)' }}>Retenido</dt>
