@@ -308,6 +308,23 @@ def pruebas() -> Dimension:
     for servicio in SERVICIOS:
         raiz_pruebas = RAIZ / "servicios" / servicio / "src/test/java"
         nombres = {p.stem for p in raiz_pruebas.rglob("*.java")} if raiz_pruebas.exists() else set()
+        # La cobertura de rechazos se mide por CONTENIDO, no por nombre de archivo.
+        # Exigir un `CU01RechazosTest` cuando los rechazos ya viven dentro de
+        # `CU01Test` pide mover codigo de sitio, no probar nada nuevo — y hace que la
+        # auditoria se conteste a si misma en vez de mirar el sistema.
+        con_rechazos = set()
+        if raiz_pruebas.exists():
+            for archivo in raiz_pruebas.rglob("CU*Test.java"):
+                texto = archivo.read_text(encoding="utf-8")
+                # `rechaza por R-`, `rechaza R-`, `rechaza · R-`: tres formas de
+                # escribir lo mismo que ya conviven en el repositorio. Exigir una sola
+                # convertiria la auditoria en un corrector de estilo — y de hecho lo
+                # hizo: pidio nueve clases de rechazo para casos que YA las tenian,
+                # solo que con otro nombre de archivo.
+                if not re.search(r'@DisplayName\(\s*"?\s*rechaza[^"]{0,8}R-', texto):
+                    continue
+                if (m := re.match(r"CU\d{2,3}(?=[A-Z]|$)", archivo.stem)):
+                    con_rechazos.add(m.group(0))
         # El numero ENTERO, no los dos primeros digitos: `CU105DepreciarActivo`
         # daba «CU10», que no existe, y la auditoria pedia pruebas de un caso de uso
         # imaginario mientras dejaba pasar el real.
@@ -320,8 +337,8 @@ def pruebas() -> Dimension:
             d.revisadas += 2
             if f"{caso}Test" not in nombres:
                 d.hallazgos.append(f"{servicio}: {caso} sin prueba de caso de uso")
-            if f"{caso}RechazosTest" not in nombres:
-                d.hallazgos.append(f"{servicio}: {caso} sin prueba de rechazos")
+            if caso not in con_rechazos:
+                d.hallazgos.append(f"{servicio}: {caso} sin ninguna prueba `rechaza por R-…`")
     return d
 
 

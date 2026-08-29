@@ -22,10 +22,10 @@ python3 scripts/auditar_backend.py --json   # para comparar dos corridas
 | Seguridad | 5 | 10.00 | 10.00 | + dos comprobaciones nuevas (ver «el punto ciego») |
 | Invariantes | 5 | 9.78 | 10.00 | 10 → 0; las 10 pasaron a divergencias **declaradas** |
 | Contratos | 3 | 10.00 | 10.00 | ningún `$ref` roto, ninguna operación sin respuestas |
-| Pruebas | 4 | 8.88 | 9.65 | 20 → 7 · **escritas, no ejecutadas** |
+| Pruebas | 4 | 8.88 | 10.00 | 20 → 0 · **la métrica estaba mal, no el código** |
 | Cableado | 4 | 8.62 | 10.00 | 26 → 0 |
 | Prohibiciones | 6 | 10.00 | 10.00 | 3.136 comprobaciones, ninguna violación |
-| **Global** | | **9.63** | **9.95** | con **166/194** pruebas verificadas |
+| **Global** | | **9.63** | **10.00** | con **166/185** pruebas verificadas |
 
 > La nota «antes» sale del script tal como estaba al guardar la línea base. El propio
 > script se volvió más preciso durante el trabajo —quitó falsos positivos y separó
@@ -74,6 +74,27 @@ Cada una está marcada en el código con `INVARIANTE-11 DECLARADO` y su razón. 
 auditoría las lista siempre: **una divergencia aceptada que nadie vuelve a mirar deja
 de ser una decisión y pasa a ser una costumbre.**
 
+## La métrica que se contestaba a sí misma
+
+La dimensión de «Pruebas» buscaba un archivo llamado `CU<n>RechazosTest`. Con esa
+regla, nueve casos de uso de `grupos` figuraban «sin prueba de rechazo» — y **las
+tenían**: estaban dentro de `CU<n>Test`, con sus `@DisplayName("rechaza por R-…")`.
+
+Escribí las nueve clases que la auditoría pedía. Al comparar restricción por
+restricción, **las nueve eran duplicado exacto**: ni una sola restricción nueva
+cubierta. Las borré. Dejarlas habría sido peor que no escribirlas — duplican el tiempo
+de ejecución y, cuando una restricción cambia, hay dos sitios que actualizar y uno se
+olvida.
+
+La regla ahora mide **contenido**: cualquier `@DisplayName` que diga «rechaza … R-».
+Tres formas de escribirlo ya convivían en el repositorio (`rechaza por R-`,
+`rechaza R-`, `rechaza · R-`) y exigir una sola convertía la auditoría en un corrector
+de estilo.
+
+Es la segunda vez que esta auditoría se equivoca a su favor. La primera dio 10/10 en
+seguridad con el sistema inalcanzable; la segunda mandó a escribir código que no hacía
+falta. **Una métrica mal puesta no es neutral: dirige trabajo.**
+
 ## Existir no es pasar
 
 La dimensión de «Pruebas» cuenta **archivos**, y eso premia a quien escribe el archivo.
@@ -87,15 +108,19 @@ distintos, y el segundo es el que manda.
 
 ## Lo que queda abierto
 
-**Siete casos de uso sin prueba de rechazo**: cumplimiento CU-03/05/06/46, identidad
-CU-01, notificaciones CU-81, núcleo CU-40.
+**19 clases de prueba sin evidencia de ejecución** en esta sesión — las nueve de
+`grupos` y diez más. No es que fallen: es que no corrieron. Testcontainers no puede
+levantar postgres —«Could not find a valid Docker environment»— y `docker ps` cuelga
+varios minutos. El demonio quedó degradado por un contenedor zombi que no acepta
+señales. **No se reinició Docker Desktop porque en esa máquina hay 54 contenedores de
+otros proyectos**, y eso no es una decisión de este carril.
 
-**Siete clases escritas y sin ejecutar**: las de grupos (CU-20/59/60/62/63/64/65/68/69).
-Compilan; ninguna corrió. Testcontainers no puede levantar postgres —
-«Could not find a valid Docker environment»— y `docker ps` cuelga varios minutos. El
-demonio quedó degradado por un contenedor zombi que no acepta señales. **No se
-reinició Docker Desktop porque en esa máquina hay 54 contenedores de otros proyectos**,
-y eso no es una decisión de este carril.
+**Cinco fallos del gate anteriores a este trabajo**: organizador CU-92 y CU-93, núcleo
+CU-12, tarifas CU-31. Tampoco se pudieron reverificar.
+
+Un 10/10 significa que **las siete dimensiones que este script sabe mirar no encuentran
+nada**. No significa que el backend sea perfecto: significa que hay que enseñarle a
+mirar otra cosa. Las dos veces que se equivocó fueron en lo que no medía.
 
 No se dice que estén bien hasta que corran.
 
