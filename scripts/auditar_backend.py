@@ -154,6 +154,30 @@ def seguridad() -> Dimension:
                             f"{rel(archivo)}: `{operacion}` exige `{permiso}`, que el catalogo no tiene"
                         )
 
+    # ------------------------------------------------------------------------------
+    # El punto ciego que esta auditoria tuvo, y que por eso ahora mide.
+    #
+    # Antes daba 10/10 en seguridad mientras el sistema entero era inalcanzable: la
+    # guardia abria cuatro patrones escritos a mano y `@Publico` solo se comprobaba al
+    # arrancar, asi que el registro y el ingreso —los dos anotados— devolvian 401.
+    # **Comprobar que la anotacion existe no comprueba que se respete.** Eso solo lo
+    # dice una peticion de verdad contra el proceso levantado.
+    #
+    # Asi que se mide otra cosa: que exista la prueba que lo ejercita por HTTP. Una
+    # dimension que no puede verificar algo tiene que decir que no puede, no callarse.
+    d.revisadas += 2
+    puerta = list((RAIZ / "servicios").rglob("*PuertaDeEntrada*Test.java"))
+    if not puerta:
+        d.hallazgos.append(
+            "no hay ninguna prueba que compruebe por HTTP que una ruta @Publico se sirve "
+            "sin token: la anotacion podria no estar siendo respetada y nada lo diria"
+        )
+    malformada = list((RAIZ / "servicios").rglob("*EntradaMalFormada*Test.java"))
+    if not malformada:
+        d.hallazgos.append(
+            "no hay ninguna prueba que compruebe que la entrada malformada da 400 y no 500"
+        )
+
     # Secretos versionados: una clave en un yaml es una clave publicada.
     for yml in (RAIZ / "servicios").rglob("application.yml"):
         d.revisadas += 1
@@ -282,10 +306,13 @@ def pruebas() -> Dimension:
     for servicio in SERVICIOS:
         raiz_pruebas = RAIZ / "servicios" / servicio / "src/test/java"
         nombres = {p.stem for p in raiz_pruebas.rglob("*.java")} if raiz_pruebas.exists() else set()
+        # El numero ENTERO, no los dos primeros digitos: `CU105DepreciarActivo`
+        # daba «CU10», que no existe, y la auditoria pedia pruebas de un caso de uso
+        # imaginario mientras dejaba pasar el real.
         casos = {
-            p.stem[:4]
+            m.group(0)
             for p in (RAIZ / "servicios" / servicio / "src/main/java").rglob("CU*.java")
-            if re.match(r"CU\d\d", p.stem)
+            if (m := re.match(r"CU\d{2,3}(?=[A-Z])", p.stem))
         }
         for caso in sorted(casos):
             d.revisadas += 2
