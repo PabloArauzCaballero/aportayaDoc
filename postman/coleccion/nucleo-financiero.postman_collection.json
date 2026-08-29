@@ -1,0 +1,1021 @@
+{
+  "info": {
+    "name": "AportaYa · nucleo-financiero",
+    "description": "# AportaYa · nucleo-financiero\n\nGenerado por `scripts/generar_postman.py` desde `servicios/*/src/main/resources/openapi/`.\n**No se edita a mano**: la proxima generacion lo pisa, y una coleccion editada a mano\nprueba una API que ya no existe.\n\n**11 operaciones.** Cada peticion trae su cuerpo de ejemplo derivado del\nesquema, la clave de idempotencia donde el contrato la exige, el permiso que pide\n—leido de los `@Permiso` del codigo— y los rechazos `AP-CU` que declara.\n\nElegi un entorno de `postman/entornos/` antes de disparar nada.\n",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "consultarSaldo · Saldo de una cuenta de billetera",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/billetera/:cuentaId/saldo",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "billetera",
+            ":cuentaId",
+            "saldo"
+          ],
+          "variable": [
+            {
+              "key": "cuentaId",
+              "value": "{{cuentaId}}",
+              "description": "Identificador; se encadena desde una peticion anterior."
+            }
+          ]
+        },
+        "description": "## Saldo de una cuenta de billetera\n\nEl saldo NO se guarda: se deriva del libro. Esta operacion existe en el borrador porque los trece servicios necesitan saber que la forma del saldo es Dinero, no un number.\n\n| | |\n| --- | --- |\n| **Servicio** | `nucleo-financiero` |\n| **Operacion** | `consultarSaldo` |\n| **Ruta** | `GET /api/v1/billetera/{cuentaId}/saldo` |\n| **Permiso** | `BILLETERA_VER` |\n| **Respuestas** | `200`, `401` |\n\n### Rechazos que declara el contrato\n\n_El contrato no declara rechazos de negocio para esta operacion._\n\n> Los importes viajan como **cadena decimal** (`\"100.00\"`), nunca como numero:\n> un `number` de JSON es un doble, y un doble pierde centavos."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Lo que se le exige a TODA respuesta del sistema, sin excepcion.",
+              "const esperadas = [200, 401];",
+              "",
+              "pm.test(\"responde con un codigo que el contrato declara\", () => {",
+              "    pm.expect(esperadas).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"no filtra la traza al cliente\", () => {",
+              "    const cuerpo = pm.response.text();",
+              "    // Un stack trace en la respuesta le cuenta al atacante como esta hecho el",
+              "    // servidor. Es una de las dieciocho prohibiciones del contrato.",
+              "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+              "    pm.expect(cuerpo).to.not.include(\"java.lang.\");",
+              "});",
+              "",
+              "if (pm.response.code === 422) {",
+              "    pm.test(\"el rechazo trae su codigo AP-CU\", () => {",
+              "        pm.expect(pm.response.json()).to.have.property(\"codigo\").that.matches(/^AP-CU\\d+-\\d+$/);",
+              "    });",
+              "}",
+              "",
+              "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+              "if (pm.response.code < 300) {",
+              "    const cuerpo = pm.response.json();",
+              "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+              "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+              "            pm.collectionVariables.set(clave, valor);",
+              "        }",
+              "    }",
+              "}",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "solicitarRecarga · Abre una orden de recarga y devuelve cuanto se va a acreditar",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{$guid}}",
+            "description": "Uno nuevo por intento. Repetir el mismo debe devolver la MISMA respuesta y un solo efecto (invariante 7)."
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/billetera/recargas",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "billetera",
+            "recargas"
+          ],
+          "variable": []
+        },
+        "description": "## Abre una orden de recarga y devuelve cuanto se va a acreditar\n\n[CONTRATO] Derivada de la implementacion del carril 2A, que llego antes que su contrato.\nLa orden NO acredita: reserva la intencion y vence. Acreditar es el paso siguiente y ocurre cuando el proveedor confirma, porque acreditar contra una promesa es acreditar plata que puede no llegar.\n`acreditara` viaja en la respuesta ya calculado: el cliente **no** resta el costo del proveedor por su cuenta. Un cliente que recalcula produce un numero que no es el del libro contable.\n\n| | |\n| --- | --- |\n| **Servicio** | `nucleo-financiero` |\n| **Operacion** | `solicitarRecarga` |\n| **Ruta** | `POST /api/v1/billetera/recargas` |\n| **Permiso** | `BILLETERA_OPERAR` |\n| **Idempotencia** | exige `Idempotency-Key`; se manda un `{{$guid}}` nuevo por intento |\n| **Respuestas** | `201`, `422`, `401` |\n\n### Rechazos que declara el contrato\n\n| Codigo | Motivo |\n| --- | --- |\n| `AP-CU10-01` | Limite excedido |\n| `AP-CU10-02` | Saldo maximo alcanzado |\n| `AP-CU10-03` | Instrumento no verificado |\n| `AP-CU10-04` | Cuenta no operativa |\n| `AP-CU10-05` | Orden expirada |\n\n> Los importes viajan como **cadena decimal** (`\"100.00\"`), nunca como numero:\n> un `number` de JSON es un doble, y un doble pierde centavos.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cuentaBilleteraId\": \"{{cuentaBilleteraId}}\",\n  \"monto\": {\n    \"monto\": \"100.00\",\n    \"moneda\": \"BOB\"\n  },\n  \"costoProveedor\": {\n    \"monto\": \"100.00\",\n    \"moneda\": \"BOB\"\n  },\n  \"medio\": \"medio-de-prueba\",\n  \"instrumentoFondeoId\": \"{{instrumentoFondeoId}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Lo que se le exige a TODA respuesta del sistema, sin excepcion.",
+              "const esperadas = [201, 401, 422];",
+              "",
+              "pm.test(\"responde con un codigo que el contrato declara\", () => {",
+              "    pm.expect(esperadas).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"no filtra la traza al cliente\", () => {",
+              "    const cuerpo = pm.response.text();",
+              "    // Un stack trace en la respuesta le cuenta al atacante como esta hecho el",
+              "    // servidor. Es una de las dieciocho prohibiciones del contrato.",
+              "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+              "    pm.expect(cuerpo).to.not.include(\"java.lang.\");",
+              "});",
+              "",
+              "if (pm.response.code === 422) {",
+              "    pm.test(\"el rechazo trae su codigo AP-CU\", () => {",
+              "        pm.expect(pm.response.json()).to.have.property(\"codigo\").that.matches(/^AP-CU\\d+-\\d+$/);",
+              "    });",
+              "}",
+              "",
+              "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+              "if (pm.response.code < 300) {",
+              "    const cuerpo = pm.response.json();",
+              "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+              "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+              "            pm.collectionVariables.set(clave, valor);",
+              "        }",
+              "    }",
+              "}",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "acreditarRecarga · Acredita una orden que el proveedor confirmo",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Idempotency-Key",
+            "value": "{{$guid}}",
+            "description": "Uno nuevo por intento. Repetir el mismo debe devolver la MISMA respuesta y un solo efecto (invariante 7)."
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/billetera/recargas/:ordenId/acreditacion",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "billetera",
+            "recargas",
+            ":ordenId",
+            "acreditacion"
+          ],
+          "variable": [
+            {
+              "key": "ordenId",
+              "value": "{{ordenId}}",
+              "description": "Identificador; se encadena desde una peticion anterior."
+            }
+          ]
+        },
+        "description": "## Acredita una orden que el proveedor confirmo\n\n[CONTRATO] La confirmacion del proveedor. Es idempotente por la orden: si dos confirmaciones llegan juntas, una acredita y la otra encuentra la orden ya acreditada — la red duplica, y eso no puede duplicar el saldo.\n\n| | |\n| --- | --- |\n| **Servicio** | `nucleo-financiero` |\n| **Operacion** | `acreditarRecarga` |\n| **Ruta** | `POST /api/v1/billetera/recargas/{ordenId}/acreditacion` |\n| **Permiso** | `BILLETERA_OPERAR` |\n| **Idempotencia** | exige `Idempotency-Key`; se manda un `{{$guid}}` nuevo por intento |\n| **Respuestas** | `200`, `422`, `401` |\n\n### Rechazos que declara el contrato\n\n| Codigo | Motivo |\n| --- | --- |\n| `AP-CU10-05` | Orden expirada |\n\n> Los importes viajan como **cadena decimal** (`\"100.00\"`), nunca como numero:\n> un `number` de JSON es un doble, y un doble pierde centavos."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Lo que se le exige a TODA respuesta del sistema, sin excepcion.",
+              "const esperadas = [200, 401, 422];",
+              "",
+              "pm.test(\"responde con un codigo que el contrato declara\", () => {",
+              "    pm.expect(esperadas).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"no filtra la traza al cliente\", () => {",
+              "    const cuerpo = pm.response.text();",
+              "    // Un stack trace en la respuesta le cuenta al atacante como esta hecho el",
+              "    // servidor. Es una de las dieciocho prohibiciones del contrato.",
+              "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+              "    pm.expect(cuerpo).to.not.include(\"java.lang.\");",
+              "});",
+              "",
+              "if (pm.response.code === 422) {",
+              "    pm.test(\"el rechazo trae su codigo AP-CU\", () => {",
+              "        pm.expect(pm.response.json()).to.have.property(\"codigo\").that.matches(/^AP-CU\\d+-\\d+$/);",
+              "    });",
+              "}",
+              "",
+              "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+              "if (pm.response.code < 300) {",
+              "    const cuerpo = pm.response.json();",
+              "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+              "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+              "            pm.collectionVariables.set(clave, valor);",
+              "        }",
+              "    }",
+              "}",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "retenerSaldo · Aparta saldo sin sacarlo de la cuenta",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{$guid}}",
+            "description": "Uno nuevo por intento. Repetir el mismo debe devolver la MISMA respuesta y un solo efecto (invariante 7)."
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/billetera/retenciones",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "billetera",
+            "retenciones"
+          ],
+          "variable": []
+        },
+        "description": "## Aparta saldo sin sacarlo de la cuenta\n\n[CONTRATO] Retener no es debitar: el dinero sigue siendo del titular y por eso se ve como retenido y no desaparece. Lo que cambia es que deja de estar disponible mientras dure el motivo.\n\n| | |\n| --- | --- |\n| **Servicio** | `nucleo-financiero` |\n| **Operacion** | `retenerSaldo` |\n| **Ruta** | `POST /api/v1/billetera/retenciones` |\n| **Permiso** | `BILLETERA_OPERAR` |\n| **Idempotencia** | exige `Idempotency-Key`; se manda un `{{$guid}}` nuevo por intento |\n| **Respuestas** | `201`, `422`, `401` |\n\n### Rechazos que declara el contrato\n\n| Codigo | Motivo |\n| --- | --- |\n| `AP-CU13-01` | Saldo insuficiente |\n| `AP-CU13-02` | Vencimiento requerido |\n| `AP-CU13-03` | Retencion ya ejecutada |\n\n> Los importes viajan como **cadena decimal** (`\"100.00\"`), nunca como numero:\n> un `number` de JSON es un doble, y un doble pierde centavos.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cuentaBilleteraId\": \"{{cuentaBilleteraId}}\",\n  \"monto\": {\n    \"monto\": \"100.00\",\n    \"moneda\": \"BOB\"\n  },\n  \"motivo\": \"motivo-de-prueba\",\n  \"transaccionOrigenId\": \"{{transaccionOrigenId}}\",\n  \"referenciaTipo\": \"referenciaTipo-de-prueba\",\n  \"referenciaId\": \"{{referenciaId}}\",\n  \"expiraEn\": \"{{momento_ahora}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Lo que se le exige a TODA respuesta del sistema, sin excepcion.",
+              "const esperadas = [201, 401, 422];",
+              "",
+              "pm.test(\"responde con un codigo que el contrato declara\", () => {",
+              "    pm.expect(esperadas).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"no filtra la traza al cliente\", () => {",
+              "    const cuerpo = pm.response.text();",
+              "    // Un stack trace en la respuesta le cuenta al atacante como esta hecho el",
+              "    // servidor. Es una de las dieciocho prohibiciones del contrato.",
+              "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+              "    pm.expect(cuerpo).to.not.include(\"java.lang.\");",
+              "});",
+              "",
+              "if (pm.response.code === 422) {",
+              "    pm.test(\"el rechazo trae su codigo AP-CU\", () => {",
+              "        pm.expect(pm.response.json()).to.have.property(\"codigo\").that.matches(/^AP-CU\\d+-\\d+$/);",
+              "    });",
+              "}",
+              "",
+              "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+              "if (pm.response.code < 300) {",
+              "    const cuerpo = pm.response.json();",
+              "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+              "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+              "            pm.collectionVariables.set(clave, valor);",
+              "        }",
+              "    }",
+              "}",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "cerrarRetencion · Libera o ejecuta una retencion",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{$guid}}",
+            "description": "Uno nuevo por intento. Repetir el mismo debe devolver la MISMA respuesta y un solo efecto (invariante 7)."
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/billetera/retenciones/:retencionId/cierre",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "billetera",
+            "retenciones",
+            ":retencionId",
+            "cierre"
+          ],
+          "variable": [
+            {
+              "key": "retencionId",
+              "value": "{{retencionId}}",
+              "description": "Identificador; se encadena desde una peticion anterior."
+            }
+          ]
+        },
+        "description": "## Libera o ejecuta una retencion\n\n[CONTRATO] Una retencion se cierra una sola vez. Si otra operacion la cerro primero, la segunda no la vuelve a cerrar: se responde `RETENCION_YA_EJECUTADA`, que no es una falla sino concurrencia sana.\n\n| | |\n| --- | --- |\n| **Servicio** | `nucleo-financiero` |\n| **Operacion** | `cerrarRetencion` |\n| **Ruta** | `POST /api/v1/billetera/retenciones/{retencionId}/cierre` |\n| **Permiso** | `BILLETERA_OPERAR` |\n| **Idempotencia** | exige `Idempotency-Key`; se manda un `{{$guid}}` nuevo por intento |\n| **Respuestas** | `200`, `422`, `401` |\n\n### Rechazos que declara el contrato\n\n| Codigo | Motivo |\n| --- | --- |\n| `AP-CU13-03` | Retencion ya ejecutada |\n| `AP-CU40-01` | Sin limite configurado |\n| `AP-CU40-02` | Limite excedido |\n| `AP-CU40-03` | Cantidad excedida |\n\n> Los importes viajan como **cadena decimal** (`\"100.00\"`), nunca como numero:\n> un `number` de JSON es un doble, y un doble pierde centavos.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"desenlace\": \"LIBERADA\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Lo que se le exige a TODA respuesta del sistema, sin excepcion.",
+              "const esperadas = [200, 401, 422];",
+              "",
+              "pm.test(\"responde con un codigo que el contrato declara\", () => {",
+              "    pm.expect(esperadas).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"no filtra la traza al cliente\", () => {",
+              "    const cuerpo = pm.response.text();",
+              "    // Un stack trace en la respuesta le cuenta al atacante como esta hecho el",
+              "    // servidor. Es una de las dieciocho prohibiciones del contrato.",
+              "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+              "    pm.expect(cuerpo).to.not.include(\"java.lang.\");",
+              "});",
+              "",
+              "if (pm.response.code === 422) {",
+              "    pm.test(\"el rechazo trae su codigo AP-CU\", () => {",
+              "        pm.expect(pm.response.json()).to.have.property(\"codigo\").that.matches(/^AP-CU\\d+-\\d+$/);",
+              "    });",
+              "}",
+              "",
+              "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+              "if (pm.response.code < 300) {",
+              "    const cuerpo = pm.response.json();",
+              "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+              "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+              "            pm.collectionVariables.set(clave, valor);",
+              "        }",
+              "    }",
+              "}",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "solicitarRetiro · Solicitar un retiro hacia una cuenta de destino",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{$guid}}",
+            "description": "Uno nuevo por intento. Repetir el mismo debe devolver la MISMA respuesta y un solo efecto (invariante 7)."
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/billetera/retiros",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "billetera",
+            "retiros"
+          ],
+          "variable": []
+        },
+        "description": "## Solicitar un retiro hacia una cuenta de destino\n\nRetencion primero, pago despues, nunca al reves. Si se instruyera el pago antes de retener, entre las dos cosas la persona podria gastar el mismo saldo en otra operacion y el retiro saldria contra un disponible que ya no existe. El proveedor se instruye FUERA de la transaccion (invariante 6).\n\n| | |\n| --- | --- |\n| **Servicio** | `nucleo-financiero` |\n| **Operacion** | `solicitarRetiro` |\n| **Ruta** | `POST /api/v1/billetera/retiros` |\n| **Permiso** | `BILLETERA_OPERAR` |\n| **Idempotencia** | exige `Idempotency-Key`; se manda un `{{$guid}}` nuevo por intento |\n| **Respuestas** | `201`, `422`, `401` |\n\n### Rechazos que declara el contrato\n\n| Codigo | Motivo |\n| --- | --- |\n| `AP-CU11-01` | Saldo insuficiente |\n| `AP-CU11-02` | Mfa requerido |\n| `AP-CU11-03` | Instrumento en enfriamiento |\n| `AP-CU11-04` | Titular no coincide |\n| `AP-CU11-05` | Bloqueo de autoridad |\n| `AP-CU11-06` | Encaje incumplido |\n\n> Los importes viajan como **cadena decimal** (`\"100.00\"`), nunca como numero:\n> un `number` de JSON es un doble, y un doble pierde centavos.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cuentaBilleteraId\": \"{{cuentaBilleteraId}}\",\n  \"monto\": {\n    \"monto\": \"100.00\",\n    \"moneda\": \"BOB\"\n  },\n  \"instrumentoDestinoId\": \"{{instrumentoDestinoId}}\",\n  \"factorMfa\": \"factorMfa-de-prueba\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Lo que se le exige a TODA respuesta del sistema, sin excepcion.",
+              "const esperadas = [201, 401, 422];",
+              "",
+              "pm.test(\"responde con un codigo que el contrato declara\", () => {",
+              "    pm.expect(esperadas).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"no filtra la traza al cliente\", () => {",
+              "    const cuerpo = pm.response.text();",
+              "    // Un stack trace en la respuesta le cuenta al atacante como esta hecho el",
+              "    // servidor. Es una de las dieciocho prohibiciones del contrato.",
+              "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+              "    pm.expect(cuerpo).to.not.include(\"java.lang.\");",
+              "});",
+              "",
+              "if (pm.response.code === 422) {",
+              "    pm.test(\"el rechazo trae su codigo AP-CU\", () => {",
+              "        pm.expect(pm.response.json()).to.have.property(\"codigo\").that.matches(/^AP-CU\\d+-\\d+$/);",
+              "    });",
+              "}",
+              "",
+              "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+              "if (pm.response.code < 300) {",
+              "    const cuerpo = pm.response.json();",
+              "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+              "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+              "            pm.collectionVariables.set(clave, valor);",
+              "        }",
+              "    }",
+              "}",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "transferirSaldo · Transferir saldo entre billeteras",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{$guid}}",
+            "description": "Uno nuevo por intento. Repetir el mismo debe devolver la MISMA respuesta y un solo efecto (invariante 7)."
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/billetera/transferencias",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "billetera",
+            "transferencias"
+          ],
+          "variable": []
+        },
+        "description": "## Transferir saldo entre billeteras\n\nLa unica operacion donde el dinero no entra ni sale del sistema: cambia de bolsillo, y el saldo total permanece constante. Las dos cuentas se bloquean en orden de identificador — dos transferencias cruzadas que bloqueen cada una primero la suya se esperan para siempre.\n\n| | |\n| --- | --- |\n| **Servicio** | `nucleo-financiero` |\n| **Operacion** | `transferirSaldo` |\n| **Ruta** | `POST /api/v1/billetera/transferencias` |\n| **Permiso** | `BILLETERA_OPERAR` |\n| **Idempotencia** | exige `Idempotency-Key`; se manda un `{{$guid}}` nuevo por intento |\n| **Respuestas** | `201`, `422`, `401` |\n\n### Rechazos que declara el contrato\n\n| Codigo | Motivo |\n| --- | --- |\n| `AP-CU12-01` | Saldo insuficiente |\n| `AP-CU12-02` | Destino inexistente |\n| `AP-CU12-03` | Cuenta destino no operativa |\n| `AP-CU12-04` | Limite excedido |\n| `AP-CU12-05` | P |\n\n> Los importes viajan como **cadena decimal** (`\"100.00\"`), nunca como numero:\n> un `number` de JSON es un doble, y un doble pierde centavos.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cuentaOrigenId\": \"{{cuentaOrigenId}}\",\n  \"destino\": {\n    \"tipo\": \"ALIAS\",\n    \"valor\": \"valor-de-prueba\"\n  },\n  \"monto\": {\n    \"monto\": \"100.00\",\n    \"moneda\": \"BOB\"\n  },\n  \"concepto\": \"concepto-de-prueba\",\n  \"obligacionId\": \"{{obligacionId}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Lo que se le exige a TODA respuesta del sistema, sin excepcion.",
+              "const esperadas = [201, 401, 422];",
+              "",
+              "pm.test(\"responde con un codigo que el contrato declara\", () => {",
+              "    pm.expect(esperadas).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"no filtra la traza al cliente\", () => {",
+              "    const cuerpo = pm.response.text();",
+              "    // Un stack trace en la respuesta le cuenta al atacante como esta hecho el",
+              "    // servidor. Es una de las dieciocho prohibiciones del contrato.",
+              "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+              "    pm.expect(cuerpo).to.not.include(\"java.lang.\");",
+              "});",
+              "",
+              "if (pm.response.code === 422) {",
+              "    pm.test(\"el rechazo trae su codigo AP-CU\", () => {",
+              "        pm.expect(pm.response.json()).to.have.property(\"codigo\").that.matches(/^AP-CU\\d+-\\d+$/);",
+              "    });",
+              "}",
+              "",
+              "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+              "if (pm.response.code < 300) {",
+              "    const cuerpo = pm.response.json();",
+              "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+              "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+              "            pm.collectionVariables.set(clave, valor);",
+              "        }",
+              "    }",
+              "}",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "reversarTransaccion · Reversar una transaccion aplicada",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{$guid}}",
+            "description": "Uno nuevo por intento. Repetir el mismo debe devolver la MISMA respuesta y un solo efecto (invariante 7)."
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/billetera/reversos",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "billetera",
+            "reversos"
+          ],
+          "variable": []
+        },
+        "description": "## Reversar una transaccion aplicada\n\nReversar es escribir el espejo, no borrar el original. El libro es append-only y la transaccion original conserva sus movimientos sin un solo cambio: el extracto tiene que poder contar la historia completa —el cobro y su devolucion—, no un cobro que se desvanecio. Cuatro ojos: quien autoriza no puede ser quien solicita.\n\n| | |\n| --- | --- |\n| **Servicio** | `nucleo-financiero` |\n| **Operacion** | `reversarTransaccion` |\n| **Ruta** | `POST /api/v1/billetera/reversos` |\n| **Permiso** | `REVERSO_AUTORIZAR` |\n| **Idempotencia** | exige `Idempotency-Key`; se manda un `{{$guid}}` nuevo por intento |\n| **Respuestas** | `201`, `422`, `401` |\n\n### Rechazos que declara el contrato\n\n| Codigo | Motivo |\n| --- | --- |\n| `AP-CU14-01` | Transaccion no reversable |\n| `AP-CU14-02` | Falta autorizacion |\n| `AP-CU14-03` | Saldo insuficiente para reverso |\n\n> Los importes viajan como **cadena decimal** (`\"100.00\"`), nunca como numero:\n> un `number` de JSON es un doble, y un doble pierde centavos.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"transaccionOriginalId\": \"{{transaccionOriginalId}}\",\n  \"tipo\": \"ANULACION\",\n  \"motivo\": \"xxxxxxxxxxxxxxxxxxxx\",\n  \"autorizadaPor\": \"{{autorizadaPor}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Lo que se le exige a TODA respuesta del sistema, sin excepcion.",
+              "const esperadas = [201, 401, 422];",
+              "",
+              "pm.test(\"responde con un codigo que el contrato declara\", () => {",
+              "    pm.expect(esperadas).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"no filtra la traza al cliente\", () => {",
+              "    const cuerpo = pm.response.text();",
+              "    // Un stack trace en la respuesta le cuenta al atacante como esta hecho el",
+              "    // servidor. Es una de las dieciocho prohibiciones del contrato.",
+              "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+              "    pm.expect(cuerpo).to.not.include(\"java.lang.\");",
+              "});",
+              "",
+              "if (pm.response.code === 422) {",
+              "    pm.test(\"el rechazo trae su codigo AP-CU\", () => {",
+              "        pm.expect(pm.response.json()).to.have.property(\"codigo\").that.matches(/^AP-CU\\d+-\\d+$/);",
+              "    });",
+              "}",
+              "",
+              "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+              "if (pm.response.code < 300) {",
+              "    const cuerpo = pm.response.json();",
+              "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+              "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+              "            pm.collectionVariables.set(clave, valor);",
+              "        }",
+              "    }",
+              "}",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "emitirExtracto · Emitir el extracto de un periodo",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/billetera/:cuentaId/extracto",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "billetera",
+            ":cuentaId",
+            "extracto"
+          ],
+          "variable": [
+            {
+              "key": "cuentaId",
+              "value": "{{cuentaId}}",
+              "description": "Identificador; se encadena desde una peticion anterior."
+            }
+          ],
+          "query": [
+            {
+              "key": "desde",
+              "value": "{{fecha_hoy}}",
+              "description": "",
+              "disabled": false
+            },
+            {
+              "key": "hasta",
+              "value": "{{fecha_hoy}}",
+              "description": "",
+              "disabled": false
+            }
+          ]
+        },
+        "description": "## Emitir el extracto de un periodo\n\nSi el extracto no cuadra con el cierre diario, NO se emite: uno con una cifra que no coincide es peor que no tenerlo — la persona lo usa para un tramite, se lo rechazan, y descubre el error cuando ya le costo algo. El descuadre queda registrado igual, que es lo que pide el criterio.\n\n| | |\n| --- | --- |\n| **Servicio** | `nucleo-financiero` |\n| **Operacion** | `emitirExtracto` |\n| **Ruta** | `GET /api/v1/billetera/{cuentaId}/extracto` |\n| **Permiso** | `BILLETERA_VER` |\n| **Respuestas** | `200`, `422`, `401` |\n\n### Rechazos que declara el contrato\n\n| Codigo | Motivo |\n| --- | --- |\n| `AP-CU15-01` | Periodo sin cierres |\n| `AP-CU15-02` | Extracto no cuadra |\n| `AP-CU15-03` | Sin permiso sobre la cuenta |\n\n> Los importes viajan como **cadena decimal** (`\"100.00\"`), nunca como numero:\n> un `number` de JSON es un doble, y un doble pierde centavos."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Lo que se le exige a TODA respuesta del sistema, sin excepcion.",
+              "const esperadas = [200, 401, 422];",
+              "",
+              "pm.test(\"responde con un codigo que el contrato declara\", () => {",
+              "    pm.expect(esperadas).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"no filtra la traza al cliente\", () => {",
+              "    const cuerpo = pm.response.text();",
+              "    // Un stack trace en la respuesta le cuenta al atacante como esta hecho el",
+              "    // servidor. Es una de las dieciocho prohibiciones del contrato.",
+              "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+              "    pm.expect(cuerpo).to.not.include(\"java.lang.\");",
+              "});",
+              "",
+              "if (pm.response.code === 422) {",
+              "    pm.test(\"el rechazo trae su codigo AP-CU\", () => {",
+              "        pm.expect(pm.response.json()).to.have.property(\"codigo\").that.matches(/^AP-CU\\d+-\\d+$/);",
+              "    });",
+              "}",
+              "",
+              "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+              "if (pm.response.code < 300) {",
+              "    const cuerpo = pm.response.json();",
+              "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+              "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+              "            pm.collectionVariables.set(clave, valor);",
+              "        }",
+              "    }",
+              "}",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "solicitarCierreBilletera · Solicitar el cierre de la billetera",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{$guid}}",
+            "description": "Uno nuevo por intento. Repetir el mismo debe devolver la MISMA respuesta y un solo efecto (invariante 7)."
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/billetera/cierres",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "billetera",
+            "cierres"
+          ],
+          "variable": []
+        },
+        "description": "## Solicitar el cierre de la billetera\n\nCerrar NO borra: la cuenta queda CERRADA y sus movimientos siguen disponibles todo el plazo de conservacion. Cuatro puertas la frenan, y las cuatro protegen a terceros antes que a la empresa — un cierre que deje un aporte sin pagar traslada la perdida a los otros del pasanaku.\n\n| | |\n| --- | --- |\n| **Servicio** | `nucleo-financiero` |\n| **Operacion** | `solicitarCierreBilletera` |\n| **Ruta** | `POST /api/v1/billetera/cierres` |\n| **Permiso** | `BILLETERA_OPERAR` |\n| **Idempotencia** | exige `Idempotency-Key`; se manda un `{{$guid}}` nuevo por intento |\n| **Respuestas** | `201`, `422`, `401` |\n\n### Rechazos que declara el contrato\n\n| Codigo | Motivo |\n| --- | --- |\n| `AP-CU16-01` | Obligaciones abiertas |\n| `AP-CU16-02` | Grupo activo |\n| `AP-CU16-03` | Retencion vigente |\n| `AP-CU16-04` | Bloqueo de autoridad |\n\n> Los importes viajan como **cadena decimal** (`\"100.00\"`), nunca como numero:\n> un `number` de JSON es un doble, y un doble pierde centavos.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cuentaBilleteraId\": \"{{cuentaBilleteraId}}\",\n  \"motivo\": \"motivo-de-prueba\",\n  \"destinoSaldo\": \"RETIRO\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Lo que se le exige a TODA respuesta del sistema, sin excepcion.",
+              "const esperadas = [201, 401, 422];",
+              "",
+              "pm.test(\"responde con un codigo que el contrato declara\", () => {",
+              "    pm.expect(esperadas).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"no filtra la traza al cliente\", () => {",
+              "    const cuerpo = pm.response.text();",
+              "    // Un stack trace en la respuesta le cuenta al atacante como esta hecho el",
+              "    // servidor. Es una de las dieciocho prohibiciones del contrato.",
+              "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+              "    pm.expect(cuerpo).to.not.include(\"java.lang.\");",
+              "});",
+              "",
+              "if (pm.response.code === 422) {",
+              "    pm.test(\"el rechazo trae su codigo AP-CU\", () => {",
+              "        pm.expect(pm.response.json()).to.have.property(\"codigo\").that.matches(/^AP-CU\\d+-\\d+$/);",
+              "    });",
+              "}",
+              "",
+              "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+              "if (pm.response.code < 300) {",
+              "    const cuerpo = pm.response.json();",
+              "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+              "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+              "            pm.collectionVariables.set(clave, valor);",
+              "        }",
+              "    }",
+              "}",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "bloquearPorAutoridad · Registrar un bloqueo por orden de autoridad",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{$guid}}",
+            "description": "Uno nuevo por intento. Repetir el mismo debe devolver la MISMA respuesta y un solo efecto (invariante 7)."
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/billetera/bloqueos",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "billetera",
+            "bloqueos"
+          ],
+          "variable": []
+        },
+        "description": "## Registrar un bloqueo por orden de autoridad\n\nEl unico caso en que una retencion no tiene fecha de fin: la levanta la misma autoridad que la puso, y ponerle vencimiento propio seria decidir por un juez cuando se acaba su orden. El documento de respaldo es obligatorio — inmovilizar la plata de alguien sin poder mostrar el papel es indefendible.\n\n| | |\n| --- | --- |\n| **Servicio** | `nucleo-financiero` |\n| **Operacion** | `bloquearPorAutoridad` |\n| **Ruta** | `POST /api/v1/billetera/bloqueos` |\n| **Permiso** | `DATOS_SENSIBLES_LEER` |\n| **Idempotencia** | exige `Idempotency-Key`; se manda un `{{$guid}}` nuevo por intento |\n| **Respuestas** | `201`, `422`, `401` |\n\n### Rechazos que declara el contrato\n\n| Codigo | Motivo |\n| --- | --- |\n| `AP-CU17-01` | Oficio duplicado |\n| `AP-CU17-02` | Cuenta inexistente |\n| `AP-CU17-03` | Sin documento de respaldo |\n| `AP-CU50-01` | Sin cierres diarios |\n| `AP-CU50-02` | Sin extracto bancario |\n| `AP-CU50-03` | Conciliacion duplicada |\n| `AP-CU51-01` | Excepciones abiertas |\n| `AP-CU51-02` | Custodia descuadrada |\n| `AP-CU51-03` | Asientos sin confirmar |\n| `AP-CU51-04` | Dia ya cerrado |\n\n> Los importes viajan como **cadena decimal** (`\"100.00\"`), nunca como numero:\n> un `number` de JSON es un doble, y un doble pierde centavos.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cuentaBilleteraId\": \"{{cuentaBilleteraId}}\",\n  \"autoridad\": \"ASFI\",\n  \"tipoOrden\": \"CONGELAMIENTO\",\n  \"numeroOficio\": \"numeroOficio-de-prueba\",\n  \"montoBloqueado\": {\n    \"monto\": \"100.00\",\n    \"moneda\": \"BOB\"\n  },\n  \"alcance\": \"PARCIAL\",\n  \"documentoUrl\": \"https://ejemplo.aportaya.bo/documento.pdf\",\n  \"hashDocumento\": \"0000000000000000000000000000000000000000000000000000000000000000\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Lo que se le exige a TODA respuesta del sistema, sin excepcion.",
+              "const esperadas = [201, 401, 422];",
+              "",
+              "pm.test(\"responde con un codigo que el contrato declara\", () => {",
+              "    pm.expect(esperadas).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"no filtra la traza al cliente\", () => {",
+              "    const cuerpo = pm.response.text();",
+              "    // Un stack trace en la respuesta le cuenta al atacante como esta hecho el",
+              "    // servidor. Es una de las dieciocho prohibiciones del contrato.",
+              "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+              "    pm.expect(cuerpo).to.not.include(\"java.lang.\");",
+              "});",
+              "",
+              "if (pm.response.code === 422) {",
+              "    pm.test(\"el rechazo trae su codigo AP-CU\", () => {",
+              "        pm.expect(pm.response.json()).to.have.property(\"codigo\").that.matches(/^AP-CU\\d+-\\d+$/);",
+              "    });",
+              "}",
+              "",
+              "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+              "if (pm.response.code < 300) {",
+              "    const cuerpo = pm.response.json();",
+              "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+              "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+              "            pm.collectionVariables.set(clave, valor);",
+              "        }",
+              "    }",
+              "}",
+              ""
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Fechas y momentos, calculados al vuelo: una fecha fija en el archivo caduca y",
+          "// entonces la coleccion falla por algo que no es el sistema.",
+          "const ahora = new Date();",
+          "pm.collectionVariables.set(\"fecha_hoy\", ahora.toISOString().slice(0, 10));",
+          "pm.collectionVariables.set(\"momento_ahora\", ahora.toISOString());",
+          "pm.collectionVariables.set(\"fecha_manana\", new Date(ahora.getTime() + 86400000).toISOString().slice(0, 10));",
+          "",
+          "// Una sola clave para el par acreditar/reacreditar del recorrido: se fija una vez por",
+          "// corrida, porque probar el reintento con dos claves distintas no prueba nada.",
+          "if (!pm.collectionVariables.get(\"claveDeLaAcreditacion\")) {",
+          "    pm.collectionVariables.set(\"claveDeLaAcreditacion\", pm.variables.replaceIn(\"{{$guid}}\"));",
+          "}",
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "autorizadaPor",
+      "value": ""
+    },
+    {
+      "key": "base_url",
+      "value": ""
+    },
+    {
+      "key": "cuentaBilleteraId",
+      "value": ""
+    },
+    {
+      "key": "cuentaId",
+      "value": ""
+    },
+    {
+      "key": "cuentaOrigenId",
+      "value": ""
+    },
+    {
+      "key": "fecha_hoy",
+      "value": ""
+    },
+    {
+      "key": "instrumentoDestinoId",
+      "value": ""
+    },
+    {
+      "key": "instrumentoFondeoId",
+      "value": ""
+    },
+    {
+      "key": "momento_ahora",
+      "value": ""
+    },
+    {
+      "key": "obligacionId",
+      "value": ""
+    },
+    {
+      "key": "ordenId",
+      "value": ""
+    },
+    {
+      "key": "prefijo_api",
+      "value": ""
+    },
+    {
+      "key": "referenciaId",
+      "value": ""
+    },
+    {
+      "key": "retencionId",
+      "value": ""
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "transaccionOrigenId",
+      "value": ""
+    },
+    {
+      "key": "transaccionOriginalId",
+      "value": ""
+    }
+  ]
+}

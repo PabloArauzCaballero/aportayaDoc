@@ -8,9 +8,14 @@ import type { ButtonHTMLAttributes, ReactNode } from 'react'
  * **`cargando` deshabilita.** Invariante 6: toda operación de dinero manda clave de
  * idempotencia *y* el botón se bloquea. Dejar el botón vivo mientras la petición
  * viaja es pedirle al usuario que la mande dos veces.
+ *
+ * Las variantes `icono` y `fab` **no llevan texto visible**, así que exigen
+ * `aria-label`: un botón cuyo nombre accesible es «×» no se puede usar sin ver la
+ * pantalla. Está comprobado en desarrollo, donde se puede arreglar, y no en
+ * producción, donde ya es tarde.
  */
 export type PropiedadesDeBoton = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variante?: 'primario' | 'secundario' | 'fantasma' | 'peligro' | 'enlace'
+  variante?: 'primario' | 'secundario' | 'fantasma' | 'peligro' | 'enlace' | 'icono' | 'fab'
   tamano?: 'sm' | 'base' | 'lg'
   cargando?: boolean
   /** Ocupa todo el ancho. En móvil y dentro de un formulario, es lo normal. */
@@ -28,6 +33,14 @@ export function Boton({
   className,
   ...resto
 }: PropiedadesDeBoton) {
+  if (
+    process.env.NODE_ENV !== 'production' &&
+    (variante === 'icono' || variante === 'fab') &&
+    !resto['aria-label'] &&
+    !resto['aria-labelledby']
+  ) {
+    throw new Error(`Boton variante="${variante}" necesita aria-label: su contenido es un ícono, no un nombre.`)
+  }
   const clases = [
     'ay-boton',
     `ay-boton--${variante}`,

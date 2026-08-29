@@ -1,5 +1,6 @@
 package bo.aportaya.aportes.aplicacion;
 
+import bo.aportaya.aportes.dominio.EstadoDePagos;
 import bo.aportaya.aportes.infraestructura.EstadoDelParticipanteRepositorio;
 import bo.aportaya.plataforma.datos.Datos;
 import bo.aportaya.plataforma.dominio.ContextoSesion;
@@ -30,7 +31,7 @@ public class ConsultarEstadoDelParticipante {
     }
 
     @Transactional(readOnly = true)
-    public EstadoDelParticipanteRepositorio.Estado ejecutar(UUID participanteId, ContextoSesion ctx) {
+    public EstadoDePagos ejecutar(UUID participanteId, ContextoSesion ctx) {
         return datos.conContexto(ctx, dsl -> estados.de(dsl, participanteId));
     }
 

@@ -12,10 +12,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
  * Traduce, y no deja pasar nada crudo.
@@ -101,6 +108,61 @@ public class ManejadorGlobalDeErrores {
                 .forEach(error -> campos.putIfAbsent(error.getField(), error.getDefaultMessage()));
         return ResponseEntity.badRequest()
                 .body(new ErrorApi("AP-VAL-01", "Revisa los datos del formulario.", campos, Traza.actual()));
+    }
+
+    /**
+     * Lo que el cliente mando mal, y **no es un fallo del servidor**.
+     *
+     * <p>Un JSON roto, una fecha que no es una fecha, un UUID que no es un UUID, un
+     * parametro que falta. Sin esto todo eso caia en {@code falloNoPrevisto} y salia
+     * como {@code 500}: se descubrio corriendo la coleccion de humo, mandando una
+     * {@code fechaNacimiento} invalida al registro.
+     *
+     * <p>Importa por tres cosas distintas. Al cliente le decimos que se equivoco el, no
+     * nosotros. La bitacora deja de llenarse de ERROR por peticiones malformadas, que
+     * es como una alerta real se pierde entre el ruido. Y cualquiera que mande basura a
+     * proposito deja de poder simular una caida.
+     *
+     * <p>El detalle es corto a proposito: **no se devuelve el mensaje del parser**.
+     * Trae nombres de clases y de campos internos, y eso es contarle al que prueba como
+     * esta hecho el servidor por dentro.
+     */
+    @ExceptionHandler({
+        HttpMessageNotReadableException.class,
+        MethodArgumentTypeMismatchException.class,
+        MissingServletRequestParameterException.class,
+        HandlerMethodValidationException.class
+    })
+    public ResponseEntity<ErrorApi> entradaMalFormada(Exception e) {
+        BITACORA.info("entrada mal formada: {}", e.getClass().getSimpleName());
+        return ResponseEntity.badRequest()
+                .body(ErrorApi.de("AP-VAL-02", "Revisa el formato de los datos enviados.", Traza.actual()));
+    }
+
+    /** El verbo no existe para esa ruta. Es 405, no 500 ni 404. */
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ErrorApi> metodoNoSoportado(HttpRequestMethodNotSupportedException e) {
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+                .body(ErrorApi.de("AP-VAL-03", "Ese metodo no aplica a esta ruta.", Traza.actual()));
+    }
+
+    /** El cuerpo vino en un formato que no servimos. */
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ErrorApi> tipoNoSoportado(HttpMediaTypeNotSupportedException e) {
+        return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+                .body(ErrorApi.de("AP-VAL-04", "El cuerpo tiene que ser application/json.", Traza.actual()));
+    }
+
+    /**
+     * La ruta no existe. Sale con el mismo cuerpo que todo lo demas.
+     *
+     * <p>Un 404 con la pagina de Tomcat cuenta la version del servidor y que hay un
+     * Tomcat. No es grave por si solo; es un dato gratis para quien esta mirando.
+     */
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorApi> rutaInexistente(NoResourceFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ErrorApi.de("AP-VAL-05", "Esa ruta no existe.", Traza.actual()));
     }
 
     @ExceptionHandler(ErrorDeDominio.class)

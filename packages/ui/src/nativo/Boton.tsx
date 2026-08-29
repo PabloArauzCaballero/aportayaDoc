@@ -37,13 +37,13 @@ export function Boton({
     primario: tema.accent,
     secundario: tema.verdeSolido,
     fantasma: 'transparent',
-    peligro: '#D43E3E',
+    peligro: tema.rojoSolido,
   }[variante]
   const tinta = {
     primario: tema.accentInk,
     secundario: tema.sobreVerdeSolido,
     fantasma: tema.brandTexto,
-    peligro: '#FFFFFF',
+    peligro: tema.sobreRojoSolido,
   }[variante]
   return (
     <Pressable

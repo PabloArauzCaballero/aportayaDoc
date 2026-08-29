@@ -2,16 +2,11 @@ package bo.aportaya.nucleofinanciero.web;
 
 import bo.aportaya.nucleofinanciero.aplicacion.CU10RecargarSaldo;
 import bo.aportaya.nucleofinanciero.aplicacion.CU11RetirarSaldo;
-import bo.aportaya.nucleofinanciero.aplicacion.CU12TransferirSaldo;
 import bo.aportaya.nucleofinanciero.aplicacion.CU13RetenerSaldo;
 import bo.aportaya.nucleofinanciero.aplicacion.CU14ReversarTransaccion;
 import bo.aportaya.nucleofinanciero.aplicacion.CU15EmitirExtracto;
-import bo.aportaya.nucleofinanciero.aplicacion.CU16CerrarBilletera;
-import bo.aportaya.nucleofinanciero.aplicacion.CU17BloquearPorAutoridad;
 import bo.aportaya.nucleofinanciero.aplicacion.ConsultarSaldo;
-import bo.aportaya.nucleofinanciero.aplicacion.ResolverDestino;
 import bo.aportaya.nucleofinanciero.dominio.puertos.CotizadorDeComision;
-import bo.aportaya.nucleofinanciero.dominio.puertos.HechosDeOtrosServicios;
 import bo.aportaya.nucleofinanciero.dominio.puertos.SegundoFactor;
 import bo.aportaya.nucleofinanciero.web.generado.BilleteraApi;
 import bo.aportaya.nucleofinanciero.web.generado.modelo.EntradaBloqueo;
@@ -69,13 +64,10 @@ public class BilleteraController implements BilleteraApi {
     private final CU13RetenerSaldo cu13;
     private final CU14ReversarTransaccion cu14;
     private final CU15EmitirExtracto cu15;
-    private final CU17BloquearPorAutoridad cu17;
+    private final bo.aportaya.nucleofinanciero.aplicacion.CU17BloquearPorAutoridad cu17;
     private final CU11RetirarSaldo cu11;
-    private final CU12TransferirSaldo cu12;
-    private final CU16CerrarBilletera cu16;
+    private final MovimientosDeLaBilletera movimientos;
     private final ConsultarSaldo saldos;
-    private final ResolverDestino destinos;
-    private final HechosDeOtrosServicios afuera;
     private final CotizadorDeComision cotizador;
     private final SegundoFactor segundoFactor;
     private final BigDecimal desdeCuandoSonDosFirmas;
@@ -87,13 +79,10 @@ public class BilleteraController implements BilleteraApi {
             CU13RetenerSaldo cu13,
             CU14ReversarTransaccion cu14,
             CU15EmitirExtracto cu15,
-            CU17BloquearPorAutoridad cu17,
+            bo.aportaya.nucleofinanciero.aplicacion.CU17BloquearPorAutoridad cu17,
             CU11RetirarSaldo cu11,
-            CU12TransferirSaldo cu12,
-            CU16CerrarBilletera cu16,
+            MovimientosDeLaBilletera movimientos,
             ConsultarSaldo saldos,
-            ResolverDestino destinos,
-            HechosDeOtrosServicios afuera,
             CotizadorDeComision cotizador,
             SegundoFactor segundoFactor,
             @Value("${aportaya.retiro.doble-aprobacion-desde}") BigDecimal desdeCuandoSonDosFirmas,
@@ -104,11 +93,8 @@ public class BilleteraController implements BilleteraApi {
         this.cu15 = cu15;
         this.cu17 = cu17;
         this.cu11 = cu11;
-        this.cu12 = cu12;
-        this.cu16 = cu16;
+        this.movimientos = movimientos;
         this.saldos = saldos;
-        this.destinos = destinos;
-        this.afuera = afuera;
         this.cotizador = cotizador;
         this.segundoFactor = segundoFactor;
         this.desdeCuandoSonDosFirmas = desdeCuandoSonDosFirmas;
@@ -215,16 +201,7 @@ public class BilleteraController implements BilleteraApi {
     public ResponseEntity<SalidaRetencion> retenerSaldo(UUID idempotencyKey, EntradaRetencion cuerpo) {
         Traza.marcarCasoDeUso("CU-13", cuerpo.getCuentaBilleteraId().toString());
 
-        var salida = cu13.retener(
-                new CU13RetenerSaldo.EntradaRetencion(
-                        cuerpo.getCuentaBilleteraId(),
-                        MapeoDeBilletera.dinero(cuerpo.getMonto()),
-                        cuerpo.getMotivo(),
-                        Optional.ofNullable(cuerpo.getTransaccionOrigenId()),
-                        Optional.ofNullable(cuerpo.getReferenciaTipo()),
-                        Optional.ofNullable(cuerpo.getReferenciaId()),
-                        Optional.ofNullable(cuerpo.getExpiraEn())),
-                sesion.actual());
+        var salida = cu13.retener(MapeoDeBilletera.entradaDeRetencion(cuerpo), sesion.actual());
 
         var respuesta = new SalidaRetencion();
         respuesta.setRetencionId(salida.retencionId());
@@ -259,14 +236,8 @@ public class BilleteraController implements BilleteraApi {
     public ResponseEntity<SalidaReverso> reversarTransaccion(UUID idempotencyKey, EntradaReverso cuerpo) {
         Traza.marcarCasoDeUso("CU-14", cuerpo.getTransaccionOriginalId().toString());
 
-        var salida = cu14.ejecutar(
-                new CU14ReversarTransaccion.EntradaReverso(
-                        idempotencyKey.toString(),
-                        cuerpo.getTransaccionOriginalId(),
-                        cuerpo.getTipo().getValue(),
-                        cuerpo.getMotivo(),
-                        cuerpo.getAutorizadaPor()),
-                sesion.actual());
+        var salida =
+                cu14.ejecutar(MapeoDeBilletera.entradaDeReverso(idempotencyKey.toString(), cuerpo), sesion.actual());
 
         var respuesta = new SalidaReverso();
         respuesta.setReversoId(salida.reversoId());
@@ -287,16 +258,7 @@ public class BilleteraController implements BilleteraApi {
         var salida =
                 cu15.emitir(new CU15EmitirExtracto.EntradaExtracto(cuentaId, desde, hasta, delegado), sesion.actual());
 
-        var respuesta = new SalidaExtracto();
-        respuesta.setCuentaBilleteraId(salida.cuentaBilleteraId());
-        respuesta.setDesde(salida.desde());
-        respuesta.setHasta(salida.hasta());
-        respuesta.setSaldoFinal(MapeoDeBilletera.dinero(salida.saldoFinal()));
-        respuesta.setCantidadMovimientos(salida.cantidadMovimientos());
-        respuesta.setHashArchivo(salida.hashArchivo());
-        respuesta.setEmitido(salida.emitido());
-        respuesta.setMotivoDelBloqueo(salida.motivoDelBloqueo());
-        return ResponseEntity.ok(respuesta);
+        return ResponseEntity.ok(MapeoDeBilletera.extracto(salida));
     }
 
     @Override
@@ -304,17 +266,7 @@ public class BilleteraController implements BilleteraApi {
     public ResponseEntity<SalidaBloqueo> bloquearPorAutoridad(UUID idempotencyKey, EntradaBloqueo cuerpo) {
         Traza.marcarCasoDeUso("CU-17", cuerpo.getNumeroOficio());
 
-        var salida = cu17.ejecutar(
-                new CU17BloquearPorAutoridad.EntradaBloqueo(
-                        cuerpo.getCuentaBilleteraId(),
-                        cuerpo.getAutoridad().getValue(),
-                        cuerpo.getTipoOrden().getValue(),
-                        cuerpo.getNumeroOficio(),
-                        MapeoDeBilletera.dineroOpcional(cuerpo.getMontoBloqueado()),
-                        cuerpo.getAlcance().getValue(),
-                        cuerpo.getDocumentoUrl().toString(),
-                        cuerpo.getHashDocumento()),
-                sesion.actual());
+        var salida = cu17.ejecutar(MapeoDeBilletera.entradaDeBloqueo(cuerpo), sesion.actual());
 
         var respuesta = new SalidaBloqueo();
         respuesta.setBloqueoId(salida.bloqueoId());
@@ -324,76 +276,17 @@ public class BilleteraController implements BilleteraApi {
         return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
     }
 
-    /**
-     * La transferencia.
-     *
-     * <p>El destino llega como lo escribio una persona —un alias, un grupo— y el caso
-     * de uso trabaja con la cuenta. Traducirlo es lo primero **y pasa afuera**: el
-     * alias lo resuelve {@code grupos}, y esa llamada no puede estar dentro de la
-     * transaccion que mueve el dinero.
-     *
-     * <p>Un destino que no se pudo resolver se rechaza. Mandar la plata a una cuenta
-     * adivinada no tiene vuelta atras.
-     */
     @Override
     @Permiso("BILLETERA_OPERAR")
     public ResponseEntity<SalidaTransferencia> transferirSaldo(UUID idempotencyKey, EntradaTransferencia cuerpo) {
         Traza.marcarCasoDeUso("CU-12", cuerpo.getCuentaOrigenId().toString());
-
-        var destino = cuerpo.getDestino();
-        UUID cuentaDestino = destinos.cuenta(destino.getTipo().getValue(), destino.getValor(), sesion.actual())
-                .orElseThrow(() -> new ErrorDeNegocio(CodigoError.de(12, 2), "Ese destino no existe."));
-
-        var salida = cu12.ejecutar(
-                new CU12TransferirSaldo.EntradaTransferencia(
-                        idempotencyKey.toString(),
-                        cuerpo.getCuentaOrigenId(),
-                        cuentaDestino,
-                        MapeoDeBilletera.dinero(cuerpo.getMonto()),
-                        cuerpo.getConcepto(),
-                        Optional.empty(),
-                        Optional.ofNullable(cuerpo.getObligacionId())),
-                sesion.actual());
-
-        var respuesta = new SalidaTransferencia();
-        respuesta.setTransaccionId(salida.transaccionId());
-        respuesta.setSaldoDespues(MapeoDeBilletera.dinero(salida.saldoDespues()));
-        respuesta.setDestinatarioId(salida.destinatarioId());
-        respuesta.setObligacionSaldada(salida.obligacionSaldada());
-        return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
+        return movimientos.transferir(idempotencyKey, cuerpo, sesion.actual());
     }
 
-    /**
-     * El cierre de la billetera.
-     *
-     * <p>Dos de las cuatro puertas no son de este servicio: los aportes pendientes los
-     * lleva {@code aportes} y los pasanakus vivos los lleva {@code grupos}. Se
-     * preguntan antes de abrir la transaccion y entran al caso de uso ya resueltas.
-     *
-     * <p>Si alguno de los dos no contesta, la respuesta que se asume es **que si hay
-     * pendientes**. Cerrar por falta de respuesta le pasaria la deuda a los otros del
-     * grupo, y la puerta existe para protegerlos a ellos.
-     */
     @Override
     @Permiso("BILLETERA_OPERAR")
     public ResponseEntity<SalidaCierreBilletera> solicitarCierreBilletera(UUID idempotencyKey, EntradaCierre cuerpo) {
-        var ctx = sesion.actual();
         Traza.marcarCasoDeUso("CU-16", cuerpo.getCuentaBilleteraId().toString());
-
-        UUID titular = ctx.usuarioId();
-        var salida = cu16.solicitar(
-                new CU16CerrarBilletera.EntradaCierre(
-                        cuerpo.getCuentaBilleteraId(),
-                        cuerpo.getMotivo(),
-                        cuerpo.getDestinoSaldo().getValue(),
-                        afuera.tieneObligacionesAbiertas(titular),
-                        afuera.participaEnGrupoActivo(titular)),
-                ctx);
-
-        var respuesta = new SalidaCierreBilletera();
-        respuesta.setSolicitudId(salida.solicitudId());
-        respuesta.setEstado(SalidaCierreBilletera.EstadoEnum.fromValue(salida.estado()));
-        respuesta.setSaldoAlSolicitar(MapeoDeBilletera.dinero(salida.saldoAlSolicitar()));
-        return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
+        return movimientos.cerrar(cuerpo, sesion.actual());
     }
 }

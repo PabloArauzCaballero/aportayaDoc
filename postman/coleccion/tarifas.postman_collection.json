@@ -1,0 +1,1064 @@
+{
+  "info": {
+    "name": "AportaYa · tarifas",
+    "description": "# AportaYa · tarifas\n\nGenerado por `scripts/generar_postman.py` desde `servicios/*/src/main/resources/openapi/`.\n**No se edita a mano**: la proxima generacion lo pisa, y una coleccion editada a mano\nprueba una API que ya no existe.\n\n**12 operaciones.** Cada peticion trae su cuerpo de ejemplo derivado del\nesquema, la clave de idempotencia donde el contrato la exige, el permiso que pide\n—leido de los `@Permiso` del codigo— y los rechazos `AP-CU` que declara.\n\nElegi un entorno de `postman/entornos/` antes de disparar nada.\n",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "cotizarComision · Calcular y guardar la comision de una operacion",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{$guid}}",
+            "description": "Uno nuevo por intento. Repetir el mismo debe devolver la MISMA respuesta y un solo efecto (invariante 7)."
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/comisiones/cotizaciones",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "comisiones",
+            "cotizaciones"
+          ],
+          "variable": []
+        },
+        "description": "## Calcular y guardar la comision de una operacion\n\nQue el usuario vea el numero final ANTES de aceptar, y que ese numero quede guardado con su desglose. El reclamo tipico no es «me cobraron de mas»: es «nadie me aviso». Si la operacion pertenece a un grupo con tarifa congelada, manda el snapshot (R-TAR-07).\n\n| | |\n| --- | --- |\n| **Servicio** | `tarifas` |\n| **Operacion** | `cotizarComision` |\n| **Ruta** | `POST /api/v1/comisiones/cotizaciones` |\n| **Permiso** | `BILLETERA_OPERAR` |\n| **Idempotencia** | exige `Idempotency-Key`; se manda un `{{$guid}}` nuevo por intento |\n| **Respuestas** | `200`, `422` |\n\n### Rechazos que declara el contrato\n\n_El contrato no declara rechazos de negocio para esta operacion._\n\n> Los importes viajan como **cadena decimal** (`\"100.00\"`), nunca como numero:\n> un `number` de JSON es un doble, y un doble pierde centavos.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"codigoTarifario\": \"codigoTarifario-de-prueba\",\n  \"hechoGenerador\": \"hechoGenerador-de-prueba\",\n  \"referenciaTipo\": \"ENTREGA_FONDO\",\n  \"referenciaId\": \"{{referenciaId}}\",\n  \"montoBase\": {\n    \"monto\": \"100.00\",\n    \"moneda\": \"BOB\"\n  },\n  \"grupoId\": \"{{grupoId}}\",\n  \"descuento\": {\n    \"monto\": \"100.00\",\n    \"moneda\": \"BOB\"\n  },\n  \"segmentoCodigo\": \"segmentoCodigo-de-prueba\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Lo que se le exige a TODA respuesta del sistema, sin excepcion.",
+              "const esperadas = [200, 422];",
+              "",
+              "pm.test(\"responde con un codigo que el contrato declara\", () => {",
+              "    pm.expect(esperadas).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"no filtra la traza al cliente\", () => {",
+              "    const cuerpo = pm.response.text();",
+              "    // Un stack trace en la respuesta le cuenta al atacante como esta hecho el",
+              "    // servidor. Es una de las dieciocho prohibiciones del contrato.",
+              "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+              "    pm.expect(cuerpo).to.not.include(\"java.lang.\");",
+              "});",
+              "",
+              "if (pm.response.code === 422) {",
+              "    pm.test(\"el rechazo trae su codigo AP-CU\", () => {",
+              "        pm.expect(pm.response.json()).to.have.property(\"codigo\").that.matches(/^AP-CU\\d+-\\d+$/);",
+              "    });",
+              "}",
+              "",
+              "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+              "if (pm.response.code < 300) {",
+              "    const cuerpo = pm.response.json();",
+              "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+              "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+              "            pm.collectionVariables.set(clave, valor);",
+              "        }",
+              "    }",
+              "}",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "aceptarCotizacion · Registrar que el usuario acepto el precio que vio",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/comisiones/cotizaciones/:cotizacionId/aceptacion",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "comisiones",
+            "cotizaciones",
+            ":cotizacionId",
+            "aceptacion"
+          ],
+          "variable": [
+            {
+              "key": "cotizacionId",
+              "value": "{{cotizacionId}}",
+              "description": "Identificador; se encadena desde una peticion anterior."
+            }
+          ]
+        },
+        "description": "## Registrar que el usuario acepto el precio que vio\n\nSin esto no hay evidencia de consentimiento. Una cotizacion vencida no se acepta: el precio que se acepta tiene que ser el que se mostro.\n\n| | |\n| --- | --- |\n| **Servicio** | `tarifas` |\n| **Operacion** | `aceptarCotizacion` |\n| **Ruta** | `POST /api/v1/comisiones/cotizaciones/{cotizacionId}/aceptacion` |\n| **Permiso** | `BILLETERA_OPERAR` |\n| **Respuestas** | `200`, `422` |\n\n### Rechazos que declara el contrato\n\n_El contrato no declara rechazos de negocio para esta operacion._\n\n> Los importes viajan como **cadena decimal** (`\"100.00\"`), nunca como numero:\n> un `number` de JSON es un doble, y un doble pierde centavos."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Lo que se le exige a TODA respuesta del sistema, sin excepcion.",
+              "const esperadas = [200, 422];",
+              "",
+              "pm.test(\"responde con un codigo que el contrato declara\", () => {",
+              "    pm.expect(esperadas).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"no filtra la traza al cliente\", () => {",
+              "    const cuerpo = pm.response.text();",
+              "    // Un stack trace en la respuesta le cuenta al atacante como esta hecho el",
+              "    // servidor. Es una de las dieciocho prohibiciones del contrato.",
+              "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+              "    pm.expect(cuerpo).to.not.include(\"java.lang.\");",
+              "});",
+              "",
+              "if (pm.response.code === 422) {",
+              "    pm.test(\"el rechazo trae su codigo AP-CU\", () => {",
+              "        pm.expect(pm.response.json()).to.have.property(\"codigo\").that.matches(/^AP-CU\\d+-\\d+$/);",
+              "    });",
+              "}",
+              "",
+              "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+              "if (pm.response.code < 300) {",
+              "    const cuerpo = pm.response.json();",
+              "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+              "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+              "            pm.collectionVariables.set(clave, valor);",
+              "        }",
+              "    }",
+              "}",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "devengarComision · Reconocer el ingreso cuando ocurre el hecho generador",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{$guid}}",
+            "description": "Uno nuevo por intento. Repetir el mismo debe devolver la MISMA respuesta y un solo efecto (invariante 7)."
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/comisiones/devengos",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "comisiones",
+            "devengos"
+          ],
+          "variable": []
+        },
+        "description": "## Reconocer el ingreso cuando ocurre el hecho generador\n\nSepara ganar de cobrar. El devengo es append-only: su estado corriente se DERIVA de los cargos y las devoluciones, no de un UPDATE sobre la fila.\n\n| | |\n| --- | --- |\n| **Servicio** | `tarifas` |\n| **Operacion** | `devengarComision` |\n| **Ruta** | `POST /api/v1/comisiones/devengos` |\n| **Permiso** | `BILLETERA_OPERAR` |\n| **Idempotencia** | exige `Idempotency-Key`; se manda un `{{$guid}}` nuevo por intento |\n| **Respuestas** | `200`, `422` |\n\n### Rechazos que declara el contrato\n\n_El contrato no declara rechazos de negocio para esta operacion._\n\n> Los importes viajan como **cadena decimal** (`\"100.00\"`), nunca como numero:\n> un `number` de JSON es un doble, y un doble pierde centavos.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cotizacionId\": \"{{cotizacionId}}\",\n  \"tarifarioId\": \"{{tarifarioId}}\",\n  \"referenciaTipo\": \"CICLO\",\n  \"referenciaId\": \"{{referenciaId}}\",\n  \"usuarioObligadoId\": \"{{usuarioObligadoId}}\",\n  \"grupoId\": \"{{grupoId}}\",\n  \"descuento\": {\n    \"monto\": \"100.00\",\n    \"moneda\": \"BOB\"\n  },\n  \"exentoTotal\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Lo que se le exige a TODA respuesta del sistema, sin excepcion.",
+              "const esperadas = [200, 422];",
+              "",
+              "pm.test(\"responde con un codigo que el contrato declara\", () => {",
+              "    pm.expect(esperadas).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"no filtra la traza al cliente\", () => {",
+              "    const cuerpo = pm.response.text();",
+              "    // Un stack trace en la respuesta le cuenta al atacante como esta hecho el",
+              "    // servidor. Es una de las dieciocho prohibiciones del contrato.",
+              "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+              "    pm.expect(cuerpo).to.not.include(\"java.lang.\");",
+              "});",
+              "",
+              "if (pm.response.code === 422) {",
+              "    pm.test(\"el rechazo trae su codigo AP-CU\", () => {",
+              "        pm.expect(pm.response.json()).to.have.property(\"codigo\").that.matches(/^AP-CU\\d+-\\d+$/);",
+              "    });",
+              "}",
+              "",
+              "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+              "if (pm.response.code < 300) {",
+              "    const cuerpo = pm.response.json();",
+              "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+              "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+              "            pm.collectionVariables.set(clave, valor);",
+              "        }",
+              "    }",
+              "}",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "anotarCobroDeComision · Registrar el resultado de un intento de cobro",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/comisiones/devengos/:devengoId/cobros",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "comisiones",
+            "devengos",
+            ":devengoId",
+            "cobros"
+          ],
+          "variable": [
+            {
+              "key": "devengoId",
+              "value": "{{devengoId}}",
+              "description": "Identificador; se encadena desde una peticion anterior."
+            }
+          ]
+        },
+        "description": "## Registrar el resultado de un intento de cobro\n\nEl cobro lo ejecuta quien mueve el dinero (invariante 12). Aca se anota que paso: tres fallos y el devengo va a cuenta por cobrar, sin borrarse. La deuda no desaparece porque el debito falle.\n\n| | |\n| --- | --- |\n| **Servicio** | `tarifas` |\n| **Operacion** | `anotarCobroDeComision` |\n| **Ruta** | `POST /api/v1/comisiones/devengos/{devengoId}/cobros` |\n| **Permiso** | `BILLETERA_OPERAR` |\n| **Respuestas** | `200`, `422` |\n\n### Rechazos que declara el contrato\n\n_El contrato no declara rechazos de negocio para esta operacion._\n\n> Los importes viajan como **cadena decimal** (`\"100.00\"`), nunca como numero:\n> un `number` de JSON es un doble, y un doble pierde centavos.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"formaCobro\": \"COBRO_EXTERNO\",\n  \"exitoso\": true,\n  \"error\": \"error-de-prueba\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Lo que se le exige a TODA respuesta del sistema, sin excepcion.",
+              "const esperadas = [200, 422];",
+              "",
+              "pm.test(\"responde con un codigo que el contrato declara\", () => {",
+              "    pm.expect(esperadas).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"no filtra la traza al cliente\", () => {",
+              "    const cuerpo = pm.response.text();",
+              "    // Un stack trace en la respuesta le cuenta al atacante como esta hecho el",
+              "    // servidor. Es una de las dieciocho prohibiciones del contrato.",
+              "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+              "    pm.expect(cuerpo).to.not.include(\"java.lang.\");",
+              "});",
+              "",
+              "if (pm.response.code === 422) {",
+              "    pm.test(\"el rechazo trae su codigo AP-CU\", () => {",
+              "        pm.expect(pm.response.json()).to.have.property(\"codigo\").that.matches(/^AP-CU\\d+-\\d+$/);",
+              "    });",
+              "}",
+              "",
+              "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+              "if (pm.response.code < 300) {",
+              "    const cuerpo = pm.response.json();",
+              "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+              "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+              "            pm.collectionVariables.set(clave, valor);",
+              "        }",
+              "    }",
+              "}",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "emitirFactura · Emitir el documento fiscal de una comision cobrada",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/facturas",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "facturas"
+          ],
+          "variable": []
+        },
+        "description": "## Emitir el documento fiscal de una comision cobrada\n\nLa caida del servicio de impuestos NO detiene la operacion: se emite bajo contingencia con su plazo guardado. La consulta al tercero ocurre fuera de la transaccion (invariante 6).\n\n| | |\n| --- | --- |\n| **Servicio** | `tarifas` |\n| **Operacion** | `emitirFactura` |\n| **Ruta** | `POST /api/v1/facturas` |\n| **Permiso** | `CONTABILIDAD` |\n| **Respuestas** | `201`, `422` |\n\n### Rechazos que declara el contrato\n\n_El contrato no declara rechazos de negocio para esta operacion._\n\n> Los importes viajan como **cadena decimal** (`\"100.00\"`), nunca como numero:\n> un `number` de JSON es un doble, y un doble pierde centavos.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"devengoId\": \"{{devengoId}}\",\n  \"montoIva\": {\n    \"monto\": \"100.00\",\n    \"moneda\": \"BOB\"\n  },\n  \"urlPdf\": \"urlPdf-de-prueba\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Lo que se le exige a TODA respuesta del sistema, sin excepcion.",
+              "const esperadas = [201, 422];",
+              "",
+              "pm.test(\"responde con un codigo que el contrato declara\", () => {",
+              "    pm.expect(esperadas).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"no filtra la traza al cliente\", () => {",
+              "    const cuerpo = pm.response.text();",
+              "    // Un stack trace en la respuesta le cuenta al atacante como esta hecho el",
+              "    // servidor. Es una de las dieciocho prohibiciones del contrato.",
+              "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+              "    pm.expect(cuerpo).to.not.include(\"java.lang.\");",
+              "});",
+              "",
+              "if (pm.response.code === 422) {",
+              "    pm.test(\"el rechazo trae su codigo AP-CU\", () => {",
+              "        pm.expect(pm.response.json()).to.have.property(\"codigo\").that.matches(/^AP-CU\\d+-\\d+$/);",
+              "    });",
+              "}",
+              "",
+              "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+              "if (pm.response.code < 300) {",
+              "    const cuerpo = pm.response.json();",
+              "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+              "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+              "            pm.collectionVariables.set(clave, valor);",
+              "        }",
+              "    }",
+              "}",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "devolverComision · Devolver una comision y emitir la nota de credito",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{$guid}}",
+            "description": "Uno nuevo por intento. Repetir el mismo debe devolver la MISMA respuesta y un solo efecto (invariante 7)."
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/comisiones/:devengoId/devoluciones",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "comisiones",
+            ":devengoId",
+            "devoluciones"
+          ],
+          "variable": [
+            {
+              "key": "devengoId",
+              "value": "{{devengoId}}",
+              "description": "Identificador; se encadena desde una peticion anterior."
+            }
+          ]
+        },
+        "description": "## Devolver una comision y emitir la nota de credito\n\nLa plata y el papel van atados. La factura NUNCA se edita (R-TAR-10): se emite una nota de credito con su propio CUF. El limite se mide contra lo ya devuelto.\n\n| | |\n| --- | --- |\n| **Servicio** | `tarifas` |\n| **Operacion** | `devolverComision` |\n| **Ruta** | `POST /api/v1/comisiones/{devengoId}/devoluciones` |\n| **Permiso** | `REVERSO_AUTORIZAR` |\n| **Idempotencia** | exige `Idempotency-Key`; se manda un `{{$guid}}` nuevo por intento |\n| **Respuestas** | `200`, `422` |\n\n### Rechazos que declara el contrato\n\n_El contrato no declara rechazos de negocio para esta operacion._\n\n> Los importes viajan como **cadena decimal** (`\"100.00\"`), nunca como numero:\n> un `number` de JSON es un doble, y un doble pierde centavos.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"motivo\": \"ENTREGA_ANULADA\",\n  \"detalle\": \"detalle-de-prueba\",\n  \"monto\": {\n    \"monto\": \"100.00\",\n    \"moneda\": \"BOB\"\n  },\n  \"forma\": \"ABONO_BILLETERA\",\n  \"reclamoId\": \"{{reclamoId}}\",\n  \"autorizadaPor\": \"{{autorizadaPor}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Lo que se le exige a TODA respuesta del sistema, sin excepcion.",
+              "const esperadas = [200, 422];",
+              "",
+              "pm.test(\"responde con un codigo que el contrato declara\", () => {",
+              "    pm.expect(esperadas).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"no filtra la traza al cliente\", () => {",
+              "    const cuerpo = pm.response.text();",
+              "    // Un stack trace en la respuesta le cuenta al atacante como esta hecho el",
+              "    // servidor. Es una de las dieciocho prohibiciones del contrato.",
+              "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+              "    pm.expect(cuerpo).to.not.include(\"java.lang.\");",
+              "});",
+              "",
+              "if (pm.response.code === 422) {",
+              "    pm.test(\"el rechazo trae su codigo AP-CU\", () => {",
+              "        pm.expect(pm.response.json()).to.have.property(\"codigo\").that.matches(/^AP-CU\\d+-\\d+$/);",
+              "    });",
+              "}",
+              "",
+              "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+              "if (pm.response.code < 300) {",
+              "    const cuerpo = pm.response.json();",
+              "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+              "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+              "            pm.collectionVariables.set(clave, valor);",
+              "        }",
+              "    }",
+              "}",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "publicarTarifario · Publicar la version siguiente de un tarifario",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/tarifas/tarifarios",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "tarifas",
+            "tarifarios"
+          ],
+          "variable": []
+        },
+        "description": "## Publicar la version siguiente de un tarifario\n\nUn incremento no entra sin preaviso cumplido (R-TAR-08). El anterior no se borra: queda SUSTITUIDO con su vigencia cerrada, porque poder decir que se cobraba en una fecha pasada es lo unico que responde un reclamo viejo.\n\n| | |\n| --- | --- |\n| **Servicio** | `tarifas` |\n| **Operacion** | `publicarTarifario` |\n| **Ruta** | `POST /api/v1/tarifas/tarifarios` |\n| **Permiso** | `TARIFARIO_PUBLICAR` |\n| **Respuestas** | `201`, `422` |\n\n### Rechazos que declara el contrato\n\n_El contrato no declara rechazos de negocio para esta operacion._\n\n> Los importes viajan como **cadena decimal** (`\"100.00\"`), nunca como numero:\n> un `number` de JSON es un doble, y un doble pierde centavos.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tarifarioBaseId\": \"{{tarifarioBaseId}}\",\n  \"nombre\": \"nombre-de-prueba\",\n  \"tipoCambio\": \"INCREMENTO\",\n  \"diasPreaviso\": 0,\n  \"aprobadoPor\": \"{{aprobadoPor}}\",\n  \"actaComite\": \"actaComite-de-prueba\",\n  \"urlPublicacion\": \"https://ejemplo.aportaya.bo/documento.pdf\",\n  \"hashDocumento\": \"0000000000000000000000000000000000000000000000000000000000000000\",\n  \"canalAviso\": \"canalAviso-de-prueba\",\n  \"permiteRescisionSinCosto\": true,\n  \"deltaIngresoEstimado\": \"100.00\",\n  \"usuariosImpactados\": 0\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Lo que se le exige a TODA respuesta del sistema, sin excepcion.",
+              "const esperadas = [201, 422];",
+              "",
+              "pm.test(\"responde con un codigo que el contrato declara\", () => {",
+              "    pm.expect(esperadas).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"no filtra la traza al cliente\", () => {",
+              "    const cuerpo = pm.response.text();",
+              "    // Un stack trace en la respuesta le cuenta al atacante como esta hecho el",
+              "    // servidor. Es una de las dieciocho prohibiciones del contrato.",
+              "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+              "    pm.expect(cuerpo).to.not.include(\"java.lang.\");",
+              "});",
+              "",
+              "if (pm.response.code === 422) {",
+              "    pm.test(\"el rechazo trae su codigo AP-CU\", () => {",
+              "        pm.expect(pm.response.json()).to.have.property(\"codigo\").that.matches(/^AP-CU\\d+-\\d+$/);",
+              "    });",
+              "}",
+              "",
+              "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+              "if (pm.response.code < 300) {",
+              "    const cuerpo = pm.response.json();",
+              "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+              "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+              "            pm.collectionVariables.set(clave, valor);",
+              "        }",
+              "    }",
+              "}",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "ponerTarifarioVigente · Poner en vigencia un tarifario cuyo preaviso ya se cumplio",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/tarifas/tarifarios/:tarifarioId/vigencia",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "tarifas",
+            "tarifarios",
+            ":tarifarioId",
+            "vigencia"
+          ],
+          "variable": [
+            {
+              "key": "tarifarioId",
+              "value": "{{tarifarioId}}",
+              "description": "Identificador; se encadena desde una peticion anterior."
+            }
+          ]
+        },
+        "description": "## Poner en vigencia un tarifario cuyo preaviso ya se cumplio\n\n\n\n| | |\n| --- | --- |\n| **Servicio** | `tarifas` |\n| **Operacion** | `ponerTarifarioVigente` |\n| **Ruta** | `POST /api/v1/tarifas/tarifarios/{tarifarioId}/vigencia` |\n| **Permiso** | `TARIFARIO_PUBLICAR` |\n| **Respuestas** | `200`, `422` |\n\n### Rechazos que declara el contrato\n\n_El contrato no declara rechazos de negocio para esta operacion._\n\n> Los importes viajan como **cadena decimal** (`\"100.00\"`), nunca como numero:\n> un `number` de JSON es un doble, y un doble pierde centavos."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Lo que se le exige a TODA respuesta del sistema, sin excepcion.",
+              "const esperadas = [200, 422];",
+              "",
+              "pm.test(\"responde con un codigo que el contrato declara\", () => {",
+              "    pm.expect(esperadas).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"no filtra la traza al cliente\", () => {",
+              "    const cuerpo = pm.response.text();",
+              "    // Un stack trace en la respuesta le cuenta al atacante como esta hecho el",
+              "    // servidor. Es una de las dieciocho prohibiciones del contrato.",
+              "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+              "    pm.expect(cuerpo).to.not.include(\"java.lang.\");",
+              "});",
+              "",
+              "if (pm.response.code === 422) {",
+              "    pm.test(\"el rechazo trae su codigo AP-CU\", () => {",
+              "        pm.expect(pm.response.json()).to.have.property(\"codigo\").that.matches(/^AP-CU\\d+-\\d+$/);",
+              "    });",
+              "}",
+              "",
+              "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+              "if (pm.response.code < 300) {",
+              "    const cuerpo = pm.response.json();",
+              "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+              "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+              "            pm.collectionVariables.set(clave, valor);",
+              "        }",
+              "    }",
+              "}",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "cerrarLiquidacion · Cerrar el mes de ingresos",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/tarifas/liquidaciones/:periodo/cierre",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "tarifas",
+            "liquidaciones",
+            ":periodo",
+            "cierre"
+          ],
+          "variable": [
+            {
+              "key": "periodo",
+              "value": "{{periodo}}",
+              "description": "Identificador; se encadena desde una peticion anterior."
+            }
+          ]
+        },
+        "description": "## Cerrar el mes de ingresos\n\nUn resultado mensual reproducible desde los devengos, no desde una planilla aparte. Los dias sin cerrar, las excepciones abiertas y el saldo del mayor llegan como entrada: viven en otros esquemas y este servicio no los lee (invariante 11).\n\n| | |\n| --- | --- |\n| **Servicio** | `tarifas` |\n| **Operacion** | `cerrarLiquidacion` |\n| **Ruta** | `POST /api/v1/tarifas/liquidaciones/{periodo}/cierre` |\n| **Permiso** | `CONTABILIDAD` |\n| **Respuestas** | `200`, `422` |\n\n### Rechazos que declara el contrato\n\n_El contrato no declara rechazos de negocio para esta operacion._\n\n> Los importes viajan como **cadena decimal** (`\"100.00\"`), nunca como numero:\n> un `number` de JSON es un doble, y un doble pierde centavos.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"diasSinCerrar\": 0,\n  \"excepcionesAbiertas\": 0,\n  \"saldoDeLaCuentaDeIngresos\": \"100.00\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Lo que se le exige a TODA respuesta del sistema, sin excepcion.",
+              "const esperadas = [200, 422];",
+              "",
+              "pm.test(\"responde con un codigo que el contrato declara\", () => {",
+              "    pm.expect(esperadas).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"no filtra la traza al cliente\", () => {",
+              "    const cuerpo = pm.response.text();",
+              "    // Un stack trace en la respuesta le cuenta al atacante como esta hecho el",
+              "    // servidor. Es una de las dieciocho prohibiciones del contrato.",
+              "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+              "    pm.expect(cuerpo).to.not.include(\"java.lang.\");",
+              "});",
+              "",
+              "if (pm.response.code === 422) {",
+              "    pm.test(\"el rechazo trae su codigo AP-CU\", () => {",
+              "        pm.expect(pm.response.json()).to.have.property(\"codigo\").that.matches(/^AP-CU\\d+-\\d+$/);",
+              "    });",
+              "}",
+              "",
+              "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+              "if (pm.response.code < 300) {",
+              "    const cuerpo = pm.response.json();",
+              "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+              "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+              "            pm.collectionVariables.set(clave, valor);",
+              "        }",
+              "    }",
+              "}",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "crearSegmento · Definir un segmento comercial",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/tarifas/segmentos",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "tarifas",
+            "segmentos"
+          ],
+          "variable": []
+        },
+        "description": "## Definir un segmento comercial\n\nEl criterio es JSON evaluable, no texto libre: «se le aplico porque es buen cliente» no es una explicacion que sirva ante un reclamo. Un criterio que se apoya en datos sensibles o categorias protegidas se rechaza.\n\n| | |\n| --- | --- |\n| **Servicio** | `tarifas` |\n| **Operacion** | `crearSegmento` |\n| **Ruta** | `POST /api/v1/tarifas/segmentos` |\n| **Permiso** | `CATALOGO_EDITAR` |\n| **Respuestas** | `201`, `422` |\n\n### Rechazos que declara el contrato\n\n_El contrato no declara rechazos de negocio para esta operacion._\n\n> Los importes viajan como **cadena decimal** (`\"100.00\"`), nunca como numero:\n> un `number` de JSON es un doble, y un doble pierde centavos.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"codigo\": \"codigo-de-prueba\",\n  \"descripcion\": \"descripcion-de-prueba\",\n  \"criterio\": {},\n  \"prioridad\": 1\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Lo que se le exige a TODA respuesta del sistema, sin excepcion.",
+              "const esperadas = [201, 422];",
+              "",
+              "pm.test(\"responde con un codigo que el contrato declara\", () => {",
+              "    pm.expect(esperadas).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"no filtra la traza al cliente\", () => {",
+              "    const cuerpo = pm.response.text();",
+              "    // Un stack trace en la respuesta le cuenta al atacante como esta hecho el",
+              "    // servidor. Es una de las dieciocho prohibiciones del contrato.",
+              "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+              "    pm.expect(cuerpo).to.not.include(\"java.lang.\");",
+              "});",
+              "",
+              "if (pm.response.code === 422) {",
+              "    pm.test(\"el rechazo trae su codigo AP-CU\", () => {",
+              "        pm.expect(pm.response.json()).to.have.property(\"codigo\").that.matches(/^AP-CU\\d+-\\d+$/);",
+              "    });",
+              "}",
+              "",
+              "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+              "if (pm.response.code < 300) {",
+              "    const cuerpo = pm.response.json();",
+              "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+              "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+              "            pm.collectionVariables.set(clave, valor);",
+              "        }",
+              "    }",
+              "}",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "resolverPrecio · Que segmento rige para un usuario, y por que",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/tarifas/precios/resolver",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "tarifas",
+            "precios",
+            "resolver"
+          ],
+          "variable": []
+        },
+        "description": "## Que segmento rige para un usuario, y por que\n\nNo escribe: es una consulta. Si falta un hecho para evaluar el criterio, NO se adivina — se cotiza al precio base y se dice cual falto. Adivinar a favor regala plata y adivinar en contra cobra de mas.\n\n| | |\n| --- | --- |\n| **Servicio** | `tarifas` |\n| **Operacion** | `resolverPrecio` |\n| **Ruta** | `POST /api/v1/tarifas/precios/resolver` |\n| **Permiso** | `BILLETERA_VER` |\n| **Respuestas** | `200`, `422` |\n\n### Rechazos que declara el contrato\n\n_El contrato no declara rechazos de negocio para esta operacion._\n\n> Los importes viajan como **cadena decimal** (`\"100.00\"`), nunca como numero:\n> un `number` de JSON es un doble, y un doble pierde centavos.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"hechos\": {}\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Lo que se le exige a TODA respuesta del sistema, sin excepcion.",
+              "const esperadas = [200, 422];",
+              "",
+              "pm.test(\"responde con un codigo que el contrato declara\", () => {",
+              "    pm.expect(esperadas).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"no filtra la traza al cliente\", () => {",
+              "    const cuerpo = pm.response.text();",
+              "    // Un stack trace en la respuesta le cuenta al atacante como esta hecho el",
+              "    // servidor. Es una de las dieciocho prohibiciones del contrato.",
+              "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+              "    pm.expect(cuerpo).to.not.include(\"java.lang.\");",
+              "});",
+              "",
+              "if (pm.response.code === 422) {",
+              "    pm.test(\"el rechazo trae su codigo AP-CU\", () => {",
+              "        pm.expect(pm.response.json()).to.have.property(\"codigo\").that.matches(/^AP-CU\\d+-\\d+$/);",
+              "    });",
+              "}",
+              "",
+              "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+              "if (pm.response.code < 300) {",
+              "    const cuerpo = pm.response.json();",
+              "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+              "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+              "            pm.collectionVariables.set(clave, valor);",
+              "        }",
+              "    }",
+              "}",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "consultarTarifarioVigente · Cual es el tarifario vigente de un codigo, ahora",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/tarifas/vigentes/:codigo",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "tarifas",
+            "vigentes",
+            ":codigo"
+          ],
+          "variable": [
+            {
+              "key": "codigo",
+              "value": "{{codigo}}",
+              "description": "Identificador; se encadena desde una peticion anterior."
+            }
+          ]
+        },
+        "description": "## Cual es el tarifario vigente de un codigo, ahora\n\nLa pregunta CU-20 al crear un grupo: sin tarifario vigente no se abre nada (R-CON-07), porque el precio es lo que cada participante acepta al firmar el reglamento. Que no haya ninguno es una respuesta valida —significa que no se puede operar— y por eso `vigente` puede venir en falso en vez de fallar.\n\n| | |\n| --- | --- |\n| **Servicio** | `tarifas` |\n| **Operacion** | `consultarTarifarioVigente` |\n| **Ruta** | `GET /api/v1/tarifas/vigentes/{codigo}` |\n| **Permiso** | `BILLETERA_VER` |\n| **Respuestas** | `200` |\n\n### Rechazos que declara el contrato\n\n_El contrato no declara rechazos de negocio para esta operacion._\n\n> Los importes viajan como **cadena decimal** (`\"100.00\"`), nunca como numero:\n> un `number` de JSON es un doble, y un doble pierde centavos."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Lo que se le exige a TODA respuesta del sistema, sin excepcion.",
+              "const esperadas = [200];",
+              "",
+              "pm.test(\"responde con un codigo que el contrato declara\", () => {",
+              "    pm.expect(esperadas).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"no filtra la traza al cliente\", () => {",
+              "    const cuerpo = pm.response.text();",
+              "    // Un stack trace en la respuesta le cuenta al atacante como esta hecho el",
+              "    // servidor. Es una de las dieciocho prohibiciones del contrato.",
+              "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+              "    pm.expect(cuerpo).to.not.include(\"java.lang.\");",
+              "});",
+              "",
+              "if (pm.response.code === 422) {",
+              "    pm.test(\"el rechazo trae su codigo AP-CU\", () => {",
+              "        pm.expect(pm.response.json()).to.have.property(\"codigo\").that.matches(/^AP-CU\\d+-\\d+$/);",
+              "    });",
+              "}",
+              "",
+              "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+              "if (pm.response.code < 300) {",
+              "    const cuerpo = pm.response.json();",
+              "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+              "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+              "            pm.collectionVariables.set(clave, valor);",
+              "        }",
+              "    }",
+              "}",
+              ""
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Fechas y momentos, calculados al vuelo: una fecha fija en el archivo caduca y",
+          "// entonces la coleccion falla por algo que no es el sistema.",
+          "const ahora = new Date();",
+          "pm.collectionVariables.set(\"fecha_hoy\", ahora.toISOString().slice(0, 10));",
+          "pm.collectionVariables.set(\"momento_ahora\", ahora.toISOString());",
+          "pm.collectionVariables.set(\"fecha_manana\", new Date(ahora.getTime() + 86400000).toISOString().slice(0, 10));",
+          "",
+          "// Una sola clave para el par acreditar/reacreditar del recorrido: se fija una vez por",
+          "// corrida, porque probar el reintento con dos claves distintas no prueba nada.",
+          "if (!pm.collectionVariables.get(\"claveDeLaAcreditacion\")) {",
+          "    pm.collectionVariables.set(\"claveDeLaAcreditacion\", pm.variables.replaceIn(\"{{$guid}}\"));",
+          "}",
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "aprobadoPor",
+      "value": ""
+    },
+    {
+      "key": "autorizadaPor",
+      "value": ""
+    },
+    {
+      "key": "base_url",
+      "value": ""
+    },
+    {
+      "key": "codigo",
+      "value": ""
+    },
+    {
+      "key": "cotizacionId",
+      "value": ""
+    },
+    {
+      "key": "devengoId",
+      "value": ""
+    },
+    {
+      "key": "grupoId",
+      "value": ""
+    },
+    {
+      "key": "periodo",
+      "value": ""
+    },
+    {
+      "key": "prefijo_api",
+      "value": ""
+    },
+    {
+      "key": "reclamoId",
+      "value": ""
+    },
+    {
+      "key": "referenciaId",
+      "value": ""
+    },
+    {
+      "key": "tarifarioBaseId",
+      "value": ""
+    },
+    {
+      "key": "tarifarioId",
+      "value": ""
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "usuarioObligadoId",
+      "value": ""
+    }
+  ]
+}

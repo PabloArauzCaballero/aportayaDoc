@@ -34,4 +34,57 @@ final class MapeoDeBilletera {
         salida.setMoneda(Dinero.MonedaEnum.fromValue(valor.moneda().name()));
         return salida;
     }
+
+    /** La orden de la autoridad, tal como la firma quien la emite. */
+    static bo.aportaya.nucleofinanciero.aplicacion.CU17BloquearPorAutoridad.EntradaBloqueo entradaDeBloqueo(
+            bo.aportaya.nucleofinanciero.web.generado.modelo.EntradaBloqueo cuerpo) {
+        return new bo.aportaya.nucleofinanciero.aplicacion.CU17BloquearPorAutoridad.EntradaBloqueo(
+                cuerpo.getCuentaBilleteraId(),
+                cuerpo.getAutoridad().getValue(),
+                cuerpo.getTipoOrden().getValue(),
+                cuerpo.getNumeroOficio(),
+                dineroOpcional(cuerpo.getMontoBloqueado()),
+                cuerpo.getAlcance().getValue(),
+                cuerpo.getDocumentoUrl().toString(),
+                cuerpo.getHashDocumento());
+    }
+
+    /** El extracto, con el motivo del bloqueo si lo hubo: se dice, no se omite. */
+    static bo.aportaya.nucleofinanciero.web.generado.modelo.SalidaExtracto extracto(
+            bo.aportaya.nucleofinanciero.aplicacion.CU15EmitirExtracto.SalidaExtracto salida) {
+        var respuesta = new bo.aportaya.nucleofinanciero.web.generado.modelo.SalidaExtracto();
+        respuesta.setCuentaBilleteraId(salida.cuentaBilleteraId());
+        respuesta.setDesde(salida.desde());
+        respuesta.setHasta(salida.hasta());
+        respuesta.setSaldoFinal(dinero(salida.saldoFinal()));
+        respuesta.setCantidadMovimientos(salida.cantidadMovimientos());
+        respuesta.setHashArchivo(salida.hashArchivo());
+        respuesta.setEmitido(salida.emitido());
+        respuesta.setMotivoDelBloqueo(salida.motivoDelBloqueo());
+        return respuesta;
+    }
+
+    /** La retencion: apartar saldo no es moverlo, y por eso lleva su propio motivo. */
+    static bo.aportaya.nucleofinanciero.aplicacion.CU13RetenerSaldo.EntradaRetencion entradaDeRetencion(
+            bo.aportaya.nucleofinanciero.web.generado.modelo.EntradaRetencion cuerpo) {
+        return new bo.aportaya.nucleofinanciero.aplicacion.CU13RetenerSaldo.EntradaRetencion(
+                cuerpo.getCuentaBilleteraId(),
+                dinero(cuerpo.getMonto()),
+                cuerpo.getMotivo(),
+                java.util.Optional.ofNullable(cuerpo.getTransaccionOrigenId()),
+                java.util.Optional.ofNullable(cuerpo.getReferenciaTipo()),
+                java.util.Optional.ofNullable(cuerpo.getReferenciaId()),
+                java.util.Optional.ofNullable(cuerpo.getExpiraEn()));
+    }
+
+    /** El reverso, con quien lo autorizo: un asiento inverso sin firma no existe. */
+    static bo.aportaya.nucleofinanciero.aplicacion.CU14ReversarTransaccion.EntradaReverso entradaDeReverso(
+            String claveIdempotencia, bo.aportaya.nucleofinanciero.web.generado.modelo.EntradaReverso cuerpo) {
+        return new bo.aportaya.nucleofinanciero.aplicacion.CU14ReversarTransaccion.EntradaReverso(
+                claveIdempotencia,
+                cuerpo.getTransaccionOriginalId(),
+                cuerpo.getTipo().getValue(),
+                cuerpo.getMotivo(),
+                cuerpo.getAutorizadaPor());
+    }
 }

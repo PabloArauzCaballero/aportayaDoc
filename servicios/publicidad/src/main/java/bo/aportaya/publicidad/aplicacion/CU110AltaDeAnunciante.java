@@ -154,6 +154,12 @@ public class CU110AltaDeAnunciante {
      * cerrarlo sin una llamada de red — que dentro de la transaccion prohibe el
      * invariante 6.
      */
+    // INVARIANTE-11 DECLARADO · para un organizador hay que mirar el esquema de
+    // `organizador`. La clave foranea la pone el modelo del lado de publicidad
+    // (`anunciante.organizador_id`), asi que resolverlo sin ese JOIN exige una llamada
+    // de red dentro de la transaccion (invariante 6) o mover la columna, que es tocar
+    // `sql/`. Ya estaba escrito como hueco del carril; queda marcado para que la
+    // auditoria lo cuente como divergencia declarada y no como descuido.
     private void comprobarReferencia(DSLContext dsl, ReferenciaDelAnunciante referencia) {
         if (ReferenciaDelAnunciante.SOCIO_COMERCIAL.equals(referencia.tipo())) {
             var socio = anunciantes

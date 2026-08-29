@@ -26,6 +26,30 @@ export default tseslint.config(
     },
   },
   {
+    // **Cero hex fuera de `tokens/`** — el gate de salida de F1, verificado por lint y
+    // no por disciplina. Un color inventado en esta fase se propaga a los tres
+    // productos y ya no se saca; el momento de decirlo es al escribirlo.
+    //
+    // `paleta.ts` y `temas.ts` estan excluidos porque son, por definicion, los dos
+    // unicos archivos donde un literal es correcto. El barrido de
+    // `pruebas/unidad/sin-literales.spec.ts` cubre lo que el lint no ve: el CSS.
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/tokens/**'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "Literal[value=/^#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/]",
+          message: 'Un hex acá es un color inventado. Pedí el rol (var(--brand)) o agregalo a tokens/.',
+        },
+        {
+          selector: "TemplateElement[value.raw=/#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{3})\\b/]",
+          message: 'Un hex acá es un color inventado. Pedí el rol (var(--brand)) o agregalo a tokens/.',
+        },
+      ],
+    },
+  },
+  {
     // Invariante 5: `toFixed` e `Intl.NumberFormat` estan prohibidos en todo el
     // proyecto salvo en el atomo `Monto` — y ni siquiera ahi hacen falta, porque el
     // importe se formatea sobre la cadena del contrato. La regla se declara igual:

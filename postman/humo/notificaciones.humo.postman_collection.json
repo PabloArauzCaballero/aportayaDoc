@@ -1,0 +1,885 @@
+{
+  "info": {
+    "name": "Humo · notificaciones",
+    "description": "# Humo · notificaciones\n\nGenerado por `scripts/generar_postman.py` desde `servicios/*/src/main/resources/openapi/`.\n**No se edita a mano**: la proxima generacion lo pisa, y una coleccion editada a mano\nprueba una API que ya no existe.\n\n**3 operaciones × tres preguntas.**\n\n| Caso | Que pregunta |\n| --- | --- |\n| `1 · valido` | Hace lo que promete cuando todo esta bien, y devuelve los campos obligatorios |\n| `2 · limite` | Que hace en el borde exacto: el umbral, el largo maximo, el minimo del rango |\n| `3 · error · sin sesion` | Deniega por omision: sin token no se pasa, y el 401 no cuenta de mas |\n| `4 · error · cuerpo invalido` | Rechaza lo que no valida, sin filtrar la traza |\n\nSe corre con `newman`:\n\n```\nnewman run postman/humo/notificaciones.humo.postman_collection.json \\\n  -e postman/entornos/ensayo-local.postman_environment.json\n```\n",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "00 · sesion",
+      "description": "Consigue el token. Se ejecuta primero y **una sola vez por corrida**.\n\nSi tu entorno no tiene credenciales sembradas, carga `token` a mano en el entorno: esta carpeta lo detecta y sigue en vez de tirar cincuenta 401.",
+      "item": [
+        {
+          "name": "autenticar · conseguir el token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_identidad}}{{prefijo_api}}/sesiones",
+              "host": [
+                "{{base_identidad}}{{prefijo_api}}"
+              ],
+              "path": [
+                "sesiones"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"telefonoE164\": \"+59178123456\",\n  \"credencial\": \"credencial-de-prueba\",\n  \"huellaDispositivo\": \"huellaDispositivo-de-prueba\",\n  \"plataforma\": \"ANDROID\",\n  \"factor\": {\n    \"tipo\": \"OTP\",\n    \"valor\": \"valor-de-prueba\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "CU-04. Ruta **publica**: es el momento en que todavia no hay sesion.\n\nEl token que devuelve es un JWT RS256 firmado por `identidad`, y los otros trece servicios lo validan contra su JWKS sin preguntarle a nadie (ADR-024)."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Consigue el token con el que corre todo lo demas.",
+                  "//",
+                  "// Si no lo consigue, **lo dice una vez aca** en vez de dejar que las cincuenta",
+                  "// pruebas siguientes fallen con un 401 que no explica nada. Un tablero rojo por el",
+                  "// motivo equivocado es peor que uno rojo por el motivo correcto.",
+                  "pm.test(\"hay sesion para correr el humo\", () => {",
+                  "    if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "        const cuerpo = pm.response.json();",
+                  "        const token = cuerpo.tokenAcceso || cuerpo.token;",
+                  "        pm.expect(token, \"el ingreso no devolvio token: revisa si pide segundo factor\").to.be.a(\"string\");",
+                  "        pm.collectionVariables.set(\"token\", token);",
+                  "        return;",
+                  "    }",
+                  "    // Sin credenciales sembradas no se puede iniciar sesion sola. Se avisa y se sigue",
+                  "    // con el token que haya en el entorno, si alguien lo puso a mano.",
+                  "    const yaHay = pm.environment.get(\"token\") || pm.collectionVariables.get(\"token\");",
+                  "    pm.expect(yaHay,",
+                  "        \"no se pudo iniciar sesion (\" + pm.response.code + \") y el entorno no trae `token`. \"",
+                  "        + \"Carga uno a mano en el entorno, o siembra credenciales de prueba.\"",
+                  "    ).to.be.a(\"string\").and.not.empty;",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "emitirNotificacion · Emite un aviso por los canales habilitados del destinatario",
+      "item": [
+        {
+          "name": "1 · valido",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}",
+                "description": "Uno nuevo por intento. Repetir el mismo debe devolver la MISMA respuesta y un solo efecto (invariante 7)."
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}{{prefijo_api}}/notificaciones",
+              "host": [
+                "{{base_url}}{{prefijo_api}}"
+              ],
+              "path": [
+                "notificaciones"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"destinatarioId\": \"{{destinatarioId}}\",\n  \"evento\": \"evento-de-prueba\",\n  \"datos\": {}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// CASO VALIDO — todo bien formado, sesion valida, cuerpo completo.",
+                  "pm.test(\"acepta el caso valido\", () => {",
+                  "    pm.expect(pm.response.code, \"esperaba \" + [202] + \", vino \" + pm.response.code",
+                  "        + \" · \" + pm.response.text().slice(0, 300)).to.be.oneOf([202]);",
+                  "});",
+                  "",
+                  "pm.test(\"responde JSON\", () => {",
+                  "    if (pm.response.code !== 204) {",
+                  "        pm.response.to.have.header(\"Content-Type\");",
+                  "        pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\");",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test(\"trae los campos que el contrato declara obligatorios\", () => {",
+                  "    if (pm.response.code >= 300 || pm.response.code === 204) return;",
+                  "    const cuerpo = pm.response.json();",
+                  "    for (const campo of [\"notificacionId\", \"canales\"]) {",
+                  "        pm.expect(cuerpo, \"falta \" + campo).to.have.property(campo);",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test(\"los importes son cadena, no numero\", () => {",
+                  "    if (pm.response.code >= 300) return;",
+                  "    const revisar = (nodo) => {",
+                  "        if (nodo === null || typeof nodo !== \"object\") return;",
+                  "        if (\"monto\" in nodo && \"moneda\" in nodo) {",
+                  "            // Un `number` de JSON es un doble. Dos decimales exactos, como cadena.",
+                  "            pm.expect(nodo.monto, \"el importe viajo como numero\").to.be.a(\"string\");",
+                  "            pm.expect(nodo.monto).to.match(/^-?\\d+\\.\\d{2}$/);",
+                  "        }",
+                  "        Object.values(nodo).forEach(revisar);",
+                  "    };",
+                  "    revisar(pm.response.json());",
+                  "});",
+                  "",
+                  "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+                  "if (pm.response.code < 300) {",
+                  "    const cuerpo = pm.response.json();",
+                  "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+                  "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+                  "            pm.collectionVariables.set(clave, valor);",
+                  "        }",
+                  "    }",
+                  "}",
+                  ""
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2 · limite",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}",
+                "description": "Uno nuevo por intento. Repetir el mismo debe devolver la MISMA respuesta y un solo efecto (invariante 7)."
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}{{prefijo_api}}/notificaciones",
+              "host": [
+                "{{base_url}}{{prefijo_api}}"
+              ],
+              "path": [
+                "notificaciones"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"destinatarioId\": \"{{id}}\",\n  \"evento\": \"x\",\n  \"datos\": {}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// CASO LIMITE — el borde exacto, que es donde vive el defecto.",
+                  "// Importes en el umbral de doble aprobacion, cadenas en su largo maximo, numeros en su minimo.",
+                  "pm.test(\"el borde no revienta: contesta con un codigo declarado\", () => {",
+                  "    pm.expect(pm.response.code, pm.response.text().slice(0, 300)).to.be.oneOf([202, 400, 401, 404, 409, 422]);",
+                  "});",
+                  "",
+                  "pm.test(\"si rechaza el borde, lo hace con un codigo de negocio y no con un 500\", () => {",
+                  "    pm.expect(pm.response.code, \"un borde nunca es un error del servidor\").to.be.below(500);",
+                  "});",
+                  "",
+                  "pm.test(\"no devuelve un importe con mas de dos decimales\", () => {",
+                  "    const cuerpo = pm.response.text();",
+                  "    pm.expect(cuerpo).to.not.match(/\"monto\"\\s*:\\s*\"-?\\d+\\.\\d{3,}\"/);",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3 · error · sin sesion",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}",
+                "description": "Uno nuevo por intento. Repetir el mismo debe devolver la MISMA respuesta y un solo efecto (invariante 7)."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}{{prefijo_api}}/notificaciones",
+              "host": [
+                "{{base_url}}{{prefijo_api}}"
+              ],
+              "path": [
+                "notificaciones"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"destinatarioId\": \"{{destinatarioId}}\",\n  \"evento\": \"evento-de-prueba\",\n  \"datos\": {}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// CASO DE ERROR — la misma peticion, SIN token.",
+                  "// Denegar por omision (invariante 9): una ruta que contesta sin sesion es una ruta",
+                  "// abierta, y no hay ninguna abierta fuera de /publico y /verificar de transparencia.",
+                  "pm.test(\"sin sesion no se pasa\", () => {",
+                  "    pm.expect(pm.response.code, \"una ruta con permiso contesto sin token\")",
+                  "        .to.be.oneOf([401, 403]);",
+                  "});",
+                  "",
+                  "pm.test(\"el 401 no cuenta de mas\", () => {",
+                  "    const cuerpo = pm.response.text();",
+                  "    // Ni el nombre de la clase, ni la consulta, ni si el usuario existe.",
+                  "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+                  "    pm.expect(cuerpo.toLowerCase()).to.not.include(\"select \");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4 · error · cuerpo invalido",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}",
+                "description": "Uno nuevo por intento. Repetir el mismo debe devolver la MISMA respuesta y un solo efecto (invariante 7)."
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}{{prefijo_api}}/notificaciones",
+              "host": [
+                "{{base_url}}{{prefijo_api}}"
+              ],
+              "path": [
+                "notificaciones"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"evento\": \"evento-de-prueba\",\n  \"datos\": {},\n  \"campoQueNoExiste\": \"additionalProperties: false tiene que rechazarlo\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// CASO DE ERROR — cuerpo invalido: falta un campo obligatorio y sobra uno que el",
+                  "// esquema prohibe (`additionalProperties: false`).",
+                  "pm.test(\"rechaza el cuerpo invalido\", () => {",
+                  "    pm.expect(pm.response.code, \"acepto un cuerpo que no valida contra su esquema\")",
+                  "        .to.be.oneOf([400, 422]);",
+                  "});",
+                  "",
+                  "pm.test(\"dice que esta mal sin exponer como esta hecho por dentro\", () => {",
+                  "    const cuerpo = pm.response.text();",
+                  "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+                  "    pm.expect(cuerpo).to.not.include(\"java.lang.\");",
+                  "    pm.expect(cuerpo).to.not.include(\"org.jooq\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Humo de `emitirNotificacion`. **Valido**, **limite** y **error** son tres preguntas distintas: una operacion puede contestar bien la primera y fallar las otras dos, y es justo ahi donde estan los defectos que llegan a produccion."
+    },
+    {
+      "name": "procesarRespuestaEntrante · Procesar una respuesta entrante",
+      "item": [
+        {
+          "name": "1 · valido",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}{{prefijo_api}}/notificaciones/webhooks/:proveedor",
+              "host": [
+                "{{base_url}}{{prefijo_api}}"
+              ],
+              "path": [
+                "notificaciones",
+                "webhooks",
+                ":proveedor"
+              ],
+              "variable": [
+                {
+                  "key": "proveedor",
+                  "value": "{{proveedor}}",
+                  "description": "Identificador; se encadena desde una peticion anterior."
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"canal\": \"IN_APP\",\n  \"remitente\": \"remitente-de-prueba\",\n  \"firma\": \"firma-de-prueba\",\n  \"cargaUtil\": \"cargaUtil-de-prueba\",\n  \"contenido\": \"contenido-de-prueba\",\n  \"claveIdempotencia\": \"claveIdempotencia-de-prueba\",\n  \"notificacionRelacionadaId\": \"{{notificacionRelacionadaId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// CASO VALIDO — todo bien formado, sesion valida, cuerpo completo.",
+                  "pm.test(\"acepta el caso valido\", () => {",
+                  "    pm.expect(pm.response.code, \"esperaba \" + [200] + \", vino \" + pm.response.code",
+                  "        + \" · \" + pm.response.text().slice(0, 300)).to.be.oneOf([200]);",
+                  "});",
+                  "",
+                  "pm.test(\"responde JSON\", () => {",
+                  "    if (pm.response.code !== 204) {",
+                  "        pm.response.to.have.header(\"Content-Type\");",
+                  "        pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\");",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test(\"trae los campos que el contrato declara obligatorios\", () => {",
+                  "    if (pm.response.code >= 300 || pm.response.code === 204) return;",
+                  "    const cuerpo = pm.response.json();",
+                  "    for (const campo of [\"intencion\", \"accion\"]) {",
+                  "        pm.expect(cuerpo, \"falta \" + campo).to.have.property(campo);",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test(\"los importes son cadena, no numero\", () => {",
+                  "    if (pm.response.code >= 300) return;",
+                  "    const revisar = (nodo) => {",
+                  "        if (nodo === null || typeof nodo !== \"object\") return;",
+                  "        if (\"monto\" in nodo && \"moneda\" in nodo) {",
+                  "            // Un `number` de JSON es un doble. Dos decimales exactos, como cadena.",
+                  "            pm.expect(nodo.monto, \"el importe viajo como numero\").to.be.a(\"string\");",
+                  "            pm.expect(nodo.monto).to.match(/^-?\\d+\\.\\d{2}$/);",
+                  "        }",
+                  "        Object.values(nodo).forEach(revisar);",
+                  "    };",
+                  "    revisar(pm.response.json());",
+                  "});",
+                  "",
+                  "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+                  "if (pm.response.code < 300) {",
+                  "    const cuerpo = pm.response.json();",
+                  "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+                  "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+                  "            pm.collectionVariables.set(clave, valor);",
+                  "        }",
+                  "    }",
+                  "}",
+                  ""
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2 · limite",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}{{prefijo_api}}/notificaciones/webhooks/:proveedor",
+              "host": [
+                "{{base_url}}{{prefijo_api}}"
+              ],
+              "path": [
+                "notificaciones",
+                "webhooks",
+                ":proveedor"
+              ],
+              "variable": [
+                {
+                  "key": "proveedor",
+                  "value": "{{proveedor}}",
+                  "description": "Identificador; se encadena desde una peticion anterior."
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"canal\": \"LLAMADA_VOZ\",\n  \"remitente\": \"LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL\",\n  \"firma\": \"x\",\n  \"cargaUtil\": \"x\",\n  \"contenido\": \"x\",\n  \"claveIdempotencia\": \"LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL\",\n  \"notificacionRelacionadaId\": \"{{id}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// CASO LIMITE — el borde exacto, que es donde vive el defecto.",
+                  "// Importes en el umbral de doble aprobacion, cadenas en su largo maximo, numeros en su minimo.",
+                  "pm.test(\"el borde no revienta: contesta con un codigo declarado\", () => {",
+                  "    pm.expect(pm.response.code, pm.response.text().slice(0, 300)).to.be.oneOf([200, 400, 404, 409, 422]);",
+                  "});",
+                  "",
+                  "pm.test(\"si rechaza el borde, lo hace con un codigo de negocio y no con un 500\", () => {",
+                  "    pm.expect(pm.response.code, \"un borde nunca es un error del servidor\").to.be.below(500);",
+                  "});",
+                  "",
+                  "pm.test(\"no devuelve un importe con mas de dos decimales\", () => {",
+                  "    const cuerpo = pm.response.text();",
+                  "    pm.expect(cuerpo).to.not.match(/\"monto\"\\s*:\\s*\"-?\\d+\\.\\d{3,}\"/);",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4 · error · cuerpo invalido",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}{{prefijo_api}}/notificaciones/webhooks/:proveedor",
+              "host": [
+                "{{base_url}}{{prefijo_api}}"
+              ],
+              "path": [
+                "notificaciones",
+                "webhooks",
+                ":proveedor"
+              ],
+              "variable": [
+                {
+                  "key": "proveedor",
+                  "value": "{{proveedor}}",
+                  "description": "Identificador; se encadena desde una peticion anterior."
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"canal\": \"IN_APP\",\n  \"firma\": \"firma-de-prueba\",\n  \"cargaUtil\": \"cargaUtil-de-prueba\",\n  \"contenido\": \"contenido-de-prueba\",\n  \"claveIdempotencia\": \"claveIdempotencia-de-prueba\",\n  \"notificacionRelacionadaId\": \"{{notificacionRelacionadaId}}\",\n  \"campoQueNoExiste\": \"additionalProperties: false tiene que rechazarlo\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// CASO DE ERROR — cuerpo invalido: falta un campo obligatorio y sobra uno que el",
+                  "// esquema prohibe (`additionalProperties: false`).",
+                  "pm.test(\"rechaza el cuerpo invalido\", () => {",
+                  "    pm.expect(pm.response.code, \"acepto un cuerpo que no valida contra su esquema\")",
+                  "        .to.be.oneOf([400, 422]);",
+                  "});",
+                  "",
+                  "pm.test(\"dice que esta mal sin exponer como esta hecho por dentro\", () => {",
+                  "    const cuerpo = pm.response.text();",
+                  "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+                  "    pm.expect(cuerpo).to.not.include(\"java.lang.\");",
+                  "    pm.expect(cuerpo).to.not.include(\"org.jooq\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Humo de `procesarRespuestaEntrante`. **Valido**, **limite** y **error** son tres preguntas distintas: una operacion puede contestar bien la primera y fallar las otras dos, y es justo ahi donde estan los defectos que llegan a produccion."
+    },
+    {
+      "name": "consultarSupresion · Si un destino pidio no recibir mas",
+      "item": [
+        {
+          "name": "1 · valido",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}{{prefijo_api}}/notificaciones/supresion",
+              "host": [
+                "{{base_url}}{{prefijo_api}}"
+              ],
+              "path": [
+                "notificaciones",
+                "supresion"
+              ],
+              "variable": [],
+              "query": [
+                {
+                  "key": "identificador",
+                  "value": "identificador-de-prueba",
+                  "description": "",
+                  "disabled": false
+                },
+                {
+                  "key": "categoria",
+                  "value": "categoria-de-prueba",
+                  "description": "",
+                  "disabled": false
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// CASO VALIDO — todo bien formado, sesion valida, cuerpo completo.",
+                  "pm.test(\"acepta el caso valido\", () => {",
+                  "    pm.expect(pm.response.code, \"esperaba \" + [200] + \", vino \" + pm.response.code",
+                  "        + \" · \" + pm.response.text().slice(0, 300)).to.be.oneOf([200]);",
+                  "});",
+                  "",
+                  "pm.test(\"responde JSON\", () => {",
+                  "    if (pm.response.code !== 204) {",
+                  "        pm.response.to.have.header(\"Content-Type\");",
+                  "        pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"json\");",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test(\"trae los campos que el contrato declara obligatorios\", () => {",
+                  "    if (pm.response.code >= 300 || pm.response.code === 204) return;",
+                  "    const cuerpo = pm.response.json();",
+                  "    for (const campo of [\"suprimido\"]) {",
+                  "        pm.expect(cuerpo, \"falta \" + campo).to.have.property(campo);",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test(\"los importes son cadena, no numero\", () => {",
+                  "    if (pm.response.code >= 300) return;",
+                  "    const revisar = (nodo) => {",
+                  "        if (nodo === null || typeof nodo !== \"object\") return;",
+                  "        if (\"monto\" in nodo && \"moneda\" in nodo) {",
+                  "            // Un `number` de JSON es un doble. Dos decimales exactos, como cadena.",
+                  "            pm.expect(nodo.monto, \"el importe viajo como numero\").to.be.a(\"string\");",
+                  "            pm.expect(nodo.monto).to.match(/^-?\\d+\\.\\d{2}$/);",
+                  "        }",
+                  "        Object.values(nodo).forEach(revisar);",
+                  "    };",
+                  "    revisar(pm.response.json());",
+                  "});",
+                  "",
+                  "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+                  "if (pm.response.code < 300) {",
+                  "    const cuerpo = pm.response.json();",
+                  "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+                  "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+                  "            pm.collectionVariables.set(clave, valor);",
+                  "        }",
+                  "    }",
+                  "}",
+                  ""
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2 · limite",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}{{prefijo_api}}/notificaciones/supresion",
+              "host": [
+                "{{base_url}}{{prefijo_api}}"
+              ],
+              "path": [
+                "notificaciones",
+                "supresion"
+              ],
+              "variable": [],
+              "query": [
+                {
+                  "key": "identificador",
+                  "value": "identificador-de-prueba",
+                  "description": "",
+                  "disabled": false
+                },
+                {
+                  "key": "categoria",
+                  "value": "categoria-de-prueba",
+                  "description": "",
+                  "disabled": false
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// CASO LIMITE — el borde exacto, que es donde vive el defecto.",
+                  "// Importes en el umbral de doble aprobacion, cadenas en su largo maximo, numeros en su minimo.",
+                  "pm.test(\"el borde no revienta: contesta con un codigo declarado\", () => {",
+                  "    pm.expect(pm.response.code, pm.response.text().slice(0, 300)).to.be.oneOf([200, 400, 404, 409, 422]);",
+                  "});",
+                  "",
+                  "pm.test(\"si rechaza el borde, lo hace con un codigo de negocio y no con un 500\", () => {",
+                  "    pm.expect(pm.response.code, \"un borde nunca es un error del servidor\").to.be.below(500);",
+                  "});",
+                  "",
+                  "pm.test(\"no devuelve un importe con mas de dos decimales\", () => {",
+                  "    const cuerpo = pm.response.text();",
+                  "    pm.expect(cuerpo).to.not.match(/\"monto\"\\s*:\\s*\"-?\\d+\\.\\d{3,}\"/);",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3 · error · sin sesion",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}{{prefijo_api}}/notificaciones/supresion",
+              "host": [
+                "{{base_url}}{{prefijo_api}}"
+              ],
+              "path": [
+                "notificaciones",
+                "supresion"
+              ],
+              "variable": [],
+              "query": [
+                {
+                  "key": "identificador",
+                  "value": "identificador-de-prueba",
+                  "description": "",
+                  "disabled": false
+                },
+                {
+                  "key": "categoria",
+                  "value": "categoria-de-prueba",
+                  "description": "",
+                  "disabled": false
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// CASO DE ERROR — la misma peticion, SIN token.",
+                  "// Denegar por omision (invariante 9): una ruta que contesta sin sesion es una ruta",
+                  "// abierta, y no hay ninguna abierta fuera de /publico y /verificar de transparencia.",
+                  "pm.test(\"sin sesion no se pasa\", () => {",
+                  "    pm.expect(pm.response.code, \"una ruta con permiso contesto sin token\")",
+                  "        .to.be.oneOf([401, 403]);",
+                  "});",
+                  "",
+                  "pm.test(\"el 401 no cuenta de mas\", () => {",
+                  "    const cuerpo = pm.response.text();",
+                  "    // Ni el nombre de la clase, ni la consulta, ni si el usuario existe.",
+                  "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+                  "    pm.expect(cuerpo.toLowerCase()).to.not.include(\"select \");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Humo de `consultarSupresion`. **Valido**, **limite** y **error** son tres preguntas distintas: una operacion puede contestar bien la primera y fallar las otras dos, y es justo ahi donde estan los defectos que llegan a produccion."
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Fechas y momentos, calculados al vuelo: una fecha fija en el archivo caduca y",
+          "// entonces la coleccion falla por algo que no es el sistema.",
+          "const ahora = new Date();",
+          "pm.collectionVariables.set(\"fecha_hoy\", ahora.toISOString().slice(0, 10));",
+          "pm.collectionVariables.set(\"momento_ahora\", ahora.toISOString());",
+          "pm.collectionVariables.set(\"fecha_manana\", new Date(ahora.getTime() + 86400000).toISOString().slice(0, 10));",
+          "",
+          "// Una sola clave para el par acreditar/reacreditar del recorrido: se fija una vez por",
+          "// corrida, porque probar el reintento con dos claves distintas no prueba nada.",
+          "if (!pm.collectionVariables.get(\"claveDeLaAcreditacion\")) {",
+          "    pm.collectionVariables.set(\"claveDeLaAcreditacion\", pm.variables.replaceIn(\"{{$guid}}\"));",
+          "}",
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_identidad",
+      "value": ""
+    },
+    {
+      "key": "base_url",
+      "value": ""
+    },
+    {
+      "key": "destinatarioId",
+      "value": ""
+    },
+    {
+      "key": "id",
+      "value": ""
+    },
+    {
+      "key": "notificacionRelacionadaId",
+      "value": ""
+    },
+    {
+      "key": "prefijo_api",
+      "value": ""
+    },
+    {
+      "key": "proveedor",
+      "value": ""
+    },
+    {
+      "key": "token",
+      "value": ""
+    }
+  ]
+}

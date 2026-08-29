@@ -57,3 +57,29 @@ management:
     health:
       probes:
         enabled: true               # readiness mira base y Kafka; liveness solo el proceso
+
+# Umbrales y plazos de cumplimiento. Estan aca y no en el codigo porque son
+# decisiones de negocio: se mueven sin desplegar (invariante 10).
+cumplimiento:
+  riesgos:
+    # Cuanto tiene un plan de accion para regularizarse antes de escalar.
+    dias-de-regularizacion: 30
+    # Cuantos planes escala una corrida. Acota el trabajo de un solo lote: un 
+    # barrido sin tope bloquea la tabla entera.
+    tope-por-corrida: 200
+  incidentes:
+    # Lo mismo para incidentes de seguridad, con la mitad de plazo: un inciden
+    # te abierto pesa mas que un plan atrasado.
+    dias-de-regularizacion: 15
+    # Cuantos incidentes escala una corrida.
+    tope-por-corrida: 200
+  revision:
+    # Cada cuanto se revisa a una persona de riesgo alto. Es calibracion del m
+    # odelo, y se mueve cuando el regulador o los datos lo piden.
+    meses-riesgo-alto: 6
+  caso-lft:
+    # El plazo de un caso de lavado y financiamiento del terrorismo.
+    dias-plazo: 30
+  # Que operaciones cuentan como salida de dinero para el alcance de la lice
+  # ncia.
+  servicios-de-salida: RETIRO

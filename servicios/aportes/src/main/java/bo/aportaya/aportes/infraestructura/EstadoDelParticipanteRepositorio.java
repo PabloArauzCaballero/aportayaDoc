@@ -1,5 +1,6 @@
 package bo.aportaya.aportes.infraestructura;
 
+import bo.aportaya.aportes.dominio.EstadoDePagos;
 import java.math.BigDecimal;
 import java.util.UUID;
 import org.jooq.DSLContext;
@@ -36,13 +37,13 @@ public class EstadoDelParticipanteRepositorio {
              WHERE o.participante_id = ?
             """;
 
-    public Estado de(DSLContext dsl, UUID participanteId) {
+    public EstadoDePagos de(DSLContext dsl, UUID participanteId) {
         var fila = dsl.fetchOne(CONSULTA, participanteId);
         if (fila == null) {
-            return Estado.sinObligaciones();
+            return EstadoDePagos.sinObligaciones();
         }
         String moneda = fila.get("moneda", String.class);
-        return new Estado(
+        return new EstadoDePagos(
                 fila.get("obligaciones_en_mora", Integer.class) == 0,
                 fila.get("total_aportado", BigDecimal.class),
                 fila.get("deuda_vigente", BigDecimal.class),
@@ -61,24 +62,5 @@ public class EstadoDelParticipanteRepositorio {
                 """,
                 grupoId);
         return fila == null ? 0 : fila.get("morosos", Integer.class);
-    }
-
-    /**
-     * El estado de quien no tiene ninguna obligacion.
-     *
-     * <p>Esta al dia: no deber nada porque todavia no se le pidio nada es estar al dia.
-     * Decir que no lo esta bloquearia a cualquiera que recien entra.
-     */
-    public record Estado(
-            boolean alDia,
-            BigDecimal totalAportado,
-            BigDecimal deudaVigente,
-            BigDecimal porAportar,
-            int obligacionesAbiertas,
-            String moneda) {
-
-        static Estado sinObligaciones() {
-            return new Estado(true, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, 0, "BOB");
-        }
     }
 }

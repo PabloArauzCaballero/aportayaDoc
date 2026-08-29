@@ -1,7 +1,7 @@
 package bo.aportaya.garantia.aplicacion;
 
 import bo.aportaya.garantia.dominio.CuadreDeDisolucion;
-import bo.aportaya.garantia.infraestructura.GestionRepositorio;
+import bo.aportaya.garantia.infraestructura.DisolucionRepositorio;
 import bo.aportaya.plataforma.datos.Datos;
 import bo.aportaya.plataforma.dominio.CodigoError;
 import bo.aportaya.plataforma.dominio.ContextoSesion;
@@ -34,13 +34,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class CU67DisolverGrupo {
 
     private final Datos datos;
-    private final GestionRepositorio gestion;
+    private final DisolucionRepositorio disoluciones;
     private final Outbox outbox;
     private final Reloj reloj;
 
-    public CU67DisolverGrupo(Datos datos, GestionRepositorio gestion, Outbox outbox, Reloj reloj) {
+    public CU67DisolverGrupo(Datos datos, DisolucionRepositorio disoluciones, Outbox outbox, Reloj reloj) {
         this.datos = datos;
-        this.gestion = gestion;
+        this.disoluciones = disoluciones;
         this.outbox = outbox;
         this.reloj = reloj;
     }
@@ -52,7 +52,7 @@ public class CU67DisolverGrupo {
         return datos.conContexto(ctx, dsl -> {
             // Una disolucion por grupo. Dos abiertas darian dos repartos distintos de
             // la misma plata.
-            var previa = gestion.disolucionDe(dsl, entrada.grupoId());
+            var previa = disoluciones.disolucionDe(dsl, entrada.grupoId());
             if (previa.isPresent()) {
                 return new SalidaDisolucion(
                         previa.get(),
@@ -73,7 +73,7 @@ public class CU67DisolverGrupo {
 
             var cuadre = CuadreDeDisolucion.liquidar(entrada.masaDisponible(), entrada.posiciones());
 
-            UUID disolucionId = gestion.iniciarDisolucion(
+            UUID disolucionId = disoluciones.iniciarDisolucion(
                     dsl,
                     entrada.grupoId(),
                     entrada.causal(),
@@ -123,7 +123,7 @@ public class CU67DisolverGrupo {
         OffsetDateTime ahora = reloj.ahora().atOffset(ZoneOffset.UTC);
 
         return datos.conContexto(ctx, dsl -> {
-            if (!gestion.cerrarDisolucion(dsl, disolucionId, ahora)) {
+            if (!disoluciones.cerrarDisolucion(dsl, disolucionId, ahora)) {
                 throw new ErrorDeNegocio(CodigoError.de(67, 4), "Esa disolucion no estaba lista para cerrarse.");
             }
             outbox.emitir(

@@ -1,0 +1,771 @@
+{
+  "info": {
+    "name": "AportaYa · cumplimiento",
+    "description": "# AportaYa · cumplimiento\n\nGenerado por `scripts/generar_postman.py` desde `servicios/*/src/main/resources/openapi/`.\n**No se edita a mano**: la proxima generacion lo pisa, y una coleccion editada a mano\nprueba una API que ya no existe.\n\n**8 operaciones.** Cada peticion trae su cuerpo de ejemplo derivado del\nesquema, la clave de idempotencia donde el contrato la exige, el permiso que pide\n—leido de los `@Permiso` del codigo— y los rechazos `AP-CU` que declara.\n\nElegi un entorno de `postman/entornos/` antes de disparar nada.\n",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "elevarDiligencia · Elevar el nivel de debida diligencia",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{$guid}}",
+            "description": "Uno nuevo por intento. Repetir el mismo debe devolver la MISMA respuesta y un solo efecto (invariante 7)."
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/cumplimiento/usuarios/:usuarioId/diligencia",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "cumplimiento",
+            "usuarios",
+            ":usuarioId",
+            "diligencia"
+          ],
+          "variable": [
+            {
+              "key": "usuarioId",
+              "value": "{{usuarioId}}",
+              "description": "Identificador; se encadena desde una peticion anterior."
+            }
+          ]
+        },
+        "description": "## Elevar el nivel de debida diligencia\n\nSubir de nivel desbloquea topes mas altos, asi que la puerta es igual de dura que los topes que abre. Nunca baja: un destino que no supera al nivel actual se rechaza en vez de aplicarse.\n\n| | |\n| --- | --- |\n| **Servicio** | `cumplimiento` |\n| **Operacion** | `elevarDiligencia` |\n| **Ruta** | `POST /api/v1/cumplimiento/usuarios/{usuarioId}/diligencia` |\n| **Permiso** | `ANALISTA_CUMPLIMIENTO` |\n| **Idempotencia** | exige `Idempotency-Key`; se manda un `{{$guid}}` nuevo por intento |\n| **Respuestas** | `200`, `422` |\n\n### Rechazos que declara el contrato\n\n| Codigo | Motivo |\n| --- | --- |\n| `AP-CU02-01` | Documentacion insuficiente |\n| `AP-CU02-02` | Requiere segunda revision |\n| `AP-CU02-03` | Coincidencia pendiente |\n| `AP-CU02-04` | Nivel no ascendente |\n\n> Los importes viajan como **cadena decimal** (`\"100.00\"`), nunca como numero:\n> un `number` de JSON es un doble, y un doble pierde centavos.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nivelDestino\": \"ESTANDAR\",\n  \"documentos\": [\n    {\n      \"tipo\": \"tipo-de-prueba\",\n      \"url\": \"https://ejemplo.aportaya.bo/documento.pdf\",\n      \"hash\": \"0000000000000000000000000000000000000000000000000000000000000000\"\n    }\n  ],\n  \"aprobadaPor\": \"{{aprobadaPor}}\",\n  \"segundaRevisionPor\": \"{{segundaRevisionPor}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Lo que se le exige a TODA respuesta del sistema, sin excepcion.",
+              "const esperadas = [200, 422];",
+              "",
+              "pm.test(\"responde con un codigo que el contrato declara\", () => {",
+              "    pm.expect(esperadas).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"no filtra la traza al cliente\", () => {",
+              "    const cuerpo = pm.response.text();",
+              "    // Un stack trace en la respuesta le cuenta al atacante como esta hecho el",
+              "    // servidor. Es una de las dieciocho prohibiciones del contrato.",
+              "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+              "    pm.expect(cuerpo).to.not.include(\"java.lang.\");",
+              "});",
+              "",
+              "if (pm.response.code === 422) {",
+              "    pm.test(\"el rechazo trae su codigo AP-CU\", () => {",
+              "        pm.expect(pm.response.json()).to.have.property(\"codigo\").that.matches(/^AP-CU\\d+-\\d+$/);",
+              "    });",
+              "}",
+              "",
+              "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+              "if (pm.response.code < 300) {",
+              "    const cuerpo = pm.response.json();",
+              "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+              "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+              "            pm.collectionVariables.set(clave, valor);",
+              "        }",
+              "    }",
+              "}",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "declararPep · Declaracion PEP y beneficiario final",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/cumplimiento/usuarios/:usuarioId/pep",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "cumplimiento",
+            "usuarios",
+            ":usuarioId",
+            "pep"
+          ],
+          "variable": [
+            {
+              "key": "usuarioId",
+              "value": "{{usuarioId}}",
+              "description": "Identificador; se encadena desde una peticion anterior."
+            }
+          ]
+        },
+        "description": "## Declaracion PEP y beneficiario final\n\nMira tambien a los beneficiarios finales: un titular que no es PEP pero cuya estructura de control termina en un PEP es exactamente el caso que la norma quiere ver.\n\n| | |\n| --- | --- |\n| **Servicio** | `cumplimiento` |\n| **Operacion** | `declararPep` |\n| **Ruta** | `POST /api/v1/cumplimiento/usuarios/{usuarioId}/pep` |\n| **Permiso** | `PARTICIPANTE` |\n| **Respuestas** | `200`, `422` |\n\n### Rechazos que declara el contrato\n\n| Codigo | Motivo |\n| --- | --- |\n| `AP-CU03-01` | Declaracion incompleta |\n| `AP-CU03-02` | Beneficiario sin documento |\n\n> Los importes viajan como **cadena decimal** (`\"100.00\"`), nunca como numero:\n> un `number` de JSON es un doble, y un doble pierde centavos.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"esPep\": true,\n  \"tipoPep\": \"NACIONAL\",\n  \"cargo\": \"cargo-de-prueba\",\n  \"institucion\": \"institucion-de-prueba\",\n  \"beneficiariosFinales\": [\n    {\n      \"nombre\": \"nombre-de-prueba\",\n      \"documento\": \"documento-de-prueba\",\n      \"esPep\": true,\n      \"tipoPep\": \"NACIONAL\"\n    }\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Lo que se le exige a TODA respuesta del sistema, sin excepcion.",
+              "const esperadas = [200, 422];",
+              "",
+              "pm.test(\"responde con un codigo que el contrato declara\", () => {",
+              "    pm.expect(esperadas).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"no filtra la traza al cliente\", () => {",
+              "    const cuerpo = pm.response.text();",
+              "    // Un stack trace en la respuesta le cuenta al atacante como esta hecho el",
+              "    // servidor. Es una de las dieciocho prohibiciones del contrato.",
+              "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+              "    pm.expect(cuerpo).to.not.include(\"java.lang.\");",
+              "});",
+              "",
+              "if (pm.response.code === 422) {",
+              "    pm.test(\"el rechazo trae su codigo AP-CU\", () => {",
+              "        pm.expect(pm.response.json()).to.have.property(\"codigo\").that.matches(/^AP-CU\\d+-\\d+$/);",
+              "    });",
+              "}",
+              "",
+              "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+              "if (pm.response.code < 300) {",
+              "    const cuerpo = pm.response.json();",
+              "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+              "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+              "            pm.collectionVariables.set(clave, valor);",
+              "        }",
+              "    }",
+              "}",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "aceptarContrato · Aceptar el contrato de adhesion y el tarifario",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{$guid}}",
+            "description": "Uno nuevo por intento. Repetir el mismo debe devolver la MISMA respuesta y un solo efecto (invariante 7)."
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/cumplimiento/contratos/:contratoId/aceptaciones",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "cumplimiento",
+            "contratos",
+            ":contratoId",
+            "aceptaciones"
+          ],
+          "variable": [
+            {
+              "key": "contratoId",
+              "value": "{{contratoId}}",
+              "description": "Identificador; se encadena desde una peticion anterior."
+            }
+          ]
+        },
+        "description": "## Aceptar el contrato de adhesion y el tarifario\n\nVive aca y no en identidad —aunque la ficha del CU apunte alla— porque contrato_adhesion y aceptacion_contrato estan en el esquema de cumplimiento, y el esquema tiene precedencia sobre la ficha. Append-only: publicar una version nueva no toca las aceptaciones viejas.\n\n| | |\n| --- | --- |\n| **Servicio** | `cumplimiento` |\n| **Operacion** | `aceptarContrato` |\n| **Ruta** | `POST /api/v1/cumplimiento/contratos/{contratoId}/aceptaciones` |\n| **Permiso** | `PARTICIPANTE` |\n| **Idempotencia** | exige `Idempotency-Key`; se manda un `{{$guid}}` nuevo por intento |\n| **Respuestas** | `200`, `422` |\n\n### Rechazos que declara el contrato\n\n| Codigo | Motivo |\n| --- | --- |\n| `AP-CU05-01` | Contrato no vigente |\n| `AP-CU05-02` | Version desactualizada |\n| `AP-CU05-03` | Tarifario no publicado |\n\n> Los importes viajan como **cadena decimal** (`\"100.00\"`), nunca como numero:\n> un `number` de JSON es un doble, y un doble pierde centavos.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"usuarioId\": \"{{usuarioId}}\",\n  \"version\": 1,\n  \"tokenFirma\": \"{{tokenFirma}}\",\n  \"consentimientos\": [\n    \"consentimientos-de-prueba\"\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Lo que se le exige a TODA respuesta del sistema, sin excepcion.",
+              "const esperadas = [200, 422];",
+              "",
+              "pm.test(\"responde con un codigo que el contrato declara\", () => {",
+              "    pm.expect(esperadas).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"no filtra la traza al cliente\", () => {",
+              "    const cuerpo = pm.response.text();",
+              "    // Un stack trace en la respuesta le cuenta al atacante como esta hecho el",
+              "    // servidor. Es una de las dieciocho prohibiciones del contrato.",
+              "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+              "    pm.expect(cuerpo).to.not.include(\"java.lang.\");",
+              "});",
+              "",
+              "if (pm.response.code === 422) {",
+              "    pm.test(\"el rechazo trae su codigo AP-CU\", () => {",
+              "        pm.expect(pm.response.json()).to.have.property(\"codigo\").that.matches(/^AP-CU\\d+-\\d+$/);",
+              "    });",
+              "}",
+              "",
+              "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+              "if (pm.response.code < 300) {",
+              "    const cuerpo = pm.response.json();",
+              "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+              "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+              "            pm.collectionVariables.set(clave, valor);",
+              "        }",
+              "    }",
+              "}",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "registrarRiesgoOperativo · Registra un evento de riesgo operativo y su plan de accion",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{$guid}}",
+            "description": "Uno nuevo por intento. Repetir el mismo debe devolver la MISMA respuesta y un solo efecto (invariante 7)."
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/cumplimiento/riesgos/eventos",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "cumplimiento",
+            "riesgos",
+            "eventos"
+          ],
+          "variable": []
+        },
+        "description": "## Registra un evento de riesgo operativo y su plan de accion\n\nPonerle numero a lo que cuesta hacer las cosas mal, con las categorias y factores que exige la norma, y cerrar el circulo con un plan de accion con responsable y plazo. Una base de perdidas sin plan de accion es una coleccion de anecdotas caras.\nUn evento SIN perdida monetaria se registra igual, con `perdidaBruta` en cero: la frecuencia tambien es informacion, y filtrar las casi-perdidas por no costar plata deja el analisis ciego justo para lo que todavia no salio caro.\nLa `perdidaNeta` que devuelve es la que calculo el MOTOR: la columna es GENERATED. La aplicacion no la reemplaza, la lee de vuelta (`R-RIS-02`).\nLa ruta va bajo `/cumplimiento` y no bajo `/riesgos` como dice la ficha del caso de uso: `/riesgos` no es un prefijo reservado de este servicio, y una ruta fuera de los prefijos es un rechazo automatico.\nEste caso de uso vive en `cumplimiento` y no en `auditoria` —donde lo pone su ficha— porque las cuatro tablas que escribe estan en el esquema `cumplimiento`, y `svc_auditoria` no tiene GRANT sobre el. Donde la ficha y el modelo no coinciden, manda el modelo (invariante 11).\n\n| | |\n| --- | --- |\n| **Servicio** | `cumplimiento` |\n| **Operacion** | `registrarRiesgoOperativo` |\n| **Ruta** | `POST /api/v1/cumplimiento/riesgos/eventos` |\n| **Permiso** | `RESPONSABLE_RIESGOS` |\n| **Idempotencia** | exige `Idempotency-Key`; se manda un `{{$guid}}` nuevo por intento |\n| **Respuestas** | `201`, `422`, `401` |\n\n### Rechazos que declara el contrato\n\n| Codigo | Motivo |\n| --- | --- |\n| `AP-CU54-01` | Fechas incoherentes |\n| `AP-CU54-02` | Recuperacion mayor a perdida |\n| `AP-CU54-03` | Taxonomia invalida |\n\n> Los importes viajan como **cadena decimal** (`\"100.00\"`), nunca como numero:\n> un `number` de JSON es un doble, y un doble pierde centavos.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"categoriaEvento\": \"FRAUDE_INTERNO\",\n  \"factorRiesgo\": \"PROCESOS_INTERNOS\",\n  \"lineaNegocio\": \"lineaNegocio-de-prueba\",\n  \"descripcion\": \"descripcion-de-prueba\",\n  \"fechaOcurrencia\": \"{{momento_ahora}}\",\n  \"fechaDeteccion\": \"{{momento_ahora}}\",\n  \"perdidaBruta\": \"1.11\",\n  \"recuperacion\": \"1.11\",\n  \"moneda\": \"BOB\",\n  \"responsableId\": \"{{responsableId}}\",\n  \"accionComprometida\": \"accionComprometida-de-prueba\",\n  \"fechaCompromiso\": \"{{fecha_hoy}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Lo que se le exige a TODA respuesta del sistema, sin excepcion.",
+              "const esperadas = [201, 401, 422];",
+              "",
+              "pm.test(\"responde con un codigo que el contrato declara\", () => {",
+              "    pm.expect(esperadas).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"no filtra la traza al cliente\", () => {",
+              "    const cuerpo = pm.response.text();",
+              "    // Un stack trace en la respuesta le cuenta al atacante como esta hecho el",
+              "    // servidor. Es una de las dieciocho prohibiciones del contrato.",
+              "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+              "    pm.expect(cuerpo).to.not.include(\"java.lang.\");",
+              "});",
+              "",
+              "if (pm.response.code === 422) {",
+              "    pm.test(\"el rechazo trae su codigo AP-CU\", () => {",
+              "        pm.expect(pm.response.json()).to.have.property(\"codigo\").that.matches(/^AP-CU\\d+-\\d+$/);",
+              "    });",
+              "}",
+              "",
+              "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+              "if (pm.response.code < 300) {",
+              "    const cuerpo = pm.response.json();",
+              "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+              "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+              "            pm.collectionVariables.set(clave, valor);",
+              "        }",
+              "    }",
+              "}",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "registrarIncidente · Abre el expediente de un incidente de seguridad y arranca sus relojes",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{$guid}}",
+            "description": "Uno nuevo por intento. Repetir el mismo debe devolver la MISMA respuesta y un solo efecto (invariante 7)."
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/cumplimiento/seguridad/incidentes",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "cumplimiento",
+            "seguridad",
+            "incidentes"
+          ],
+          "variable": []
+        },
+        "description": "## Abre el expediente de un incidente de seguridad y arranca sus relojes\n\nContener rapido, reportar en plazo y notificar a los titulares cuando hay datos personales afectados. Son TRES relojes distintos corriendo en paralelo, y los tres se guardan: recalcularlos al consultar los haria moverse solos, y bastaria cambiar la politica el mes que viene para que un incidente de hace tres meses apareciera reportado en plazo cuando no lo estuvo.\nSin responsable de seguridad designado y activo NO se abre el incidente. No es burocracia: sin designacion no hay a quien le corran los plazos ni quien firme ante el organismo.\nEl campo datosPersonalesAfectados es lo que DECLARA quien reporta, y lo puede sobrescribir el activo: si el inventario dice que ese activo contiene datos personales, los contiene. Quien esta apagando el incendio a las tres de la manana no esta en condiciones de determinar el alcance.\nEl enlace con el contrato del proveedor se resuelve POR EL ACTIVO: la tabla incidente_seguridad no tiene columna propia para el, y agregarsela duplicaria un dato que ya vive en el inventario de activos.\nVive en cumplimiento y no en auditoria, donde lo pone su ficha, porque las tablas que escribe estan en el esquema cumplimiento (invariante 11).\n\n| | |\n| --- | --- |\n| **Servicio** | `cumplimiento` |\n| **Operacion** | `registrarIncidente` |\n| **Ruta** | `POST /api/v1/cumplimiento/seguridad/incidentes` |\n| **Permiso** | `RESPONSABLE_SEGURIDAD` |\n| **Idempotencia** | exige `Idempotency-Key`; se manda un `{{$guid}}` nuevo por intento |\n| **Respuestas** | `201`, `422`, `401` |\n\n### Rechazos que declara el contrato\n\n| Codigo | Motivo |\n| --- | --- |\n| `AP-CU55-01` | Sin responsable designado |\n| `AP-CU55-02` | Plazo reporte vencido |\n| `AP-CU55-03` | Cierre sin notificar |\n\n> Los importes viajan como **cadena decimal** (`\"100.00\"`), nunca como numero:\n> un `number` de JSON es un doble, y un doble pierde centavos.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tipo\": \"ACCESO_NO_AUTORIZADO\",\n  \"severidad\": \"BAJA\",\n  \"activoInformacionId\": \"{{activoInformacionId}}\",\n  \"datosPersonalesAfectados\": true,\n  \"usuariosAfectados\": 0,\n  \"detectadoEn\": \"{{momento_ahora}}\",\n  \"eventoRiesgoId\": \"{{eventoRiesgoId}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Lo que se le exige a TODA respuesta del sistema, sin excepcion.",
+              "const esperadas = [201, 401, 422];",
+              "",
+              "pm.test(\"responde con un codigo que el contrato declara\", () => {",
+              "    pm.expect(esperadas).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"no filtra la traza al cliente\", () => {",
+              "    const cuerpo = pm.response.text();",
+              "    // Un stack trace en la respuesta le cuenta al atacante como esta hecho el",
+              "    // servidor. Es una de las dieciocho prohibiciones del contrato.",
+              "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+              "    pm.expect(cuerpo).to.not.include(\"java.lang.\");",
+              "});",
+              "",
+              "if (pm.response.code === 422) {",
+              "    pm.test(\"el rechazo trae su codigo AP-CU\", () => {",
+              "        pm.expect(pm.response.json()).to.have.property(\"codigo\").that.matches(/^AP-CU\\d+-\\d+$/);",
+              "    });",
+              "}",
+              "",
+              "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+              "if (pm.response.code < 300) {",
+              "    const cuerpo = pm.response.json();",
+              "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+              "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+              "            pm.collectionVariables.set(clave, valor);",
+              "        }",
+              "    }",
+              "}",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "reportarIncidente · Deja constancia de que el incidente se reporto al organismo",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Idempotency-Key",
+            "value": "{{$guid}}",
+            "description": "Uno nuevo por intento. Repetir el mismo debe devolver la MISMA respuesta y un solo efecto (invariante 7)."
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/cumplimiento/seguridad/incidentes/:incidenteId/reportes",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "cumplimiento",
+            "seguridad",
+            "incidentes",
+            ":incidenteId",
+            "reportes"
+          ],
+          "variable": [
+            {
+              "key": "incidenteId",
+              "value": "{{incidenteId}}",
+              "description": "Identificador; se encadena desde una peticion anterior."
+            }
+          ]
+        },
+        "description": "## Deja constancia de que el incidente se reporto al organismo\n\nSe reporta IGUAL aunque el plazo haya vencido: llegar tarde es una observacion, no reportar es un incumplimiento. Lo que no se hace es disimularlo: el vencimiento queda visible y el control diario abre el hallazgo.\n\n| | |\n| --- | --- |\n| **Servicio** | `cumplimiento` |\n| **Operacion** | `reportarIncidente` |\n| **Ruta** | `POST /api/v1/cumplimiento/seguridad/incidentes/{incidenteId}/reportes` |\n| **Permiso** | `RESPONSABLE_SEGURIDAD` |\n| **Idempotencia** | exige `Idempotency-Key`; se manda un `{{$guid}}` nuevo por intento |\n| **Respuestas** | `204`, `422`, `401` |\n\n### Rechazos que declara el contrato\n\n_El contrato no declara rechazos de negocio para esta operacion._\n\n> Los importes viajan como **cadena decimal** (`\"100.00\"`), nunca como numero:\n> un `number` de JSON es un doble, y un doble pierde centavos."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Lo que se le exige a TODA respuesta del sistema, sin excepcion.",
+              "const esperadas = [204, 401, 422];",
+              "",
+              "pm.test(\"responde con un codigo que el contrato declara\", () => {",
+              "    pm.expect(esperadas).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"no filtra la traza al cliente\", () => {",
+              "    const cuerpo = pm.response.text();",
+              "    // Un stack trace en la respuesta le cuenta al atacante como esta hecho el",
+              "    // servidor. Es una de las dieciocho prohibiciones del contrato.",
+              "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+              "    pm.expect(cuerpo).to.not.include(\"java.lang.\");",
+              "});",
+              "",
+              "if (pm.response.code === 422) {",
+              "    pm.test(\"el rechazo trae su codigo AP-CU\", () => {",
+              "        pm.expect(pm.response.json()).to.have.property(\"codigo\").that.matches(/^AP-CU\\d+-\\d+$/);",
+              "    });",
+              "}",
+              "",
+              "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+              "if (pm.response.code < 300) {",
+              "    const cuerpo = pm.response.json();",
+              "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+              "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+              "            pm.collectionVariables.set(clave, valor);",
+              "        }",
+              "    }",
+              "}",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "notificarTitulares · Deja constancia de la notificacion a los titulares afectados",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Idempotency-Key",
+            "value": "{{$guid}}",
+            "description": "Uno nuevo por intento. Repetir el mismo debe devolver la MISMA respuesta y un solo efecto (invariante 7)."
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/cumplimiento/seguridad/incidentes/:incidenteId/notificaciones",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "cumplimiento",
+            "seguridad",
+            "incidentes",
+            ":incidenteId",
+            "notificaciones"
+          ],
+          "variable": [
+            {
+              "key": "incidenteId",
+              "value": "{{incidenteId}}",
+              "description": "Identificador; se encadena desde una peticion anterior."
+            }
+          ]
+        },
+        "description": "## Deja constancia de la notificacion a los titulares afectados\n\nSe notifica con lo que se sabe, sin esperar al numero final: un aviso tardio y exacto le sirve menos a la persona afectada que uno a tiempo y aproximado.\nSobre un incidente que no afecto datos personales se rechaza: asustar a gente sin motivo gasta la credibilidad del canal para cuando de verdad haga falta.\n\n| | |\n| --- | --- |\n| **Servicio** | `cumplimiento` |\n| **Operacion** | `notificarTitulares` |\n| **Ruta** | `POST /api/v1/cumplimiento/seguridad/incidentes/{incidenteId}/notificaciones` |\n| **Permiso** | `RESPONSABLE_SEGURIDAD` |\n| **Idempotencia** | exige `Idempotency-Key`; se manda un `{{$guid}}` nuevo por intento |\n| **Respuestas** | `204`, `422`, `401` |\n\n### Rechazos que declara el contrato\n\n| Codigo | Motivo |\n| --- | --- |\n| `AP-CU55-03` | Cierre sin notificar |\n\n> Los importes viajan como **cadena decimal** (`\"100.00\"`), nunca como numero:\n> un `number` de JSON es un doble, y un doble pierde centavos."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Lo que se le exige a TODA respuesta del sistema, sin excepcion.",
+              "const esperadas = [204, 401, 422];",
+              "",
+              "pm.test(\"responde con un codigo que el contrato declara\", () => {",
+              "    pm.expect(esperadas).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"no filtra la traza al cliente\", () => {",
+              "    const cuerpo = pm.response.text();",
+              "    // Un stack trace en la respuesta le cuenta al atacante como esta hecho el",
+              "    // servidor. Es una de las dieciocho prohibiciones del contrato.",
+              "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+              "    pm.expect(cuerpo).to.not.include(\"java.lang.\");",
+              "});",
+              "",
+              "if (pm.response.code === 422) {",
+              "    pm.test(\"el rechazo trae su codigo AP-CU\", () => {",
+              "        pm.expect(pm.response.json()).to.have.property(\"codigo\").that.matches(/^AP-CU\\d+-\\d+$/);",
+              "    });",
+              "}",
+              "",
+              "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+              "if (pm.response.code < 300) {",
+              "    const cuerpo = pm.response.json();",
+              "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+              "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+              "            pm.collectionVariables.set(clave, valor);",
+              "        }",
+              "    }",
+              "}",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "verificarAlcance · Verificar el alcance de la licencia",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/licencia/alcance",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "licencia",
+            "alcance"
+          ],
+          "variable": [],
+          "query": [
+            {
+              "key": "servicio",
+              "value": "servicio-de-prueba",
+              "description": "",
+              "disabled": false
+            },
+            {
+              "key": "usuarioId",
+              "value": "{{usuarioId}}",
+              "description": "",
+              "disabled": true
+            }
+          ]
+        },
+        "description": "## Verificar el alcance de la licencia\n\nLo consultan los otros servicios antes de habilitar una operacion. Deniega por omision: sin licencia legible, sin alcance o sin sandbox, la respuesta es no. Un fallo de lectura no puede traducirse en «segui». No lleva Idempotency-Key porque no tiene efecto: solo responde.\n\n| | |\n| --- | --- |\n| **Servicio** | `cumplimiento` |\n| **Operacion** | `verificarAlcance` |\n| **Ruta** | `GET /api/v1/licencia/alcance` |\n| **Permiso** | `SOPORTE` |\n| **Respuestas** | `200`, `422` |\n\n### Rechazos que declara el contrato\n\n| Codigo | Motivo |\n| --- | --- |\n| `AP-CU46-01` | Licencia no otorgada |\n| `AP-CU46-02` | Fuera de alcance |\n| `AP-CU46-03` | Sandbox agotado |\n| `AP-CU46-04` | Licencia suspendida |\n| `AP-CU06-01` | Sin calificacion vigente |\n| `AP-CU06-02` | Perfil no declarado |\n\n> Los importes viajan como **cadena decimal** (`\"100.00\"`), nunca como numero:\n> un `number` de JSON es un doble, y un doble pierde centavos."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Lo que se le exige a TODA respuesta del sistema, sin excepcion.",
+              "const esperadas = [200, 422];",
+              "",
+              "pm.test(\"responde con un codigo que el contrato declara\", () => {",
+              "    pm.expect(esperadas).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"no filtra la traza al cliente\", () => {",
+              "    const cuerpo = pm.response.text();",
+              "    // Un stack trace en la respuesta le cuenta al atacante como esta hecho el",
+              "    // servidor. Es una de las dieciocho prohibiciones del contrato.",
+              "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+              "    pm.expect(cuerpo).to.not.include(\"java.lang.\");",
+              "});",
+              "",
+              "if (pm.response.code === 422) {",
+              "    pm.test(\"el rechazo trae su codigo AP-CU\", () => {",
+              "        pm.expect(pm.response.json()).to.have.property(\"codigo\").that.matches(/^AP-CU\\d+-\\d+$/);",
+              "    });",
+              "}",
+              "",
+              "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+              "if (pm.response.code < 300) {",
+              "    const cuerpo = pm.response.json();",
+              "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+              "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+              "            pm.collectionVariables.set(clave, valor);",
+              "        }",
+              "    }",
+              "}",
+              ""
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Fechas y momentos, calculados al vuelo: una fecha fija en el archivo caduca y",
+          "// entonces la coleccion falla por algo que no es el sistema.",
+          "const ahora = new Date();",
+          "pm.collectionVariables.set(\"fecha_hoy\", ahora.toISOString().slice(0, 10));",
+          "pm.collectionVariables.set(\"momento_ahora\", ahora.toISOString());",
+          "pm.collectionVariables.set(\"fecha_manana\", new Date(ahora.getTime() + 86400000).toISOString().slice(0, 10));",
+          "",
+          "// Una sola clave para el par acreditar/reacreditar del recorrido: se fija una vez por",
+          "// corrida, porque probar el reintento con dos claves distintas no prueba nada.",
+          "if (!pm.collectionVariables.get(\"claveDeLaAcreditacion\")) {",
+          "    pm.collectionVariables.set(\"claveDeLaAcreditacion\", pm.variables.replaceIn(\"{{$guid}}\"));",
+          "}",
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "activoInformacionId",
+      "value": ""
+    },
+    {
+      "key": "aprobadaPor",
+      "value": ""
+    },
+    {
+      "key": "base_url",
+      "value": ""
+    },
+    {
+      "key": "contratoId",
+      "value": ""
+    },
+    {
+      "key": "eventoRiesgoId",
+      "value": ""
+    },
+    {
+      "key": "fecha_hoy",
+      "value": ""
+    },
+    {
+      "key": "incidenteId",
+      "value": ""
+    },
+    {
+      "key": "momento_ahora",
+      "value": ""
+    },
+    {
+      "key": "prefijo_api",
+      "value": ""
+    },
+    {
+      "key": "responsableId",
+      "value": ""
+    },
+    {
+      "key": "segundaRevisionPor",
+      "value": ""
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "tokenFirma",
+      "value": ""
+    },
+    {
+      "key": "usuarioId",
+      "value": ""
+    }
+  ]
+}

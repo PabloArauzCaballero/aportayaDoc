@@ -148,6 +148,16 @@ public class PeriodoRepositorio {
 
     /** Los totales del periodo, desde los movimientos. No se guarda un total aparte. */
     public Totales totalesDe(DSLContext dsl, UUID periodoId) {
+        // INVARIANTE-11 DECLARADO · el libro contable vive en `nucleo_financiero`.
+        //
+        // `erp` arma los estados financieros sumando el libro entero de un periodo. Traer
+        // esos movimientos por HTTP serian decenas de miles de filas por la red para
+        // sumarlas del otro lado, y dentro de la transaccion del cierre: invariante 6.
+        //
+        // La lectura es SOLO lectura. El invariante 12 —el libro no se parte, solo
+        // `nucleo-financiero` lo escribe— se mantiene entero: aca no hay ni un INSERT.
+        // Cerrarlo bien pide una vista materializada del lado de erp alimentada por
+        // eventos, y eso es un cambio de modelo.
         var a = DSL.table(DSL.name("nucleo_financiero", "asiento_contable")).as("a");
         var m = DSL.table(DSL.name("nucleo_financiero", "movimiento_contable")).as("m");
         var fila = dsl.select(

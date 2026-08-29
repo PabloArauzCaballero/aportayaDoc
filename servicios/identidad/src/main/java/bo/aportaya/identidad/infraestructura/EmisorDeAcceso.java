@@ -41,6 +41,8 @@ import org.springframework.stereotype.Component;
 public class EmisorDeAcceso {
 
     /** ADR-024: vida corta, porque un token firmado no se puede revocar. */
+    private static final org.slf4j.Logger BITACORA = org.slf4j.LoggerFactory.getLogger(EmisorDeAcceso.class);
+
     private static final Duration VIGENCIA = Duration.ofMinutes(15);
 
     private static final int TAMANO_DE_CLAVE = 2048;
@@ -48,7 +50,19 @@ public class EmisorDeAcceso {
     private final RSAKey clave;
 
     public EmisorDeAcceso(@Value("${aportaya.jwt.clave-firma:}") String claveJwk) {
-        this.clave = claveJwk == null || claveJwk.isBlank() ? generar() : leer(claveJwk);
+        boolean generada = claveJwk == null || claveJwk.isBlank();
+        this.clave = generada ? generar() : leer(claveJwk);
+        if (generada) {
+            // **No es un detalle de desarrollo.** ADR-037 pide dos replicas como
+            // minimo, y con la clave generada en memoria cada replica firma con la
+            // suya y publica su propio JWKS: un token emitido por la primera lo
+            // rechaza la segunda, y la sesion se cae sola en cuanto el balanceador
+            // cambia de instancia. Sirve para una maquina de desarrollo y para las
+            // pruebas, y para nada mas.
+            BITACORA.warn("aportaya.jwt.clave-firma vacia: se genero una clave EN MEMORIA. "
+                    + "Con mas de una replica los tokens de una no valen en la otra. "
+                    + "En cualquier entorno compartido, inyectala desde el almacen de secretos.");
+        }
     }
 
     /**

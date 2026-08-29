@@ -22,7 +22,12 @@ aportaya:
   outbox:
     intervalo: PT1S                 # relevo: lee el outbox y publica DESPUES del commit
   jwt:
-    jwks-uri: ${JWKS_URI}           # ADR-024: cada servicio valida la firma el mismo
+    jwks-uri: ${JWKS_URI}
+    # La clave con la que identidad FIRMA. Del almacen de secretos, nunca de una
+    # columna ni del repositorio. Vacia significa «genera una en memoria», que solo
+    # vale con una sola replica: con dos, cada una firma distinto y los tokens de una
+    # los rechaza la otra (ADR-037). El arranque avisa cuando pasa.
+    clave-firma: ${JWT_CLAVE_FIRMA:}           # ADR-024: cada servicio valida la firma el mismo
   zona-horaria: America/La_Paz      # plazos habiles
   seguridad:
     # Fuera de la base a proposito: filtrar la tabla de credenciales no alcanza si

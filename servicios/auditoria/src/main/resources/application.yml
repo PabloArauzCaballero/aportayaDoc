@@ -30,3 +30,22 @@ management:
     health:
       probes:
         enabled: true               # readiness mira base y Kafka; liveness solo el proceso
+
+# Umbrales y plazos de auditoria. Estan aca y no en el codigo porque son
+# decisiones de negocio: se mueven sin desplegar (invariante 10).
+auditoria:
+  reportes:
+    # Cuanto vive un enlace de descarga. Es politica de retencion: se acorta e
+    # l dia que un enlace filtrado dure demasiado.
+    horas-de-vigencia: 72
+    # Cuantas veces se puede bajar la misma exportacion. Mas descargas de las 
+    # previstas es la senal de que el enlace se compartio.
+    tope-de-descargas: 3
+    # Lo que se espera a una consulta de reporte antes de cortarla. Una consul
+    # ta que no termina ocupa una conexion del pool que le falta a las operaci
+    # ones de dinero.
+    tope-de-segundos: 30
+  derechos:
+    # El plazo legal para responder un derecho ARCO. Lo fija la norma, no el c
+    # odigo: cuando la norma cambie, cambia aca.
+    dias-habiles-de-respuesta: 15

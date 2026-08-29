@@ -18,6 +18,10 @@ spring:
     bootstrap-servers: ${KAFKA_URL}
 
 aportaya:
+  mfa:
+    # Si el segundo factor es obligatorio. Es un interruptor de riesgo: se apa
+    # ga solo en un incidente del proveedor de MFA, y con eso registrado.
+    exigido: true
   esquema: nucleo_financiero
   outbox:
     intervalo: PT1S                 # relevo: lee el outbox y publica DESPUES del commit

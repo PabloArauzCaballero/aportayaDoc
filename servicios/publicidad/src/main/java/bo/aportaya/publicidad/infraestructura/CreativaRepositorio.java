@@ -84,6 +84,10 @@ public class CreativaRepositorio {
     }
 
     /** El usuario dueno del anunciante, cuando el anunciante es un organizador. */
+    // INVARIANTE-11 DECLARADO · la clave foranea la pone el modelo del lado de
+    // publicidad: `anunciante.organizador_id` apunta a `organizador.organizador`.
+    // Resolver el dueno sin ese JOIN exige una llamada de red dentro de la
+    // transaccion (invariante 6) o mover la columna, que es tocar `sql/`.
     public Optional<UUID> usuarioDelAnunciante(DSLContext dsl, UUID anuncianteId) {
         return dsl.select(DSL.field("o.usuario_id", UUID.class))
                 .from(DSL.table(DSL.name(ESQUEMA, "anunciante")).as("a"))

@@ -57,6 +57,18 @@ public class LimiteRepositorio {
     public List<TopeConConsumo> conConsumo(
             DSLContext dsl, UUID cuentaId, String nivelDiligencia, String concepto, LocalDate hoy) {
 
+        // INVARIANTE-11 DECLARADO · `consumo_limite` vive en `nucleo_financiero`.
+        //
+        // No se cierra con un puerto, y no es por comodidad: CU-40 lee el acumulado
+        // DENTRO de la transaccion del dinero y bloqueando la fila, porque dos
+        // operaciones simultaneas que vean el mismo acumulado pasan las dos el tope.
+        // Preguntarselo a otro servicio por HTTP romperia el invariante 6 —red dentro
+        // de la transaccion— y perderia el bloqueo, que es lo que hace que el limite
+        // sirva de algo.
+        //
+        // Cerrarlo de verdad exige mover `consumo_limite` al esquema de cumplimiento,
+        // o mover CU-40 a `nucleo-financiero`. Las dos tocan `sql/` o el reparto de
+        // casos de uso: son decisiones troncales, no de carril.
         return dsl.select(
                         DSL.field("l.concepto", String.class).as("concepto"),
                         DSL.field("l.ventana", String.class).as("ventana"),

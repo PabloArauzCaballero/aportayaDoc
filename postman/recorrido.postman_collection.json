@@ -1,0 +1,533 @@
+{
+  "info": {
+    "name": "AportaYa · recorrido completo",
+    "description": "# Recorrido completo\n\nGenerado por `scripts/generar_postman.py` desde `servicios/*/src/main/resources/openapi/`.\n**No se edita a mano**: la proxima generacion lo pisa, y una coleccion editada a mano\nprueba una API que ya no existe.\n\n**El caso valido de punta a punta, encadenado.**\n\nLas pruebas de `postman/humo/` miran una operacion cada una. Esto mira el sistema:\nalguien se registra, entra, carga plata, arma un pasanaku, compromete el sorteo, y\nun tercero **sin cuenta** verifica que fue limpio.\n\nCada paso usa lo que devolvio el anterior, y por eso encuentra lo que una prueba\naislada no puede: que el identificador que un servicio emite no es el que el otro\nespera. Se corre **en orden**, de arriba abajo.\n\nEl paso 5 repite el 4 a proposito, con la MISMA clave de idempotencia, para\ncomprobar que acreditar dos veces no acredita dos veces.\n\n```\nnewman run postman/recorrido.postman_collection.json \\\n  -e postman/entornos/ensayo-local.postman_environment.json\n```\n",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 · identidad · registrarUsuario",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{$guid}}",
+            "description": "Uno nuevo por intento. Repetir el mismo debe devolver la MISMA respuesta y un solo efecto (invariante 7)."
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/usuarios",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "usuarios"
+          ],
+          "variable": []
+        },
+        "description": "Paso 1 del recorrido. Servicio `identidad`, operacion `registrarUsuario`.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"telefonoE164\": \"+59178123456\",\n  \"nombres\": \"nombres-de-prueba\",\n  \"apellidos\": \"apellidos-de-prueba\",\n  \"fechaNacimiento\": \"{{fecha_hoy}}\",\n  \"documento\": {\n    \"tipo\": \"CI\",\n    \"numero\": \"numero-de-prueba\"\n  },\n  \"aceptaContratos\": [\n    \"{{aceptaContratos}}\"\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"el alta se acepta y NO deja operar todavia\", () => {",
+              "    pm.expect(pm.response.code).to.eql(202);",
+              "    // 202 y no 201 a proposito: la diligencia la hace `cumplimiento` y la billetera",
+              "    // la abre `nucleo-financiero` al consumir el evento. Nada de eso paso aun.",
+              "    pm.expect(pm.response.json().estado).to.eql(\"PENDIENTE_VERIFICACION\");",
+              "});",
+              "pm.collectionVariables.set(\"usuarioId\", pm.response.json().usuarioId);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 · identidad · autenticar",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/sesiones",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "sesiones"
+          ],
+          "variable": []
+        },
+        "description": "Paso 2 del recorrido. Servicio `identidad`, operacion `autenticar`.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"telefonoE164\": \"+59178123456\",\n  \"credencial\": \"credencial-de-prueba\",\n  \"huellaDispositivo\": \"huellaDispositivo-de-prueba\",\n  \"plataforma\": \"ANDROID\",\n  \"factor\": {\n    \"tipo\": \"OTP\",\n    \"valor\": \"valor-de-prueba\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"la sesion devuelve un token de acceso\", () => {",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+              "    pm.expect(pm.response.json()).to.have.property(\"token\");",
+              "});",
+              "pm.test(\"el token es RS256 firmado por identidad, no un opaco cualquiera\", () => {",
+              "    const partes = (pm.response.json().token || \"\").split(\".\");",
+              "    pm.expect(partes.length, \"no parece un JWT\").to.eql(3);",
+              "    const cabecera = JSON.parse(atob(partes[0]));",
+              "    // ADR-024: con clave simetrica los catorce servicios podrian emitir tokens.",
+              "    pm.expect(cabecera.alg).to.eql(\"RS256\");",
+              "});",
+              "pm.collectionVariables.set(\"token\", pm.response.json().token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 · nucleo-financiero · solicitarRecarga",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{$guid}}",
+            "description": "Uno nuevo por intento. Repetir el mismo debe devolver la MISMA respuesta y un solo efecto (invariante 7)."
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/billetera/recargas",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "billetera",
+            "recargas"
+          ],
+          "variable": []
+        },
+        "description": "Paso 3 del recorrido. Servicio `nucleo-financiero`, operacion `solicitarRecarga`.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cuentaBilleteraId\": \"{{cuentaBilleteraId}}\",\n  \"monto\": {\n    \"monto\": \"100.00\",\n    \"moneda\": \"BOB\"\n  },\n  \"costoProveedor\": {\n    \"monto\": \"100.00\",\n    \"moneda\": \"BOB\"\n  },\n  \"medio\": \"medio-de-prueba\",\n  \"instrumentoFondeoId\": \"{{instrumentoFondeoId}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"la recarga queda pendiente y con vencimiento\", () => {",
+              "    pm.expect(pm.response.code).to.eql(201);",
+              "    const cuerpo = pm.response.json();",
+              "    // Invariante 8: el plazo se persiste al crear, no se recalcula al consultar.",
+              "    pm.expect(cuerpo, \"sin vencimiento la orden vive para siempre\").to.have.property(\"expiraEn\");",
+              "});",
+              "pm.collectionVariables.set(\"ordenId\", pm.response.json().ordenRecargaId);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 · nucleo-financiero · acreditarRecarga",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Idempotency-Key",
+            "value": "{{claveDeLaAcreditacion}}",
+            "description": "Fija en los dos pasos: es lo que se esta probando."
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/billetera/recargas/:ordenId/acreditacion",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "billetera",
+            "recargas",
+            ":ordenId",
+            "acreditacion"
+          ],
+          "variable": [
+            {
+              "key": "ordenId",
+              "value": "{{ordenId}}",
+              "description": "Identificador; se encadena desde una peticion anterior."
+            }
+          ]
+        },
+        "description": "Paso 4 del recorrido. Servicio `nucleo-financiero`, operacion `acreditarRecarga`."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"acreditar mueve el saldo y devuelve el asiento\", () => {",
+              "    pm.expect(pm.response.code).to.eql(200);",
+              "    pm.expect(pm.response.json()).to.have.property(\"transaccionId\");",
+              "});",
+              "pm.collectionVariables.set(\"saldoTrasRecarga\", pm.response.json().saldoDespues.monto);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 · nucleo-financiero · acreditarRecarga · REPETIDA",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Idempotency-Key",
+            "value": "{{claveDeLaAcreditacion}}",
+            "description": "Fija en los dos pasos: es lo que se esta probando."
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/billetera/recargas/:ordenId/acreditacion",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "billetera",
+            "recargas",
+            ":ordenId",
+            "acreditacion"
+          ],
+          "variable": [
+            {
+              "key": "ordenId",
+              "value": "{{ordenId}}",
+              "description": "Identificador; se encadena desde una peticion anterior."
+            }
+          ]
+        },
+        "description": "Paso 5 del recorrido. Servicio `nucleo-financiero`, operacion `acreditarRecarga`."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// El mismo paso otra vez. La red duplica; reintentar tiene que ser seguro.",
+              "pm.test(\"el reintento no acredita dos veces\", () => {",
+              "    pm.expect(pm.response.code, \"un reintento nunca es un 500\").to.be.below(500);",
+              "    if (pm.response.code < 300) {",
+              "        pm.expect(pm.response.json().saldoDespues.monto,",
+              "            \"la segunda acreditacion movio el saldo: la idempotencia no esta\")",
+              "            .to.eql(pm.collectionVariables.get(\"saldoTrasRecarga\"));",
+              "    }",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 · grupos · crearGrupo",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{$guid}}",
+            "description": "Uno nuevo por intento. Repetir el mismo debe devolver la MISMA respuesta y un solo efecto (invariante 7)."
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/grupos",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "grupos"
+          ],
+          "variable": []
+        },
+        "description": "Paso 6 del recorrido. Servicio `grupos`, operacion `crearGrupo`.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"nombre-de-prueba\",\n  \"montoAporte\": {\n    \"monto\": \"100.00\",\n    \"moneda\": \"BOB\"\n  },\n  \"periodicidad\": \"SEMANAL\",\n  \"cupos\": 3,\n  \"diaCobro\": 1,\n  \"modalidadTurnos\": \"SORTEO_ALEATORIO\",\n  \"fechaDeInicio\": \"{{fecha_hoy}}\",\n  \"organizadorId\": \"{{organizadorId}}\",\n  \"permitePermutaDeTurnos\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"el grupo se acepta\", () => {",
+              "    pm.expect(pm.response.code).to.eql(202);",
+              "});",
+              "pm.collectionVariables.set(\"grupoId\", pm.response.json().grupoId);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 · grupos · comprometerSorteo",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{$guid}}",
+            "description": "Uno nuevo por intento. Repetir el mismo debe devolver la MISMA respuesta y un solo efecto (invariante 7)."
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/grupos/:grupoId/sorteo",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "grupos",
+            ":grupoId",
+            "sorteo"
+          ],
+          "variable": [
+            {
+              "key": "grupoId",
+              "value": "{{grupoId}}",
+              "description": "Identificador; se encadena desde una peticion anterior."
+            }
+          ]
+        },
+        "description": "Paso 7 del recorrido. Servicio `grupos`, operacion `comprometerSorteo`.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"entropias\": [\n    \"entropias-de-prueba\"\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"el compromiso publica el HASH, nunca la semilla\", () => {",
+              "    pm.expect(pm.response.code).to.eql(201);",
+              "    const cuerpo = pm.response.json();",
+              "    pm.expect(cuerpo).to.have.property(\"hashSemilla\");",
+              "    // Si la semilla saliera aca, cualquiera podria calcular el orden antes del",
+              "    // revelado, y comprometer no serviria para nada.",
+              "    pm.expect(cuerpo, \"la semilla no puede viajar en el compromiso\").to.not.have.property(\"semilla\");",
+              "});",
+              "pm.collectionVariables.set(\"sorteoId\", pm.response.json().sorteoId);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 · transparencia · verificarSorteo · SIN SESION",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/publico/sorteos/:sorteoId/verificacion",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "publico",
+            "sorteos",
+            ":sorteoId",
+            "verificacion"
+          ],
+          "variable": [
+            {
+              "key": "sorteoId",
+              "value": "{{sorteoId}}",
+              "description": "Identificador; se encadena desde una peticion anterior."
+            }
+          ]
+        },
+        "description": "Paso 8 del recorrido. Servicio `transparencia`, operacion `verificarSorteo`."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// La prueba que le da sentido a todo lo anterior: un tercero SIN cuenta comprobando",
+              "// que el sorteo fue limpio. Se dispara adrede sin `Authorization`.",
+              "pm.test(\"la ruta publica contesta sin token\", () => {",
+              "    pm.expect(pm.response.code, \"una ruta de /publico pidio sesion\").to.eql(200);",
+              "});",
+              "pm.test(\"trae el paquete para rehacer el sorteo por fuera\", () => {",
+              "    pm.expect(pm.response.json()).to.have.property(\"paquete\");",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Fechas y momentos, calculados al vuelo: una fecha fija en el archivo caduca y",
+          "// entonces la coleccion falla por algo que no es el sistema.",
+          "const ahora = new Date();",
+          "pm.collectionVariables.set(\"fecha_hoy\", ahora.toISOString().slice(0, 10));",
+          "pm.collectionVariables.set(\"momento_ahora\", ahora.toISOString());",
+          "pm.collectionVariables.set(\"fecha_manana\", new Date(ahora.getTime() + 86400000).toISOString().slice(0, 10));",
+          "",
+          "// Una sola clave para el par acreditar/reacreditar del recorrido: se fija una vez por",
+          "// corrida, porque probar el reintento con dos claves distintas no prueba nada.",
+          "if (!pm.collectionVariables.get(\"claveDeLaAcreditacion\")) {",
+          "    pm.collectionVariables.set(\"claveDeLaAcreditacion\", pm.variables.replaceIn(\"{{$guid}}\"));",
+          "}",
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "aceptaContratos",
+      "value": ""
+    },
+    {
+      "key": "base_url",
+      "value": ""
+    },
+    {
+      "key": "claveDeLaAcreditacion",
+      "value": ""
+    },
+    {
+      "key": "cuentaBilleteraId",
+      "value": ""
+    },
+    {
+      "key": "fecha_hoy",
+      "value": ""
+    },
+    {
+      "key": "grupoId",
+      "value": ""
+    },
+    {
+      "key": "instrumentoFondeoId",
+      "value": ""
+    },
+    {
+      "key": "ordenId",
+      "value": ""
+    },
+    {
+      "key": "organizadorId",
+      "value": ""
+    },
+    {
+      "key": "prefijo_api",
+      "value": ""
+    },
+    {
+      "key": "sorteoId",
+      "value": ""
+    },
+    {
+      "key": "token",
+      "value": ""
+    }
+  ]
+}

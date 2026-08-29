@@ -48,7 +48,28 @@ DE_DESARROLLO = {
     "CUENTA_PUENTE_CUSTODIA": "00000000-0000-0000-0000-0000000000c0",
     "BASE_URL_PUBLICA": "http://localhost",
     "SIN_NIT_EMISOR": "1234567890",
+    # Vacia a proposito: el compose levanta UNA replica de identidad, y con una sola
+    # la clave generada en memoria alcanza. El arranque avisa que lo hizo. En
+    # cualquier entorno con dos replicas esto lo inyecta el almacen de secretos, y no
+    # este archivo (ADR-037).
+    "JWT_CLAVE_FIRMA": "",
 }
+
+def url_de_servicio(variable: str, servicios: list[str]) -> str | None:
+    """`URL_GRUPOS` -> `http://grupos:8080`, si `grupos` existe.
+
+    No se escribe una tabla de catorce entradas: **se deriva del nombre del servicio**,
+    que es la unica fuente. Una tabla a mano se olvida el dia que alguien agrega un
+    adaptador nuevo, y el fallo aparece recien al levantar el stack entero.
+
+    Se comprueba que el servicio exista de verdad: `URL_LOQUESEA` no se convierte en
+    `http://loquesea:8080` en silencio, se declara como variable sin valor.
+    """
+    if not variable.startswith("URL_"):
+        return None
+    destino = variable.removeprefix("URL_").lower().replace("_", "-")
+    return f"http://{destino}:8080" if destino in servicios else None
+
 
 CABECERA = """# Perfil `todo`: los catorce servicios, GENERADO por scripts/generar_compose.py.
 #
@@ -114,7 +135,13 @@ def main():
     for servicio in servicios:
         lineas = []
         for variable in variables_de(servicio):
-            valor = COMUNES.get(variable) or DE_DESARROLLO.get(variable)
+            # Con `is not None` y no con `or`: una cadena vacia es un valor legitimo
+            # —la clave de firma que se genera sola— y `or` la trataria como ausente.
+            valor = COMUNES.get(variable)
+            if valor is None:
+                valor = DE_DESARROLLO.get(variable)
+            if valor is None:
+                valor = url_de_servicio(variable, servicios)
             if valor is None:
                 sin_valor.append(f"{servicio}: {variable}")
                 continue

@@ -8,6 +8,7 @@ import bo.aportaya.garantia.aplicacion.CU29DevolverFondo;
 import bo.aportaya.garantia.aplicacion.CU66ReemplazarParticipante;
 import bo.aportaya.garantia.aplicacion.CU67DisolverGrupo;
 import bo.aportaya.garantia.infraestructura.DeudaRepositorio;
+import bo.aportaya.garantia.infraestructura.DisolucionRepositorio;
 import bo.aportaya.garantia.infraestructura.ExpedienteRepositorio;
 import bo.aportaya.garantia.infraestructura.FondoRepositorio;
 import bo.aportaya.garantia.infraestructura.GestionRepositorio;
@@ -90,7 +91,7 @@ abstract class BaseDeGarantia {
         devolucionCU = new CU29DevolverFondo(datos, fondos, outbox, Reloj.delSistema());
         reemplazoCU =
                 new CU66ReemplazarParticipante(datos, gestion, fondos, deudas, expedientes, outbox, Reloj.delSistema());
-        disolucionCU = new CU67DisolverGrupo(datos, gestion, outbox, Reloj.delSistema());
+        disolucionCU = new CU67DisolverGrupo(datos, new DisolucionRepositorio(), outbox, Reloj.delSistema());
     }
 
     protected ContextoSesion contextoDe(UUID usuarioId) {

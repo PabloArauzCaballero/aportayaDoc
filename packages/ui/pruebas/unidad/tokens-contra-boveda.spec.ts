@@ -162,6 +162,24 @@ describe('los tokens salen de la bóveda, no de la memoria de nadie', () => {
     })
   })
 
+  it('el rojo sólido sale de `.btn-danger`, que es donde la bóveda lo escribe', () => {
+    // Este par no vive en `:root`: la bóveda lo declara dentro de la regla del botón
+    // destructivo, con su razón al lado («blanco sobre --err da 4.38:1, así 4.61:1»).
+    // Se compara igual — que la fuente sea una regla y no una variable no lo vuelve
+    // un valor que podamos elegir nosotros.
+    const regla = /\.btn-danger\{background:(#[0-9a-f]{3,6});color:(#[0-9a-f]{3,6}|\w+)\}/i.exec(css)
+    expect(regla, 'la bóveda ya no declara .btn-danger').not.toBeNull()
+    expect(normalizar(regla![1]!), '--rojo-solido divergió de la bóveda').toBe(
+      normalizar(claro.rojoSolido),
+    )
+    expect(normalizar(regla![2]!), '--sobre-rojo-solido divergió de la bóveda').toBe(
+      normalizar(claro.sobreRojoSolido),
+    )
+    // Fijo: el mismo par en los dos temas, igual que el verde sólido.
+    expect(oscuro.rojoSolido).toBe(claro.rojoSolido)
+    expect(oscuro.sobreRojoSolido).toBe(claro.sobreRojoSolido)
+  })
+
   it('el área táctil mínima no baja de 44', () => {
     // No sale de la bóveda porque el CSS del catálogo no la declara: sale de la
     // pauta de accesibilidad, y es un piso, no un valor a ajustar.

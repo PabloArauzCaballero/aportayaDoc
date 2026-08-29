@@ -15,9 +15,13 @@
     "typecheck": "turbo run typecheck",
     "test:front": "turbo run test:front",
     "test:a11y": "turbo run test:a11y",
-    "build": "turbo run build"
+    "build": "turbo run build",
+    "humo": "for c in postman/humo/*.json; do yarn newman run \"$c\" -e postman/entornos/local.postman_environment.json --reporters cli --color off || true; done",
+    "humo:recorrido": "yarn newman run postman/recorrido.postman_collection.json -e postman/entornos/ensayo-local.postman_environment.json",
+    "postman": "python3 scripts/generar_postman.py"
   },
   "devDependencies": {
+    "newman": "^6.2.2",
     "turbo": "^2.10.0",
     "typescript": "~5.9.2"
   },

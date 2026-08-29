@@ -32,6 +32,15 @@ export type RolesDeTema = {
    */
   verdeSolido: string
   sobreVerdeSolido: string
+  /**
+   * El rojo de la acción destructiva, **oscurecido y fijo**. Blanco sobre `--err`
+   * (`#D64545`) da 4.38:1 y no pasa AA; así da 4.61:1. La bóveda lo resuelve igual en
+   * `.btn-danger`, con el mismo comentario. Es un par fijo por la misma razón que el
+   * verde sólido: sostiene texto blanco, y un tono que se aclara por tema deja de
+   * sostenerlo.
+   */
+  rojoSolido: string
+  sobreRojoSolido: string
   ok: string
   okBg: string
   okTexto: string
@@ -49,7 +58,12 @@ export type RolesDeTema = {
   sombra3: string
 }
 
-const solido = { verdeSolido: '#1C5A3A', sobreVerdeSolido: '#F4FBF6' } as const
+const solido = {
+  verdeSolido: '#1C5A3A',
+  sobreVerdeSolido: '#F4FBF6',
+  rojoSolido: '#D43E3E',
+  sobreRojoSolido: '#FFFFFF',
+} as const
 
 export const claro: RolesDeTema = {
   bg: neutro.crema,

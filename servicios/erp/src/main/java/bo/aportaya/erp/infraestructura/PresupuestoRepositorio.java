@@ -127,6 +127,10 @@ public class PresupuestoRepositorio {
      * que es exactamente el error que hace que un balance parezca roto cuando no lo esta.
      */
     public List<Saldo> saldosDelPeriodo(DSLContext dsl, UUID periodoId) {
+        // INVARIANTE-11 DECLARADO · el libro contable vive en `nucleo_financiero`.
+        // Misma razon que en `PeriodoRepositorio`: la ejecucion presupuestaria se calcula
+        // sumando el libro del periodo, y traerlo por la red seria decenas de miles de
+        // filas dentro de la transaccion. Solo lectura: el invariante 12 queda intacto.
         var a = DSL.table(DSL.name("nucleo_financiero", "asiento_contable")).as("a");
         var m = DSL.table(DSL.name("nucleo_financiero", "movimiento_contable")).as("m");
         var c = DSL.table(DSL.name("nucleo_financiero", "cuenta_contable")).as("c");

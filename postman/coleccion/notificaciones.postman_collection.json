@@ -1,0 +1,303 @@
+{
+  "info": {
+    "name": "AportaYa · notificaciones",
+    "description": "# AportaYa · notificaciones\n\nGenerado por `scripts/generar_postman.py` desde `servicios/*/src/main/resources/openapi/`.\n**No se edita a mano**: la proxima generacion lo pisa, y una coleccion editada a mano\nprueba una API que ya no existe.\n\n**3 operaciones.** Cada peticion trae su cuerpo de ejemplo derivado del\nesquema, la clave de idempotencia donde el contrato la exige, el permiso que pide\n—leido de los `@Permiso` del codigo— y los rechazos `AP-CU` que declara.\n\nElegi un entorno de `postman/entornos/` antes de disparar nada.\n",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "emitirNotificacion · Emite un aviso por los canales habilitados del destinatario",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{$guid}}",
+            "description": "Uno nuevo por intento. Repetir el mismo debe devolver la MISMA respuesta y un solo efecto (invariante 7)."
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/notificaciones",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "notificaciones"
+          ],
+          "variable": []
+        },
+        "description": "## Emite un aviso por los canales habilitados del destinatario\n\nLos canales por defecto son IN_APP, PUSH y CORREO (ADR-035). WhatsApp, SMS y voz estan APAGADOS: no se usan en un flujo nuevo. El servicio decide el canal segun consentimiento y supresion; el emisor no lo elige.\n\n| | |\n| --- | --- |\n| **Servicio** | `notificaciones` |\n| **Operacion** | `emitirNotificacion` |\n| **Ruta** | `POST /api/v1/notificaciones` |\n| **Permiso** | `SOPORTE` |\n| **Idempotencia** | exige `Idempotency-Key`; se manda un `{{$guid}}` nuevo por intento |\n| **Respuestas** | `202`, `422`, `401` |\n\n### Rechazos que declara el contrato\n\n_El contrato no declara rechazos de negocio para esta operacion._\n\n> Los importes viajan como **cadena decimal** (`\"100.00\"`), nunca como numero:\n> un `number` de JSON es un doble, y un doble pierde centavos.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"destinatarioId\": \"{{destinatarioId}}\",\n  \"evento\": \"evento-de-prueba\",\n  \"datos\": {}\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Lo que se le exige a TODA respuesta del sistema, sin excepcion.",
+              "const esperadas = [202, 401, 422];",
+              "",
+              "pm.test(\"responde con un codigo que el contrato declara\", () => {",
+              "    pm.expect(esperadas).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"no filtra la traza al cliente\", () => {",
+              "    const cuerpo = pm.response.text();",
+              "    // Un stack trace en la respuesta le cuenta al atacante como esta hecho el",
+              "    // servidor. Es una de las dieciocho prohibiciones del contrato.",
+              "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+              "    pm.expect(cuerpo).to.not.include(\"java.lang.\");",
+              "});",
+              "",
+              "if (pm.response.code === 422) {",
+              "    pm.test(\"el rechazo trae su codigo AP-CU\", () => {",
+              "        pm.expect(pm.response.json()).to.have.property(\"codigo\").that.matches(/^AP-CU\\d+-\\d+$/);",
+              "    });",
+              "}",
+              "",
+              "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+              "if (pm.response.code < 300) {",
+              "    const cuerpo = pm.response.json();",
+              "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+              "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+              "            pm.collectionVariables.set(clave, valor);",
+              "        }",
+              "    }",
+              "}",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "procesarRespuestaEntrante · Procesar una respuesta entrante",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/notificaciones/webhooks/:proveedor",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "notificaciones",
+            "webhooks",
+            ":proveedor"
+          ],
+          "variable": [
+            {
+              "key": "proveedor",
+              "value": "{{proveedor}}",
+              "description": "Identificador; se encadena desde una peticion anterior."
+            }
+          ]
+        },
+        "description": "## Procesar una respuesta entrante\n\nLa unica puerta que abre alguien de afuera. Verifica la firma ANTES de tocar la base, y no revela nada: un remitente desconocido recibe la misma respuesta que un mensaje duplicado. Contestar «ese numero no existe» convertiria este webhook en un directorio de clientes.\n\n| | |\n| --- | --- |\n| **Servicio** | `notificaciones` |\n| **Operacion** | `procesarRespuestaEntrante` |\n| **Ruta** | `POST /api/v1/notificaciones/webhooks/{proveedor}` |\n| **Permiso** | **ruta publica, sin sesion** |\n| **Respuestas** | `200`, `422` |\n\n### Rechazos que declara el contrato\n\n| Codigo | Motivo |\n| --- | --- |\n| `AP-CU82-01` | Firma invalida |\n| `AP-CU82-02` | Remitente desconocido |\n| `AP-CU82-03` | Mensaje duplicado |\n| `AP-CU80-01` | Sin plantilla aprobada |\n| `AP-CU80-02` | Canal no verificado |\n| `AP-CU80-03` | Destinatario suprimido |\n| `AP-CU80-04` | Evento reservado |\n| `AP-CU81-01` | Periodo no abierto |\n| `AP-CU81-02` | Sin programacion |\n| `AP-CU83-01` | Sin proveedor para canal |\n| `AP-CU83-02` | Envio ya procesado |\n| `AP-CU83-03` | Ritmo excedido |\n| `AP-CU83-04` | Proveedor degradado |\n| `AP-CU83-05` | Agotados los reintentos |\n\n> Los importes viajan como **cadena decimal** (`\"100.00\"`), nunca como numero:\n> un `number` de JSON es un doble, y un doble pierde centavos.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"canal\": \"IN_APP\",\n  \"remitente\": \"remitente-de-prueba\",\n  \"firma\": \"firma-de-prueba\",\n  \"cargaUtil\": \"cargaUtil-de-prueba\",\n  \"contenido\": \"contenido-de-prueba\",\n  \"claveIdempotencia\": \"claveIdempotencia-de-prueba\",\n  \"notificacionRelacionadaId\": \"{{notificacionRelacionadaId}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Lo que se le exige a TODA respuesta del sistema, sin excepcion.",
+              "const esperadas = [200, 422];",
+              "",
+              "pm.test(\"responde con un codigo que el contrato declara\", () => {",
+              "    pm.expect(esperadas).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"no filtra la traza al cliente\", () => {",
+              "    const cuerpo = pm.response.text();",
+              "    // Un stack trace en la respuesta le cuenta al atacante como esta hecho el",
+              "    // servidor. Es una de las dieciocho prohibiciones del contrato.",
+              "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+              "    pm.expect(cuerpo).to.not.include(\"java.lang.\");",
+              "});",
+              "",
+              "if (pm.response.code === 422) {",
+              "    pm.test(\"el rechazo trae su codigo AP-CU\", () => {",
+              "        pm.expect(pm.response.json()).to.have.property(\"codigo\").that.matches(/^AP-CU\\d+-\\d+$/);",
+              "    });",
+              "}",
+              "",
+              "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+              "if (pm.response.code < 300) {",
+              "    const cuerpo = pm.response.json();",
+              "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+              "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+              "            pm.collectionVariables.set(clave, valor);",
+              "        }",
+              "    }",
+              "}",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "consultarSupresion · Si un destino pidio no recibir mas",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}{{prefijo_api}}/notificaciones/supresion",
+          "host": [
+            "{{base_url}}{{prefijo_api}}"
+          ],
+          "path": [
+            "notificaciones",
+            "supresion"
+          ],
+          "variable": [],
+          "query": [
+            {
+              "key": "identificador",
+              "value": "identificador-de-prueba",
+              "description": "",
+              "disabled": false
+            },
+            {
+              "key": "categoria",
+              "value": "categoria-de-prueba",
+              "description": "",
+              "disabled": false
+            }
+          ]
+        },
+        "description": "## Si un destino pidio no recibir mas\n\nLa pregunta CU-69 de `grupos` antes de invitar: a quien se dio de baja no se le escribe, aunque quien invita no lo sepa. La lista de supresion es de este servicio y nadie mas la puede leer (invariante 11).\nSe mira en los tres canales encendidos y alcanza con que uno este suprimido: quien pidio no recibir por el canal que usariamos, pidio no recibir.\n\n| | |\n| --- | --- |\n| **Servicio** | `notificaciones` |\n| **Operacion** | `consultarSupresion` |\n| **Ruta** | `GET /api/v1/notificaciones/supresion` |\n| **Permiso** | `SOPORTE` |\n| **Respuestas** | `200` |\n\n### Rechazos que declara el contrato\n\n_El contrato no declara rechazos de negocio para esta operacion._\n\n> Los importes viajan como **cadena decimal** (`\"100.00\"`), nunca como numero:\n> un `number` de JSON es un doble, y un doble pierde centavos."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Lo que se le exige a TODA respuesta del sistema, sin excepcion.",
+              "const esperadas = [200];",
+              "",
+              "pm.test(\"responde con un codigo que el contrato declara\", () => {",
+              "    pm.expect(esperadas).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"no filtra la traza al cliente\", () => {",
+              "    const cuerpo = pm.response.text();",
+              "    // Un stack trace en la respuesta le cuenta al atacante como esta hecho el",
+              "    // servidor. Es una de las dieciocho prohibiciones del contrato.",
+              "    pm.expect(cuerpo).to.not.match(/at bo\\.aportaya\\./);",
+              "    pm.expect(cuerpo).to.not.include(\"java.lang.\");",
+              "});",
+              "",
+              "if (pm.response.code === 422) {",
+              "    pm.test(\"el rechazo trae su codigo AP-CU\", () => {",
+              "        pm.expect(pm.response.json()).to.have.property(\"codigo\").that.matches(/^AP-CU\\d+-\\d+$/);",
+              "    });",
+              "}",
+              "",
+              "// Encadena: lo que devuelve esta peticion queda disponible para la siguiente.",
+              "if (pm.response.code < 300) {",
+              "    const cuerpo = pm.response.json();",
+              "    for (const [clave, valor] of Object.entries(cuerpo || {})) {",
+              "        if (typeof valor === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(valor)) {",
+              "            pm.collectionVariables.set(clave, valor);",
+              "        }",
+              "    }",
+              "}",
+              ""
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Fechas y momentos, calculados al vuelo: una fecha fija en el archivo caduca y",
+          "// entonces la coleccion falla por algo que no es el sistema.",
+          "const ahora = new Date();",
+          "pm.collectionVariables.set(\"fecha_hoy\", ahora.toISOString().slice(0, 10));",
+          "pm.collectionVariables.set(\"momento_ahora\", ahora.toISOString());",
+          "pm.collectionVariables.set(\"fecha_manana\", new Date(ahora.getTime() + 86400000).toISOString().slice(0, 10));",
+          "",
+          "// Una sola clave para el par acreditar/reacreditar del recorrido: se fija una vez por",
+          "// corrida, porque probar el reintento con dos claves distintas no prueba nada.",
+          "if (!pm.collectionVariables.get(\"claveDeLaAcreditacion\")) {",
+          "    pm.collectionVariables.set(\"claveDeLaAcreditacion\", pm.variables.replaceIn(\"{{$guid}}\"));",
+          "}",
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": ""
+    },
+    {
+      "key": "destinatarioId",
+      "value": ""
+    },
+    {
+      "key": "notificacionRelacionadaId",
+      "value": ""
+    },
+    {
+      "key": "prefijo_api",
+      "value": ""
+    },
+    {
+      "key": "proveedor",
+      "value": ""
+    },
+    {
+      "key": "token",
+      "value": ""
+    }
+  ]
+}
