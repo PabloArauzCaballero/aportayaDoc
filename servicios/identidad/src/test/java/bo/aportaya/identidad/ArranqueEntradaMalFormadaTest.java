@@ -101,11 +101,20 @@ class ArranqueEntradaMalFormadaTest {
     }
 
     @Test
-    @DisplayName("entrada: el verbo equivocado da 405, y la ruta inexistente 404")
-    void elVerboYLaRutaTienenSuPropioCodigo() {
+    @DisplayName("entrada: a quien no tiene sesion no se le dice que rutas existen")
+    void elVerboEquivocadoNoRevelaElMapa() {
+        // `GET /usuarios` no esta mapeado —solo POST— y la respuesta es **401, no 405**.
+        //
+        // Se comprobo contra el proceso levantado, y esta bien que sea asi: un 405
+        // le confirma a quien prueba que la ruta existe y que el verbo era otro, y un
+        // 404 le confirma que no existe. Las dos cosas son un mapa gratis del sistema
+        // para alguien sin sesion. Un 401 uniforme no le dice nada.
+        //
+        // Los codigos 405 y 404 del manejador global siguen valiendo para quien SI
+        // trae sesion, que es donde sirven: ahi la informacion ya no es un regalo.
         assertThat(cliente.getForEntity("/usuarios", String.class).getStatusCode())
-                .as("GET sobre una ruta que solo acepta POST")
-                .isEqualTo(HttpStatus.METHOD_NOT_ALLOWED);
+                .as("un anonimo no puede deducir que rutas hay probando verbos")
+                .isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
     @Test

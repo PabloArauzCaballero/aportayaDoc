@@ -52,7 +52,7 @@ existan las pruebas que lo ejercitan por HTTP (`ArranquePuertaDeEntradaTest`,
 | Qué | Dónde | Por qué importaba |
 | --- | --- | --- |
 | `@Publico` no se respetaba | `LoQueEstaAbierto` | El sistema no se podía usar desde afuera |
-| Entrada malformada daba `500` | `ManejadorGlobalDeErrores` | Mentía sobre de quién es la culpa, llenaba la bitácora de ERROR hasta perder las alertas reales, y dejaba simular una caída mandando basura |
+| Entrada malformada daba `500` | `ManejadorGlobalDeErrores` | Mentía sobre de quién es la culpa, llenaba la bitácora de ERROR hasta perder las alertas reales, y dejaba simular una caída mandando basura. **Verificado en vivo**: fecha inválida, JSON roto y UUID inválido dan `400` con `AP-VAL-02`, sin filtrar la traza |
 | 11 umbrales eran constantes disfrazadas | `application.yml` de auditoría, cumplimiento y núcleo | Un umbral que sólo existe como valor por omisión no se mueve sin desplegar (invariante 10) |
 | 14 URLs de servicio faltaban en el compose | `generar_compose.py` | Los adaptadores HTTP no tenían a quién preguntar en el stack desplegado |
 | La clave de firma se generaba en memoria sin avisar | `EmisorDeAcceso` | Con dos réplicas cada una firma distinto y los tokens de una los rechaza la otra (ADR-037) |
@@ -98,3 +98,21 @@ reinició Docker Desktop porque en esa máquina hay 54 contenedores de otros pro
 y eso no es una decisión de este carril.
 
 No se dice que estén bien hasta que corran.
+
+## Lo que sí quedó verificado, y cómo
+
+| Qué | Cómo se comprobó |
+| --- | --- |
+| `@Publico` se respeta | `ArranquePuertaDeEntradaTest` **pasó** (`BUILD SUCCESSFUL`, 4m 58s) antes de que Docker se degradara · y en vivo: `/sesiones` llega al controlador y falla por credenciales de la base, **no** con el `401` de la guardia |
+| Lo demás sigue cerrado | En vivo: `GET /usuarios/por-telefono` sin token → `401` |
+| Entrada malformada da `400` | En vivo contra el proceso levantado: fecha inválida, JSON roto y UUID inválido → `400` con `AP-VAL-02` y sin nombres internos en el cuerpo |
+| El JWKS se sirve sin sesión | En vivo → `200` |
+
+### Un hallazgo del camino: a quien no tiene sesión no se le dice qué rutas existen
+
+`GET /usuarios` no está mapeado —sólo POST— y responde **401, no 405**. La prueba
+esperaba `405` y **la prueba estaba mal**: un `405` le confirma a quien tantea que la
+ruta existe y que el verbo era otro; un `404`, que no existe. Las dos cosas son un mapa
+gratis del sistema para un anónimo. El `401` uniforme no dice nada, y es lo correcto.
+Los códigos `405` y `404` siguen valiendo para quien sí trae sesión, que es donde
+informan sin regalar nada.
