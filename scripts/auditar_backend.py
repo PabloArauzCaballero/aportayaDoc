@@ -301,7 +301,9 @@ def pruebas() -> Dimension:
         "Pruebas",
         4,
         "Un caso de uso sin prueba de rechazo prueba que el camino feliz funciona, que "
-        "es lo unico que nunca falla en produccion.",
+        "es lo unico que nunca falla en produccion. OJO: esta dimension mide que el "
+        "archivo EXISTA, no que pase — escribir un archivo sube la nota sin probar "
+        "nada. La evidencia de ejecucion se reporta aparte, abajo.",
     )
     for servicio in SERVICIOS:
         raiz_pruebas = RAIZ / "servicios" / servicio / "src/test/java"
@@ -436,6 +438,36 @@ def prohibiciones() -> Dimension:
     return d
 
 
+def evidencia_de_ejecucion() -> tuple[int, int, list[str]]:
+    """Cuantas clases de prueba tienen evidencia de haber CORRIDO Y PASADO.
+
+    Existir no es pasar. Una auditoria que cuenta archivos premia a quien escribe el
+    archivo, que es exactamente la trampa que el contrato prohibe —«nunca afirmar que
+    pasa sin haberlo ejecutado»—. Esto lee los resultados que dejo Gradle: si no hay
+    resultados, no hay evidencia, y se dice.
+    """
+    escritas, con_evidencia, sin_evidencia = 0, 0, []
+    for servicio in SERVICIOS:
+        raiz_pruebas = RAIZ / "servicios" / servicio / "src/test/java"
+        if not raiz_pruebas.exists():
+            continue
+        for archivo in raiz_pruebas.rglob("CU*Test.java"):
+            escritas += 1
+            resultados = list(
+                (RAIZ / "servicios" / servicio / "build/test-results").rglob(f"TEST-*.{archivo.stem}.xml")
+            )
+            paso = False
+            for resultado in resultados:
+                cabecera = resultado.read_text(encoding="utf-8", errors="ignore")[:600]
+                if 'failures="0"' in cabecera and 'errors="0"' in cabecera:
+                    paso = True
+            if paso:
+                con_evidencia += 1
+            else:
+                sin_evidencia.append(f"{servicio}: {archivo.stem}")
+    return escritas, con_evidencia, sin_evidencia
+
+
 DIMENSIONES = [alcance, seguridad, invariantes, contratos, pruebas, cableado, prohibiciones]
 
 
@@ -449,6 +481,7 @@ def main() -> None:
             {
                 "global": global_,
                 "declaradas": DECLARADAS,
+                "evidencia": dict(zip(("escritas", "con_evidencia", "sin_evidencia"), evidencia_de_ejecucion())),
                 "dimensiones": [
                     {"nombre": r.nombre, "nota": r.nota, "peso": r.peso,
                      "revisadas": r.revisadas, "hallazgos": r.hallazgos}
@@ -477,8 +510,18 @@ def main() -> None:
         for entrada in DECLARADAS:
             print(f"    - {entrada}")
 
+    escritas, con_evidencia, sin_evidencia = evidencia_de_ejecucion()
+    print(f"\nEVIDENCIA DE EJECUCION  ·  {con_evidencia}/{escritas} clases de prueba corrieron y pasaron")
+    print("  Existir no es pasar. La nota de «Pruebas» cuenta archivos; esto cuenta corridas.")
+    if sin_evidencia:
+        print(f"  Sin evidencia en build/test-results ({len(sin_evidencia)}):")
+        for entrada in sin_evidencia[:10]:
+            print(f"    - {entrada}")
+        if len(sin_evidencia) > 10:
+            print(f"    … y {len(sin_evidencia) - 10} mas")
+
     print("\n" + "=" * 78)
-    print(f"NOTA GLOBAL: {global_}/10")
+    print(f"NOTA GLOBAL: {global_}/10   ·   con {con_evidencia}/{escritas} pruebas verificadas")
 
 
 if __name__ == "__main__":

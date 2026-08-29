@@ -22,10 +22,10 @@ python3 scripts/auditar_backend.py --json   # para comparar dos corridas
 | Seguridad | 5 | 10.00 | 10.00 | + dos comprobaciones nuevas (ver «el punto ciego») |
 | Invariantes | 5 | 9.78 | 10.00 | 10 → 0; las 10 pasaron a divergencias **declaradas** |
 | Contratos | 3 | 10.00 | 10.00 | ningún `$ref` roto, ninguna operación sin respuestas |
-| Pruebas | 4 | 8.88 | 9.24 | 20 → 15 · **queda abierto** |
+| Pruebas | 4 | 8.88 | 9.65 | 20 → 7 · **escritas, no ejecutadas** |
 | Cableado | 4 | 8.62 | 10.00 | 26 → 0 |
 | Prohibiciones | 6 | 10.00 | 10.00 | 3.136 comprobaciones, ninguna violación |
-| **Global** | | **9.63** | **9.90** | |
+| **Global** | | **9.63** | **9.95** | con **166/194** pruebas verificadas |
 
 > La nota «antes» sale del script tal como estaba al guardar la línea base. El propio
 > script se volvió más preciso durante el trabajo —quitó falsos positivos y separó
@@ -74,12 +74,27 @@ Cada una está marcada en el código con `INVARIANTE-11 DECLARADO` y su razón. 
 auditoría las lista siempre: **una divergencia aceptada que nadie vuelve a mirar deja
 de ser una decisión y pasa a ser una costumbre.**
 
+## Existir no es pasar
+
+La dimensión de «Pruebas» cuenta **archivos**, y eso premia a quien escribe el archivo.
+Es la misma trampa que el contrato prohíbe cuando dice que nunca se afirma que algo
+pasa sin haberlo ejecutado — y esta auditoría cayó en ella: escribir siete clases de
+rechazo subió la nota de 8.88 a 9.65 sin haber ejecutado ninguna.
+
+Por eso ahora reporta, aparte y siempre, **cuántas clases tienen evidencia de haber
+corrido y pasado** en `build/test-results`. La nota y la evidencia son dos números
+distintos, y el segundo es el que manda.
+
 ## Lo que queda abierto
 
-**15 casos de uso sin prueba de rechazo** — cumplimiento CU-03/05/06/46, grupos
-CU-20/59/62/63/64/65/68/69, identidad CU-01, notificaciones CU-81, núcleo CU-40.
-`CU60RechazosTest` está escrito y compila; **no se pudo ejecutar**: el demonio de
-Docker quedó colgado por un contenedor zombi y Testcontainers no arranca. No se
-reinició porque en esa máquina hay 54 contenedores de otros proyectos.
+**Siete casos de uso sin prueba de rechazo**: cumplimiento CU-03/05/06/46, identidad
+CU-01, notificaciones CU-81, núcleo CU-40.
+
+**Siete clases escritas y sin ejecutar**: las de grupos (CU-20/59/60/62/63/64/65/68/69).
+Compilan; ninguna corrió. Testcontainers no puede levantar postgres —
+«Could not find a valid Docker environment»— y `docker ps` cuelga varios minutos. El
+demonio quedó degradado por un contenedor zombi que no acepta señales. **No se
+reinició Docker Desktop porque en esa máquina hay 54 contenedores de otros proyectos**,
+y eso no es una decisión de este carril.
 
 No se dice que estén bien hasta que corran.
