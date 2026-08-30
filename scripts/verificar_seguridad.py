@@ -219,6 +219,10 @@ def bloque_2():
 CODIGO_APP = {".java", ".kt", ".ts", ".tsx", ".js", ".jsx"}
 CUALQUIERA = EXT_CODIGO
 
+# Los archivos cuyo trabajo ES enumerar las prohibiciones. La lista se escribe a
+# mano a propósito: agregar uno tiene que ser una decisión, no un descuido.
+BARREDORES = {"verificar_seguridad.py", "auditar_backend.py"}
+
 PROHIBIDOS = [
     (r"\bprintStackTrace\s*\(", "traza al log o a la respuesta (prohibición 10)"),
     (r"\bMath\.random\s*\(", "aleatoriedad no criptográfica (prohibición 6)"),
@@ -242,8 +246,11 @@ def bloque_3():
     print("\n=== 3 · PATRONES PROHIBIDOS ===")
     hallazgos, revisados = [], 0
     for p in archivos(EXT_CODIGO):
-        # Este archivo enumera los patrones: encontrarlos acá es su función.
-        if p.name == "verificar_seguridad.py":
+        # Encontrar un patrón prohibido dentro de un barredor es que el barredor
+        # funciona, no que alguien cometió la prohibición. Se exime por nombre y
+        # no por carpeta: `scripts/` entero exento sería una puerta abierta, y el
+        # día que alguien escriba ahí un `Math.random` de verdad nadie lo vería.
+        if p.name in BARREDORES:
             continue
         texto = p.read_text(encoding="utf-8", errors="ignore")
         revisados += 1
