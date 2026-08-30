@@ -70,9 +70,9 @@ python3 scripts/generar_ddl.py        # "Sin pendientes a nivel de datos."
 Y contra una base real, recién creada:
 
 ```bash
-psql -d aportaya -v ON_ERROR_STOP=1 -f sql/aplicar.sql
-psql -d aportaya -v ON_ERROR_STOP=1 -f sql/60_semillas/sembrar.sql
-psql -d aportaya -f sql/50_verificacion/prueba_humo.sql    # todo OK, cero FALLA
+psql -d pasanaku -v ON_ERROR_STOP=1 -f sql/aplicar.sql
+psql -d pasanaku -v ON_ERROR_STOP=1 -f sql/60_semillas/sembrar.sql
+psql -d pasanaku -f sql/50_verificacion/prueba_humo.sql    # todo OK, cero FALLA
 ```
 
 - [ ] Los generadores terminan sin pendientes.

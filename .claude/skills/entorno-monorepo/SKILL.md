@@ -34,10 +34,10 @@ Un archivo nuevo se ubica por **nivel**, no por conveniencia: `arquitectura-atom
 
 docker compose up -d db                       # PostgreSQL 16
 python3 scripts/generar_ddl.py                # el esquema sale de la bóveda
-psql -d aportaya -v ON_ERROR_STOP=1 -f sql/aplicar.sql
-psql -d aportaya -v ON_ERROR_STOP=1 -f sql/60_semillas/sembrar.sql
-psql -d aportaya -f sql/60_semillas/99_desarrollo.sql   # solo local
-psql -d aportaya -f sql/50_verificacion/prueba_humo.sql # 69 comprobaciones
+psql -d pasanaku -v ON_ERROR_STOP=1 -f sql/aplicar.sql
+psql -d pasanaku -v ON_ERROR_STOP=1 -f sql/60_semillas/sembrar.sql
+psql -d pasanaku -f sql/60_semillas/99_desarrollo.sql   # solo local
+psql -d pasanaku -f sql/50_verificacion/prueba_humo.sql # 165 comprobaciones
 
 ./gradlew generateJooq                              # introspección → tipos de jOOQ
 ./gradlew bootRun                                      # api + worker + backoffice

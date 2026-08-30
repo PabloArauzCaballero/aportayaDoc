@@ -579,10 +579,10 @@ como sistema, con su identificador. Cuando el evento trae el actor original, se 
 ./gradlew build
 docker compose up -d postgres pgbouncer
 python3 scripts/generar_ddl.py
-psql -d aportaya -v ON_ERROR_STOP=1 -f sql/aplicar.sql
-psql -d aportaya -v ON_ERROR_STOP=1 -f sql/60_semillas/sembrar.sql        # 20 catálogos
-psql -d aportaya -f sql/61_dev/sembrar_dev.sql                       # 14, solo local
-psql -d aportaya -f sql/50_verificacion/prueba_humo.sql                    # todo OK, cero FALLA
+psql -d pasanaku -v ON_ERROR_STOP=1 -f sql/aplicar.sql
+psql -d pasanaku -v ON_ERROR_STOP=1 -f sql/60_semillas/sembrar.sql        # 20 catálogos
+psql -d pasanaku -f sql/61_dev/sembrar_dev.sql                       # 14, solo local
+psql -d pasanaku -f sql/50_verificacion/prueba_humo.sql                    # todo OK, cero FALLA
 ./gradlew generateJooq
 ./gradlew bootRun
 ```
@@ -650,9 +650,9 @@ con confianza.
 ```bash
 python3 scripts/generar_boveda.py     # "sin_resolver": []
 python3 scripts/generar_ddl.py        # "Sin pendientes a nivel de datos."
-psql -d aportaya -v ON_ERROR_STOP=1 -f sql/aplicar.sql
-psql -d aportaya -v ON_ERROR_STOP=1 -f sql/60_semillas/sembrar.sql
-psql -d aportaya -f sql/50_verificacion/prueba_humo.sql    # todo OK, cero FALLA
+psql -d pasanaku -v ON_ERROR_STOP=1 -f sql/aplicar.sql
+psql -d pasanaku -v ON_ERROR_STOP=1 -f sql/60_semillas/sembrar.sql
+psql -d pasanaku -f sql/50_verificacion/prueba_humo.sql    # todo OK, cero FALLA
 ```
 
 **Los números que se ponen en la descripción son los que salieron, no los que se

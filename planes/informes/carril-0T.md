@@ -336,11 +336,21 @@ bóveda, sin divergencias.
    saltarse en silencio y el gate seguía diciendo BUILD SUCCESSFUL). Ahora
    `descriptor.yml`, `README.md` y `openapi/<servicio>.yaml` solo se escriben si
    faltan.
-6. **`prueba_humo.sql` no es idempotente.** Dice funcionar «igual con la base recién
-   creada o ya sembrada», pero correrlo dos veces seguidas da 27 FALLA por clave
-   duplicada de sus propios datos de prueba. No afecta al gate —`bd:reset` recrea el
-   volumen— pero un carril que corra `bd:humo` dos veces va a creer que rompió algo.
-   **No lo toqué:** es el único archivo escrito a mano de `sql/`, y `sql/` es troncal.
+6. ~~**`prueba_humo.sql` no es idempotente.**~~ **CERRADO.** Correrlo dos veces daba
+   27 FALLA por clave duplicada de sus propios datos de prueba, y aun corriéndolo una
+   sola vez dejaba esas filas para siempre en la base de trabajo. El archivo sigue sin
+   tocarse —es el único escrito a mano de `sql/`—: lo que cambió es dónde corre.
+   `bd:humo` arma ahora una base desechable (`scripts/probar_humo.py`), prueba ahí y
+   la tira. Lo que se verifica es el esquema, que sale del mismo `sql/` para las dos
+   bases. De paso la tarea **falla** si aparece una línea FALLA: antes devolvía
+   BUILD SUCCESSFUL con 27 adentro.
+
+   En la misma pasada se cerró la causa de fondo, que era más grande: `sql/aplicar.sql`
+   solo se podía aplicar una vez. 630 claves foráneas, 181 restricciones del catálogo,
+   46 disparadores, 45 índices y 2 políticas se emitían sin guarda, y las semillas de
+   desarrollo duplicaban en las 113 tablas sin clave natural. Verificado con tres
+   pasadas seguidas sobre base virgen: cero errores y los mismos conteos de filas las
+   tres veces.
 
 ## Supuestos declarados
 

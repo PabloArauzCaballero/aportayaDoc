@@ -82,7 +82,7 @@ psql -f sql/50_verificacion/prueba_humo.sql           # comprobaciones sobre la 
 **Solo en desarrollo**, después de lo anterior:
 
 ```bash
-psql -c "ALTER DATABASE aportaya SET app.entorno = 'dev'"   # la marca, una sola vez
+psql -c "ALTER DATABASE pasanaku SET app.entorno = 'dev'"   # la marca, una sola vez
 psql -v ON_ERROR_STOP=1 -f sql/61_dev/sembrar_dev.sql
 ```
 

@@ -26,7 +26,7 @@ Y `sql/61_dev/sembrar_dev.sql` arranca con una guarda que aborta si la base no
 tiene `app.entorno = 'dev'`. La marca la pone el arranque de desarrollo:
 
 ```bash
-psql -d aportaya -c "ALTER DATABASE aportaya SET app.entorno = 'dev'"
+psql -d pasanaku -c "ALTER DATABASE pasanaku SET app.entorno = 'dev'"
 ```
 
 **Dónde va cada cosa, sin dudar:** ¿lo necesita producción para operar? → `minimos/`.
@@ -134,11 +134,11 @@ agrega también **qué regla permiten probar**.
 
 ```bash
 python3 scripts/generar_semillas.py
-psql -d aportaya -v ON_ERROR_STOP=1 -f sql/aplicar.sql
-psql -d aportaya -v ON_ERROR_STOP=1 -f sql/60_semillas/sembrar.sql
-psql -d aportaya -c "ALTER DATABASE aportaya SET app.entorno = 'dev'"
-psql -d aportaya -v ON_ERROR_STOP=1 -f sql/61_dev/sembrar_dev.sql
-psql -d aportaya -f sql/50_verificacion/prueba_humo.sql     # todo OK
+psql -d pasanaku -v ON_ERROR_STOP=1 -f sql/aplicar.sql
+psql -d pasanaku -v ON_ERROR_STOP=1 -f sql/60_semillas/sembrar.sql
+psql -d pasanaku -c "ALTER DATABASE pasanaku SET app.entorno = 'dev'"
+psql -d pasanaku -v ON_ERROR_STOP=1 -f sql/61_dev/sembrar_dev.sql
+psql -d pasanaku -f sql/50_verificacion/prueba_humo.sql     # todo OK
 ```
 
 5. Volver a correr el paso 2 de semillas: **no debe duplicar nada**.

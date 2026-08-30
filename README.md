@@ -84,15 +84,18 @@ del sistema, en cuatro capas encadenadas.
 ```bash
 python3 scripts/generar_boveda.py   # notas del modelo (Obsidian) desde los .puml
 python3 scripts/generar_ddl.py      # esquema SQL completo desde los .puml + el catálogo
-psql -d aportaya -v ON_ERROR_STOP=1 -f sql/aplicar.sql
-psql -d aportaya -v ON_ERROR_STOP=1 -f sql/60_semillas/sembrar.sql
-psql -d aportaya -f sql/50_verificacion/prueba_humo.sql   # 152 comprobaciones
+
+./gradlew bd:aplicar                # esquema y reglas sobre la base de trabajo
+./gradlew bd:semillas               # los 20 catálogos mínimos
+./gradlew bd:humo                   # 165 comprobaciones, sobre una base DESECHABLE
 ```
 
 El esquema son **305 tablas en un archivo cada una**, con las claves foráneas y los
 índices en pasadas aparte —el orden que necesita la introspección de tipos— más el
 sellado de las tablas append-only y el catálogo de restricciones. Verificado sobre
-PostgreSQL 16: aplica sin errores y la prueba de humo confirma que las restricciones
+PostgreSQL 16: aplica sin errores **las veces que haga falta** —cada objeto se borra
+si existe antes de crearse, porque `aplicar.sql` no es una migración sino el esquema
+entero— y la prueba de humo confirma que las restricciones
 rechazan lo que deben rechazar.
 
 La **arquitectura** está en [`docs/Arquitectura/`](docs/Arquitectura/_Arquitectura.md):

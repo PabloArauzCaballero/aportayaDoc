@@ -109,8 +109,8 @@ Y después, contra una base real:
 ```bash
 docker run --rm -d --name pg-aportaya -e POSTGRES_PASSWORD=x -e POSTGRES_DB=aportaya \
   -v "$PWD/sql:/sql:ro" postgres:16 && sleep 10
-docker exec pg-aportaya psql -U postgres -d aportaya -v ON_ERROR_STOP=1 -f /sql/aplicar.sql
-docker exec pg-aportaya psql -U postgres -d aportaya -f /sql/50_verificacion/prueba_humo.sql
+docker exec -i aportaya-postgres psql -U pasanaku -d pasanaku -v ON_ERROR_STOP=1 -f /sql/aplicar.sql
+docker exec -i aportaya-postgres psql -U pasanaku -d pasanaku -f /sql/50_verificacion/prueba_humo.sql
 ```
 
 La prueba de humo tiene que dar **todo OK**. Requiere base recién creada.
