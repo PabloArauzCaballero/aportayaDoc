@@ -45,7 +45,19 @@ val generarSemillas = tasks.register<Exec>("generarSemillas") {
 val semillas = psql("semillas", "Los 20 catalogos minimos — los mismos que van a produccion", "sql/60_semillas/sembrar.sql")
 val dev = psql("dev", "Datos de desarrollo — NUNCA en produccion (seeders/dev)", "sql/61_dev/sembrar_dev.sql")
 val verificaciones = psql("verificaciones", "sql/50_verificacion/verificaciones.sql", "sql/50_verificacion/verificaciones.sql")
-val humo = psql("humo", "prueba_humo.sql — todo OK, cero FALLA", "sql/50_verificacion/prueba_humo.sql")
+// El humo NO corre sobre `pasanaku`, y esa es la diferencia con el resto.
+// `prueba_humo.sql` siembra filas propias con identificadores fijos y no las
+// borra: corrido dos veces chocaba con las suyas de la vez anterior —27 FALLA
+// que no eran defectos— y, aun corriendo una sola vez, dejaba una cuenta de
+// plataforma de mentira conviviendo con los datos de desarrollo. Ahora se arma
+// una base desechable, se prueba ahí y se tira. Lo que se verifica es el
+// esquema, y el esquema sale del mismo sql/ para las dos bases.
+val humo = tasks.register<Exec>("humo") {
+    group = "base de datos"
+    description = "prueba_humo.sql sobre una base DESECHABLE — todo OK, cero FALLA"
+    workingDir = raiz
+    commandLine("python3", "scripts/probar_humo.py")
+}
 
 // El orden es el de aplicar.sql y no se negocia: sin esquemas no hay tablas, sin
 // tablas no hay semillas, y sin semillas la prueba de humo no prueba nada.
@@ -53,7 +65,12 @@ aplicar { dependsOn(levantar) }
 semillas { dependsOn(aplicar, generarSemillas) }
 dev { dependsOn(semillas) }
 verificaciones { dependsOn(dev) }
-humo { dependsOn(verificaciones) }
+// El humo se basta solo: arma su base, aplica y siembra ahí dentro. No depende
+// de que `pasanaku` esté al día, y por eso `./gradlew bd:humo` no la modifica.
+humo {
+    dependsOn(levantar, generarSemillas)
+    mustRunAfter(verificaciones)
+}
 
 tasks.register("reset") {
     group = "base de datos"
