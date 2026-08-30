@@ -28,6 +28,15 @@ append_only: false
 | `fecha_fin` | DATE | — | no | — |
 | `estado` | VARCHAR(10) | IDX | no | CK, IDX |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_periodo_contable_rango` | CHECK | `fecha_fin`, `fecha_inicio` |
+| `uq_periodo_contable_ejercicio_mes` | UNIQUE | `ejercicio_fiscal_id`, `mes` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

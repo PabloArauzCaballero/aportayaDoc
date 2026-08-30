@@ -26,7 +26,7 @@ append_only: false
 | `entidad_financiera` | VARCHAR(60) | — | no | — |
 | `numero_cuenta_cifrado` | VARCHAR(255) | — | no | — |
 | `version_llave` | SMALLINT | — | no | — |
-| `hash_numero_cuenta` | VARCHAR(64) | UQ | no | UQ+usuario_id |
+| `hash_numero_cuenta` | VARCHAR(64) | — | no | — |
 | `numero_enmascarado` | VARCHAR(30) | — | no | — |
 | `titular_nombre` | VARCHAR(120) | — | no | — |
 | `titular_documento` | VARCHAR(30) | — | no | — |
@@ -36,6 +36,19 @@ append_only: false
 | `metodo_verificacion` | VARCHAR(20) | — | sí | NULL |
 | `verificada_en` | TIMESTAMPTZ | — | sí | NULL |
 | `bloqueada_hasta` | TIMESTAMPTZ | — | sí | NULL |
+
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_cuenta_bancaria_sin_claro` | CHECK | `hash_numero_cuenta`, `numero_enmascarado` |
+| `ck_cuenta_bancaria_version_llave` | CHECK | `version_llave` |
+| `ck_cuenta_benef_hash_completo` | CHECK | `hash_numero_cuenta` |
+| `ck_cuenta_benef_verificada` | CHECK | `estado_verificacion`, `verificada_en` |
+| `uq_cuenta_benef_hash` | UNIQUE | `usuario_id`, `hash_numero_cuenta` |
+| `uq_cuenta_benef_principal` | UNIQUE parcial | `usuario_id` |
 
 ## Claves foráneas salientes
 

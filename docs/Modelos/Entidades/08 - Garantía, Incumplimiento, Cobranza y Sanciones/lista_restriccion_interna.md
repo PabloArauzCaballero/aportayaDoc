@@ -32,6 +32,14 @@ append_only: false
 | `retirado_por` | UUID | FK | sí | FK, NULL |
 | `motivo_retiro` | VARCHAR(300) | — | sí | NULL |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_lista_retiro_motivado` | CHECK | `motivo_retiro`, `retirado_en`, `retirado_por` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

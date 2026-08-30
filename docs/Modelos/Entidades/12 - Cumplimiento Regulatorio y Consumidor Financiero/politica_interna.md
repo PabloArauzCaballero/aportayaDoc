@@ -35,6 +35,15 @@ append_only: false
 | `vigente_desde` | DATE | — | no | — |
 | `proxima_revision` | DATE | IDX | no | IDX |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_politica_acta` | CHECK | `acta_comite_id`, `aprobada_por_directorio`, `estado` |
+| `ck_politica_revision` | CHECK | `proxima_revision`, `vigente_desde` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

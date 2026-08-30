@@ -26,6 +26,15 @@ append_only: false
 | `alcance` | VARCHAR(15) | — | no | CK |
 | `grupo_id` | UUID | FK | sí | FK, NULL |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_dia_no_habil_ambito` | CHECK | `alcance`, `grupo_id` |
+| `uq_dia_no_habil` | UNIQUE | expresión |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

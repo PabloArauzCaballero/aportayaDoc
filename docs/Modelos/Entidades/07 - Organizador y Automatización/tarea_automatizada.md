@@ -29,6 +29,15 @@ append_only: false
 | `intentos` | SMALLINT | — | no | — |
 | `clave_idempotencia` | VARCHAR(80) | — | no | — |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_tarea_intentos` | CHECK | `intentos` |
+| `uq_tarea_automatizada_clave` | UNIQUE | `regla_id`, `grupo_id`, `clave_idempotencia` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

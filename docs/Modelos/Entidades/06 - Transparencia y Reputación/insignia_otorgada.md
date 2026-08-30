@@ -27,6 +27,15 @@ append_only: false
 | `revocada_en` | TIMESTAMPTZ | — | sí | NULL |
 | `motivo_revocacion` | VARCHAR(160) | — | sí | NULL |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_insignia_revocacion_motivada` | CHECK | `motivo_revocacion`, `revocada_en` |
+| `uq_insignia_usuario` | UNIQUE | `usuario_id`, `insignia_id` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

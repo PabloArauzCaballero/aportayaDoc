@@ -37,6 +37,17 @@ append_only: false
 | `plazo_limite` | TIMESTAMPTZ | IDX | no | IDX |
 | `cerrado_en` | TIMESTAMPTZ | — | sí | NULL |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_caso_plazo` | CHECK | `abierto_en`, `plazo_limite` |
+| `ck_caso_reporte` | CHECK | `decision`, `reporte_operacion_sospechosa_id` |
+| `ck_caso_revision` | CHECK | `analista_id`, `revisado_por` |
+| `ix_caso_vencidos` | INDEX parcial | `plazo_limite` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

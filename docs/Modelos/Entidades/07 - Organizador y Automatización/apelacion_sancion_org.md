@@ -20,7 +20,7 @@ append_only: false
 | Columna | Tipo | Clave | Nulo | Anotaciones |
 | --- | --- | --- | :-: | --- |
 | `id` | UUID | PK | no | PK |
-| `sancion_organizador_id` | UUID | FK UQ | no | FK, UQ |
+| `sancion_organizador_id` | UUID | FK UQ | no | FK |
 | `argumento` | TEXT | — | no | — |
 | `evidencias` | JSONB | — | no | — |
 | `estado` | VARCHAR(15) | — | no | CK |
@@ -28,6 +28,15 @@ append_only: false
 | `resolucion` | VARCHAR(400) | — | sí | NULL |
 | `presentada_en` | TIMESTAMPTZ | — | no | — |
 | `resuelta_en` | TIMESTAMPTZ | — | sí | NULL |
+
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_apelacion_org_resuelta` | CHECK | `estado`, `resolucion`, `resuelta_en`, `resuelta_por` |
+| `uq_apelacion_por_sancion` | UNIQUE | `sancion_organizador_id` |
 
 ## Claves foráneas salientes
 

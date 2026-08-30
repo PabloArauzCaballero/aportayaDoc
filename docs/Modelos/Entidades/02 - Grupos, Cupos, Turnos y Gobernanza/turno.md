@@ -22,15 +22,24 @@ append_only: false
 | --- | --- | --- | :-: | --- |
 | `id` | UUID | PK | no | PK |
 | `grupo_id` | UUID | FK IDX | no | FK, IDX |
-| `periodo_id` | UUID | FK | no | FK |
+| `periodo_id` | UUID | FK UQ | no | FK |
 | `cupo_id` | UUID | FK | no | FK |
-| `orden_asignado` | SMALLINT | UQ | no | UQ+grupo_id |
+| `orden_asignado` | SMALLINT | — | no | — |
 | `estado` | VARCHAR(15) | — | no | CK |
 | `criterio_asignacion` | VARCHAR(25) | — | no | — |
 | `monto_estimado_cobro` | DECIMAL(14,2) | — | no | — |
 | `descuento_subasta` | DECIMAL(14,2) | — | sí | NULL |
 | `permutado_con_turno_id` | UUID | FK | sí | FK, NULL |
 | `confirmado_en` | TIMESTAMPTZ | — | sí | NULL |
+
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `uq_turno_orden` | UNIQUE | `grupo_id`, `orden_asignado` |
+| `uq_turno_periodo` | UNIQUE | `periodo_id` |
 
 ## Claves foráneas salientes
 

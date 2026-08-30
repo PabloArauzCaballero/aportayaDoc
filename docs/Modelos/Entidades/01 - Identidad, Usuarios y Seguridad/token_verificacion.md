@@ -53,6 +53,16 @@ append_only: false
 | `familia_id` | UUID | — | sí | NULL, subtipo REFRESCO |
 | `rotado_de_id` | UUID | FK | sí | FK, NULL, subtipo REFRESCO |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_token_refresco_familia` | CHECK | `familia_id`, `tipo_token` |
+| `uq_token_refresco_vivo` | UNIQUE parcial | `familia_id` |
+| `uq_token_verificacion_idem` | UNIQUE | expresión |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

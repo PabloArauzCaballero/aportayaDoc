@@ -32,12 +32,24 @@ append_only: false
 | `estado` | VARCHAR(25) | IDX | no | CK, IDX |
 | `nivel_debida_diligencia` | VARCHAR(15) | — | no | CK |
 | `saldo_disponible` | DECIMAL(16,2) | — | no | — |
-| `saldo_retenido` | DECIMAL(16,2) | — | no | CK: >= 0 |
+| `saldo_retenido` | DECIMAL(16,2) | — | no | — |
 | `saldo_total` | DECIMAL(16,2) | — | no | GENERATED |
 | `permite_saldo_negativo` | BOOLEAN | — | no | — |
 | `fecha_apertura` | TIMESTAMPTZ | — | no | — |
 | `fecha_cierre` | TIMESTAMPTZ | — | sí | NULL |
 | `version` | INTEGER | — | no | — |
+
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_cuenta_retenido_no_negativo` | CHECK | `saldo_retenido` |
+| `ck_cuenta_saldo_no_negativo` | CHECK | `permite_saldo_negativo`, `saldo_disponible` |
+| `ck_cuenta_titularidad` | CHECK | `grupo_id`, `tipo`, `usuario_id` |
+| `uq_cuenta_grupo_moneda` | UNIQUE parcial | `grupo_id`, `moneda` |
+| `uq_cuenta_usuario_moneda` | UNIQUE parcial | `usuario_id`, `moneda`, `tipo` |
 
 ## Claves foráneas salientes
 

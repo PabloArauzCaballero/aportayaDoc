@@ -24,11 +24,19 @@ append_only: false
 | `id` | UUID | PK | no | PK |
 | `cuenta_billetera_id` | UUID | FK IDX | no | FK, IDX |
 | `limite_id` | UUID | FK IDX | no | FK, IDX |
-| `ventana_inicio` | TIMESTAMPTZ | UQ | no | UQ+cuenta_billetera_id+limite_id |
+| `ventana_inicio` | TIMESTAMPTZ | — | no | — |
 | `ventana_fin` | TIMESTAMPTZ | — | no | — |
 | `monto_acumulado` | DECIMAL(16,2) | — | no | — |
 | `cantidad_acumulada` | INTEGER | — | no | — |
 | `actualizado_en` | TIMESTAMPTZ | — | no | — |
+
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `uq_consumo_ventana` | UNIQUE | `cuenta_billetera_id`, `limite_id`, `ventana_inicio` |
 
 ## Claves foráneas salientes
 

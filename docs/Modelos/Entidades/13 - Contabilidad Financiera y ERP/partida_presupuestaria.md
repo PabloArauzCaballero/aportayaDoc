@@ -28,6 +28,14 @@ append_only: false
 | `moneda` | CHAR(3) | — | no | — |
 | `monto_ejecutado` | DECIMAL(14,2) | — | no | — |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `uq_partida_presupuesto_cuenta_periodo` | UNIQUE | `presupuesto_id`, `cuenta_contable_id`, `periodo_contable_id` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

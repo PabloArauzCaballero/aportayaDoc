@@ -36,6 +36,14 @@ append_only: false
 | `completada_en` | TIMESTAMPTZ | — | sí | NULL |
 | `vence_en` | TIMESTAMPTZ | IDX | sí | NULL, IDX |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ix_ddd_por_vencer` | INDEX parcial | `vence_en` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

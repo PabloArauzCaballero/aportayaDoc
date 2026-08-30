@@ -30,6 +30,14 @@ append_only: true
 | `diferencia` | DECIMAL(18,2) | — | no | GENERATED |
 | `observaciones` | VARCHAR(300) | — | sí | NULL |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_cierre_periodo_cuadrado` | CHECK | `total_debe`, `total_haber` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

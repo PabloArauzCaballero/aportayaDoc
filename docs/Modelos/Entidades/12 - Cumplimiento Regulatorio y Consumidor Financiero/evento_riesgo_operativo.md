@@ -41,6 +41,17 @@ append_only: true
 | `causa_raiz` | TEXT | — | sí | NULL |
 | `estado` | VARCHAR(15) | IDX | no | CK, IDX |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_evento_categoria` | CHECK | `categoria_evento` |
+| `ck_evento_factor` | CHECK | `factor_riesgo` |
+| `ck_evento_fechas` | CHECK | `fecha_deteccion`, `fecha_ocurrencia` |
+| `ck_evento_recuperacion` | CHECK | `perdida_bruta`, `recuperacion` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

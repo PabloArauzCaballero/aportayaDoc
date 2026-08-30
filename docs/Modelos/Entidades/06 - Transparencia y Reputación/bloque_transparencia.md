@@ -22,7 +22,7 @@ append_only: false
 | --- | --- | --- | :-: | --- |
 | `id` | UUID | PK | no | PK |
 | `grupo_id` | UUID | FK IDX | no | FK, IDX |
-| `numero_bloque` | BIGINT | UQ | no | UQ+grupo_id |
+| `numero_bloque` | BIGINT | — | no | — |
 | `hash_bloque_anterior` | VARCHAR(64) | — | no | — |
 | `raiz_merkle` | VARCHAR(64) | — | no | — |
 | `hash_bloque` | VARCHAR(64) | UQ | no | UQ |
@@ -31,6 +31,15 @@ append_only: false
 | `periodo_cubierto_hasta` | TIMESTAMPTZ | — | no | — |
 | `sellado_en` | TIMESTAMPTZ | — | no | — |
 | `sello_externo` | VARCHAR(255) | — | sí | NULL |
+
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_bloque_genesis` | CHECK | `hash_bloque_anterior`, `numero_bloque` |
+| `uq_bloque_grupo_numero` | UNIQUE | `grupo_id`, `numero_bloque` |
 
 ## Claves foráneas salientes
 

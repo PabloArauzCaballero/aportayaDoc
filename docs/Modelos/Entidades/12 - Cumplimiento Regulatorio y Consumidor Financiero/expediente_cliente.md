@@ -30,6 +30,14 @@ append_only: false
 | `estado` | VARCHAR(15) | — | no | CK |
 | `ultima_actualizacion` | TIMESTAMPTZ | — | no | — |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_expediente_retencion_futura` | CHECK | `retencion_hasta`, `ultima_actualizacion` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

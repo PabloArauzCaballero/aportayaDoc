@@ -31,6 +31,14 @@ append_only: false
 | `mensaje_proveedor` | VARCHAR(255) | — | sí | NULL |
 | `clave_idempotencia` | VARCHAR(80) | — | no | — |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `uq_intento_pago_idem` | UNIQUE | `orden_cobro_id`, `clave_idempotencia` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

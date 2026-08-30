@@ -43,6 +43,15 @@ append_only: true
 | `periodo_contable` | CHAR(7) | IDX | no | IDX |
 | `clave_idempotencia` | VARCHAR(100) | — | no | — |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `uq_devengo_hecho` | UNIQUE | `referencia_tipo`, `referencia_id`, `concepto_tarifa_id` |
+| `uq_devengo_idem` | UNIQUE | expresión |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

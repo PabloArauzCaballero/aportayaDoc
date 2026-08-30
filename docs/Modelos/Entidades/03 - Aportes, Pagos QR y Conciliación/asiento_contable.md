@@ -33,6 +33,15 @@ append_only: true
 | `asiento_reversa_id` | UUID | FK | sí | FK, NULL |
 | `registrado_por` | UUID | FK | sí | FK, NULL |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_asiento_reversa_distinta` | CHECK | `asiento_reversa_id`, `id` |
+| `ck_asiento_reversado_enlazado` | CHECK | `asiento_reversa_id`, `estado` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

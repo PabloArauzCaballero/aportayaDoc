@@ -37,6 +37,17 @@ append_only: true
 | `aprobada_por` | UUID | FK | sí | FK, NULL |
 | `asiento_contable_id` | UUID | FK | sí | FK, NULL, M3 |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_factura_proveedor_aprobacion` | CHECK | `aprobada_por`, `estado` |
+| `ck_factura_proveedor_pagado` | CHECK | `monto`, `monto_pagado` |
+| `ck_factura_proveedor_vencimiento` | CHECK | `fecha_emision`, `fecha_vencimiento` |
+| `uq_factura_proveedor_numero` | UNIQUE | `tercero_comercial_id`, `numero_factura` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

@@ -29,6 +29,17 @@ append_only: false
 | `registrada_en` | TIMESTAMPTZ | — | no | — |
 | `expira_en` | TIMESTAMPTZ | IDX | no | IDX |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_respuesta_idem_expira` | CHECK | `expira_en`, `registrada_en` |
+| `ck_respuesta_idem_hash` | CHECK | `hash_solicitud` |
+| `ck_respuesta_idem_http` | CHECK | `codigo_http` |
+| `ix_respuesta_idem_expiradas` | INDEX | `expira_en` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

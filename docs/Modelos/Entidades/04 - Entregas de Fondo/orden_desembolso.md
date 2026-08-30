@@ -33,6 +33,17 @@ append_only: false
 | `creada_en` | TIMESTAMPTZ | — | no | — |
 | `acreditada_en` | TIMESTAMPTZ | — | sí | NULL |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_orden_desembolso_acreditada` | CHECK | `acreditada_en`, `estado`, `referencia_proveedor` |
+| `ck_orden_desembolso_monto` | CHECK | `monto` |
+| `uq_orden_desembolso_clave` | UNIQUE | `entrega_id`, `clave_idempotencia` |
+| `uq_orden_desembolso_entrega_viva` | UNIQUE parcial | `entrega_id` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

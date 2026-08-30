@@ -35,6 +35,14 @@ append_only: false
 | `es_automatica` | BOOLEAN | — | no | — |
 | `motivo_cambio` | VARCHAR(300) | — | sí | NULL |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ex_calificacion_vigente` | EXCLUDE | `usuario_id`, `vigente_desde`, `vigente_hasta` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

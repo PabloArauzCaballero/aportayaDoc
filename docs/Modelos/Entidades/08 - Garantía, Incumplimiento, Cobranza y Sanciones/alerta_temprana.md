@@ -29,6 +29,14 @@ append_only: false
 | `estado` | VARCHAR(15) | — | no | CK |
 | `generada_en` | TIMESTAMPTZ | — | no | — |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `uq_alerta_temprana_abierta` | UNIQUE parcial | expresión |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

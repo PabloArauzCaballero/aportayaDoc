@@ -37,6 +37,14 @@ append_only: false
 | `verificado_en` | TIMESTAMPTZ | — | sí | NULL |
 | `bloqueado_hasta` | TIMESTAMPTZ | — | sí | NULL |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_instrumento_sin_pan` | CHECK | `enmascarado`, `hash_identificador` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

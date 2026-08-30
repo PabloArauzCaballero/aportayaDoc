@@ -29,6 +29,14 @@ append_only: false
 | `codigo_error` | VARCHAR(40) | — | sí | NULL |
 | `clave_idempotencia` | VARCHAR(120) | — | no | — |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `uq_evento_entrega_idempotencia` | UNIQUE | `envio_id`, `clave_idempotencia` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

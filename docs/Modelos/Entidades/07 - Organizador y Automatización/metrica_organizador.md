@@ -22,11 +22,20 @@ append_only: false
 | --- | --- | --- | :-: | --- |
 | `id` | UUID | PK | no | PK |
 | `evaluacion_id` | UUID | FK IDX | no | FK, IDX |
-| `codigo` | VARCHAR(40) | UQ | no | UQ+evaluacion_id |
+| `codigo` | VARCHAR(40) | — | no | — |
 | `valor` | DECIMAL(12,4) | — | no | — |
 | `meta` | DECIMAL(12,4) | — | no | — |
 | `cumple` | BOOLEAN | — | no | — |
 | `peso` | DECIMAL(4,3) | — | no | — |
+
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_metrica_org_peso` | CHECK | `peso` |
+| `uq_metrica_org_codigo` | UNIQUE | `evaluacion_id`, `codigo` |
 
 ## Claves foráneas salientes
 

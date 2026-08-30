@@ -29,6 +29,16 @@ append_only: false
 | `fecha_baja` | DATE | — | sí | NULL |
 | `activo` | BOOLEAN | IDX | no | IDX |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_oficial_baja_coherente` | CHECK | `activo`, `fecha_baja` |
+| `ck_oficial_baja_posterior` | CHECK | `fecha_baja`, `fecha_designacion` |
+| `uq_oficial_titular_activo` | UNIQUE parcial | expresión |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

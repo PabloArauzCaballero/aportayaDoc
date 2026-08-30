@@ -26,7 +26,7 @@ append_only: false
 | `levantada_por` | UUID | FK | sí | FK, NULL |
 | `autoridad` | VARCHAR(20) | — | no | CK |
 | `tipo_orden` | VARCHAR(30) | — | no | CK |
-| `numero_oficio` | VARCHAR(60) | UQ | no | UQ |
+| `numero_oficio` | VARCHAR(60) | UQ | no | — |
 | `monto_bloqueado` | DECIMAL(16,2) | — | sí | NULL |
 | `alcance` | VARCHAR(10) | — | no | CK |
 | `documento_url` | VARCHAR(255) | — | no | — |
@@ -35,6 +35,14 @@ append_only: false
 | `recibido_en` | TIMESTAMPTZ | — | no | — |
 | `vence_en` | TIMESTAMPTZ | — | sí | NULL |
 | `levantado_en` | TIMESTAMPTZ | — | sí | NULL |
+
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `uq_bloqueo_oficio` | UNIQUE | `numero_oficio` |
 
 ## Claves foráneas salientes
 

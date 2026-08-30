@@ -32,11 +32,20 @@ append_only: false
 | `monto_acreditado` | DECIMAL(16,2) | — | no | — |
 | `moneda` | CHAR(3) | — | no | — |
 | `estado` | VARCHAR(15) | IDX | no | CK, IDX |
-| `referencia_externa` | VARCHAR(80) | UQ | sí | UQ, NULL |
+| `referencia_externa` | VARCHAR(80) | UQ | sí | NULL |
 | `clave_idempotencia` | VARCHAR(100) | — | no | — |
 | `solicitada_en` | TIMESTAMPTZ | — | no | — |
 | `acreditada_en` | TIMESTAMPTZ | — | sí | NULL |
 | `expira_en` | TIMESTAMPTZ | — | sí | NULL |
+
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `uq_recarga_idem` | UNIQUE | `cuenta_billetera_id`, `clave_idempotencia` |
+| `uq_recarga_referencia` | UNIQUE | `referencia_externa` |
 
 ## Claves foráneas salientes
 

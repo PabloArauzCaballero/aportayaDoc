@@ -37,6 +37,14 @@ append_only: true
 | `ocurrido_en` | TIMESTAMPTZ | IDX | no | IDX |
 | `registrado_en` | TIMESTAMPTZ | — | no | — |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `uq_evento_reputacion_hecho` | UNIQUE | `usuario_id`, `referencia_tipo`, `referencia_origen_id`, `tipo` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

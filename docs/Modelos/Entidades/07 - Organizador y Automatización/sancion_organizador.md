@@ -30,6 +30,14 @@ append_only: false
 | `estado` | VARCHAR(15) | IDX | no | CK, IDX |
 | `aplicada_por` | UUID | FK | no | FK |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_sancion_org_vigencia` | CHECK | `vigente_desde`, `vigente_hasta` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

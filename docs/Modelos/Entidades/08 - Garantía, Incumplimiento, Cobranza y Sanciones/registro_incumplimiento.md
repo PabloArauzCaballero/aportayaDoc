@@ -53,6 +53,16 @@ append_only: true
 | `reportado_por` | UUID | FK | sí | FK, NULL |
 | `version` | INTEGER | — | no | — |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_incumplimiento_cierre_motivado` | CHECK | `cerrado_en`, `motivo_cierre` |
+| `ck_incumplimiento_plazo_guardado` | CHECK | `fecha_limite_subsanacion`, `notificado_en` |
+| `ck_incumplimiento_plazo_posterior` | CHECK | `detectado_en`, `fecha_limite_subsanacion` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

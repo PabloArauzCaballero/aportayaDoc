@@ -32,6 +32,14 @@ append_only: true
 | `ip_origen` | INET | — | no | — |
 | `fecha_hora` | TIMESTAMPTZ | IDX | no | IDX |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_acceso_justificacion` | CHECK | `justificacion` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

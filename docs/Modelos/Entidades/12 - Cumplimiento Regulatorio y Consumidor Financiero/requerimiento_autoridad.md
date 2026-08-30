@@ -36,6 +36,14 @@ append_only: false
 | `respuesta_url` | VARCHAR(255) | — | sí | NULL |
 | `respondido_en` | TIMESTAMPTZ | — | sí | NULL |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ix_requerimiento_vencidos` | INDEX parcial | `plazo_respuesta` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

@@ -35,6 +35,16 @@ append_only: false
 | `vigente_hasta` | DATE | — | sí | NULL |
 | `activo` | BOOLEAN | IDX | no | IDX |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_umbral_base_normativa` | CHECK | `base_normativa` |
+| `ck_umbral_ventana` | CHECK | `es_acumulado`, `ventana_dias_calendario` |
+| `ex_umbral_vigencia` | EXCLUDE | `concepto_operacion`, `es_acumulado`, `formulario`, `vigente_desde`, `vigente_hasta` |
+
 ## Referenciada por
 
 | Entidad | Columna | Módulo | Relación |

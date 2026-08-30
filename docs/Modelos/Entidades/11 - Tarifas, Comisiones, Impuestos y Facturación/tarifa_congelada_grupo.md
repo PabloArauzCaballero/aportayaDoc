@@ -22,13 +22,21 @@ append_only: false
 | Columna | Tipo | Clave | Nulo | Anotaciones |
 | --- | --- | --- | :-: | --- |
 | `id` | UUID | PK | no | PK |
-| `grupo_id` | UUID | FK UQ | no | FK, UQ, M2 |
+| `grupo_id` | UUID | FK UQ | no | FK, M2 |
 | `tarifario_id` | UUID | FK | no | FK |
 | `acuerdo_id` | UUID | FK | sí | FK, NULL, M2 |
 | `snapshot_conceptos` | JSONB | — | no | — |
 | `hash_snapshot` | VARCHAR(64) | — | no | — |
 | `congelada_en` | TIMESTAMPTZ | — | no | — |
 | `vigente_hasta_ciclo_nro` | SMALLINT | — | sí | NULL |
+
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `uq_tarifa_congelada_grupo` | UNIQUE | `grupo_id` |
 
 ## Claves foráneas salientes
 

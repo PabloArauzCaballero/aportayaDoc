@@ -35,6 +35,15 @@ append_only: false
 | `estado` | VARCHAR(15) | IDX | no | CK, IDX |
 | `factura_proveedor_id` | UUID | FK | sí | FK, NULL |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_activo_fijo_depreciacion` | CHECK | `costo_adquisicion`, `depreciacion_acumulada`, `valor_residual` |
+| `ck_activo_fijo_residual` | CHECK | `costo_adquisicion`, `valor_residual` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

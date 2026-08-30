@@ -37,6 +37,15 @@ append_only: false
 | `aprobado_por` | UUID | FK | sí | FK, NULL |
 | `acta_aprobacion` | VARCHAR(80) | — | sí | NULL |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_tarifario_publicado` | CHECK | `estado`, `hash_documento`, `publicado_en`, `url_publicacion` |
+| `ex_tarifario_vigente` | EXCLUDE | `codigo`, `vigente_desde`, `vigente_hasta` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

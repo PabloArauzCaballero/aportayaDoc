@@ -31,7 +31,7 @@ append_only: false
 | `sucursal` | SMALLINT | — | no | — |
 | `punto_venta` | SMALLINT | — | no | — |
 | `numero_factura` | BIGINT | UQ | no | UQ+sucursal+punto_venta |
-| `cuf` | VARCHAR(80) | UQ | no | UQ |
+| `cuf` | VARCHAR(80) | UQ | no | — |
 | `cufd` | VARCHAR(120) | — | no | — |
 | `codigo_control` | VARCHAR(20) | — | sí | NULL |
 | `fecha_emision` | TIMESTAMPTZ | IDX | no | IDX |
@@ -47,6 +47,16 @@ append_only: false
 | `leyenda` | VARCHAR(200) | — | sí | NULL |
 | `anulada_en` | TIMESTAMPTZ | — | sí | NULL |
 | `motivo_anulacion` | VARCHAR(200) | — | sí | NULL |
+
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_factura_offline_evento` | CHECK | `estado_fiscal`, `evento_significativo_id` |
+| `uq_factura_correlativo` | UNIQUE | `nit_emisor`, `sucursal`, `punto_venta`, `numero_factura` |
+| `uq_factura_cuf` | UNIQUE | `cuf` |
 
 ## Claves foráneas salientes
 

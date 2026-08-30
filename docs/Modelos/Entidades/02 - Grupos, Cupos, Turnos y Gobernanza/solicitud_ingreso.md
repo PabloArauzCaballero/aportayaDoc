@@ -31,6 +31,15 @@ append_only: false
 | `fecha_solicitud` | TIMESTAMPTZ | — | no | — |
 | `fecha_resolucion` | TIMESTAMPTZ | — | sí | NULL |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_solicitud_ingreso_resuelta` | CHECK | `estado`, `fecha_resolucion`, `revisada_por` |
+| `uq_solicitud_ingreso_pendiente` | UNIQUE parcial | `grupo_id`, `usuario_id` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

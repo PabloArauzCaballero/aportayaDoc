@@ -27,6 +27,14 @@ append_only: false
 | `motivo` | VARCHAR(300) | — | sí | NULL |
 | `revisada_en` | TIMESTAMPTZ | — | no | — |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_revision_creativa_motivo` | CHECK | `decision`, `motivo` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

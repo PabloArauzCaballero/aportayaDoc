@@ -31,6 +31,16 @@ append_only: false
 | `plazo_respuesta` | TIMESTAMPTZ | — | no | — |
 | `genera_deuda_del_avalista` | BOOLEAN | — | no | — |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_ejecucion_aval_monto` | CHECK | `monto_ejecutado` |
+| `ck_ejecucion_aval_plazo` | CHECK | `notificada_en`, `plazo_respuesta` |
+| `uq_ejecucion_aval_registro` | UNIQUE | `aval_id`, `registro_id` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

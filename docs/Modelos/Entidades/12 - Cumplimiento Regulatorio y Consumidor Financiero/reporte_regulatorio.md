@@ -26,7 +26,7 @@ append_only: false
 | `generado_por` | UUID | FK | sí | FK, NULL |
 | `revisado_por` | UUID | FK | sí | FK, NULL |
 | `aprobado_por` | UUID | FK | sí | FK, NULL |
-| `periodo` | VARCHAR(10) | UQ | no | UQ+catalogo_reporte_id |
+| `periodo` | VARCHAR(10) | — | no | — |
 | `fecha_corte` | DATE | — | no | — |
 | `estado` | VARCHAR(15) | IDX | no | CK, IDX |
 | `cantidad_registros` | INTEGER | — | no | — |
@@ -36,6 +36,17 @@ append_only: false
 | `hash_archivo` | VARCHAR(64) | — | sí | NULL |
 | `fecha_limite` | DATE | IDX | no | IDX |
 | `generado_en` | TIMESTAMPTZ | — | sí | NULL |
+
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_reporte_en_cero` | CHECK | `cantidad_registros`, `reporte_en_cero` |
+| `ck_reporte_segregacion` | CHECK | `aprobado_por`, `estado`, `generado_por` |
+| `ix_reporte_vencidos` | INDEX parcial | `fecha_limite` |
+| `uq_reporte_catalogo_periodo` | UNIQUE | `catalogo_reporte_id`, `periodo` |
 
 ## Claves foráneas salientes
 

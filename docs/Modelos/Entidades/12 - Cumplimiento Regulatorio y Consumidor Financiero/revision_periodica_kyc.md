@@ -29,6 +29,14 @@ append_only: false
 | `resultado` | VARCHAR(30) | — | sí | NULL |
 | `estado` | VARCHAR(15) | IDX | no | CK, IDX |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ix_revision_kyc_vencidas` | INDEX parcial | `fecha_programada` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

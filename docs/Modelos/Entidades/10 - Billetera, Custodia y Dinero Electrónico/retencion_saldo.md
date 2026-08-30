@@ -33,6 +33,14 @@ append_only: false
 | `creada_en` | TIMESTAMPTZ | — | no | — |
 | `liberada_en` | TIMESTAMPTZ | — | sí | NULL |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_retencion_expira` | CHECK | `expira_en`, `motivo` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

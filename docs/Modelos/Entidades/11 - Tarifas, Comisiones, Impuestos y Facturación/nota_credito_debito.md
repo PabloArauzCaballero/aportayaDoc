@@ -26,9 +26,17 @@ append_only: false
 | `tipo` | VARCHAR(8) | — | no | CK |
 | `motivo` | VARCHAR(200) | — | no | — |
 | `monto` | DECIMAL(12,2) | — | no | — |
-| `cuf` | VARCHAR(80) | UQ | no | UQ |
+| `cuf` | VARCHAR(80) | UQ | no | — |
 | `fecha_emision` | TIMESTAMPTZ | — | no | — |
 | `estado_fiscal` | VARCHAR(20) | — | no | CK |
+
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `uq_nota_cuf` | UNIQUE | `cuf` |
 
 ## Claves foráneas salientes
 

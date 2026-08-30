@@ -31,6 +31,15 @@ append_only: false
 | `solicitada_en` | TIMESTAMPTZ | — | no | — |
 | `ejecutada_en` | TIMESTAMPTZ | — | sí | NULL |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_reverso_segregacion` | CHECK | `autorizada_por` |
+| `uq_reverso_original` | UNIQUE parcial | `transaccion_original_id` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

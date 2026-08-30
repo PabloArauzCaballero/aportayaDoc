@@ -32,6 +32,14 @@ append_only: false
 | `estado` | VARCHAR(15) | IDX | no | CK, IDX |
 | `informes_remitidos` | SMALLINT | — | no | — |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_sandbox_limites` | CHECK | `estado`, `fecha_fin`, `fecha_inicio`, `limite_monto_operacion`, `limite_usuarios` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

@@ -22,12 +22,21 @@ append_only: false
 | Columna | Tipo | Clave | Nulo | Anotaciones |
 | --- | --- | --- | :-: | --- |
 | `id` | UUID | PK | no | PK |
-| `anunciante_id` | UUID | FK UQ | no | FK, UQ |
+| `anunciante_id` | UUID | FK UQ | no | FK |
 | `limite_gasto_mensual` | DECIMAL(14,2) | — | sí | NULL |
 | `moneda` | CHAR(3) | — | no | — |
 | `saldo_consumido_mes` | DECIMAL(14,2) | — | no | — |
 | `estado` | VARCHAR(15) | IDX | no | CK, IDX |
 | `creada_en` | TIMESTAMPTZ | — | no | — |
+
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_cuenta_publicitaria_consumo` | CHECK | `limite_gasto_mensual`, `saldo_consumido_mes` |
+| `uq_cuenta_publicitaria_anunciante` | UNIQUE | `anunciante_id` |
 
 ## Claves foráneas salientes
 

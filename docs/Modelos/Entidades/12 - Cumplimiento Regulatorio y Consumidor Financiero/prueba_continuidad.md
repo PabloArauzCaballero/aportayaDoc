@@ -32,6 +32,14 @@ append_only: false
 | `hallazgos` | TEXT | — | sí | NULL |
 | `evidencia_url` | VARCHAR(255) | — | sí | NULL |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_prueba_resultado` | CHECK | `acta_comite_id`, `resultado`, `rto_obtenido_minutos` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

@@ -29,6 +29,15 @@ append_only: false
 | `cerrado_en` | TIMESTAMPTZ | — | sí | NULL |
 | `cerrado_por` | UUID | FK | sí | FK, NULL |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_ejercicio_fiscal_cierre` | CHECK | `cerrado_en`, `cerrado_por`, `estado` |
+| `ck_ejercicio_fiscal_rango` | CHECK | `fecha_fin`, `fecha_inicio` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

@@ -33,6 +33,14 @@ append_only: true
 | `glosa` | VARCHAR(160) | — | no | — |
 | `registrado_en` | TIMESTAMPTZ | IDX | no | IDX |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ix_movimiento_cuenta_fecha` | INDEX | expresión |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

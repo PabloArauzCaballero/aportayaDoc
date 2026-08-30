@@ -21,7 +21,7 @@ append_only: false
 | Columna | Tipo | Clave | Nulo | Anotaciones |
 | --- | --- | --- | :-: | --- |
 | `id` | UUID | PK | no | PK |
-| `grupo_id` | UUID | FK UQ | no | FK, UQ parcial |
+| `grupo_id` | UUID | FK UQ | no | FK parcial |
 | `algoritmo` | VARCHAR(30) | — | no | — |
 | `estado` | VARCHAR(15) | IDX | no | CK, IDX |
 | `hash_semilla_previo` | VARCHAR(64) | — | no | — |
@@ -34,6 +34,16 @@ append_only: false
 | `ejecutado_por` | UUID | FK | no | FK |
 | `fecha_ejecucion` | TIMESTAMPTZ | — | no | — |
 | `anulado_en` | TIMESTAMPTZ | — | sí | NULL |
+
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_sorteo_compromiso` | CHECK | `fecha_compromiso`, `hash_semilla_previo` |
+| `ck_sorteo_revelado` | CHECK | `estado`, `fecha_ejecucion`, `semilla_servidor` |
+| `uq_sorteo_grupo` | UNIQUE | `grupo_id` |
 
 ## Claves foráneas salientes
 

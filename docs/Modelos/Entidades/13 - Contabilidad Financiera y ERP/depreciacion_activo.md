@@ -29,6 +29,14 @@ append_only: true
 | `asiento_contable_id` | UUID | FK | sí | FK, NULL, M3 |
 | `calculada_en` | TIMESTAMPTZ | — | no | — |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `uq_depreciacion_activo_periodo` | UNIQUE | `activo_fijo_id`, `periodo_contable_id` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

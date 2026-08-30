@@ -21,7 +21,7 @@ append_only: false
 | Columna | Tipo | Clave | Nulo | Anotaciones |
 | --- | --- | --- | :-: | --- |
 | `id` | UUID | PK | no | PK |
-| `producto` | VARCHAR(60) | UQ | no | UQ+version |
+| `producto` | VARCHAR(60) | — | no | — |
 | `version` | SMALLINT | — | no | — |
 | `aprobada_por` | UUID | FK | sí | FK, NULL |
 | `riesgos_identificados` | JSONB | — | no | — |
@@ -30,6 +30,16 @@ append_only: false
 | `requiere_no_objecion` | BOOLEAN | — | no | — |
 | `estado` | VARCHAR(15) | — | no | CK |
 | `fecha_aprobacion` | DATE | — | sí | NULL |
+
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_evaluacion_no_objecion` | CHECK | `aprobada_por`, `estado`, `fecha_aprobacion`, `requiere_no_objecion` |
+| `ck_evaluacion_vigente_aprobada` | CHECK | `estado`, `fecha_aprobacion` |
+| `uq_evaluacion_producto_version` | UNIQUE | `producto`, `version` |
 
 ## Claves foráneas salientes
 

@@ -27,6 +27,14 @@ append_only: false
 | `accion` | VARCHAR(30) | — | no | — |
 | `requiere_mfa` | BOOLEAN | — | no | — |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_permiso_decision_exige_mfa` | CHECK | `accion`, `requiere_mfa` |
+
 ## Referenciada por
 
 | Entidad | Columna | Módulo | Relación |

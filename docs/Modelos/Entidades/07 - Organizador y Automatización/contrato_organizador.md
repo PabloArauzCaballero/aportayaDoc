@@ -33,6 +33,17 @@ append_only: false
 | `rescindido_en` | TIMESTAMPTZ | — | sí | NULL |
 | `motivo_rescision` | VARCHAR(300) | — | sí | NULL |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_contrato_org_firma` | CHECK | `firmado_en`, `token_firma_id` |
+| `ck_contrato_org_rescision` | CHECK | `motivo_rescision`, `rescindido_en` |
+| `ck_contrato_org_vigencia` | CHECK | `vigente_desde`, `vigente_hasta` |
+| `ex_contrato_org_vigente` | EXCLUDE | `organizador_id`, `vigente_desde`, `vigente_hasta` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

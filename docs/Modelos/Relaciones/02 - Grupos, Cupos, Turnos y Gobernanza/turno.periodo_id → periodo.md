@@ -24,7 +24,7 @@ cardinalidad: "uno a muchos (0..N)"
 | Columna | `periodo_id` — UUID |
 | Cardinalidad | uno a muchos (0..N) |
 | Obligatoria | sí |
-| Uno a uno | no |
+| Uno a uno | sí (columna UNIQUE) |
 | Cruza módulos | no |
 | Semántica | "define" |
 

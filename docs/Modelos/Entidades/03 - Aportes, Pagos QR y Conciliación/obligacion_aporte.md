@@ -44,6 +44,14 @@ append_only: false
 | `dias_mora` | SMALLINT | — | no | — |
 | `version` | INTEGER | — | no | — |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `uq_obligacion_periodo_cupo` | UNIQUE parcial | `periodo_id`, `cupo_id` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

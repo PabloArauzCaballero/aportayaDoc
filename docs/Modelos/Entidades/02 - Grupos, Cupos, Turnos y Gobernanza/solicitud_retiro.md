@@ -30,6 +30,14 @@ append_only: false
 | `requiere_reemplazo` | BOOLEAN | — | no | — |
 | `liquidacion_calculada` | DECIMAL(14,2) | — | no | — |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_retiro_deudor_con_plan` | CHECK | `estado`, `plan_regularizacion_id`, `posicion` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

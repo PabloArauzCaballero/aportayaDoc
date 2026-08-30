@@ -29,6 +29,15 @@ append_only: false
 | `detalle` | JSONB | — | no | — |
 | `mensaje_error` | TEXT | — | sí | NULL |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_ejecucion_tarea_error` | CHECK | `mensaje_error`, `resultado` |
+| `ck_ejecucion_tarea_fin` | CHECK | `finalizada_en`, `iniciada_en` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

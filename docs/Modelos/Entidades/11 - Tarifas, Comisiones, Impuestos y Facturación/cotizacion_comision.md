@@ -37,6 +37,14 @@ append_only: false
 | `aceptada_en` | TIMESTAMPTZ | — | sí | NULL |
 | `clave_idempotencia` | VARCHAR(100) | — | no | — |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `uq_cotizacion_idem` | UNIQUE | `referencia_id`, `clave_idempotencia` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

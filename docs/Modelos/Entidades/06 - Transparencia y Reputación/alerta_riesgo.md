@@ -31,6 +31,14 @@ append_only: false
 | `detectada_en` | TIMESTAMPTZ | — | no | — |
 | `cerrada_en` | TIMESTAMPTZ | — | sí | NULL |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_alerta_riesgo_cierre` | CHECK | `cerrada_en`, `estado` |
+
 ## Ver también
 
 - Justificación de negocio: [[06_transparencia_reputacion]]

@@ -30,6 +30,15 @@ append_only: false
 | `mensaje_proveedor` | VARCHAR(255) | — | sí | NULL |
 | `reintentable_en` | TIMESTAMPTZ | — | sí | NULL |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_intento_desembolso_fallo` | CHECK | `codigo_error`, `resultado` |
+| `uq_intento_desembolso_numero` | UNIQUE | `orden_desembolso_id`, `numero_intento` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

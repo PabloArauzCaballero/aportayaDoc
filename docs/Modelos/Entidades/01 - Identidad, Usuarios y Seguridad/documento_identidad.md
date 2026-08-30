@@ -35,6 +35,15 @@ append_only: false
 | `hash_archivo` | VARCHAR(64) | — | no | — |
 | `estado` | VARCHAR(20) | — | no | CK |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_documento_hash_completo` | CHECK | `hash_numero` |
+| `ck_documento_version_llave` | CHECK | `version_llave` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

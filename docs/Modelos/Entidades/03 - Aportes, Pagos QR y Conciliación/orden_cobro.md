@@ -33,6 +33,14 @@ append_only: false
 | `expira_en` | TIMESTAMPTZ | IDX | no | IDX |
 | `clave_idempotencia` | VARCHAR(80) | — | no | — |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `uq_orden_cobro_idem` | UNIQUE | `obligacion_id`, `clave_idempotencia` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

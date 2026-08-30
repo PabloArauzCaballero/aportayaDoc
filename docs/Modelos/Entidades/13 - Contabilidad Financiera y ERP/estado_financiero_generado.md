@@ -29,6 +29,14 @@ append_only: true
 | `datos` | JSONB | — | no | — |
 | `hash_contenido` | VARCHAR(64) | — | no | — |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `uq_estado_financiero_periodo_tipo` | UNIQUE | `periodo_contable_id`, `tipo` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

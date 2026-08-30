@@ -22,7 +22,7 @@ append_only: false
 | Columna | Tipo | Clave | Nulo | Anotaciones |
 | --- | --- | --- | :-: | --- |
 | `id` | UUID | PK | no | PK |
-| `concepto` | VARCHAR(25) | UQ | no | CK, UQ+nivel_debida_diligencia+ventana |
+| `concepto` | VARCHAR(25) | — | no | CK |
 | `nivel_debida_diligencia` | VARCHAR(15) | — | no | CK |
 | `ventana` | VARCHAR(10) | — | no | CK |
 | `monto_maximo` | DECIMAL(16,2) | — | sí | NULL |
@@ -32,6 +32,14 @@ append_only: false
 | `vigente_desde` | DATE | — | no | — |
 | `vigente_hasta` | DATE | — | sí | NULL |
 | `activo` | BOOLEAN | — | no | — |
+
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ex_limite_vigencia` | EXCLUDE | `concepto`, `nivel_debida_diligencia`, `ventana`, `vigente_desde`, `vigente_hasta` |
 
 ## Referenciada por
 

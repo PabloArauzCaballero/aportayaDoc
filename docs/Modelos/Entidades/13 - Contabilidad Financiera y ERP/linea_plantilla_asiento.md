@@ -27,6 +27,14 @@ append_only: false
 | `monto_referencial` | DECIMAL(14,2) | — | sí | NULL |
 | `orden` | SMALLINT | — | no | — |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `uq_linea_plantilla_orden` | UNIQUE | `plantilla_id`, `orden` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

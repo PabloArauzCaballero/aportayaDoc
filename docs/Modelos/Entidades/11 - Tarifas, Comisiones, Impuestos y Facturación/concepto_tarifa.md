@@ -43,6 +43,16 @@ append_only: false
 | `orden_aplicacion` | SMALLINT | — | no | — |
 | `activo` | BOOLEAN | IDX | no | IDX |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_concepto_metodo` | CHECK | `metodo_calculo`, `valor_fijo`, `valor_porcentual` |
+| `ck_concepto_piso_techo` | CHECK | `monto_maximo`, `monto_minimo` |
+| `ck_concepto_precio_final` | CHECK | `gravado_iva`, `precio_incluye_impuesto`, `sujeto_obligado` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

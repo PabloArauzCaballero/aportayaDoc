@@ -42,6 +42,16 @@ append_only: false
 | `solicitada_en` | TIMESTAMPTZ | — | no | — |
 | `pagada_en` | TIMESTAMPTZ | — | sí | NULL |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_retiro_doble_aprobacion` | CHECK | `aprobada_por`, `estado`, `requiere_doble_aprobacion`, `solicitada_por` |
+| `ck_retiro_mfa` | CHECK | `estado`, `mfa_verificado` |
+| `uq_retiro_idem` | UNIQUE | `cuenta_billetera_id`, `clave_idempotencia` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

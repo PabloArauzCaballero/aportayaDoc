@@ -48,6 +48,20 @@ append_only: true
 | `fecha_operacion` | TIMESTAMPTZ | IDX | no | IDX |
 | `registrada_en` | TIMESTAMPTZ | — | no | — |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_operelev_declaracion` | CHECK | `destino_declarado`, `exento`, `formulario`, `motivo_exencion`, `origen_declarado` |
+| `ck_operelev_periodo` | CHECK | `periodo_remision` |
+| `ck_operelev_tipo_cambio` | CHECK | `moneda`, `tipo_cambio_aplicado` |
+| `ck_operelev_ventana` | CHECK | `es_acumulada`, `ventana_desde`, `ventana_hasta` |
+| `ix_operelev_periodo` | INDEX parcial | `periodo_remision`, `formulario` |
+| `ix_operelev_usuario_fecha` | INDEX | expresión |
+| `uq_operelev_tx_umbral` | UNIQUE | `transaccion_id`, `umbral_reporte_id` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

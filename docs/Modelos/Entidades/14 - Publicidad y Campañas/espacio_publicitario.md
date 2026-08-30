@@ -25,8 +25,16 @@ append_only: false
 | `codigo` | VARCHAR(30) | UQ | no | UQ |
 | `nombre` | VARCHAR(80) | — | no | — |
 | `tipo` | VARCHAR(25) | — | no | CK |
-| `capacidad_maxima_simultanea` | SMALLINT | — | no | CK: > 0 |
+| `capacidad_maxima_simultanea` | SMALLINT | — | no | — |
 | `activo` | BOOLEAN | — | no | — |
+
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_espacio_pub_capacidad` | CHECK | `capacidad_maxima_simultanea` |
 
 ## Referenciada por
 

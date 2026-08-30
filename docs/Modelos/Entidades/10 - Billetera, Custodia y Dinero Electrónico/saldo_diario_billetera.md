@@ -24,13 +24,21 @@ append_only: true
 | --- | --- | --- | :-: | --- |
 | `id` | UUID | PK | no | PK |
 | `cuenta_billetera_id` | UUID | FK IDX | no | FK, IDX |
-| `fecha` | DATE | UQ | no | UQ+cuenta_billetera_id |
+| `fecha` | DATE | — | no | — |
 | `saldo_disponible` | DECIMAL(16,2) | — | no | — |
 | `saldo_retenido` | DECIMAL(16,2) | — | no | — |
 | `cantidad_movimientos` | INTEGER | — | no | — |
 | `hash_registro` | VARCHAR(64) | — | no | — |
 | `hash_anterior` | VARCHAR(64) | — | sí | NULL |
 | `cerrado_en` | TIMESTAMPTZ | — | no | — |
+
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `uq_saldo_diario_cuenta_fecha` | UNIQUE | `cuenta_billetera_id`, `fecha` |
 
 ## Claves foráneas salientes
 

@@ -34,6 +34,15 @@ append_only: false
 | `emitido_en` | TIMESTAMPTZ | — | no | — |
 | `entregado_en` | TIMESTAMPTZ | — | sí | NULL |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_extracto_cuadra` | CHECK | `saldo_final`, `saldo_inicial`, `total_creditos`, `total_debitos` |
+| `ck_extracto_hash` | CHECK | `hash_archivo` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

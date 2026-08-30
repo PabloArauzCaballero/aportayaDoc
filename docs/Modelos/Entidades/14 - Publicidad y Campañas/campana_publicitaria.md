@@ -33,6 +33,16 @@ append_only: false
 | `estado` | VARCHAR(15) | IDX | no | CK, IDX |
 | `aprobada_por` | UUID | FK | sí | FK, NULL |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_campana_pub_aprobacion` | CHECK | `aprobada_por`, `estado` |
+| `ck_campana_pub_consumo` | CHECK | `presupuesto_consumido`, `presupuesto_total` |
+| `ck_campana_pub_vigencia` | CHECK | `fecha_fin`, `fecha_inicio` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

@@ -31,6 +31,15 @@ append_only: false
 | `moderada_por` | UUID | FK | sí | FK, NULL |
 | `creada_en` | TIMESTAMPTZ | — | no | — |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_resena_moderada` | CHECK | `estado_moderacion`, `moderada_por` |
+| `uq_resena_autor_evaluado` | UNIQUE | `grupo_id`, `autor_participante_id`, `evaluado_usuario_id`, `dimension` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

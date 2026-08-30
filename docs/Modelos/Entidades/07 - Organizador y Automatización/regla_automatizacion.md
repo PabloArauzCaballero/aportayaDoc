@@ -32,6 +32,16 @@ append_only: false
 | `prioridad` | SMALLINT | — | no | — |
 | `activa` | BOOLEAN | — | no | — |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_regla_confirmacion_humana` | CHECK | `accion`, `requiere_confirmacion_humana` |
+| `ck_regla_prioridad` | CHECK | `prioridad` |
+| `uq_regla_automatizacion_prioridad` | UNIQUE parcial | `disparador`, `prioridad` |
+
 ## Referenciada por
 
 | Entidad | Columna | Módulo | Relación |

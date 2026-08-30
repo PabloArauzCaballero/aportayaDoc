@@ -28,6 +28,14 @@ append_only: false
 | `comentario` | VARCHAR(300) | — | sí | NULL |
 | `emitido_en` | TIMESTAMPTZ | — | no | — |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `uq_voto_acuerdo_participante` | UNIQUE | `acuerdo_id`, `participante_id` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

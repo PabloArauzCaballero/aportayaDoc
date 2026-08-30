@@ -31,6 +31,16 @@ append_only: false
 | `levantada_por` | UUID | FK | sí | FK, NULL |
 | `motivo_levantamiento` | VARCHAR(160) | — | sí | NULL |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_restriccion_levantamiento` | CHECK | `levantada_por`, `motivo_levantamiento`, `vigente_hasta` |
+| `ck_restriccion_vigencia` | CHECK | `vigente_desde`, `vigente_hasta` |
+| `uq_restriccion_usuario_vigente` | UNIQUE parcial | `usuario_id`, `tipo` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

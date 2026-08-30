@@ -43,6 +43,14 @@ append_only: false
 | `leido_en` | TIMESTAMPTZ | — | sí | NULL |
 | `proximo_reintento_en` | TIMESTAMPTZ | IDX | sí | NULL, IDX |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `uq_envio_idempotencia` | UNIQUE | `notificacion_id`, `clave_idempotencia` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

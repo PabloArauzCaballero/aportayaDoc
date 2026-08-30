@@ -36,6 +36,14 @@ append_only: false
 | `estado` | VARCHAR(15) | — | no | CK |
 | `abierta_en` | DATE | — | no | — |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_cuenta_custodia_version_llave` | CHECK | `version_llave` |
+
 ## Referenciada por
 
 | Entidad | Columna | Módulo | Relación |

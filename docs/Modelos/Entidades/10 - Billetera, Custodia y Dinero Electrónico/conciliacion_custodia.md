@@ -25,7 +25,7 @@ append_only: false
 | `cuenta_custodia_id` | UUID | FK IDX | no | FK, IDX |
 | `cierre_diario_id` | UUID | FK | sí | FK, NULL, M3 |
 | `ejecutada_por` | UUID | FK | sí | FK, NULL |
-| `fecha` | DATE | UQ | no | UQ+cuenta_custodia_id |
+| `fecha` | DATE | — | no | — |
 | `saldo_dinero_electronico` | DECIMAL(18,2) | — | no | — |
 | `saldo_custodia` | DECIMAL(18,2) | — | no | — |
 | `saldo_en_transito` | DECIMAL(18,2) | — | no | — |
@@ -34,6 +34,15 @@ append_only: false
 | `cumple_encaje` | BOOLEAN | IDX | no | IDX |
 | `estado` | VARCHAR(15) | IDX | no | CK, IDX |
 | `ejecutada_en` | TIMESTAMPTZ | — | no | — |
+
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_conciliacion_encaje` | CHECK | `cumple_encaje`, `ratio_cobertura` |
+| `uq_conciliacion_cuenta_fecha` | UNIQUE | `cuenta_custodia_id`, `fecha` |
 
 ## Claves foráneas salientes
 

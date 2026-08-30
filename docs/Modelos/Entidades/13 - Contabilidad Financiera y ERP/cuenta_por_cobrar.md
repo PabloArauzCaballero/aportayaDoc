@@ -33,6 +33,14 @@ append_only: true
 | `fecha_vencimiento` | DATE | — | no | — |
 | `estado` | VARCHAR(15) | IDX | no | CK, IDX |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_cxc_cobrado` | CHECK | `monto`, `monto_cobrado` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

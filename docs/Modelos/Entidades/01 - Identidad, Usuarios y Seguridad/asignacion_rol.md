@@ -31,6 +31,18 @@ append_only: false
 | `revocada_en` | TIMESTAMPTZ | — | sí | NULL |
 | `motivo_revocacion` | VARCHAR(120) | — | sí | NULL |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_asignacion_ambito_completo` | CHECK | `ambito`, `ambito_id` |
+| `ck_asignacion_no_autoasignada` | CHECK | `otorgada_por`, `usuario_id` |
+| `ck_asignacion_revocacion_motivada` | CHECK | `motivo_revocacion`, `revocada_en` |
+| `ix_asignacion_por_vencer` | INDEX parcial | `vigente_hasta` |
+| `uq_asignacion_vigente` | UNIQUE parcial | expresión |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

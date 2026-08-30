@@ -31,6 +31,15 @@ append_only: false
 | `vigente_desde` | DATE | — | no | — |
 | `proxima_prueba` | DATE | IDX | no | IDX |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_plan_objetivos` | CHECK | `rpo_minutos`, `rto_minutos` |
+| `ck_plan_prueba` | CHECK | `proxima_prueba`, `vigente_desde` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

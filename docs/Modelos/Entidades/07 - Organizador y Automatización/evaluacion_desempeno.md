@@ -22,7 +22,7 @@ append_only: false
 | --- | --- | --- | :-: | --- |
 | `id` | UUID | PK | no | PK |
 | `organizador_id` | UUID | FK IDX | no | FK, IDX |
-| `periodo_evaluado` | VARCHAR(10) | UQ | no | UQ+organizador_id |
+| `periodo_evaluado` | VARCHAR(10) | — | no | — |
 | `indice_morosidad_cartera` | DECIMAL(5,2) | — | no | — |
 | `tasa_finalizacion_grupos` | DECIMAL(5,2) | — | no | — |
 | `satisfaccion_participantes` | DECIMAL(3,2) | — | no | — |
@@ -33,6 +33,14 @@ append_only: false
 | `nivel_sugerido` | VARCHAR(15) | — | no | CK |
 | `accion_recomendada` | VARCHAR(120) | — | no | — |
 | `evaluado_en` | TIMESTAMPTZ | — | no | — |
+
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `uq_evaluacion_org_periodo` | UNIQUE | `organizador_id`, `periodo_evaluado` |
 
 ## Claves foráneas salientes
 

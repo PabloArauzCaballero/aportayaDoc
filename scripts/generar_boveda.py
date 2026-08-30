@@ -17,6 +17,8 @@ tocan.
 """
 
 import re, pathlib, shutil, json
+
+from catalogo_reglas import reglas_por_tabla
 from collections import defaultdict
 import sys
 
@@ -239,6 +241,35 @@ for k, (nombre, fichero) in MODULOS.items():
     mods[k] = parse_puml(SRC / f"{fichero}.puml")
     mods[k]["nombre"], mods[k]["fichero"] = nombre, fichero
 
+# ---------- las reglas nombradas del catálogo ----------
+# El modelo ya NO declara `<<UQ>>` ni `<<CK>>` en las columnas que el catálogo
+# cubre con una regla nombrada: declararlo en los dos lados hacía que
+# `generar_ddl.py` emitiera un índice duplicado (c66bee1). La bóveda las lee
+# entonces de `docs/Restricciones.md`, que es donde viven, y las muestra POR
+# NOMBRE — que es el que verifica la prueba de humo y el que hay que buscar
+# cuando algo la viola.
+reglas_catalogo = reglas_por_tabla()
+
+for k, d in mods.items():
+    for e in d["entidades"].values():
+        propias = {c["nombre"] for c in e["cols"]}
+        for regla in reglas_catalogo.get(e["tabla"], []):
+            # Un CHECK nombra identificadores que pueden ser funciones o palabras
+            # del lenguaje: sólo cuentan los que la tabla tiene de verdad.
+            regla["columnas"] = [c for c in regla["columnas"] if c in propias]
+        for c in e["cols"]:
+            for regla in reglas_catalogo.get(e["tabla"], []):
+                if c["nombre"] not in regla["columnas"]:
+                    continue
+                # UQ SOLO si la regla es de esa columna sola. `uq_turno_orden` es
+                # única sobre (grupo_id, orden_asignado): marcar `grupo_id` como
+                # única haría que la bóveda declarara turno→grupo uno a uno, y un
+                # grupo tiene muchos turnos. La regla compuesta se lista abajo,
+                # con su nombre y sus columnas, que es donde no engaña.
+                if (regla["tipo"] == "UNIQUE" and not regla["parcial"]
+                        and len(regla["columnas"]) == 1):
+                    c["uq"] = True
+
 registro = {}        # tabla -> modulo
 alias_de = {}        # (modulo, alias) -> tabla
 for k, d in mods.items():
@@ -386,6 +417,24 @@ for k, d in mods.items():
             L.append(f'| `{c["nombre"]}` | {c["tipo"]} | {clave or "—"} | '
                      f'{"sí" if c["nulo"] else "no"} | {c["anot"] or "—"} |')
         L.append("")
+
+        # Las reglas nombradas que el catálogo declara sobre esta tabla. No salen
+        # del modelo: salen de docs/Restricciones.md, que es donde viven desde que
+        # se quitaron del .puml las anotaciones que generaban un índice duplicado.
+        # Se listan POR NOMBRE porque el nombre es el que verifica la prueba de
+        # humo y el que aparece cuando la base rechaza una escritura.
+        propias_de_la_tabla = reglas_catalogo.get(t, [])
+        if propias_de_la_tabla:
+            L.append("## Reglas del catálogo\n")
+            L.append("> Declaradas en [[Restricciones]], no en el modelo. "
+                     "El nombre es el que devuelve la base al rechazar.\n")
+            L.append("| Regla | Tipo | Columnas |")
+            L.append("| --- | :-: | --- |")
+            for r in sorted(propias_de_la_tabla, key=lambda x: (x["tipo"], x["nombre"])):
+                tipo = r["tipo"] + (" parcial" if r["parcial"] else "")
+                cols = ", ".join(f"`{c}`" for c in r["columnas"]) or "expresión"
+                L.append(f'| `{r["nombre"]}` | {tipo} | {cols} |')
+            L.append("")
 
         if salientes[t]:
             L.append("## Claves foráneas salientes\n")

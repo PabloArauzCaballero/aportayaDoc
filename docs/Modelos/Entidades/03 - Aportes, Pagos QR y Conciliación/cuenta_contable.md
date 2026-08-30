@@ -32,6 +32,15 @@ append_only: false
 | `participante_id` | UUID | FK | sí | FK, NULL |
 | `saldo` | DECIMAL(16,2) | — | no | — |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_cuenta_contable_nivel` | CHECK | `nivel` |
+| `ck_cuenta_contable_padre_distinto` | CHECK | `cuenta_padre_id`, `id` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

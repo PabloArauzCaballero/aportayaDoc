@@ -30,6 +30,18 @@ append_only: false
 | `motivo_retencion` | VARCHAR(200) | — | sí | NULL |
 | `fecha` | TIMESTAMPTZ | — | no | — |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_devolucion_cuadra` | CHECK | `monto_a_devolver`, `monto_aportado`, `monto_consumido` |
+| `ck_devolucion_hasta_lo_aportado` | CHECK | `monto_a_devolver`, `monto_aportado` |
+| `ck_devolucion_no_negativa` | CHECK | `monto_a_devolver` |
+| `ck_devolucion_retencion_motivada` | CHECK | `estado`, `motivo_retencion` |
+| `uq_devolucion_fondo_participante` | UNIQUE | `fondo_id`, `participante_id` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

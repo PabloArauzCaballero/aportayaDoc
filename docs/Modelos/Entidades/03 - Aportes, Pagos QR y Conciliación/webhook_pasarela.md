@@ -34,6 +34,14 @@ append_only: false
 | `error_procesamiento` | TEXT | — | sí | NULL |
 | `pago_id` | UUID | FK | sí | FK, NULL |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `uq_webhook_idem` | UNIQUE | `proveedor_id`, `clave_idempotencia` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

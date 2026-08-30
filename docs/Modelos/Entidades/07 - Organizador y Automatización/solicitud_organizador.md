@@ -32,6 +32,16 @@ append_only: false
 | `fecha_solicitud` | TIMESTAMPTZ | — | no | — |
 | `fecha_resolucion` | TIMESTAMPTZ | — | sí | NULL |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_solicitud_org_rechazo_motivado` | CHECK | `estado`, `motivo_rechazo` |
+| `ck_solicitud_org_resuelta` | CHECK | `estado`, `fecha_resolucion` |
+| `uq_solicitud_organizador_pendiente` | UNIQUE parcial | `usuario_id` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

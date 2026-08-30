@@ -40,6 +40,15 @@ append_only: false
 | `estado` | VARCHAR(15) | IDX | no | CK, IDX |
 | `leccion_aprendida` | TEXT | — | sí | NULL |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_incidente_notificacion` | CHECK | `datos_personales_afectados`, `estado`, `notificado_a_titulares_en` |
+| `ck_incidente_plazo` | CHECK | `detectado_en`, `plazo_reporte` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

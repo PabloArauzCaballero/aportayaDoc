@@ -22,7 +22,7 @@ append_only: false
 | --- | --- | --- | :-: | --- |
 | `id` | UUID | PK | no | PK |
 | `devengo_id` | UUID | FK IDX | no | FK, IDX |
-| `deduccion_entrega_id` | UUID | FK UQ | sí | FK, NULL, UQ, M4 |
+| `deduccion_entrega_id` | UUID | FK UQ | sí | FK, NULL, M4 |
 | `transaccion_id` | UUID | FK | sí | FK, NULL, M10 |
 | `obligacion_id` | UUID | FK | sí | FK, NULL, M3 |
 | `forma_cobro` | VARCHAR(30) | — | no | CK |
@@ -32,6 +32,14 @@ append_only: false
 | `intentos` | SMALLINT | — | no | — |
 | `ultimo_error` | VARCHAR(300) | — | sí | NULL |
 | `cobrado_en` | TIMESTAMPTZ | — | sí | NULL |
+
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `uq_cargo_deduccion` | UNIQUE | `deduccion_entrega_id` |
 
 ## Claves foráneas salientes
 

@@ -29,6 +29,15 @@ append_only: false
 | `aprobado_por` | UUID | FK | sí | FK, NULL |
 | `aprobado_en` | TIMESTAMPTZ | — | sí | NULL |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_presupuesto_aprobacion` | CHECK | `aprobado_en`, `aprobado_por`, `estado` |
+| `uq_presupuesto_centro_ejercicio` | UNIQUE | `centro_costo_id`, `ejercicio_fiscal_id` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

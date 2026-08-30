@@ -23,14 +23,14 @@ append_only: false
 | --- | --- | --- | :-: | --- |
 | `id` | UUID | PK | no | PK |
 | `grupo_id` | UUID | FK IDX | no | FK, IDX |
-| `periodo_id` | UUID | FK UQ | no | FK, UQ |
-| `turno_id` | UUID | FK UQ | no | FK, UQ |
+| `periodo_id` | UUID | FK UQ | no | FK |
+| `turno_id` | UUID | FK UQ | no | FK |
 | `cupo_id` | UUID | FK | no | FK |
 | `beneficiario_participante_id` | UUID | FK IDX | no | FK, IDX |
 | `cuenta_destino_id` | UUID | FK | sí | FK, NULL |
 | `monto_bolsa_bruto` | DECIMAL(14,2) | — | no | — |
 | `total_deducciones` | DECIMAL(14,2) | — | no | — |
-| `monto_neto_a_entregar` | DECIMAL(14,2) | — | no | CK: >= 0 |
+| `monto_neto_a_entregar` | DECIMAL(14,2) | — | no | — |
 | `monto_efectivamente_entregado` | DECIMAL(14,2) | — | no | — |
 | `moneda` | CHAR(3) | — | no | — |
 | `estado` | VARCHAR(35) | IDX | no | CK, IDX |
@@ -44,6 +44,18 @@ append_only: false
 | `hash_comprobante` | VARCHAR(64) | — | sí | NULL |
 | `observaciones` | VARCHAR(400) | — | sí | NULL |
 | `version` | INTEGER | — | no | — |
+
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_entrega_neto` | CHECK | `monto_bolsa_bruto`, `monto_neto_a_entregar`, `total_deducciones` |
+| `ck_entrega_neto_no_negativo` | CHECK | `monto_neto_a_entregar` |
+| `ck_entrega_segregacion` | CHECK | `autorizada_por`, `ejecutada_por` |
+| `uq_entrega_periodo` | UNIQUE | `periodo_id` |
+| `uq_entrega_turno` | UNIQUE | `turno_id` |
 
 ## Claves foráneas salientes
 

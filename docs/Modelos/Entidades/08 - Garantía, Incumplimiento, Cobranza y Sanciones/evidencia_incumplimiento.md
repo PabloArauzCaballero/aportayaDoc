@@ -31,6 +31,14 @@ append_only: false
 | `fecha_hora` | TIMESTAMPTZ | — | no | — |
 | `es_inmutable` | BOOLEAN | — | no | — |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_evidencia_con_respaldo` | CHECK | `hash_archivo`, `url_archivo` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

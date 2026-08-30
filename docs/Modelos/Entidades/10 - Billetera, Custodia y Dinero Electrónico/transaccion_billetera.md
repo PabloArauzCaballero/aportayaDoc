@@ -43,6 +43,15 @@ append_only: true
 | `ocurrida_en` | TIMESTAMPTZ | IDX | no | IDX |
 | `registrada_en` | TIMESTAMPTZ | — | no | — |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ix_transaccion_ocurrida` | INDEX | `ocurrida_en` |
+| `uq_tx_idem` | UNIQUE | expresión |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

@@ -25,13 +25,24 @@ append_only: false
 | `telefono_invitado` | VARCHAR(20) | IDX | no | IDX |
 | `nombre_sugerido` | VARCHAR(80) | — | sí | NULL |
 | `emisor_id` | UUID | FK | no | FK |
-| `token_id` | UUID | FK UQ | no | FK, UQ, M1 |
+| `token_id` | UUID | FK UQ | no | FK, M1 |
 | `canal` | VARCHAR(15) | — | no | CK |
 | `estado` | VARCHAR(15) | — | no | CK |
 | `envios_realizados` | SMALLINT | — | no | — |
 | `fecha_envio` | TIMESTAMPTZ | — | no | — |
 | `fecha_expiracion` | TIMESTAMPTZ | — | no | — |
 | `fecha_respuesta` | TIMESTAMPTZ | — | sí | NULL |
+
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_invitacion_expira` | CHECK | `fecha_envio`, `fecha_expiracion` |
+| `ck_invitacion_respuesta` | CHECK | `estado`, `fecha_respuesta` |
+| `uq_invitacion_activa` | UNIQUE parcial | `grupo_id`, `telefono_invitado` |
+| `uq_invitacion_token` | UNIQUE | `token_id` |
 
 ## Claves foráneas salientes
 

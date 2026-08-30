@@ -30,6 +30,14 @@ append_only: false
 | `confirmado_en` | TIMESTAMPTZ | — | sí | NULL |
 | `ultimo_uso_en` | TIMESTAMPTZ | — | sí | NULL |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_factor_mfa_version_llave` | CHECK | `version_llave` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

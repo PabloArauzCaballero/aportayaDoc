@@ -29,6 +29,14 @@ append_only: false
 | `estado` | VARCHAR(15) | IDX | no | CK, IDX |
 | `creado_en` | TIMESTAMPTZ | — | no | — |
 
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_anunciante_tipo_exclusivo` | CHECK | `organizador_id`, `socio_comercial_id`, `tipo` |
+
 ## Claves foráneas salientes
 
 | Columna | Referencia a | Módulo | Opcional | Relación |

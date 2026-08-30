@@ -22,7 +22,7 @@ append_only: false
 | Columna | Tipo | Clave | Nulo | Anotaciones |
 | --- | --- | --- | :-: | --- |
 | `id` | UUID | PK | no | PK |
-| `codigo` | VARCHAR(20) | UQ | no | UQ |
+| `codigo` | VARCHAR(20) | UQ | no | — |
 | `usuario_id` | UUID | FK IDX | no | FK, IDX, M1 |
 | `punto_reclamo_id` | UUID | FK | no | FK |
 | `responsable_id` | UUID | FK | sí | FK, NULL |
@@ -46,6 +46,21 @@ append_only: false
 | `respuesta` | TEXT | — | sí | NULL |
 | `incluido_en_reporte_mensual` | CHAR(7) | IDX | sí | NULL, IDX |
 | `conservar_hasta` | DATE | IDX | no | IDX |
+
+## Reglas del catálogo
+
+> Declaradas en [[Restricciones]], no en el modelo. El nombre es el que devuelve la base al rechazar.
+
+| Regla | Tipo | Columnas |
+| --- | :-: | --- |
+| `ck_reclamo_conservacion` | CHECK | `conservar_hasta`, `fecha_ingreso` |
+| `ck_reclamo_dias` | CHECK | `dias_habiles_plazo` |
+| `ck_reclamo_plazo` | CHECK | `fecha_ingreso`, `plazo_respuesta` |
+| `ck_reclamo_prorroga` | CHECK | `plazo_prorrogado_hasta`, `plazo_respuesta`, `prorroga_comunicada_al_cliente_en` |
+| `ck_reclamo_prorroga_extendida` | CHECK | `fecha_ingreso`, `justificacion_prorroga`, `plazo_prorrogado_hasta`, `prorroga_comunicada_al_organismo_en` |
+| `ck_reclamo_reparacion` | CHECK | `devolucion_comision_id`, `estado`, `monto_reclamado`, `resultado` |
+| `ix_reclamo_vencidos` | INDEX parcial | `plazo_respuesta` |
+| `uq_reclamo_codigo` | UNIQUE | `codigo` |
 
 ## Claves foráneas salientes
 
