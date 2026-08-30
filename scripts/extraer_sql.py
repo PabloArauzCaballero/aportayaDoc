@@ -10,11 +10,17 @@ Escribe sql/40_reglas/restricciones.sql
 El documento es la fuente de verdad: no edite el .sql a mano, edite el .md y
 vuelva a ejecutar. Cada bloque se emite precedido por el encabezado de la
 sección en la que estaba, para que el archivo siga siendo legible.
+
+El DDL se emite re-ejecutable (scripts/idempotencia.py): `sql/aplicar.sql` se
+aplica igual sobre una base virgen que sobre una que ya lo tiene. Las consultas
+de verificación no se tocan: son SELECT y ya se pueden repetir.
 """
 
 import re
 import pathlib
 import sys
+
+from idempotencia import NoSeComoHacerloIdempotente, idempotente
 
 # Estos informes se imprimen con acentos y flechas. En Windows la consola entrega
 # stdout en cp1252 y el generador muere con UnicodeEncodeError despues de haber
@@ -87,7 +93,11 @@ def main() -> int:
                           f"-- {seccion}\n"
                           f"-- ---------------------------------------------------------------------\n")
             seccion_previa = seccion
-        partes.append(sql + "\n")
+        try:
+            partes.append(idempotente(sql) + "\n")
+        except NoSeComoHacerloIdempotente as e:
+            print(f"{ORIGEN} · sección «{seccion}»: {e}")
+            return 1
 
     DESTINO.write_text("\n".join(partes) + "\n", encoding="utf-8")
 

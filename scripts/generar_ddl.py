@@ -553,9 +553,17 @@ def generar():
         L = [f"-- Claves foráneas del módulo {k} — {MODULOS[k][0]}",
              "-- Generado por scripts/generar_ddl.py — no editar a mano.",
              "-- Se aplican después de crear todas las tablas: el modelo tiene",
-             "-- referencias circulares entre módulos.", ""]
+             "-- referencias circulares entre módulos.",
+             "--",
+             "-- Cada una se borra si existe antes de crearse: PostgreSQL no tiene",
+             "-- ADD CONSTRAINT IF NOT EXISTS, y sql/aplicar.sql se aplica también",
+             "-- sobre una base que ya lo tiene. Borrar y volver a crear —en vez de",
+             "-- saltear si ya está— es lo que hace que un ON DELETE cambiado en el",
+             "-- modelo quede corregido al reaplicar.", ""]
         for tabla, col, destino, nulo in sorted(set(fks_mod)):
             accion = "ON DELETE SET NULL" if nulo else "ON DELETE RESTRICT"
+            L.append(f"ALTER TABLE {q(tabla)} "
+                     f"DROP CONSTRAINT IF EXISTS {ident('fk', tabla, col)};")
             L.append(f"ALTER TABLE {q(tabla)}")
             L.append(f"  ADD CONSTRAINT {ident('fk', tabla, col)}")
             L.append(f"  FOREIGN KEY ({col}) REFERENCES {q(destino)} (id) "
@@ -606,7 +614,8 @@ def generar():
     # El catálogo de restricciones se extrae de docs/Restricciones.md: se
     # regenera acá para que una sola corrida deje sql/ completo y aplicable.
     import extraer_sql
-    extraer_sql.main()
+    if extraer_sql.main() != 0:
+        return 1
 
     # Las semillas viven en seeders/*.json y se emiten como SQL aplicable.
     import generar_semillas

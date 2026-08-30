@@ -15,10 +15,10 @@ INSERT INTO definicion_reporte (tipo, nombre, descripcion, consulta_base, parame
   ('KPI_PLATAFORMA', 'Indicadores de plataforma', 'Panel de indicadores del período con su meta y su variación respecto del período anterior.', 'SELECT k.codigo, k.nombre, k.valor, k.unidad, k.meta, k.variacion_periodo_anterior, k.calculado_en FROM indicador_kpi k WHERE k.periodo = :periodo AND k.dimension = ''GLOBAL'' ORDER BY k.codigo', '{"periodo": "string"}'::jsonb, '["codigo", "nombre", "valor", "unidad", "meta", "variacion_periodo_anterior", "calculado_en"]'::jsonb, 'AUDITORIA_LEER', FALSE, 60, TRUE)
 ON CONFLICT (nombre) DO NOTHING;
 
+-- Corridas automáticas. La toma del trabajo usa bloqueo entre réplicas: dos instancias no generan el mismo reporte dos veces (skill `automatizacion-tareas`).
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM programacion_reporte) THEN
-  -- Corridas automáticas. La toma del trabajo usa bloqueo entre réplicas: dos instancias no generan el mismo reporte dos veces (skill `automatizacion-tareas`).
   INSERT INTO programacion_reporte (definicion_id, expresion_cron, parametros_fijos, destinatarios, canal_entrega, formato, activa, ultima_ejecucion_en, proxima_ejecucion_en) VALUES
     ((SELECT id FROM definicion_reporte WHERE nombre = 'Conciliación diaria de custodia'), '0 7 * * *', '{"fecha": "$ayer"}'::jsonb, '["tesoreria@aportaya.bo", "contabilidad@aportaya.bo"]'::jsonb, 'CORREO', 'XLSX', TRUE, NULL, date_trunc('day', now()) + interval '1 day 7 hours'),
     ((SELECT id FROM definicion_reporte WHERE nombre = 'Cartera en mora por tramo'), '0 8 * * 1', '{"grupo_id": null}'::jsonb, '["riesgos@aportaya.bo"]'::jsonb, 'CORREO', 'XLSX', TRUE, NULL, date_trunc('week', now()) + interval '7 days 8 hours'),

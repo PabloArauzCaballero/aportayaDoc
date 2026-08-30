@@ -1,10 +1,10 @@
 -- Qué pasa cuando alguien no paga: la escalera de cobranza y la matriz que dice qué sanción corresponde a qué incumplimiento. Nada de esto se decide caso por caso ni se improvisa en el código.
 -- GENERADO desde seeders/minimos/18-sanciones-y-cobranza.json — no editar a mano.
 
+-- Política global (grupo_id nulo). Un grupo puede tener la suya, pero nunca con plazos de descargo o apelación menores que estos.
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM politica_sancion) THEN
-  -- Política global (grupo_id nulo). Un grupo puede tener la suya, pero nunca con plazos de descargo o apelación menores que estos.
   INSERT INTO politica_sancion (grupo_id, version, requiere_acuerdo_grupo, plazo_descargo_dias, plazo_apelacion_dias, prescribe_en_dias, vigente_desde) VALUES
     (NULL, 'v1', FALSE, 5, 5, 365, '2026-01-01T00:00:00-04:00');
   END IF;

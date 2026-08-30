@@ -12,10 +12,10 @@ INSERT INTO politica_redondeo (codigo, moneda, unidad_minima, modo, aplica_a) VA
   ('BOB_TOTAL', 'BOB', 0.1, 'MAS_CERCANO', 'TOTAL')
 ON CONFLICT (codigo) DO NOTHING;
 
+-- Política global por defecto (grupo_id nulo). Un recargo sin tope vuelve impagable la deuda.
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM politica_mora) THEN
-  -- Política global por defecto (grupo_id nulo). Un recargo sin tope vuelve impagable la deuda.
   INSERT INTO politica_mora (dias_gracia, tipo_recargo, valor_recargo, tope_recargo, dias_para_mora_grave, dias_para_incumplimiento, aplica_automatico, vigente_desde) VALUES
     (3, 'PORCENTUAL', 2.0, 100.0, 15, 30, TRUE, now());
   END IF;

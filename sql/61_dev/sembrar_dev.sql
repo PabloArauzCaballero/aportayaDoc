@@ -5,7 +5,7 @@
 \set ON_ERROR_STOP on
 BEGIN;
 
--- GUARDA — sin esto, estas semillas no entran a ninguna base.
+-- GUARDA 1 — sin esto, estas semillas no entran a ninguna base.
 -- La marca la pone el arranque de desarrollo, nunca un despliegue:
 --   ALTER DATABASE pasanaku SET app.entorno = 'dev';
 DO $$
@@ -14,6 +14,19 @@ BEGIN
     RAISE EXCEPTION
       'SEMILLAS DE DEV BLOQUEADAS: app.entorno = %, se exige ''dev''',
       coalesce(nullif(current_setting('app.entorno', true), ''), '<sin definir>');
+  END IF;
+END $$;
+
+-- GUARDA 2 — volver a sembrar no duplica. La marca se mira UNA sola vez
+-- y todos los bloques leen esa respuesta:
+--   usuario WHERE codigo_publico = 'USR000001'
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM usuario WHERE codigo_publico = 'USR000001') THEN
+    PERFORM set_config('app.dev_sembrado', 'si', true);
+    RAISE NOTICE 'Semillas de desarrollo ya presentes: no se inserta nada. Para rehacerlas, ./gradlew bd:reset';
+  ELSE
+    PERFORM set_config('app.dev_sembrado', 'no', true);
   END IF;
 END $$;
 

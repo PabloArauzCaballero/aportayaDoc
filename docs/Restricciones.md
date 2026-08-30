@@ -1369,6 +1369,11 @@ BEGIN
       'registro_acceso_datos','requerimiento_autoridad'] LOOP
     EXECUTE format('ALTER TABLE %I ENABLE ROW LEVEL SECURITY', t);
     EXECUTE format('ALTER TABLE %I FORCE ROW LEVEL SECURITY', t);
+    -- Igual que el recorrido de arriba: el esquema se reaplica sobre bases que
+    -- ya lo tienen, y PostgreSQL no ofrece CREATE POLICY IF NOT EXISTS. Acá la
+    -- guarda se escribe a mano porque la política se arma con SQL dinámico:
+    -- scripts/idempotencia.py no mira —ni debe mirar— dentro de un literal.
+    EXECUTE format('DROP POLICY IF EXISTS pol_%s_reservado ON %I', t, t);
     EXECUTE format(
       'CREATE POLICY pol_%s_reservado ON %I FOR ALL TO rol_aplicacion '
       'USING (fn_seg_rol_privilegiado()) WITH CHECK (fn_seg_rol_privilegiado())',

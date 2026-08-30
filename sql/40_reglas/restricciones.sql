@@ -67,6 +67,7 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_transaccion_billetera_hash ON transaccion_billetera;
 CREATE TRIGGER tg_transaccion_billetera_hash
   BEFORE INSERT ON transaccion_billetera
   FOR EACH ROW EXECUTE FUNCTION fn_aud_encadenar_transaccion();
@@ -103,6 +104,7 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_bitacora_evento_hash ON bitacora_evento;
 CREATE TRIGGER tg_bitacora_evento_hash
   BEFORE INSERT ON bitacora_evento
   FOR EACH ROW EXECUTE FUNCTION fn_aud_encadenar_bitacora();
@@ -125,6 +127,7 @@ END $$ LANGUAGE plpgsql;
 -- condición puesta solo en 'CONFIRMADO', un asiento marcado 'REVERSADO' entraba sin
 -- que nadie verificara su partida doble: la corrección de un error contable era
 -- justamente el único movimiento que podía descuadrar impunemente.
+DROP TRIGGER IF EXISTS tg_asiento_cuadrado ON asiento_contable;
 CREATE CONSTRAINT TRIGGER tg_asiento_cuadrado
   AFTER INSERT OR UPDATE ON asiento_contable
   DEFERRABLE INITIALLY DEFERRED
@@ -132,6 +135,7 @@ CREATE CONSTRAINT TRIGGER tg_asiento_cuadrado
   EXECUTE FUNCTION fn_aud_asiento_cuadrado();
 
 -- R-AUD-06 · la reversa apunta a un asiento distinto y confirmado
+ALTER TABLE asiento_contable DROP CONSTRAINT IF EXISTS ck_asiento_reversa_distinta;
 ALTER TABLE asiento_contable
   ADD CONSTRAINT ck_asiento_reversa_distinta
   CHECK (asiento_reversa_id IS NULL OR asiento_reversa_id <> id);
@@ -147,15 +151,18 @@ ALTER TABLE asiento_contable
 -- Queda entonces una equivalencia, y se hace cumplir en las dos direcciones: un
 -- asiento está REVERSADO si y solo si apunta al que corrige. Sin esto, "reversado"
 -- era una palabra que cada carril iba a interpretar a su manera.
+ALTER TABLE asiento_contable DROP CONSTRAINT IF EXISTS ck_asiento_reversado_enlazado;
 ALTER TABLE asiento_contable
   ADD CONSTRAINT ck_asiento_reversado_enlazado CHECK (
         (estado = 'REVERSADO') = (asiento_reversa_id IS NOT NULL));
 
 -- R-AUD-07 · un cierre de saldo por cuenta y día
+ALTER TABLE saldo_diario_billetera DROP CONSTRAINT IF EXISTS uq_saldo_diario_cuenta_fecha;
 ALTER TABLE saldo_diario_billetera
   ADD CONSTRAINT uq_saldo_diario_cuenta_fecha UNIQUE (cuenta_billetera_id, fecha);
 
 -- R-AUD-08 · no se depura antes de tiempo
+ALTER TABLE expediente_cliente DROP CONSTRAINT IF EXISTS ck_expediente_retencion_futura;
 ALTER TABLE expediente_cliente
   ADD CONSTRAINT ck_expediente_retencion_futura
   CHECK (retencion_hasta >= ultima_actualizacion::date);
@@ -183,6 +190,7 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_transaccion_cuadrada ON transaccion_billetera;
 CREATE CONSTRAINT TRIGGER tg_transaccion_cuadrada
   AFTER INSERT OR UPDATE ON transaccion_billetera
   DEFERRABLE INITIALLY DEFERRED
@@ -190,6 +198,8 @@ CREATE CONSTRAINT TRIGGER tg_transaccion_cuadrada
   EXECUTE FUNCTION fn_bil_transaccion_cuadrada();
 
 -- R-BIL-02 y R-BIL-03 · saldos coherentes y no negativos
+ALTER TABLE cuenta_billetera DROP CONSTRAINT IF EXISTS ck_cuenta_saldo_no_negativo;
+ALTER TABLE cuenta_billetera DROP CONSTRAINT IF EXISTS ck_cuenta_retenido_no_negativo;
 ALTER TABLE cuenta_billetera
   ADD CONSTRAINT ck_cuenta_saldo_no_negativo
     CHECK (permite_saldo_negativo OR saldo_disponible >= 0),
@@ -198,14 +208,15 @@ ALTER TABLE cuenta_billetera
 -- saldo_total es GENERATED ALWAYS AS (saldo_disponible + saldo_retenido) STORED
 
 -- R-BIL-04 · unicidad por tipo de titular
-CREATE UNIQUE INDEX uq_cuenta_usuario_moneda
+CREATE UNIQUE INDEX IF NOT EXISTS uq_cuenta_usuario_moneda
   ON cuenta_billetera (usuario_id, moneda, tipo)
   WHERE tipo = 'USUARIO' AND estado <> 'CERRADA';
-CREATE UNIQUE INDEX uq_cuenta_grupo_moneda
+CREATE UNIQUE INDEX IF NOT EXISTS uq_cuenta_grupo_moneda
   ON cuenta_billetera (grupo_id, moneda)
   WHERE tipo = 'GRUPO' AND estado <> 'CERRADA';
 
 -- R-BIL-05 · titularidad coherente con el tipo
+ALTER TABLE cuenta_billetera DROP CONSTRAINT IF EXISTS ck_cuenta_titularidad;
 ALTER TABLE cuenta_billetera
   ADD CONSTRAINT ck_cuenta_titularidad CHECK (
       (tipo = 'USUARIO' AND usuario_id IS NOT NULL AND grupo_id IS NULL)
@@ -222,14 +233,14 @@ ALTER TABLE cuenta_billetera
 -- titular. Se usa el centinela en `COALESCE` para que la unicidad también
 -- alcance a las operaciones sin usuario (lotes, sistema), donde `NULL` dejaría
 -- pasar duplicados.
-CREATE UNIQUE INDEX uq_tx_idem ON transaccion_billetera (
+CREATE UNIQUE INDEX IF NOT EXISTS uq_tx_idem ON transaccion_billetera (
     COALESCE(iniciada_por, '00000000-0000-0000-0000-000000000000'::uuid),
     origen_tipo, clave_idempotencia);
-CREATE UNIQUE INDEX uq_recarga_idem
+CREATE UNIQUE INDEX IF NOT EXISTS uq_recarga_idem
   ON orden_recarga (cuenta_billetera_id, clave_idempotencia);
-CREATE UNIQUE INDEX uq_retiro_idem
+CREATE UNIQUE INDEX IF NOT EXISTS uq_retiro_idem
   ON orden_retiro (cuenta_billetera_id, clave_idempotencia);
-CREATE UNIQUE INDEX uq_devengo_idem ON devengo_comision (
+CREATE UNIQUE INDEX IF NOT EXISTS uq_devengo_idem ON devengo_comision (
     COALESCE(grupo_id, '00000000-0000-0000-0000-000000000000'::uuid),
     clave_idempotencia);
 
@@ -237,17 +248,17 @@ CREATE UNIQUE INDEX uq_devengo_idem ON devengo_comision (
 -- del que depende la operación. `webhook_pasarela` se ampara en el proveedor
 -- porque la clave la emite él: dos pasarelas distintas pueden mandar el mismo
 -- identificador de evento sin que eso signifique que sea el mismo hecho.
-CREATE UNIQUE INDEX uq_orden_cobro_idem
+CREATE UNIQUE INDEX IF NOT EXISTS uq_orden_cobro_idem
   ON orden_cobro (obligacion_id, clave_idempotencia);
-CREATE UNIQUE INDEX uq_intento_pago_idem
+CREATE UNIQUE INDEX IF NOT EXISTS uq_intento_pago_idem
   ON intento_pago (orden_cobro_id, clave_idempotencia);
-CREATE UNIQUE INDEX uq_pago_idem
+CREATE UNIQUE INDEX IF NOT EXISTS uq_pago_idem
   ON pago (obligacion_id, clave_idempotencia);
-CREATE UNIQUE INDEX uq_webhook_idem
+CREATE UNIQUE INDEX IF NOT EXISTS uq_webhook_idem
   ON webhook_pasarela (proveedor_id, clave_idempotencia);
-CREATE UNIQUE INDEX uq_cotizacion_idem
+CREATE UNIQUE INDEX IF NOT EXISTS uq_cotizacion_idem
   ON cotizacion_comision (referencia_id, clave_idempotencia);
-CREATE UNIQUE INDEX uq_token_verificacion_idem ON token_verificacion (
+CREATE UNIQUE INDEX IF NOT EXISTS uq_token_verificacion_idem ON token_verificacion (
     COALESCE(usuario_id, '00000000-0000-0000-0000-000000000000'::uuid),
     clave_idempotencia);
 
@@ -260,12 +271,15 @@ CREATE UNIQUE INDEX uq_token_verificacion_idem ON token_verificacion (
 --
 -- `hash_solicitud` cierra el hueco restante: la misma clave con otro cuerpo es un
 -- conflicto (409), nunca una reejecución silenciosa con parámetros distintos.
+ALTER TABLE respuesta_idempotente DROP CONSTRAINT IF EXISTS ck_respuesta_idem_hash;
+ALTER TABLE respuesta_idempotente DROP CONSTRAINT IF EXISTS ck_respuesta_idem_expira;
+ALTER TABLE respuesta_idempotente DROP CONSTRAINT IF EXISTS ck_respuesta_idem_http;
 ALTER TABLE respuesta_idempotente
   ADD CONSTRAINT ck_respuesta_idem_hash CHECK (length(hash_solicitud) = 64),
   ADD CONSTRAINT ck_respuesta_idem_expira CHECK (expira_en > registrada_en),
   ADD CONSTRAINT ck_respuesta_idem_http CHECK (codigo_http BETWEEN 100 AND 599);
 
-CREATE INDEX ix_respuesta_idem_expiradas ON respuesta_idempotente (expira_en);
+CREATE INDEX IF NOT EXISTS ix_respuesta_idem_expiradas ON respuesta_idempotente (expira_en);
 
 -- R-BIL-07 y R-BIL-16 · los dos saldos se derivan, no se escriben
 --
@@ -309,10 +323,12 @@ BEGIN
   RETURN NULL;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_retencion_sincroniza_saldo ON retencion_saldo;
 CREATE TRIGGER tg_retencion_sincroniza_saldo
   AFTER INSERT OR UPDATE OF estado, monto ON retencion_saldo
   FOR EACH ROW EXECUTE FUNCTION fn_bil_sincronizar_saldos();
 
+DROP TRIGGER IF EXISTS tg_movimiento_sincroniza_saldo ON movimiento_billetera;
 CREATE TRIGGER tg_movimiento_sincroniza_saldo
   AFTER INSERT ON movimiento_billetera
   FOR EACH ROW EXECUTE FUNCTION fn_bil_sincronizar_saldos();
@@ -339,6 +355,7 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_transaccion_moneda ON transaccion_billetera;
 CREATE CONSTRAINT TRIGGER tg_transaccion_moneda
   AFTER INSERT OR UPDATE ON transaccion_billetera
   DEFERRABLE INITIALLY DEFERRED
@@ -356,21 +373,25 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_retiro_moneda ON orden_retiro;
 CREATE TRIGGER tg_retiro_moneda
   BEFORE INSERT OR UPDATE OF moneda ON orden_retiro
   FOR EACH ROW EXECUTE FUNCTION fn_bil_moneda_orden();
 
+DROP TRIGGER IF EXISTS tg_recarga_moneda ON orden_recarga;
 CREATE TRIGGER tg_recarga_moneda
   BEFORE INSERT OR UPDATE OF moneda ON orden_recarga
   FOR EACH ROW EXECUTE FUNCTION fn_bil_moneda_orden();
 
 -- R-BIL-08 · toda retención expira salvo orden de autoridad
+ALTER TABLE retencion_saldo DROP CONSTRAINT IF EXISTS ck_retencion_expira;
 ALTER TABLE retencion_saldo
   ADD CONSTRAINT ck_retencion_expira CHECK (
       motivo = 'ORDEN_AUTORIDAD' OR expira_en IS NOT NULL
   );
 
 -- R-BIL-09 · condiciones duras del retiro
+ALTER TABLE orden_retiro DROP CONSTRAINT IF EXISTS ck_retiro_mfa;
 ALTER TABLE orden_retiro
   ADD CONSTRAINT ck_retiro_mfa CHECK (
       estado IN ('BORRADOR','RECHAZADA') OR mfa_verificado = TRUE
@@ -389,11 +410,13 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_retiro_instrumento ON orden_retiro;
 CREATE TRIGGER tg_retiro_instrumento
   BEFORE INSERT ON orden_retiro
   FOR EACH ROW EXECUTE FUNCTION fn_bil_validar_instrumento_retiro();
 
 -- R-BIL-10 · una referencia externa, una acreditación
+ALTER TABLE orden_recarga DROP CONSTRAINT IF EXISTS uq_recarga_referencia;
 ALTER TABLE orden_recarga
   ADD CONSTRAINT uq_recarga_referencia UNIQUE (referencia_externa);
 
@@ -427,11 +450,14 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_retiro_encaje ON orden_retiro;
 CREATE TRIGGER tg_retiro_encaje
   BEFORE INSERT OR UPDATE OF estado ON orden_retiro
   FOR EACH ROW EXECUTE FUNCTION fn_bil_exigir_encaje();
 
 -- R-BIL-11 · encaje mínimo y unicidad diaria de la conciliación
+ALTER TABLE conciliacion_custodia DROP CONSTRAINT IF EXISTS uq_conciliacion_cuenta_fecha;
+ALTER TABLE conciliacion_custodia DROP CONSTRAINT IF EXISTS ck_conciliacion_encaje;
 ALTER TABLE conciliacion_custodia
   ADD CONSTRAINT uq_conciliacion_cuenta_fecha UNIQUE (cuenta_custodia_id, fecha),
   ADD CONSTRAINT ck_conciliacion_encaje
@@ -454,6 +480,7 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_cierre_diario_valido ON cierre_diario;
 CREATE TRIGGER tg_cierre_diario_valido
   BEFORE INSERT OR UPDATE ON cierre_diario
   FOR EACH ROW EXECUTE FUNCTION fn_bil_validar_cierre_diario();
@@ -475,26 +502,31 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_cuenta_cierre_valido ON cuenta_billetera;
 CREATE TRIGGER tg_cuenta_cierre_valido
   BEFORE UPDATE OF estado ON cuenta_billetera
   FOR EACH ROW EXECUTE FUNCTION fn_bil_validar_cierre_cuenta();
 
 -- R-BIL-14 · un oficio, un bloqueo
+ALTER TABLE bloqueo_saldo DROP CONSTRAINT IF EXISTS uq_bloqueo_oficio;
 ALTER TABLE bloqueo_saldo
   ADD CONSTRAINT uq_bloqueo_oficio UNIQUE (numero_oficio);
 
 -- R-BIL-15 · una transacción se reversa una sola vez
-CREATE UNIQUE INDEX uq_reverso_original
+CREATE UNIQUE INDEX IF NOT EXISTS uq_reverso_original
   ON reverso_transaccion (transaccion_original_id)
   WHERE estado <> 'RECHAZADO';
 -- R-BIL-17 · cuenta de destino: unicidad por hash y una sola principal
+ALTER TABLE cuenta_bancaria_beneficiario DROP CONSTRAINT IF EXISTS uq_cuenta_benef_hash;
+ALTER TABLE cuenta_bancaria_beneficiario DROP CONSTRAINT IF EXISTS ck_cuenta_benef_hash_completo;
+ALTER TABLE cuenta_bancaria_beneficiario DROP CONSTRAINT IF EXISTS ck_cuenta_benef_verificada;
 ALTER TABLE cuenta_bancaria_beneficiario
   ADD CONSTRAINT uq_cuenta_benef_hash UNIQUE (usuario_id, hash_numero_cuenta),
   ADD CONSTRAINT ck_cuenta_benef_hash_completo CHECK (length(hash_numero_cuenta) = 64),
   ADD CONSTRAINT ck_cuenta_benef_verificada CHECK (
         estado_verificacion <> 'VERIFICADA' OR verificada_en IS NOT NULL);
 
-CREATE UNIQUE INDEX uq_cuenta_benef_principal
+CREATE UNIQUE INDEX IF NOT EXISTS uq_cuenta_benef_principal
   ON cuenta_bancaria_beneficiario (usuario_id)
   WHERE (es_principal);
 
@@ -546,11 +578,13 @@ BEGIN
 END $$ LANGUAGE plpgsql;
 
 -- R-LIM-02 · un consumo por ventana
+ALTER TABLE consumo_limite DROP CONSTRAINT IF EXISTS uq_consumo_ventana;
 ALTER TABLE consumo_limite
   ADD CONSTRAINT uq_consumo_ventana
   UNIQUE (cuenta_billetera_id, limite_id, ventana_inicio);
 
 -- R-LIM-03 · vigencias sin solape por concepto, nivel y ventana
+ALTER TABLE limite_operativo_billetera DROP CONSTRAINT IF EXISTS ex_limite_vigencia;
 ALTER TABLE limite_operativo_billetera
   ADD CONSTRAINT ex_limite_vigencia
   EXCLUDE USING gist (
@@ -564,6 +598,7 @@ ALTER TABLE limite_operativo_billetera
 -- ---------------------------------------------------------------------
 
 -- R-TAR-01 · un solo tarifario vigente por código y rango
+ALTER TABLE tarifario DROP CONSTRAINT IF EXISTS ex_tarifario_vigente;
 ALTER TABLE tarifario
   ADD CONSTRAINT ex_tarifario_vigente
   EXCLUDE USING gist (
@@ -583,11 +618,14 @@ BEGIN
   RETURN COALESCE(NEW, OLD);
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_concepto_tarifa_inmutable ON concepto_tarifa;
 CREATE TRIGGER tg_concepto_tarifa_inmutable
   BEFORE UPDATE OR DELETE ON concepto_tarifa
   FOR EACH ROW EXECUTE FUNCTION fn_tar_tarifario_inmutable();
 
 -- R-TAR-03 · coherencia del método de cálculo
+ALTER TABLE concepto_tarifa DROP CONSTRAINT IF EXISTS ck_concepto_metodo;
+ALTER TABLE concepto_tarifa DROP CONSTRAINT IF EXISTS ck_concepto_piso_techo;
 ALTER TABLE concepto_tarifa
   ADD CONSTRAINT ck_concepto_metodo CHECK (
       (metodo_calculo = 'GRATUITO')
@@ -602,16 +640,18 @@ ALTER TABLE concepto_tarifa
   );
 
 -- R-TAR-04 y R-TAR-05 · un devengo por hecho
+ALTER TABLE devengo_comision DROP CONSTRAINT IF EXISTS uq_devengo_hecho;
 ALTER TABLE devengo_comision
   ADD CONSTRAINT uq_devengo_hecho
   UNIQUE (referencia_tipo, referencia_id, concepto_tarifa_id);
 
 -- R-TAR-06 · una deducción respalda un solo cargo
-CREATE UNIQUE INDEX uq_cargo_deduccion
+CREATE UNIQUE INDEX IF NOT EXISTS uq_cargo_deduccion
   ON cargo_comision (deduccion_entrega_id)
   WHERE deduccion_entrega_id IS NOT NULL;
 
 -- R-TAR-07 · una tarifa congelada por grupo
+ALTER TABLE tarifa_congelada_grupo DROP CONSTRAINT IF EXISTS uq_tarifa_congelada_grupo;
 ALTER TABLE tarifa_congelada_grupo
   ADD CONSTRAINT uq_tarifa_congelada_grupo UNIQUE (grupo_id);
 
@@ -630,15 +670,19 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_tarifario_preaviso ON tarifario;
 CREATE TRIGGER tg_tarifario_preaviso
   BEFORE UPDATE OF estado ON tarifario
   FOR EACH ROW EXECUTE FUNCTION fn_tar_validar_preaviso();
 
 -- R-TAR-09 · unicidad fiscal
+ALTER TABLE factura_electronica DROP CONSTRAINT IF EXISTS uq_factura_cuf;
+ALTER TABLE factura_electronica DROP CONSTRAINT IF EXISTS uq_factura_correlativo;
 ALTER TABLE factura_electronica
   ADD CONSTRAINT uq_factura_cuf UNIQUE (cuf),
   ADD CONSTRAINT uq_factura_correlativo
     UNIQUE (nit_emisor, sucursal, punto_venta, numero_factura);
+ALTER TABLE nota_credito_debito DROP CONSTRAINT IF EXISTS uq_nota_cuf;
 ALTER TABLE nota_credito_debito ADD CONSTRAINT uq_nota_cuf UNIQUE (cuf);
 
 -- R-TAR-10 · factura validada inmutable
@@ -654,6 +698,7 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_factura_inmutable ON factura_electronica;
 CREATE TRIGGER tg_factura_inmutable
   BEFORE UPDATE ON factura_electronica
   FOR EACH ROW EXECUTE FUNCTION fn_tar_factura_inmutable();
@@ -674,11 +719,13 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_devolucion_maxima ON devolucion_comision;
 CREATE TRIGGER tg_devolucion_maxima
   BEFORE INSERT OR UPDATE ON devolucion_comision
   FOR EACH ROW EXECUTE FUNCTION fn_tar_validar_devolucion();
 
 -- R-TAR-12 · consumidor final: precio con impuestos incluidos
+ALTER TABLE concepto_tarifa DROP CONSTRAINT IF EXISTS ck_concepto_precio_final;
 ALTER TABLE concepto_tarifa
   ADD CONSTRAINT ck_concepto_precio_final CHECK (
       NOT (gravado_iva AND NOT precio_incluye_impuesto
@@ -686,6 +733,7 @@ ALTER TABLE concepto_tarifa
   );
 
 -- R-TAR-13 · toda factura offline bajo un evento significativo
+ALTER TABLE factura_electronica DROP CONSTRAINT IF EXISTS ck_factura_offline_evento;
 ALTER TABLE factura_electronica
   ADD CONSTRAINT ck_factura_offline_evento CHECK (
       estado_fiscal <> 'EMITIDA_OFFLINE' OR evento_significativo_id IS NOT NULL
@@ -697,6 +745,8 @@ ALTER TABLE factura_electronica
 -- ---------------------------------------------------------------------
 
 -- R-UIF-01 · umbrales versionados con su cita normativa
+ALTER TABLE umbral_reporte_uif DROP CONSTRAINT IF EXISTS ck_umbral_base_normativa;
+ALTER TABLE umbral_reporte_uif DROP CONSTRAINT IF EXISTS ck_umbral_ventana;
 ALTER TABLE umbral_reporte_uif
   ADD CONSTRAINT ck_umbral_base_normativa CHECK (length(trim(base_normativa)) > 0),
   ADD CONSTRAINT ck_umbral_ventana CHECK (
@@ -704,6 +754,7 @@ ALTER TABLE umbral_reporte_uif
    OR (NOT es_acumulado AND ventana_dias_calendario IS NULL)
   );
 
+ALTER TABLE umbral_reporte_uif DROP CONSTRAINT IF EXISTS ex_umbral_vigencia;
 ALTER TABLE umbral_reporte_uif
   ADD CONSTRAINT ex_umbral_vigencia
   EXCLUDE USING gist (
@@ -712,6 +763,10 @@ ALTER TABLE umbral_reporte_uif
   ) WHERE (activo);
 
 -- R-UIF-03 y R-UIF-04 · coherencia del registro por umbral
+ALTER TABLE registro_operacion_relevante DROP CONSTRAINT IF EXISTS ck_operelev_ventana;
+ALTER TABLE registro_operacion_relevante DROP CONSTRAINT IF EXISTS ck_operelev_tipo_cambio;
+ALTER TABLE registro_operacion_relevante DROP CONSTRAINT IF EXISTS ck_operelev_declaracion;
+ALTER TABLE registro_operacion_relevante DROP CONSTRAINT IF EXISTS ck_operelev_periodo;
 ALTER TABLE registro_operacion_relevante
   ADD CONSTRAINT ck_operelev_ventana CHECK (
       (es_acumulada AND ventana_desde IS NOT NULL AND ventana_hasta IS NOT NULL)
@@ -855,6 +910,7 @@ BEGIN
 END $$ LANGUAGE plpgsql;
 
 -- R-UIF-13 · un registro por transacción y umbral (hace idempotente el motor)
+ALTER TABLE registro_operacion_relevante DROP CONSTRAINT IF EXISTS uq_operelev_tx_umbral;
 ALTER TABLE registro_operacion_relevante
   ADD CONSTRAINT uq_operelev_tx_umbral UNIQUE (transaccion_id, umbral_reporte_id);
 
@@ -865,12 +921,15 @@ BEGIN
   RETURN NULL;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_movimiento_umbrales_uif ON movimiento_billetera;
 CREATE CONSTRAINT TRIGGER tg_movimiento_umbrales_uif
   AFTER INSERT ON movimiento_billetera
   DEFERRABLE INITIALLY DEFERRED
   FOR EACH ROW EXECUTE FUNCTION fn_uif_disparar_registro();
 
 -- R-UIF-06 · reporte en cero coherente
+ALTER TABLE reporte_regulatorio DROP CONSTRAINT IF EXISTS ck_reporte_en_cero;
+ALTER TABLE reporte_regulatorio DROP CONSTRAINT IF EXISTS uq_reporte_catalogo_periodo;
 ALTER TABLE reporte_regulatorio
   ADD CONSTRAINT ck_reporte_en_cero CHECK (
       reporte_en_cero = (cantidad_registros = 0)
@@ -878,6 +937,7 @@ ALTER TABLE reporte_regulatorio
   ADD CONSTRAINT uq_reporte_catalogo_periodo UNIQUE (catalogo_reporte_id, periodo);
 
 -- R-UIF-07 · no se cierra una alerta sin conclusión
+ALTER TABLE alerta_monitoreo_lft DROP CONSTRAINT IF EXISTS ck_alerta_conclusion;
 ALTER TABLE alerta_monitoreo_lft
   ADD CONSTRAINT ck_alerta_conclusion CHECK (
       estado NOT IN ('DESCARTADA','ESCALADA')
@@ -885,6 +945,9 @@ ALTER TABLE alerta_monitoreo_lft
   );
 
 -- R-UIF-08 · el caso tiene plazo y revisor distinto del analista
+ALTER TABLE caso_investigacion_lft DROP CONSTRAINT IF EXISTS ck_caso_plazo;
+ALTER TABLE caso_investigacion_lft DROP CONSTRAINT IF EXISTS ck_caso_revision;
+ALTER TABLE caso_investigacion_lft DROP CONSTRAINT IF EXISTS ck_caso_reporte;
 ALTER TABLE caso_investigacion_lft
   ADD CONSTRAINT ck_caso_plazo CHECK (plazo_limite > abierto_en),
   ADD CONSTRAINT ck_caso_revision CHECK (
@@ -928,11 +991,13 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_ddd_pep ON debida_diligencia;
 CREATE TRIGGER tg_ddd_pep
   BEFORE INSERT OR UPDATE ON debida_diligencia
   FOR EACH ROW EXECUTE FUNCTION fn_uif_validar_pep();
 
 -- R-UIF-11 · una calificación vigente por cliente
+ALTER TABLE calificacion_riesgo_cliente DROP CONSTRAINT IF EXISTS ex_calificacion_vigente;
 ALTER TABLE calificacion_riesgo_cliente
   ADD CONSTRAINT ex_calificacion_vigente
   EXCLUDE USING gist (
@@ -940,10 +1005,12 @@ ALTER TABLE calificacion_riesgo_cliente
     tstzrange(vigente_desde, vigente_hasta, '[)') WITH &&
   );
 -- R-UIF-12 · un titular activo por vez, y la baja exige fecha
-CREATE UNIQUE INDEX uq_oficial_titular_activo
+CREATE UNIQUE INDEX IF NOT EXISTS uq_oficial_titular_activo
   ON oficial_cumplimiento ((tipo))
   WHERE (activo AND tipo = 'TITULAR');
 
+ALTER TABLE oficial_cumplimiento DROP CONSTRAINT IF EXISTS ck_oficial_baja_coherente;
+ALTER TABLE oficial_cumplimiento DROP CONSTRAINT IF EXISTS ck_oficial_baja_posterior;
 ALTER TABLE oficial_cumplimiento
   ADD CONSTRAINT ck_oficial_baja_coherente CHECK (
         (activo AND fecha_baja IS NULL) OR (NOT activo AND fecha_baja IS NOT NULL)),
@@ -956,12 +1023,17 @@ ALTER TABLE oficial_cumplimiento
 -- ---------------------------------------------------------------------
 
 -- R-CON-01 · plazo guardado, nunca recalculado
+ALTER TABLE reclamo_cliente DROP CONSTRAINT IF EXISTS ck_reclamo_plazo;
+ALTER TABLE reclamo_cliente DROP CONSTRAINT IF EXISTS ck_reclamo_dias;
+ALTER TABLE reclamo_cliente DROP CONSTRAINT IF EXISTS uq_reclamo_codigo;
 ALTER TABLE reclamo_cliente
   ADD CONSTRAINT ck_reclamo_plazo CHECK (plazo_respuesta > fecha_ingreso),
   ADD CONSTRAINT ck_reclamo_dias CHECK (dias_habiles_plazo BETWEEN 1 AND 5),
   ADD CONSTRAINT uq_reclamo_codigo UNIQUE (codigo);
 
 -- R-CON-02 y R-CON-03 · prórroga acotada y comunicada
+ALTER TABLE reclamo_cliente DROP CONSTRAINT IF EXISTS ck_reclamo_prorroga;
+ALTER TABLE reclamo_cliente DROP CONSTRAINT IF EXISTS ck_reclamo_prorroga_extendida;
 ALTER TABLE reclamo_cliente
   ADD CONSTRAINT ck_reclamo_prorroga CHECK (
       plazo_prorrogado_hasta IS NULL
@@ -977,6 +1049,7 @@ ALTER TABLE reclamo_cliente
   );
 
 -- R-CON-04 · un reclamo favorable con monto exige reparación
+ALTER TABLE reclamo_cliente DROP CONSTRAINT IF EXISTS ck_reclamo_reparacion;
 ALTER TABLE reclamo_cliente
   ADD CONSTRAINT ck_reclamo_reparacion CHECK (
       estado <> 'CERRADO'
@@ -986,6 +1059,7 @@ ALTER TABLE reclamo_cliente
   );
 
 -- R-CON-05 · conservación
+ALTER TABLE reclamo_cliente DROP CONSTRAINT IF EXISTS ck_reclamo_conservacion;
 ALTER TABLE reclamo_cliente
   ADD CONSTRAINT ck_reclamo_conservacion CHECK (
       conservar_hasta >= (fecha_ingreso + interval '10 years')::date
@@ -1008,6 +1082,7 @@ BEGIN
 END $$ LANGUAGE plpgsql;
 
 -- R-CON-07 · tarifario publicado
+ALTER TABLE tarifario DROP CONSTRAINT IF EXISTS ck_tarifario_publicado;
 ALTER TABLE tarifario
   ADD CONSTRAINT ck_tarifario_publicado CHECK (
       estado <> 'VIGENTE'
@@ -1016,6 +1091,8 @@ ALTER TABLE tarifario
   );
 
 -- R-CON-08 · extractos con integridad verificable
+ALTER TABLE estado_cuenta_billetera DROP CONSTRAINT IF EXISTS ck_extracto_hash;
+ALTER TABLE estado_cuenta_billetera DROP CONSTRAINT IF EXISTS ck_extracto_cuadra;
 ALTER TABLE estado_cuenta_billetera
   ADD CONSTRAINT ck_extracto_hash CHECK (length(hash_archivo) = 64),
   ADD CONSTRAINT ck_extracto_cuadra CHECK (
@@ -1051,14 +1128,17 @@ BEGIN
   RETURN encode(hmac(p_valor, v_pimienta, 'sha256'), 'hex');
 END $$ LANGUAGE plpgsql;
 
+ALTER TABLE instrumento_fondeo DROP CONSTRAINT IF EXISTS ck_instrumento_sin_pan;
 ALTER TABLE instrumento_fondeo
   ADD CONSTRAINT ck_instrumento_sin_pan CHECK (
       enmascarado !~ '[0-9]{9,}' AND length(hash_identificador) = 64
   );
+ALTER TABLE cuenta_bancaria_beneficiario DROP CONSTRAINT IF EXISTS ck_cuenta_bancaria_sin_claro;
 ALTER TABLE cuenta_bancaria_beneficiario
   ADD CONSTRAINT ck_cuenta_bancaria_sin_claro CHECK (
       numero_enmascarado !~ '[0-9]{9,}' AND length(hash_numero_cuenta) = 64
   );
+ALTER TABLE documento_identidad DROP CONSTRAINT IF EXISTS ck_documento_hash_completo;
 ALTER TABLE documento_identidad
   ADD CONSTRAINT ck_documento_hash_completo CHECK (length(hash_numero) = 64);
 
@@ -1068,14 +1148,19 @@ ALTER TABLE documento_identidad
 -- una sola ventana atómica. En la práctica eso significa no rotar nunca, que es
 -- el hallazgo estándar de toda auditoría. Con la versión al lado, conviven dos
 -- generaciones y la rotación es incremental.
+ALTER TABLE documento_identidad DROP CONSTRAINT IF EXISTS ck_documento_version_llave;
 ALTER TABLE documento_identidad
   ADD CONSTRAINT ck_documento_version_llave CHECK (version_llave >= 1);
+ALTER TABLE cuenta_bancaria_beneficiario DROP CONSTRAINT IF EXISTS ck_cuenta_bancaria_version_llave;
 ALTER TABLE cuenta_bancaria_beneficiario
   ADD CONSTRAINT ck_cuenta_bancaria_version_llave CHECK (version_llave >= 1);
+ALTER TABLE factor_mfa DROP CONSTRAINT IF EXISTS ck_factor_mfa_version_llave;
 ALTER TABLE factor_mfa
   ADD CONSTRAINT ck_factor_mfa_version_llave CHECK (version_llave >= 1);
+ALTER TABLE cuenta_custodia DROP CONSTRAINT IF EXISTS ck_cuenta_custodia_version_llave;
 ALTER TABLE cuenta_custodia
   ADD CONSTRAINT ck_cuenta_custodia_version_llave CHECK (version_llave >= 1);
+ALTER TABLE exportacion_reporte DROP CONSTRAINT IF EXISTS ck_exportacion_version_llave;
 ALTER TABLE exportacion_reporte
   ADD CONSTRAINT ck_exportacion_version_llave CHECK (version_llave >= 1);
 
@@ -1085,6 +1170,7 @@ ALTER TABLE exportacion_reporte
 -- satisface con NULL, porque `length(trim(NULL)) >= 10` evalúa a NULL y un
 -- CHECK que evalúa a NULL se acepta. La restricción se saltaba dejando el campo
 -- vacío. El `IS NOT NULL` explícito es el que hace el trabajo.
+ALTER TABLE registro_acceso_datos DROP CONSTRAINT IF EXISTS ck_acceso_justificacion;
 ALTER TABLE registro_acceso_datos
   ADD CONSTRAINT ck_acceso_justificacion
   CHECK (justificacion IS NOT NULL AND length(btrim(justificacion)) >= 10);
@@ -1188,6 +1274,7 @@ SELECT fn_seg_aplicar_rls();
 -- La propia tabla de usuarios: acá el dueño es la clave primaria, no usuario_id.
 ALTER TABLE usuario ENABLE ROW LEVEL SECURITY;
 ALTER TABLE usuario FORCE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS pol_usuario_titular ON usuario;
 CREATE POLICY pol_usuario_titular ON usuario
   FOR ALL TO rol_aplicacion
   USING (id = fn_seg_usuario_actual() OR fn_seg_rol_privilegiado())
@@ -1208,6 +1295,11 @@ BEGIN
       'registro_acceso_datos','requerimiento_autoridad'] LOOP
     EXECUTE format('ALTER TABLE %I ENABLE ROW LEVEL SECURITY', t);
     EXECUTE format('ALTER TABLE %I FORCE ROW LEVEL SECURITY', t);
+    -- Igual que el recorrido de arriba: el esquema se reaplica sobre bases que
+    -- ya lo tienen, y PostgreSQL no ofrece CREATE POLICY IF NOT EXISTS. Acá la
+    -- guarda se escribe a mano porque la política se arma con SQL dinámico:
+    -- scripts/idempotencia.py no mira —ni debe mirar— dentro de un literal.
+    EXECUTE format('DROP POLICY IF EXISTS pol_%s_reservado ON %I', t, t);
     EXECUTE format(
       'CREATE POLICY pol_%s_reservado ON %I FOR ALL TO rol_aplicacion '
       'USING (fn_seg_rol_privilegiado()) WITH CHECK (fn_seg_rol_privilegiado())',
@@ -1216,13 +1308,16 @@ BEGIN
 END $$;
 
 -- R-SEG-04 · cuatro ojos donde importa
+ALTER TABLE entrega_fondo DROP CONSTRAINT IF EXISTS ck_entrega_segregacion;
 ALTER TABLE entrega_fondo
   ADD CONSTRAINT ck_entrega_segregacion CHECK (
       autorizada_por IS NULL OR ejecutada_por IS NULL
    OR autorizada_por <> ejecutada_por
   );
+ALTER TABLE reverso_transaccion DROP CONSTRAINT IF EXISTS ck_reverso_segregacion;
 ALTER TABLE reverso_transaccion
   ADD CONSTRAINT ck_reverso_segregacion CHECK (autorizada_por IS NOT NULL);
+ALTER TABLE reporte_regulatorio DROP CONSTRAINT IF EXISTS ck_reporte_segregacion;
 ALTER TABLE reporte_regulatorio
   ADD CONSTRAINT ck_reporte_segregacion CHECK (
       estado <> 'ENVIADO'
@@ -1233,6 +1328,7 @@ ALTER TABLE reporte_regulatorio
 -- sin segregación exigible: `requiere_doble_aprobacion` existía sin ninguna
 -- restricción que lo hiciera valer, y la tabla ni siquiera guardaba quién había
 -- solicitado la orden, así que no había con qué comparar al aprobador.
+ALTER TABLE orden_retiro DROP CONSTRAINT IF EXISTS ck_retiro_doble_aprobacion;
 ALTER TABLE orden_retiro
   ADD CONSTRAINT ck_retiro_doble_aprobacion CHECK (
       NOT requiere_doble_aprobacion
@@ -1251,11 +1347,12 @@ ALTER TABLE orden_retiro
 -- El disparador no lanza excepción a propósito: si lo hiciera, la propia
 -- revocación se iría en el ROLLBACK. Marca el token como INVALIDADO y propaga;
 -- la aplicación ve que no obtuvo un token vivo y responde 401.
+ALTER TABLE token_verificacion DROP CONSTRAINT IF EXISTS ck_token_refresco_familia;
 ALTER TABLE token_verificacion
   ADD CONSTRAINT ck_token_refresco_familia CHECK (
       tipo_token <> 'REFRESCO' OR familia_id IS NOT NULL);
 
-CREATE UNIQUE INDEX uq_token_refresco_vivo
+CREATE UNIQUE INDEX IF NOT EXISTS uq_token_refresco_vivo
   ON token_verificacion (familia_id)
   WHERE (tipo_token = 'REFRESCO' AND estado = 'EMITIDO');
 
@@ -1285,11 +1382,14 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_token_reuso_refresco ON token_verificacion;
 CREATE TRIGGER tg_token_reuso_refresco
   BEFORE UPDATE OF estado ON token_verificacion
   FOR EACH ROW EXECUTE FUNCTION fn_seg_detectar_reuso_refresco();
 
 -- R-SEG-05 · plazo de reporte guardado
+ALTER TABLE incidente_seguridad DROP CONSTRAINT IF EXISTS ck_incidente_plazo;
+ALTER TABLE incidente_seguridad DROP CONSTRAINT IF EXISTS ck_incidente_notificacion;
 ALTER TABLE incidente_seguridad
   ADD CONSTRAINT ck_incidente_plazo CHECK (plazo_reporte > detectado_en),
   ADD CONSTRAINT ck_incidente_notificacion CHECK (
@@ -1310,10 +1410,14 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_anonimizacion_retencion ON proceso_anonimizacion;
 CREATE TRIGGER tg_anonimizacion_retencion
   BEFORE INSERT OR UPDATE ON proceso_anonimizacion
   FOR EACH ROW EXECUTE FUNCTION fn_seg_validar_anonimizacion();
 -- R-SEG-07 · nadie se amplía sus propios permisos
+ALTER TABLE asignacion_rol DROP CONSTRAINT IF EXISTS ck_asignacion_no_autoasignada;
+ALTER TABLE asignacion_rol DROP CONSTRAINT IF EXISTS ck_asignacion_ambito_completo;
+ALTER TABLE asignacion_rol DROP CONSTRAINT IF EXISTS ck_asignacion_revocacion_motivada;
 ALTER TABLE asignacion_rol
   ADD CONSTRAINT ck_asignacion_no_autoasignada CHECK (usuario_id <> otorgada_por),
   ADD CONSTRAINT ck_asignacion_ambito_completo CHECK (
@@ -1323,11 +1427,11 @@ ALTER TABLE asignacion_rol
         revocada_en IS NULL OR motivo_revocacion IS NOT NULL);
 
 -- R-SEG-08 · una sola asignación viva por usuario, rol y ámbito
-CREATE UNIQUE INDEX uq_asignacion_vigente
+CREATE UNIQUE INDEX IF NOT EXISTS uq_asignacion_vigente
   ON asignacion_rol (usuario_id, rol_id, ambito, COALESCE(ambito_id, '00000000-0000-0000-0000-000000000000'::uuid))
   WHERE (revocada_en IS NULL);
 
-CREATE INDEX ix_asignacion_por_vencer
+CREATE INDEX IF NOT EXISTS ix_asignacion_por_vencer
   ON asignacion_rol (vigente_hasta)
   WHERE (revocada_en IS NULL AND vigente_hasta IS NOT NULL);
 
@@ -1377,6 +1481,7 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_sesion_operador_mfa ON sesion;
 CREATE TRIGGER tg_sesion_operador_mfa
   BEFORE INSERT ON sesion
   FOR EACH ROW EXECUTE FUNCTION fn_seg_sesion_operador_exige_mfa();
@@ -1398,6 +1503,7 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_factor_operador_valido ON factor_mfa;
 CREATE TRIGGER tg_factor_operador_valido
   BEFORE INSERT OR UPDATE ON factor_mfa
   FOR EACH ROW EXECUTE FUNCTION fn_seg_factor_operador_valido();
@@ -1444,6 +1550,7 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_credencial_operador_corta_sesiones ON credencial_acceso;
 CREATE TRIGGER tg_credencial_operador_corta_sesiones
   AFTER UPDATE OF hash_contrasena ON credencial_acceso
   FOR EACH ROW EXECUTE FUNCTION fn_seg_credencial_operador_corta_sesiones();
@@ -1456,6 +1563,7 @@ CREATE TRIGGER tg_credencial_operador_corta_sesiones
 -- escribe: exigirlo en cada acción del día produce fatiga y la fatiga produce el
 -- clic automático. Lo exige donde la decisión no se deshace o donde se leen datos
 -- de un tercero.
+ALTER TABLE permiso DROP CONSTRAINT IF EXISTS ck_permiso_decision_exige_mfa;
 ALTER TABLE permiso
   ADD CONSTRAINT ck_permiso_decision_exige_mfa CHECK (
       requiere_mfa
@@ -1487,6 +1595,7 @@ BEGIN
 END $$ LANGUAGE plpgsql;
 
 -- R-LIC-02 · el sandbox tiene límites obligatorios
+ALTER TABLE entorno_prueba_regulado DROP CONSTRAINT IF EXISTS ck_sandbox_limites;
 ALTER TABLE entorno_prueba_regulado
   ADD CONSTRAINT ck_sandbox_limites CHECK (
       estado <> 'ACTIVO'
@@ -1495,6 +1604,8 @@ ALTER TABLE entorno_prueba_regulado
   );
 
 -- R-LIC-03 · política vigente exige acta
+ALTER TABLE politica_interna DROP CONSTRAINT IF EXISTS ck_politica_acta;
+ALTER TABLE politica_interna DROP CONSTRAINT IF EXISTS ck_politica_revision;
 ALTER TABLE politica_interna
   ADD CONSTRAINT ck_politica_acta CHECK (
       estado <> 'VIGENTE'
@@ -1502,6 +1613,9 @@ ALTER TABLE politica_interna
   ),
   ADD CONSTRAINT ck_politica_revision CHECK (proxima_revision > vigente_desde);
 -- R-LIC-04 · no objeción previa cuando la norma la exige
+ALTER TABLE evaluacion_riesgo_producto DROP CONSTRAINT IF EXISTS uq_evaluacion_producto_version;
+ALTER TABLE evaluacion_riesgo_producto DROP CONSTRAINT IF EXISTS ck_evaluacion_no_objecion;
+ALTER TABLE evaluacion_riesgo_producto DROP CONSTRAINT IF EXISTS ck_evaluacion_vigente_aprobada;
 ALTER TABLE evaluacion_riesgo_producto
   ADD CONSTRAINT uq_evaluacion_producto_version UNIQUE (producto, version),
   ADD CONSTRAINT ck_evaluacion_no_objecion CHECK (
@@ -1517,11 +1631,15 @@ ALTER TABLE evaluacion_riesgo_producto
 -- ---------------------------------------------------------------------
 
 -- R-GRP-01 · una entrega por turno y por período
+ALTER TABLE entrega_fondo DROP CONSTRAINT IF EXISTS uq_entrega_turno;
+ALTER TABLE entrega_fondo DROP CONSTRAINT IF EXISTS uq_entrega_periodo;
 ALTER TABLE entrega_fondo
   ADD CONSTRAINT uq_entrega_turno UNIQUE (turno_id),
   ADD CONSTRAINT uq_entrega_periodo UNIQUE (periodo_id);
 
 -- R-GRP-02 · aritmética de la liquidación
+ALTER TABLE entrega_fondo DROP CONSTRAINT IF EXISTS ck_entrega_neto;
+ALTER TABLE entrega_fondo DROP CONSTRAINT IF EXISTS ck_entrega_neto_no_negativo;
 ALTER TABLE entrega_fondo
   ADD CONSTRAINT ck_entrega_neto CHECK (
       monto_neto_a_entregar = monto_bolsa_bruto - total_deducciones
@@ -1542,16 +1660,20 @@ BEGIN
   RETURN NULL;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_deduccion_recalcula ON deduccion_entrega;
 CREATE TRIGGER tg_deduccion_recalcula
   AFTER INSERT OR UPDATE OR DELETE ON deduccion_entrega
   FOR EACH ROW EXECUTE FUNCTION fn_grp_recalcular_deducciones();
 
 -- R-GRP-03 · una obligación periódica por cupo
-CREATE UNIQUE INDEX uq_obligacion_periodo_cupo
+CREATE UNIQUE INDEX IF NOT EXISTS uq_obligacion_periodo_cupo
   ON obligacion_aporte (periodo_id, cupo_id)
   WHERE tipo = 'APORTE_PERIODICO' AND estado <> 'ANULADO';
 
 -- R-GRP-05 · un solo sorteo por grupo; el compromiso es inmutable
+ALTER TABLE sorteo_turnos DROP CONSTRAINT IF EXISTS uq_sorteo_grupo;
+ALTER TABLE sorteo_turnos DROP CONSTRAINT IF EXISTS ck_sorteo_revelado;
+ALTER TABLE sorteo_turnos DROP CONSTRAINT IF EXISTS ck_sorteo_compromiso;
 ALTER TABLE sorteo_turnos
   ADD CONSTRAINT uq_sorteo_grupo UNIQUE (grupo_id),
   ADD CONSTRAINT ck_sorteo_revelado CHECK (
@@ -1573,11 +1695,14 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_sorteo_compromiso_inmutable ON sorteo_turnos;
 CREATE TRIGGER tg_sorteo_compromiso_inmutable
   BEFORE UPDATE ON sorteo_turnos
   FOR EACH ROW EXECUTE FUNCTION fn_grp_compromiso_inmutable();
 
 -- R-GRP-06 · un turno por período y un orden único por grupo
+ALTER TABLE turno DROP CONSTRAINT IF EXISTS uq_turno_periodo;
+ALTER TABLE turno DROP CONSTRAINT IF EXISTS uq_turno_orden;
 ALTER TABLE turno
   ADD CONSTRAINT uq_turno_periodo UNIQUE (periodo_id),
   ADD CONSTRAINT uq_turno_orden UNIQUE (grupo_id, orden_asignado);
@@ -1594,11 +1719,13 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_permuta_valida ON solicitud_permuta;
 CREATE TRIGGER tg_permuta_valida
   BEFORE INSERT ON solicitud_permuta
   FOR EACH ROW EXECUTE FUNCTION fn_grp_validar_permuta();
 
 -- R-GRP-08 · un voto por participante y acuerdo, sin cambios
+ALTER TABLE voto_participante DROP CONSTRAINT IF EXISTS uq_voto_acuerdo_participante;
 ALTER TABLE voto_participante
   ADD CONSTRAINT uq_voto_acuerdo_participante UNIQUE (acuerdo_id, participante_id);
 
@@ -1607,16 +1734,18 @@ BEGIN
   RAISE EXCEPTION 'R-GRP-08: el voto emitido no se modifica ni se borra';
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_voto_inmutable ON voto_participante;
 CREATE TRIGGER tg_voto_inmutable
   BEFORE UPDATE OR DELETE ON voto_participante
   FOR EACH ROW EXECUTE FUNCTION fn_grp_voto_inmutable();
 
 -- R-GRP-09 · un acuerdo abierto por tipo y objeto
-CREATE UNIQUE INDEX uq_acuerdo_abierto
+CREATE UNIQUE INDEX IF NOT EXISTS uq_acuerdo_abierto
   ON acuerdo (grupo_id, tipo, COALESCE(referencia_afectada_id, grupo_id))
   WHERE estado = 'EN_VOTACION';
 
 -- R-GRP-12 · retiro deudor exige plan
+ALTER TABLE solicitud_retiro DROP CONSTRAINT IF EXISTS ck_retiro_deudor_con_plan;
 ALTER TABLE solicitud_retiro
   ADD CONSTRAINT ck_retiro_deudor_con_plan CHECK (
       estado <> 'APROBADO'
@@ -1637,6 +1766,7 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_disolucion_cuadra ON disolucion_anticipada;
 CREATE TRIGGER tg_disolucion_cuadra
   BEFORE UPDATE OF estado ON disolucion_anticipada
   FOR EACH ROW EXECUTE FUNCTION fn_grp_validar_disolucion();
@@ -1653,37 +1783,43 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_retiro_no_grupo ON orden_retiro;
 CREATE TRIGGER tg_retiro_no_grupo
   BEFORE INSERT ON orden_retiro
   FOR EACH ROW EXECUTE FUNCTION fn_grp_validar_retiro_grupo();
 -- R-GRP-14 · una postulación pendiente por usuario y grupo
-CREATE UNIQUE INDEX uq_solicitud_ingreso_pendiente
+CREATE UNIQUE INDEX IF NOT EXISTS uq_solicitud_ingreso_pendiente
   ON solicitud_ingreso (grupo_id, usuario_id)
   WHERE (estado = 'PENDIENTE');
 
+ALTER TABLE solicitud_ingreso DROP CONSTRAINT IF EXISTS ck_solicitud_ingreso_resuelta;
 ALTER TABLE solicitud_ingreso
   ADD CONSTRAINT ck_solicitud_ingreso_resuelta CHECK (
         estado = 'PENDIENTE'
      OR (fecha_resolucion IS NOT NULL AND revisada_por IS NOT NULL));
 
 -- R-GRP-15 · invitación con vencimiento y token de un solo uso
+ALTER TABLE invitacion DROP CONSTRAINT IF EXISTS uq_invitacion_token;
+ALTER TABLE invitacion DROP CONSTRAINT IF EXISTS ck_invitacion_expira;
+ALTER TABLE invitacion DROP CONSTRAINT IF EXISTS ck_invitacion_respuesta;
 ALTER TABLE invitacion
   ADD CONSTRAINT uq_invitacion_token UNIQUE (token_id),
   ADD CONSTRAINT ck_invitacion_expira CHECK (fecha_expiracion > fecha_envio),
   ADD CONSTRAINT ck_invitacion_respuesta CHECK (
         estado IN ('ENVIADA', 'EXPIRADA') OR fecha_respuesta IS NOT NULL);
 
-CREATE UNIQUE INDEX uq_invitacion_activa
+CREATE UNIQUE INDEX IF NOT EXISTS uq_invitacion_activa
   ON invitacion (grupo_id, telefono_invitado)
   WHERE (estado = 'ENVIADA');
 
 -- R-GRP-16 · calendario de días no hábiles sin duplicados ni ámbitos incompletos
+ALTER TABLE dia_no_habil DROP CONSTRAINT IF EXISTS ck_dia_no_habil_ambito;
 ALTER TABLE dia_no_habil
   ADD CONSTRAINT ck_dia_no_habil_ambito CHECK (
         (alcance = 'GRUPO' AND grupo_id IS NOT NULL)
      OR (alcance <> 'GRUPO' AND grupo_id IS NULL));
 
-CREATE UNIQUE INDEX uq_dia_no_habil
+CREATE UNIQUE INDEX IF NOT EXISTS uq_dia_no_habil
   ON dia_no_habil (fecha, alcance, COALESCE(grupo_id, '00000000-0000-0000-0000-000000000000'::uuid));
 
 
@@ -1692,6 +1828,9 @@ CREATE UNIQUE INDEX uq_dia_no_habil
 -- ---------------------------------------------------------------------
 
 -- R-RIS-01 · taxonomía cerrada
+ALTER TABLE evento_riesgo_operativo DROP CONSTRAINT IF EXISTS ck_evento_categoria;
+ALTER TABLE evento_riesgo_operativo DROP CONSTRAINT IF EXISTS ck_evento_factor;
+ALTER TABLE evento_riesgo_operativo DROP CONSTRAINT IF EXISTS ck_evento_fechas;
 ALTER TABLE evento_riesgo_operativo
   ADD CONSTRAINT ck_evento_categoria CHECK (categoria_evento IN (
       'FRAUDE_INTERNO','FRAUDE_EXTERNO','RELACIONES_LABORALES',
@@ -1703,14 +1842,18 @@ ALTER TABLE evento_riesgo_operativo
 
 -- R-RIS-02 · pérdida neta derivada
 --   perdida_neta GENERATED ALWAYS AS (perdida_bruta - recuperacion) STORED
+ALTER TABLE evento_riesgo_operativo DROP CONSTRAINT IF EXISTS ck_evento_recuperacion;
 ALTER TABLE evento_riesgo_operativo
   ADD CONSTRAINT ck_evento_recuperacion CHECK (recuperacion <= perdida_bruta);
 
 -- R-RIS-03 · continuidad con objetivos y prueba
+ALTER TABLE plan_continuidad DROP CONSTRAINT IF EXISTS ck_plan_objetivos;
+ALTER TABLE plan_continuidad DROP CONSTRAINT IF EXISTS ck_plan_prueba;
 ALTER TABLE plan_continuidad
   ADD CONSTRAINT ck_plan_objetivos CHECK (rto_minutos > 0 AND rpo_minutos >= 0),
   ADD CONSTRAINT ck_plan_prueba CHECK (proxima_prueba > vigente_desde);
 
+ALTER TABLE prueba_continuidad DROP CONSTRAINT IF EXISTS ck_prueba_resultado;
 ALTER TABLE prueba_continuidad
   ADD CONSTRAINT ck_prueba_resultado CHECK (
       resultado <> 'EXITOSA'
@@ -1723,11 +1866,13 @@ ALTER TABLE prueba_continuidad
 -- ---------------------------------------------------------------------
 
 -- R-REP-01 · un hecho puntúa una sola vez
+ALTER TABLE evento_reputacion DROP CONSTRAINT IF EXISTS uq_evento_reputacion_hecho;
 ALTER TABLE evento_reputacion
   ADD CONSTRAINT uq_evento_reputacion_hecho
   UNIQUE (usuario_id, referencia_tipo, referencia_origen_id, tipo);
 
 -- R-REP-02 · un solo puntaje vigente por usuario
+ALTER TABLE puntaje_reputacion DROP CONSTRAINT IF EXISTS ex_puntaje_vigente;
 ALTER TABLE puntaje_reputacion
   ADD CONSTRAINT ex_puntaje_vigente
   EXCLUDE USING gist (
@@ -1748,12 +1893,15 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_puntaje_cuadra ON puntaje_reputacion;
 CREATE CONSTRAINT TRIGGER tg_puntaje_cuadra
   AFTER INSERT OR UPDATE ON puntaje_reputacion
   DEFERRABLE INITIALLY DEFERRED
   FOR EACH ROW EXECUTE FUNCTION fn_rep_validar_componentes();
 
 -- R-REP-04 · cadena de transparencia única y encadenada
+ALTER TABLE bloque_transparencia DROP CONSTRAINT IF EXISTS uq_bloque_grupo_numero;
+ALTER TABLE bloque_transparencia DROP CONSTRAINT IF EXISTS ck_bloque_genesis;
 ALTER TABLE bloque_transparencia
   ADD CONSTRAINT uq_bloque_grupo_numero UNIQUE (grupo_id, numero_bloque),
   ADD CONSTRAINT ck_bloque_genesis CHECK (
@@ -1778,16 +1926,21 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_bloque_encadenado ON bloque_transparencia;
 CREATE TRIGGER tg_bloque_encadenado
   BEFORE INSERT ON bloque_transparencia
   FOR EACH ROW EXECUTE FUNCTION fn_rep_encadenar_bloque();
 -- R-REP-05 · una insignia por usuario; revocar no borra
+ALTER TABLE insignia_otorgada DROP CONSTRAINT IF EXISTS uq_insignia_usuario;
+ALTER TABLE insignia_otorgada DROP CONSTRAINT IF EXISTS ck_insignia_revocacion_motivada;
 ALTER TABLE insignia_otorgada
   ADD CONSTRAINT uq_insignia_usuario UNIQUE (usuario_id, insignia_id),
   ADD CONSTRAINT ck_insignia_revocacion_motivada CHECK (
         revocada_en IS NULL OR motivo_revocacion IS NOT NULL);
 
 -- R-REP-06 · una reseña por autor, evaluado, grupo y dimensión
+ALTER TABLE resena_participante DROP CONSTRAINT IF EXISTS uq_resena_autor_evaluado;
+ALTER TABLE resena_participante DROP CONSTRAINT IF EXISTS ck_resena_moderada;
 ALTER TABLE resena_participante
   ADD CONSTRAINT uq_resena_autor_evaluado
     UNIQUE (grupo_id, autor_participante_id, evaluado_usuario_id, dimension),
@@ -1810,6 +1963,7 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_resena_convivencia ON resena_participante;
 CREATE TRIGGER tg_resena_convivencia
   BEFORE INSERT ON resena_participante
   FOR EACH ROW EXECUTE FUNCTION fn_rep_validar_resena();
@@ -1820,9 +1974,9 @@ CREATE TRIGGER tg_resena_convivencia
 -- ---------------------------------------------------------------------
 
 -- R-NOT-01 · idempotencia del envío, amparada en la notificación (R-BIL-06)
-CREATE UNIQUE INDEX uq_envio_idempotencia
+CREATE UNIQUE INDEX IF NOT EXISTS uq_envio_idempotencia
   ON envio_notificacion (notificacion_id, clave_idempotencia);
-CREATE UNIQUE INDEX uq_evento_entrega_idempotencia
+CREATE UNIQUE INDEX IF NOT EXISTS uq_evento_entrega_idempotencia
   ON evento_entrega_mensaje (envio_id, clave_idempotencia);
 
 -- R-NOT-02 · tope diario configurable, denegando por omisión
@@ -1869,6 +2023,7 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_notificacion_supresion ON notificacion;
 CREATE TRIGGER tg_notificacion_supresion
   BEFORE INSERT ON notificacion
   FOR EACH ROW EXECUTE FUNCTION fn_not_validar_supresion();
@@ -1879,6 +2034,9 @@ CREATE TRIGGER tg_notificacion_supresion
 -- ---------------------------------------------------------------------
 
 -- R-GAR-01 · notificar es lo que hace correr el plazo, y el plazo se persiste
+ALTER TABLE registro_incumplimiento DROP CONSTRAINT IF EXISTS ck_incumplimiento_plazo_guardado;
+ALTER TABLE registro_incumplimiento DROP CONSTRAINT IF EXISTS ck_incumplimiento_plazo_posterior;
+ALTER TABLE registro_incumplimiento DROP CONSTRAINT IF EXISTS ck_incumplimiento_cierre_motivado;
 ALTER TABLE registro_incumplimiento
   ADD CONSTRAINT ck_incumplimiento_plazo_guardado CHECK (
         notificado_en IS NULL OR fecha_limite_subsanacion IS NOT NULL),
@@ -1889,6 +2047,7 @@ ALTER TABLE registro_incumplimiento
         cerrado_en IS NULL OR motivo_cierre IS NOT NULL);
 
 -- R-GAR-02 · la evidencia no se toca
+ALTER TABLE evidencia_incumplimiento DROP CONSTRAINT IF EXISTS ck_evidencia_con_respaldo;
 ALTER TABLE evidencia_incumplimiento
   ADD CONSTRAINT ck_evidencia_con_respaldo CHECK (
         url_archivo IS NULL OR hash_archivo IS NOT NULL);
@@ -1898,11 +2057,15 @@ BEGIN
   RAISE EXCEPTION 'R-GAR-02: la evidencia de incumplimiento no admite % ', TG_OP;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_evidencia_inmutable ON evidencia_incumplimiento;
 CREATE TRIGGER tg_evidencia_inmutable
   BEFORE UPDATE OR DELETE ON evidencia_incumplimiento
   FOR EACH ROW EXECUTE FUNCTION fn_gar_evidencia_inmutable();
 
 -- R-GAR-03 · una ejecución por aval y expediente
+ALTER TABLE ejecucion_aval DROP CONSTRAINT IF EXISTS uq_ejecucion_aval_registro;
+ALTER TABLE ejecucion_aval DROP CONSTRAINT IF EXISTS ck_ejecucion_aval_monto;
+ALTER TABLE ejecucion_aval DROP CONSTRAINT IF EXISTS ck_ejecucion_aval_plazo;
 ALTER TABLE ejecucion_aval
   ADD CONSTRAINT uq_ejecucion_aval_registro UNIQUE (aval_id, registro_id),
   ADD CONSTRAINT ck_ejecucion_aval_monto CHECK (monto_ejecutado > 0),
@@ -1927,11 +2090,14 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_ejecucion_aval_tope ON ejecucion_aval;
 CREATE TRIGGER tg_ejecucion_aval_tope
   BEFORE INSERT OR UPDATE ON ejecucion_aval
   FOR EACH ROW EXECUTE FUNCTION fn_gar_validar_tope_aval();
 
 -- R-GAR-05 · una restricción viva por usuario y tipo; levantarla exige motivo
+ALTER TABLE restriccion_usuario DROP CONSTRAINT IF EXISTS ck_restriccion_levantamiento;
+ALTER TABLE restriccion_usuario DROP CONSTRAINT IF EXISTS ck_restriccion_vigencia;
 ALTER TABLE restriccion_usuario
   ADD CONSTRAINT ck_restriccion_levantamiento CHECK (
         (vigente_hasta IS NULL AND levantada_por IS NULL AND motivo_levantamiento IS NULL)
@@ -1939,15 +2105,20 @@ ALTER TABLE restriccion_usuario
   ADD CONSTRAINT ck_restriccion_vigencia CHECK (
         vigente_hasta IS NULL OR vigente_hasta > vigente_desde);
 
-CREATE UNIQUE INDEX uq_restriccion_usuario_vigente
+CREATE UNIQUE INDEX IF NOT EXISTS uq_restriccion_usuario_vigente
   ON restriccion_usuario (usuario_id, tipo)
   WHERE (vigente_hasta IS NULL);
 
+ALTER TABLE lista_restriccion_interna DROP CONSTRAINT IF EXISTS ck_lista_retiro_motivado;
 ALTER TABLE lista_restriccion_interna
   ADD CONSTRAINT ck_lista_retiro_motivado CHECK (
         retirado_en IS NULL OR (retirado_por IS NOT NULL AND motivo_retiro IS NOT NULL));
 
 -- R-GAR-06 · la devolución del fondo no inventa dinero
+ALTER TABLE devolucion_fondo DROP CONSTRAINT IF EXISTS ck_devolucion_no_negativa;
+ALTER TABLE devolucion_fondo DROP CONSTRAINT IF EXISTS ck_devolucion_hasta_lo_aportado;
+ALTER TABLE devolucion_fondo DROP CONSTRAINT IF EXISTS ck_devolucion_cuadra;
+ALTER TABLE devolucion_fondo DROP CONSTRAINT IF EXISTS ck_devolucion_retencion_motivada;
 ALTER TABLE devolucion_fondo
   ADD CONSTRAINT ck_devolucion_no_negativa CHECK (monto_a_devolver >= 0),
   ADD CONSTRAINT ck_devolucion_hasta_lo_aportado CHECK (
@@ -1957,14 +2128,15 @@ ALTER TABLE devolucion_fondo
   ADD CONSTRAINT ck_devolucion_retencion_motivada CHECK (
         estado <> 'RETENIDA' OR motivo_retencion IS NOT NULL);
 
-CREATE UNIQUE INDEX uq_devolucion_fondo_participante
+CREATE UNIQUE INDEX IF NOT EXISTS uq_devolucion_fondo_participante
   ON devolucion_fondo (fondo_id, participante_id);
 
 -- R-GAR-07 · una alerta abierta por causa, y el cierre lleva desenlace
-CREATE UNIQUE INDEX uq_alerta_temprana_abierta
+CREATE UNIQUE INDEX IF NOT EXISTS uq_alerta_temprana_abierta
   ON alerta_temprana (usuario_id, COALESCE(grupo_id, '00000000-0000-0000-0000-000000000000'::uuid), codigo)
   WHERE (estado = 'ABIERTA');
 
+ALTER TABLE alerta_riesgo DROP CONSTRAINT IF EXISTS ck_alerta_riesgo_cierre;
 ALTER TABLE alerta_riesgo
   ADD CONSTRAINT ck_alerta_riesgo_cierre CHECK (
         estado <> 'CERRADA' OR cerrada_en IS NOT NULL);
@@ -1976,19 +2148,23 @@ ALTER TABLE alerta_riesgo
 
 -- R-DES-01 · una orden viva por entrega; la clave corta el doble pago
 -- La clave se ampara en la entrega, no es global (R-BIL-06).
-CREATE UNIQUE INDEX uq_orden_desembolso_clave
+CREATE UNIQUE INDEX IF NOT EXISTS uq_orden_desembolso_clave
   ON orden_desembolso (entrega_id, clave_idempotencia);
 
+ALTER TABLE orden_desembolso DROP CONSTRAINT IF EXISTS ck_orden_desembolso_monto;
+ALTER TABLE orden_desembolso DROP CONSTRAINT IF EXISTS ck_orden_desembolso_acreditada;
 ALTER TABLE orden_desembolso
   ADD CONSTRAINT ck_orden_desembolso_monto CHECK (monto > 0),
   ADD CONSTRAINT ck_orden_desembolso_acreditada CHECK (
         estado <> 'ACREDITADA'
      OR (acreditada_en IS NOT NULL AND referencia_proveedor IS NOT NULL));
 
-CREATE UNIQUE INDEX uq_orden_desembolso_entrega_viva
+CREATE UNIQUE INDEX IF NOT EXISTS uq_orden_desembolso_entrega_viva
   ON orden_desembolso (entrega_id)
   WHERE (estado NOT IN ('RECHAZADA', 'FALLIDA', 'REVERSADA'));
 
+ALTER TABLE intento_desembolso DROP CONSTRAINT IF EXISTS uq_intento_desembolso_numero;
+ALTER TABLE intento_desembolso DROP CONSTRAINT IF EXISTS ck_intento_desembolso_fallo;
 ALTER TABLE intento_desembolso
   ADD CONSTRAINT uq_intento_desembolso_numero UNIQUE (orden_desembolso_id, numero_intento),
   ADD CONSTRAINT ck_intento_desembolso_fallo CHECK (
@@ -2010,6 +2186,7 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_orden_desembolso_cuenta_verificada ON orden_desembolso;
 CREATE TRIGGER tg_orden_desembolso_cuenta_verificada
   BEFORE INSERT ON orden_desembolso
   FOR EACH ROW EXECUTE FUNCTION fn_des_validar_cuenta_destino();
@@ -2020,10 +2197,12 @@ CREATE TRIGGER tg_orden_desembolso_cuenta_verificada
 -- ---------------------------------------------------------------------
 
 -- R-ORG-01 · una postulación pendiente por usuario
-CREATE UNIQUE INDEX uq_solicitud_organizador_pendiente
+CREATE UNIQUE INDEX IF NOT EXISTS uq_solicitud_organizador_pendiente
   ON solicitud_organizador (usuario_id)
   WHERE (estado = 'PENDIENTE');
 
+ALTER TABLE solicitud_organizador DROP CONSTRAINT IF EXISTS ck_solicitud_org_resuelta;
+ALTER TABLE solicitud_organizador DROP CONSTRAINT IF EXISTS ck_solicitud_org_rechazo_motivado;
 ALTER TABLE solicitud_organizador
   ADD CONSTRAINT ck_solicitud_org_resuelta CHECK (
         estado = 'PENDIENTE' OR fecha_resolucion IS NOT NULL),
@@ -2031,6 +2210,9 @@ ALTER TABLE solicitud_organizador
         estado <> 'RECHAZADA' OR motivo_rechazo IS NOT NULL);
 
 -- R-ORG-02 · un contrato vigente por organizador, sin solaparse
+ALTER TABLE contrato_organizador DROP CONSTRAINT IF EXISTS ck_contrato_org_vigencia;
+ALTER TABLE contrato_organizador DROP CONSTRAINT IF EXISTS ck_contrato_org_rescision;
+ALTER TABLE contrato_organizador DROP CONSTRAINT IF EXISTS ck_contrato_org_firma;
 ALTER TABLE contrato_organizador
   ADD CONSTRAINT ck_contrato_org_vigencia CHECK (
         vigente_hasta IS NULL OR vigente_hasta > vigente_desde),
@@ -2039,6 +2221,7 @@ ALTER TABLE contrato_organizador
   ADD CONSTRAINT ck_contrato_org_firma CHECK (
         firmado_en IS NULL OR token_firma_id IS NOT NULL);
 
+ALTER TABLE contrato_organizador DROP CONSTRAINT IF EXISTS ex_contrato_org_vigente;
 ALTER TABLE contrato_organizador
   ADD CONSTRAINT ex_contrato_org_vigente
   EXCLUDE USING gist (
@@ -2065,6 +2248,7 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_grupo_contrato_organizador ON grupo;
 CREATE TRIGGER tg_grupo_contrato_organizador
   BEFORE INSERT ON grupo
   FOR EACH ROW EXECUTE FUNCTION fn_org_validar_contrato_grupo();
@@ -2082,19 +2266,25 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_contrato_org_inmutable ON contrato_organizador;
 CREATE TRIGGER tg_contrato_org_inmutable
   BEFORE UPDATE ON contrato_organizador
   FOR EACH ROW EXECUTE FUNCTION fn_org_contrato_inmutable();
 
 -- R-ORG-04 · una evaluación por organizador y período
+ALTER TABLE evaluacion_desempeno DROP CONSTRAINT IF EXISTS uq_evaluacion_org_periodo;
 ALTER TABLE evaluacion_desempeno
   ADD CONSTRAINT uq_evaluacion_org_periodo UNIQUE (organizador_id, periodo_evaluado);
 
+ALTER TABLE metrica_organizador DROP CONSTRAINT IF EXISTS uq_metrica_org_codigo;
+ALTER TABLE metrica_organizador DROP CONSTRAINT IF EXISTS ck_metrica_org_peso;
 ALTER TABLE metrica_organizador
   ADD CONSTRAINT uq_metrica_org_codigo UNIQUE (evaluacion_id, codigo),
   ADD CONSTRAINT ck_metrica_org_peso CHECK (peso >= 0 AND peso <= 1);
 
 -- R-ORG-05 · una apelación por sanción, y no la resuelve quien la aplicó
+ALTER TABLE apelacion_sancion_org DROP CONSTRAINT IF EXISTS uq_apelacion_por_sancion;
+ALTER TABLE apelacion_sancion_org DROP CONSTRAINT IF EXISTS ck_apelacion_org_resuelta;
 ALTER TABLE apelacion_sancion_org
   ADD CONSTRAINT uq_apelacion_por_sancion UNIQUE (sancion_organizador_id),
   ADD CONSTRAINT ck_apelacion_org_resuelta CHECK (
@@ -2113,15 +2303,19 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_apelacion_org_resolutor ON apelacion_sancion_org;
 CREATE TRIGGER tg_apelacion_org_resolutor
   BEFORE INSERT OR UPDATE ON apelacion_sancion_org
   FOR EACH ROW EXECUTE FUNCTION fn_org_validar_resolutor();
 
+ALTER TABLE sancion_organizador DROP CONSTRAINT IF EXISTS ck_sancion_org_vigencia;
 ALTER TABLE sancion_organizador
   ADD CONSTRAINT ck_sancion_org_vigencia CHECK (
         vigente_hasta IS NULL OR vigente_hasta > vigente_desde);
 
 -- R-ORG-06 · lo que mueve dinero o afecta derechos no se automatiza solo
+ALTER TABLE regla_automatizacion DROP CONSTRAINT IF EXISTS ck_regla_confirmacion_humana;
+ALTER TABLE regla_automatizacion DROP CONSTRAINT IF EXISTS ck_regla_prioridad;
 ALTER TABLE regla_automatizacion
   ADD CONSTRAINT ck_regla_confirmacion_humana CHECK (
         accion NOT IN ('PROPONER_COBRO', 'PROPONER_ENTREGA',
@@ -2129,18 +2323,21 @@ ALTER TABLE regla_automatizacion
      OR requiere_confirmacion_humana),
   ADD CONSTRAINT ck_regla_prioridad CHECK (prioridad BETWEEN 1 AND 99);
 
-CREATE UNIQUE INDEX uq_regla_automatizacion_prioridad
+CREATE UNIQUE INDEX IF NOT EXISTS uq_regla_automatizacion_prioridad
   ON regla_automatizacion (disparador, prioridad)
   WHERE (activa);
 
 -- R-ORG-07 · una tarea por hecho disparador
 -- La clave se ampara en la regla y el grupo, no es global (R-BIL-06).
-CREATE UNIQUE INDEX uq_tarea_automatizada_clave
+CREATE UNIQUE INDEX IF NOT EXISTS uq_tarea_automatizada_clave
   ON tarea_automatizada (regla_id, grupo_id, clave_idempotencia);
 
+ALTER TABLE tarea_automatizada DROP CONSTRAINT IF EXISTS ck_tarea_intentos;
 ALTER TABLE tarea_automatizada
   ADD CONSTRAINT ck_tarea_intentos CHECK (intentos >= 0);
 
+ALTER TABLE ejecucion_tarea DROP CONSTRAINT IF EXISTS ck_ejecucion_tarea_error;
+ALTER TABLE ejecucion_tarea DROP CONSTRAINT IF EXISTS ck_ejecucion_tarea_fin;
 ALTER TABLE ejecucion_tarea
   ADD CONSTRAINT ck_ejecucion_tarea_error CHECK (
         resultado <> 'FALLO' OR mensaje_error IS NOT NULL),
@@ -2153,17 +2350,22 @@ ALTER TABLE ejecucion_tarea
 -- ---------------------------------------------------------------------
 
 -- R-CTB-01 · un período por ejercicio y mes, y nada se asienta en uno cerrado
+ALTER TABLE ejercicio_fiscal DROP CONSTRAINT IF EXISTS ck_ejercicio_fiscal_rango;
+ALTER TABLE ejercicio_fiscal DROP CONSTRAINT IF EXISTS ck_ejercicio_fiscal_cierre;
 ALTER TABLE ejercicio_fiscal
   ADD CONSTRAINT ck_ejercicio_fiscal_rango CHECK (fecha_fin > fecha_inicio),
   ADD CONSTRAINT ck_ejercicio_fiscal_cierre CHECK (
         estado <> 'CERRADO' OR (cerrado_en IS NOT NULL AND cerrado_por IS NOT NULL));
 
+ALTER TABLE periodo_contable DROP CONSTRAINT IF EXISTS uq_periodo_contable_ejercicio_mes;
+ALTER TABLE periodo_contable DROP CONSTRAINT IF EXISTS ck_periodo_contable_rango;
 ALTER TABLE periodo_contable
   ADD CONSTRAINT uq_periodo_contable_ejercicio_mes
     UNIQUE (ejercicio_fiscal_id, mes),
   ADD CONSTRAINT ck_periodo_contable_rango CHECK (fecha_fin > fecha_inicio);
 
 -- El cierre guarda el cuadre del momento: si no cuadra, no es un cierre.
+ALTER TABLE cierre_periodo_contable DROP CONSTRAINT IF EXISTS ck_cierre_periodo_cuadrado;
 ALTER TABLE cierre_periodo_contable
   ADD CONSTRAINT ck_cierre_periodo_cuadrado CHECK (total_debe = total_haber);
 
@@ -2188,6 +2390,7 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_asiento_periodo_abierto ON asiento_contable;
 CREATE TRIGGER tg_asiento_periodo_abierto
   BEFORE INSERT ON asiento_contable
   FOR EACH ROW EXECUTE FUNCTION fn_ctb_periodo_abierto();
@@ -2207,28 +2410,38 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_movimiento_cuenta_de_movimiento ON movimiento_contable;
 CREATE TRIGGER tg_movimiento_cuenta_de_movimiento
   BEFORE INSERT ON movimiento_contable
   FOR EACH ROW EXECUTE FUNCTION fn_ctb_cuenta_de_movimiento();
 
 -- Una cuenta no puede ser su propio padre.
+ALTER TABLE cuenta_contable DROP CONSTRAINT IF EXISTS ck_cuenta_contable_padre_distinto;
+ALTER TABLE cuenta_contable DROP CONSTRAINT IF EXISTS ck_cuenta_contable_nivel;
 ALTER TABLE cuenta_contable
   ADD CONSTRAINT ck_cuenta_contable_padre_distinto CHECK (
         cuenta_padre_id IS NULL OR cuenta_padre_id <> id),
   ADD CONSTRAINT ck_cuenta_contable_nivel CHECK (nivel >= 1);
 
 -- R-CTB-03 · un presupuesto por centro de costo y ejercicio
+ALTER TABLE presupuesto DROP CONSTRAINT IF EXISTS uq_presupuesto_centro_ejercicio;
+ALTER TABLE presupuesto DROP CONSTRAINT IF EXISTS ck_presupuesto_aprobacion;
 ALTER TABLE presupuesto
   ADD CONSTRAINT uq_presupuesto_centro_ejercicio
     UNIQUE (centro_costo_id, ejercicio_fiscal_id),
   ADD CONSTRAINT ck_presupuesto_aprobacion CHECK (
         estado <> 'APROBADO' OR (aprobado_por IS NOT NULL AND aprobado_en IS NOT NULL));
 
+ALTER TABLE partida_presupuestaria DROP CONSTRAINT IF EXISTS uq_partida_presupuesto_cuenta_periodo;
 ALTER TABLE partida_presupuestaria
   ADD CONSTRAINT uq_partida_presupuesto_cuenta_periodo
     UNIQUE (presupuesto_id, cuenta_contable_id, periodo_contable_id);
 
 -- R-CTB-04 · una factura por proveedor y número, con saldo coherente
+ALTER TABLE factura_proveedor DROP CONSTRAINT IF EXISTS uq_factura_proveedor_numero;
+ALTER TABLE factura_proveedor DROP CONSTRAINT IF EXISTS ck_factura_proveedor_pagado;
+ALTER TABLE factura_proveedor DROP CONSTRAINT IF EXISTS ck_factura_proveedor_vencimiento;
+ALTER TABLE factura_proveedor DROP CONSTRAINT IF EXISTS ck_factura_proveedor_aprobacion;
 ALTER TABLE factura_proveedor
   ADD CONSTRAINT uq_factura_proveedor_numero
     UNIQUE (tercero_comercial_id, numero_factura),
@@ -2239,6 +2452,7 @@ ALTER TABLE factura_proveedor
   ADD CONSTRAINT ck_factura_proveedor_aprobacion CHECK (
         estado = 'REGISTRADA' OR estado = 'ANULADA' OR aprobada_por IS NOT NULL);
 
+ALTER TABLE orden_compra DROP CONSTRAINT IF EXISTS ck_orden_compra_aprobacion;
 ALTER TABLE orden_compra
   ADD CONSTRAINT ck_orden_compra_aprobacion CHECK (
         estado = 'BORRADOR' OR estado = 'CANCELADA' OR aprobada_por IS NOT NULL);
@@ -2263,20 +2477,25 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_pago_proveedor_segregacion ON pago_a_proveedor;
 CREATE TRIGGER tg_pago_proveedor_segregacion
   BEFORE INSERT ON pago_a_proveedor
   FOR EACH ROW EXECUTE FUNCTION fn_ctb_segregacion_pago();
 
 -- R-CTB-06 · no se cobra más de lo que se debe
+ALTER TABLE cuenta_por_cobrar DROP CONSTRAINT IF EXISTS ck_cxc_cobrado;
 ALTER TABLE cuenta_por_cobrar
   ADD CONSTRAINT ck_cxc_cobrado CHECK (
         monto_cobrado >= 0 AND monto_cobrado <= monto);
 
 -- R-CTB-07 · una corrida de depreciación por activo y período
+ALTER TABLE depreciacion_activo DROP CONSTRAINT IF EXISTS uq_depreciacion_activo_periodo;
 ALTER TABLE depreciacion_activo
   ADD CONSTRAINT uq_depreciacion_activo_periodo
     UNIQUE (activo_fijo_id, periodo_contable_id);
 
+ALTER TABLE activo_fijo DROP CONSTRAINT IF EXISTS ck_activo_fijo_depreciacion;
+ALTER TABLE activo_fijo DROP CONSTRAINT IF EXISTS ck_activo_fijo_residual;
 ALTER TABLE activo_fijo
   ADD CONSTRAINT ck_activo_fijo_depreciacion CHECK (
         depreciacion_acumulada >= 0
@@ -2285,10 +2504,12 @@ ALTER TABLE activo_fijo
         valor_residual >= 0 AND valor_residual <= costo_adquisicion);
 
 -- R-CTB-08 · un estado financiero por período y tipo
+ALTER TABLE estado_financiero_generado DROP CONSTRAINT IF EXISTS uq_estado_financiero_periodo_tipo;
 ALTER TABLE estado_financiero_generado
   ADD CONSTRAINT uq_estado_financiero_periodo_tipo
     UNIQUE (periodo_contable_id, tipo);
 
+ALTER TABLE linea_plantilla_asiento DROP CONSTRAINT IF EXISTS uq_linea_plantilla_orden;
 ALTER TABLE linea_plantilla_asiento
   ADD CONSTRAINT uq_linea_plantilla_orden UNIQUE (plantilla_id, orden);
 
@@ -2330,6 +2551,7 @@ BEGIN
   RETURN NULL;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_movimiento_contable_sincroniza_saldo ON movimiento_contable;
 CREATE TRIGGER tg_movimiento_contable_sincroniza_saldo
   AFTER INSERT ON movimiento_contable
   FOR EACH ROW EXECUTE FUNCTION fn_ctb_sincronizar_saldo();
@@ -2340,6 +2562,7 @@ CREATE TRIGGER tg_movimiento_contable_sincroniza_saldo
 -- ---------------------------------------------------------------------
 
 -- R-PUB-01 · exactamente una referencia según el tipo de anunciante
+ALTER TABLE anunciante DROP CONSTRAINT IF EXISTS ck_anunciante_tipo_exclusivo;
 ALTER TABLE anunciante
   ADD CONSTRAINT ck_anunciante_tipo_exclusivo CHECK (
         (tipo = 'ORGANIZADOR'
@@ -2348,6 +2571,8 @@ ALTER TABLE anunciante
            AND socio_comercial_id IS NOT NULL AND organizador_id IS NULL));
 
 -- R-PUB-02 · una cuenta publicitaria por anunciante
+ALTER TABLE cuenta_publicitaria DROP CONSTRAINT IF EXISTS uq_cuenta_publicitaria_anunciante;
+ALTER TABLE cuenta_publicitaria DROP CONSTRAINT IF EXISTS ck_cuenta_publicitaria_consumo;
 ALTER TABLE cuenta_publicitaria
   ADD CONSTRAINT uq_cuenta_publicitaria_anunciante UNIQUE (anunciante_id),
   ADD CONSTRAINT ck_cuenta_publicitaria_consumo CHECK (
@@ -2356,6 +2581,9 @@ ALTER TABLE cuenta_publicitaria
          OR saldo_consumido_mes <= limite_gasto_mensual));
 
 -- R-PUB-03 · presupuesto consumido acotado, y aprobación con responsable
+ALTER TABLE campana_publicitaria DROP CONSTRAINT IF EXISTS ck_campana_pub_consumo;
+ALTER TABLE campana_publicitaria DROP CONSTRAINT IF EXISTS ck_campana_pub_aprobacion;
+ALTER TABLE campana_publicitaria DROP CONSTRAINT IF EXISTS ck_campana_pub_vigencia;
 ALTER TABLE campana_publicitaria
   ADD CONSTRAINT ck_campana_pub_consumo CHECK (
         presupuesto_consumido >= 0
@@ -2381,11 +2609,13 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_anuncio_creativa_aprobada ON anuncio;
 CREATE TRIGGER tg_anuncio_creativa_aprobada
   BEFORE INSERT ON anuncio
   FOR EACH ROW EXECUTE FUNCTION fn_pub_creativa_aprobada();
 
 -- R-PUB-05 · quien sube no se autoaprueba
+ALTER TABLE revision_creativa DROP CONSTRAINT IF EXISTS ck_revision_creativa_motivo;
 ALTER TABLE revision_creativa
   ADD CONSTRAINT ck_revision_creativa_motivo CHECK (
         decision <> 'RECHAZADA' OR motivo IS NOT NULL);
@@ -2413,15 +2643,18 @@ BEGIN
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tg_revision_creativa_moderador ON revision_creativa;
 CREATE TRIGGER tg_revision_creativa_moderador
   BEFORE INSERT ON revision_creativa
   FOR EACH ROW EXECUTE FUNCTION fn_pub_moderador_distinto();
 
 -- R-PUB-06 · un período de facturación por cuenta publicitaria
+ALTER TABLE factura_publicidad DROP CONSTRAINT IF EXISTS uq_factura_publicidad_cuenta_periodo;
 ALTER TABLE factura_publicidad
   ADD CONSTRAINT uq_factura_publicidad_cuenta_periodo
     UNIQUE (cuenta_publicitaria_id, periodo);
 
+ALTER TABLE espacio_publicitario DROP CONSTRAINT IF EXISTS ck_espacio_pub_capacidad;
 ALTER TABLE espacio_publicitario
   ADD CONSTRAINT ck_espacio_pub_capacidad CHECK (capacidad_maxima_simultanea > 0);
 
@@ -2491,27 +2724,27 @@ COMMENT ON ROLE rol_auditor IS
 -- ---------------------------------------------------------------------
 
 -- Vencimientos: tableros de control diario
-CREATE INDEX ix_reclamo_vencidos ON reclamo_cliente (plazo_respuesta)
+CREATE INDEX IF NOT EXISTS ix_reclamo_vencidos ON reclamo_cliente (plazo_respuesta)
   WHERE estado IN ('INGRESADO','EN_ANALISIS');
-CREATE INDEX ix_caso_vencidos ON caso_investigacion_lft (plazo_limite)
+CREATE INDEX IF NOT EXISTS ix_caso_vencidos ON caso_investigacion_lft (plazo_limite)
   WHERE estado <> 'CERRADO';
-CREATE INDEX ix_requerimiento_vencidos ON requerimiento_autoridad (plazo_respuesta)
+CREATE INDEX IF NOT EXISTS ix_requerimiento_vencidos ON requerimiento_autoridad (plazo_respuesta)
   WHERE estado <> 'RESPONDIDO';
-CREATE INDEX ix_reporte_vencidos ON reporte_regulatorio (fecha_limite)
+CREATE INDEX IF NOT EXISTS ix_reporte_vencidos ON reporte_regulatorio (fecha_limite)
   WHERE estado <> 'ENVIADO';
-CREATE INDEX ix_revision_kyc_vencidas ON revision_periodica_kyc (fecha_programada)
+CREATE INDEX IF NOT EXISTS ix_revision_kyc_vencidas ON revision_periodica_kyc (fecha_programada)
   WHERE estado <> 'EJECUTADA';
-CREATE INDEX ix_ddd_por_vencer ON debida_diligencia (vence_en)
+CREATE INDEX IF NOT EXISTS ix_ddd_por_vencer ON debida_diligencia (vence_en)
   WHERE estado = 'COMPLETA';
 
 -- Extracto y auditoría de dinero
-CREATE INDEX ix_movimiento_cuenta_fecha
+CREATE INDEX IF NOT EXISTS ix_movimiento_cuenta_fecha
   ON movimiento_billetera (cuenta_billetera_id, registrado_en DESC);
-CREATE INDEX ix_transaccion_ocurrida ON transaccion_billetera USING brin (ocurrida_en);
+CREATE INDEX IF NOT EXISTS ix_transaccion_ocurrida ON transaccion_billetera USING brin (ocurrida_en);
 
 -- Motor de umbrales
-CREATE INDEX ix_operelev_periodo ON registro_operacion_relevante (periodo_remision, formulario)
+CREATE INDEX IF NOT EXISTS ix_operelev_periodo ON registro_operacion_relevante (periodo_remision, formulario)
   WHERE NOT exento;
-CREATE INDEX ix_operelev_usuario_fecha
+CREATE INDEX IF NOT EXISTS ix_operelev_usuario_fecha
   ON registro_operacion_relevante (usuario_id, fecha_operacion DESC);
 

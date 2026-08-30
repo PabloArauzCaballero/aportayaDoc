@@ -19,10 +19,10 @@ INSERT INTO requisito_habilitacion (codigo, descripcion, tipo, valor_minimo, es_
   ('HAB_MAESTRO_CAPACITACION', 'Módulos de capacitación aprobados y vigentes, incluida la formación en prevención de LGI/FT', 'CAPACITACION', 3.0, TRUE, 'MAESTRO', TRUE)
 ON CONFLICT (codigo) DO NOTHING;
 
+-- Los cuatro pesos suman 1,000. Es la única fila vigente: cambiar el criterio es insertar otra con `vigente_desde` posterior, no editar esta.
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM criterio_emparejamiento) THEN
-  -- Los cuatro pesos suman 1,000. Es la única fila vigente: cambiar el criterio es insertar otra con `vigente_desde` posterior, no editar esta.
   INSERT INTO criterio_emparejamiento (peso_reputacion, peso_monto, peso_historial_comun, peso_geografia, reputacion_minima, max_morosos_por_grupo, vigente_desde) VALUES
     (0.4, 0.25, 0.2, 0.15, 600.0, 1, '2026-01-01T00:00:00-04:00');
   END IF;

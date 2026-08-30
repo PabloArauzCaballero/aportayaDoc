@@ -53,10 +53,10 @@ INSERT INTO activo_informacion (propietario_id, custodio_id, contrato_tercero_id
   (NULL, NULL, NULL, 'INFRA-RED', 'Red, balanceadores y punto único de entrada público', 'INFRAESTRUCTURA', 'INTERNA', FALSE, FALSE, 'ALTA', 'Nube — red privada con una sola entrada pública', TRUE, '2026-01-01')
 ON CONFLICT (codigo) DO NOTHING;
 
+-- RTO y RPO comprometidos por proceso crítico. Son objetivos que se miden en el ensayo, no aspiraciones: si la restauración tarda más, el plan queda observado.
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM plan_continuidad) THEN
-  -- RTO y RPO comprometidos por proceso crítico. Son objetivos que se miden en el ensayo, no aspiraciones: si la restauración tarda más, el plan queda observado.
   INSERT INTO plan_continuidad (politica_interna_id, responsable_id, proceso_critico, rto_minutos, rpo_minutos, estrategia, periodicidad_prueba_meses, vigente_desde, proxima_prueba) VALUES
     ((SELECT id FROM politica_interna WHERE codigo = 'PLA-CONT-01' AND version = 1), NULL, 'Acreditación de pagos y aportes', 60, 5, 'Réplica en caliente en región secundaria, reproceso de webhooks pendientes desde la cola y conciliación forzada contra el extracto del proveedor al recuperar.', 6, '2026-01-01', '2026-07-01'),
     ((SELECT id FROM politica_interna WHERE codigo = 'PLA-CONT-01' AND version = 1), NULL, 'Entrega de fondo al beneficiario', 240, 5, 'Suspensión controlada de desembolsos, retención del saldo del beneficiario y ejecución diferida con doble autorización una vez restablecida la conexión con el banco custodio.', 6, '2026-01-01', '2026-07-01'),
@@ -66,10 +66,10 @@ BEGIN
   END IF;
 END $$;
 
+-- Transparencia obligatoria: tarifario, contratos, política de tratamiento de datos, canales de reclamo y horarios. `hash_documento` permite probar después que lo publicado es lo que estaba vigente ese día.
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM documento_publicado) THEN
-  -- Transparencia obligatoria: tarifario, contratos, política de tratamiento de datos, canales de reclamo y horarios. `hash_documento` permite probar después que lo publicado es lo que estaba vigente ese día.
   INSERT INTO documento_publicado (tipo, referencia_tipo, referencia_id, publicado_por, url_publica, hash_documento, vigente_desde, vigente_hasta) VALUES
     ('TARIFARIO', 'tarifario', (SELECT id FROM tarifario WHERE codigo = 'GENERAL' AND version = 1), NULL, 'https://pasanaku.bo/legal/tarifario-v1.pdf', repeat('0', 64), '2026-01-01T00:00:00-04:00', NULL),
     ('CONTRATO', 'contrato_adhesion', (SELECT id FROM contrato_adhesion WHERE codigo = 'CTO-BILLETERA' AND version = 1), NULL, 'https://pasanaku.bo/legal/contrato-billetera-v1.pdf', repeat('0', 64), '2026-01-01T00:00:00-04:00', NULL),

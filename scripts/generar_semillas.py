@@ -80,20 +80,52 @@ PROHIBIDAS_EN_MINIMOS = {
 }
 
 # Guarda que encabeza el orquestador de dev: sin esta marca, no siembra.
-GUARDA_DEV = "\n".join([
-    "-- GUARDA — sin esto, estas semillas no entran a ninguna base.",
-    "-- La marca la pone el arranque de desarrollo, nunca un despliegue:",
-    "--   ALTER DATABASE pasanaku SET app.entorno = 'dev';",
-    "DO $$",
-    "BEGIN",
-    "  IF current_setting('app.entorno', true) IS DISTINCT FROM 'dev' THEN",
-    "    RAISE EXCEPTION",
-    "      'SEMILLAS DE DEV BLOQUEADAS: app.entorno = %, se exige ''dev''',",
-    "      coalesce(nullif(current_setting('app.entorno', true), ''), '<sin definir>');",
-    "  END IF;",
-    "END $$;",
-    "",
-])
+def guarda_dev(marca):
+    """Las dos preguntas que se hacen UNA vez, antes de insertar nada.
+
+    La primera es de entorno: estas filas no entran a una base que no esté
+    marcada como de desarrollo.
+
+    La segunda es de repetición. `bd:dev` corre cada vez que alguien pide
+    `bd:humo`, y 113 de las tablas de la demo no tienen clave natural: ahí un
+    `ON CONFLICT DO NOTHING` no tiene con qué chocar y no evita nada. La segunda
+    corrida duplicaba todo, y el primer subselect que esperaba una fila moría
+    con «more than one row returned by a subquery».
+
+    La respuesta se calcula acá y viaja en `app.dev_sembrado`, local a la
+    transacción. No se consulta la marca dentro de cada bloque a propósito: el
+    primero la insertaría y los demás se saltearían solos. Como el archivo entero
+    corre en una transacción, la decisión es todo o nada y no quedan medias
+    siembras.
+    """
+    return "\n".join([
+        "-- GUARDA 1 — sin esto, estas semillas no entran a ninguna base.",
+        "-- La marca la pone el arranque de desarrollo, nunca un despliegue:",
+        "--   ALTER DATABASE pasanaku SET app.entorno = 'dev';",
+        "DO $$",
+        "BEGIN",
+        "  IF current_setting('app.entorno', true) IS DISTINCT FROM 'dev' THEN",
+        "    RAISE EXCEPTION",
+        "      'SEMILLAS DE DEV BLOQUEADAS: app.entorno = %, se exige ''dev''',",
+        "      coalesce(nullif(current_setting('app.entorno', true), ''), '<sin definir>');",
+        "  END IF;",
+        "END $$;",
+        "",
+        "-- GUARDA 2 — volver a sembrar no duplica. La marca se mira UNA sola vez",
+        "-- y todos los bloques leen esa respuesta:",
+        f"--   {marca['tabla']} WHERE {marca['donde']}",
+        "DO $$",
+        "BEGIN",
+        f"  IF EXISTS (SELECT 1 FROM {marca['tabla']} WHERE {marca['donde']}) THEN",
+        "    PERFORM set_config('app.dev_sembrado', 'si', true);",
+        "    RAISE NOTICE 'Semillas de desarrollo ya presentes: no se inserta nada."
+        " Para rehacerlas, ./gradlew bd:reset';",
+        "  ELSE",
+        "    PERFORM set_config('app.dev_sembrado', 'no', true);",
+        "  END IF;",
+        "END $$;",
+        "",
+    ])
 
 
 def lit(valor):
@@ -118,8 +150,22 @@ def lit(valor):
     return "'" + str(valor).replace("'", "''") + "'"
 
 
-def bloque_sql(b):
-    # Bloque de SQL suelto (por ejemplo, ajustes de entorno de prueba)
+def envolver_dev(cuerpo):
+    """Deja `cuerpo` bajo la respuesta que calculó la GUARDA 2."""
+    sangrado = "\n".join("    " + l if l.strip() else l for l in cuerpo.rstrip().splitlines())
+    return ("DO $siembra$\nBEGIN\n"
+            "  IF current_setting('app.dev_sembrado', true) IS DISTINCT FROM 'si' THEN\n"
+            f"{sangrado}\n"
+            "  END IF;\nEND $siembra$;\n")
+
+
+def bloque_sql(b, dev=False):
+    # Bloque de SQL suelto (por ejemplo, ajustes de entorno de prueba). NO se
+    # envuelve en la guarda de dev: un DO es PL/pgSQL, y ahí un `SELECT` suelto
+    # no compila («query has no destination for result data»). Estos bloques se
+    # escriben a mano y se hacen re-ejecutables a mano: hoy son UPDATE que fijan
+    # un valor, un INSERT con ON CONFLICT y comentarios que explican por qué NO
+    # se escribe un saldo.
     if "sql" in b and "tabla" not in b:
         prefijo = f"-- {b['comentario']}\n" if b.get("comentario") else ""
         return prefijo + b["sql"].rstrip() + "\n"
@@ -148,8 +194,8 @@ def bloque_sql(b):
         for f in filas for v in f.values())
 
     L = []
-    if b.get("comentario"):
-        L.append(f"-- {b['comentario']}")
+    # El comentario queda FUERA de la guarda: el archivo generado se lee.
+    encabezado = f"-- {b['comentario']}\n" if b.get("comentario") else ""
     if autorreferente:
         L.append(f"-- Jerarquía en la propia tabla: una sentencia por fila para"
                  f" que cada\n-- hija vea a su madre ya insertada.")
@@ -170,7 +216,11 @@ def bloque_sql(b):
         cuerpo = "\n".join("  " + l for l in sql.splitlines())
         sql = (f"DO $$\nBEGIN\n  IF NOT EXISTS (SELECT 1 FROM {tabla}) THEN\n"
                f"{cuerpo}\n  END IF;\nEND $$;\n")
-    return sql
+    elif dev:
+        # `solo_si_vacia` ya emitió su propio DO, y un DO no anida dentro de otro:
+        # el bloque que se guarda solo no se vuelve a guardar.
+        sql = envolver_dev(sql)
+    return encabezado + sql
 
 
 def validar(entorno, mods):
@@ -295,7 +345,7 @@ def procesar(entorno):
         L = [f"-- {datos.get('descripcion', nombre)}",
              f"-- GENERADO desde seeders/{entorno}/{nombre} — no editar a mano.", ""]
         for b in datos["bloques"]:
-            L.append(bloque_sql(b))
+            L.append(bloque_sql(b, dev=(entorno == "dev")))
             filas_totales += len(b.get("filas", []))
         (destino / salida).write_text("\n".join(L), encoding="utf-8")
         archivos.append(salida)
@@ -308,7 +358,12 @@ def procesar(entorno):
          "-- GENERADO desde seeders/ — no editar a mano.", "",
          "\\set ON_ERROR_STOP on", "BEGIN;", ""]
     if entorno == "dev":
-        L += [GUARDA_DEV]
+        if "marca" not in manifiesto:
+            raise SystemExit(
+                f"seeders/{entorno}/manifiesto.json no declara `marca`: sin ella las "
+                "semillas de desarrollo se duplican al sembrar dos veces. Es una tabla "
+                "y una condición que identifican una fila de la propia demo.")
+        L += [guarda_dev(manifiesto["marca"])]
     L += [f"\\ir {a}" for a in archivos]
     L += ["", "COMMIT;", ""]
     (destino / orquestador).write_text("\n".join(L), encoding="utf-8")
